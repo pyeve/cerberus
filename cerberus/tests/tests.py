@@ -99,14 +99,14 @@ class TestValidator(TestBase):
 
     def test_bad_max_value(self):
         field = 'an_integer'
-        max_value = self.schema[field]['maxvalue']
+        max_value = self.schema[field]['max']
         value = max_value + 1
         self.assertFail({field: value})
         self.assertError(ERROR_MAX_VALUE % (field, max_value))
 
     def test_bad_min_value(self):
         field = 'an_integer'
-        min_value = self.schema[field]['minvalue']
+        min_value = self.schema[field]['min']
         value = min_value - 1
         self.assertFail({field: value})
         self.assertError(ERROR_MIN_VALUE % (field, min_value))

@@ -135,12 +135,12 @@ class Validator(object):
             if len(value) < min_length:
                 self._error(ERROR_MIN_LENGTH % (field, min_length))
 
-    def _validate_maxvalue(self, max_value, field, value):
+    def _validate_max(self, max_value, field, value):
         if isinstance(value, _int_types):
             if value > max_value:
                 self._error(ERROR_MAX_VALUE % (field, max_value))
 
-    def _validate_minvalue(self, min_value, field, value):
+    def _validate_min(self, min_value, field, value):
         if isinstance(value, _int_types):
             if value < min_value:
                 self._error(ERROR_MIN_VALUE % (field, min_value))

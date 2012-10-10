@@ -15,8 +15,8 @@ class TestBase(unittest.TestCase):
             },
             'an_integer': {
                 'type': 'integer',
-                'minvalue': 1,
-                'maxvalue': 100,
+                'min': 1,
+                'max': 100,
             },
             'a_boolean': {
                 'type': 'boolean',
