@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 DESCRIPTION = ("Validation for Python dictionaries. Easily extensible.")
-LONG_DESCRIPTION = open('README.md').read()
+LONG_DESCRIPTION = open('README.rst').read()
 VERSION = __import__('cerberus').__version__
 
 setup(
