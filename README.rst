@@ -7,8 +7,9 @@ Cerberus
 Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
 It provides type checking and basic functionality out of the box and is
-designed to be easily extensible. It serves as the foundation block for Eve
-validation module. Cerberus is tested for Python 2.6 and 2.7.
+designed to be easily extensible. It serves as one of the foundation blocks for
+the (yet to be released) Eve RESTful Web API. Cerberus is tested for Python 2.6
+and 2.7.
 
 Features
 --------
@@ -43,8 +44,8 @@ Testing
 
 Work in Progress
 ----------------
-Development of Cerberus is still underway, and a complete documentation is
-coming soon. Meanwhile, you can check the tests for a complete set of examples
-and features.
+Development of Cerberus is still underway and a complete documentation
+is coming soon. Meanwhile, you can check the tests for a complete set of
+examples and features. Any feedback is welcome.
 
-
+Stay tuned.
