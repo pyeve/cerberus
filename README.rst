@@ -9,16 +9,16 @@ Cerberus is an ISC Licensed validation tool for Python dictionaries.
 It provides type checking and basic functionality out of the box and is
 designed to be easily extensible. It serves as one of the foundation blocks for
 the (yet to be released) Eve RESTful Web API. Cerberus is tested for Python 2.6
-and 2.7.
+and 2.7. Support for Python 3.x is planned as well.
 
-Features
---------
 ::
 
     >>> v = Validator({'name': {'type': 'string'}})
     >>> v.validate({'name': 'john doe'})
     True
 
+Non-blocking
+------------
 Unlike other validator tools, Cerberus will not raise an exception when the
 first validation error is encountered. The whole document will always get
 validated, and a list of issues will be provided afterwards.
@@ -35,6 +35,37 @@ validated, and a list of issues will be provided afterwards.
 
 You will still get SchemaError and ValidationError exceptions on initialization
 errors.
+
+Customizing Cerberus
+--------------------
+Say that you need a certain value to be an odd integer. ::
+
+    from cerberus import Validator
+
+
+    class MyValidator(Validator):
+        
+        def _validate_isodd(self, isodd, field, value):
+            if isodd and not bool(value & 1):
+                self._error("Your error message")
+
+You just subclass the Cerberus Validator and add ``_validate_RULENAME``, the
+function that will validate your custom rule. Rule RULENAME is now available in
+the schema definition.::
+
+    >>> schema = {'age': {'isodd': True, 'type': 'integer'}}
+    >>> v = MyValidator(schema)
+    >>> v.validate({'age': 10})
+    False
+
+    >>> v.errors
+    ['Your error message here']
+
+    >>> v.validate({'age': 9})
+    True
+
+    >>> v.errors
+    []
 
 Testing
 -------
