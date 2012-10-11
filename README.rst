@@ -47,7 +47,7 @@ Say that you need a certain value to be an odd integer. ::
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
             if isodd and not bool(value & 1):
-                self._error("Your error message")
+                self._error("Value for field '%s' must be an odd number" % field)
 
 You just subclass the Cerberus Validator and add ``_validate_RULENAME``, the
 function that will validate your custom rule. ``RULENAME`` is now available in
@@ -58,12 +58,10 @@ your curstom schema definition:::
     >>> v.validate({'age': 10})
     False
     >>> v.errors
-    ['Your error message here']
+    ['Value for field 'age' must be an odd number']
 
     >>> v.validate({'age': 9})
     True
-    >>> v.errors
-    []
 
 Testing
 -------
