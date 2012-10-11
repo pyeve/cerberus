@@ -17,8 +17,11 @@ and 2.7. Support for Python 3.x is planned as well.
     >>> v.validate({'name': 'john doe'})
     True
 
+Features
+--------
+
 Non-blocking
-------------
+~~~~~~~~~~~~
 Unlike other validator tools, Cerberus will not raise an exception when the
 first validation error is encountered. The whole document will always get
 validated, and a list of issues will be provided afterwards.
@@ -29,41 +32,36 @@ validated, and a list of issues will be provided afterwards.
     >>> document = {'name': 1337, 'age': 5}
     >>> v.validate(document, schema)
     False
-
     >>> v.errors
     ["min value for field 'age' is 10", "value of field 'name' must be of string type"]
 
 You will still get SchemaError and ValidationError exceptions on initialization
-errors.
+issues.
 
-Customizing Cerberus
---------------------
+Custom validators
+~~~~~~~~~~~~~~~~~
 Say that you need a certain value to be an odd integer. ::
 
     from cerberus import Validator
 
-
     class MyValidator(Validator):
-        
         def _validate_isodd(self, isodd, field, value):
             if isodd and not bool(value & 1):
                 self._error("Your error message")
 
 You just subclass the Cerberus Validator and add ``_validate_RULENAME``, the
-function that will validate your custom rule. Rule RULENAME is now available in
-the schema definition.::
+function that will validate your custom rule. ``RULENAME`` is now available in
+your curstom schema definition:::
 
     >>> schema = {'age': {'isodd': True, 'type': 'integer'}}
     >>> v = MyValidator(schema)
     >>> v.validate({'age': 10})
     False
-
     >>> v.errors
     ['Your error message here']
 
     >>> v.validate({'age': 9})
     True
-
     >>> v.errors
     []
 
