@@ -1,5 +1,7 @@
 Cerberus
 ========
+.. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master 
+        :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
 
 Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
@@ -62,19 +64,10 @@ This is how we would go to implement that: ::
             if isodd and not bool(value & 1):
                 self._error("Value for field '%s' must be an odd number" % field)
 
-As simple as that. By simply subclassing Cerberus' :class:`Validator` class and
+As simple as that. By simply subclassing Cerberus' ``Validator`` class and
 adding the ``_validate_RULENAME`` function, we enhanced Cerberus' functionality
 to suit our needs. ``RULENAME`` (``ìsodd``) is now available in the schema
 definition.
-
-Testing
--------
-.. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master 
-        :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
-
-::
-
-    >>> python setup.py test
 
 Work in Progress
 ----------------
@@ -82,4 +75,8 @@ Development of Cerberus is still underway and a complete documentation
 is coming soon. Meanwhile, you can check the tests for a complete set of
 examples and features. Any feedback is welcome.
 
-Stay tuned.
+Testing
+-------
+::
+
+    >>> python setup.py test
