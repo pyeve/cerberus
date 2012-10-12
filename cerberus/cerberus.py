@@ -19,6 +19,9 @@ class SchemaError(Exception):
 
 
 class Validator(object):
+    """a docstring extended
+    """
+
     def __init__(self, schema=None):
         self.schema = schema
 

@@ -1,5 +1,5 @@
-Cerberus
-========
+Welcome to Cerberus
+===================
 
 Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
@@ -83,3 +83,20 @@ is coming soon. Meanwhile, you can check the tests for a complete set of
 examples and features. Any feedback is welcome.
 
 Stay tuned.
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   Schema syntax
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
