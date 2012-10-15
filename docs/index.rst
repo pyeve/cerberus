@@ -8,9 +8,6 @@ is designed to be easily extensible, allowing for easy custom validation. It
 has no dependancies and is thoroughly tested under Python 2.6 and 2.7. Support
 for Python 3.x is planned.
 
-    *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
-    entrance; everybody, sooner or later, had to go there, and nobody wanted to
-    carry off the entrance. -Ambrose Bierce, The Devil's Dictionary*
 
 .. note::
     Development of Cerberus is still underway, any feedback and contribution is
@@ -238,3 +235,8 @@ This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 informations.
+
+    *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
+    entrance; everybody, sooner or later, had to go there, and nobody wanted to
+    carry off the entrance. -Ambrose Bierce, The Devil's Dictionary*
+
