@@ -22,9 +22,9 @@ Documentation
 -------------
 Complete documentation is available at http://cerberus.readthedocs.org
 
-Copyright Notice
-----------------
-This is an open source project by `Nicola Iarocci
+Copyright
+---------
+Cerberus is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 informations.
