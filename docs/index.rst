@@ -44,7 +44,7 @@ Non-blocking
 ~~~~~~~~~~~~
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
-``False`` will be returned if validation failed.  You can than access the
+``False`` will be returned if validation failed.  You can then access the
 :func:`~cerberus.Validator.errors` method to obtain a list of issues.  ::
 
     >>> schema = {'name': {'type': 'string'}, 'age': {'type': 'integer', 'min': 10}}
