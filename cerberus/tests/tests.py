@@ -71,9 +71,6 @@ class TestValidator(TestBase):
     def test_not_a_boolean(self):
         self.assertBadType('a_boolean', 'boolean', "i'm not an boolean")
 
-    def test_not_an_array(self):
-        self.assertBadType('an_array', 'array (list)', "i'm not an array")
-
     def test_not_a_datetime(self):
         self.assertBadType('a_datetime', 'datetime', "i'm not a datetime")
 
@@ -110,12 +107,6 @@ class TestValidator(TestBase):
         value = min_value - 1
         self.assertFail({field: value})
         self.assertError(ERROR_MIN_VALUE % (field, min_value))
-
-    def test_unallowed_array_items(self):
-        field = 'an_array'
-        value = 'i am not allowed here'
-        self.assertFail({field: [value, 'agent', 'client']})
-        self.assertError(ERROR_UNALLOWED_VALUES % ([value], field))
 
     def test_bad_schema(self):
         field = 'a_dict'

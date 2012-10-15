@@ -1,3 +1,9 @@
+'''
+
+This module implements Cerberus Validator class
+
+'''
+
 import sys
 from errors import *
 from datetime import datetime
@@ -10,30 +16,69 @@ else:
     _int_types = (int, long)
 
 
-class ValidationError(Exception):
+class ValidationError(ValueError):
+    '''Raised when the target dictionary is missing or has the wrong format
+    '''
     pass
 
 
-class SchemaError(Exception):
+class SchemaError(ValueError):
+    '''Raised when the validation schema is missing, has the wrong format or
+    contains errors.
+    '''
     pass
 
 
 class Validator(object):
-    """a docstring extended
-    """
+    ''' Validator class. Validates any Python dict
+    against a validation schema, which is provided as an argument at
+    class instantiation, or upon calling the :func:`validate` or
+    :func:`validate_update` methods.
+
+    :param schema: optional validation schema.
+    '''
 
     def __init__(self, schema=None):
         self.schema = schema
 
+    @property
+    def errors(self):
+        '''
+        :rtype: a list of validation errors. Will be empty if no errors
+                were found during. Resets after each call to :func:`validate` or
+                :func:`validate_update`.
+        '''
+        return self._errors
+
     def validate_update(self, document, schema=None):
+        ''' Validates a Python dicitionary against a validation schema. The
+        difference with :func:`validate` is that the ``required`` rule will be
+        ignored here.
+
+        :param schema: optional validation schema. Defaults to ``None``. If not
+                       provided here, the schema must have been provided at
+                       class instantation.
+        :return: True if validation succeeds, False otherwise. Check the
+                 :func:`errors` property for a list of validation errors.
+        '''
         return self._validate(document, schema, update=True)
 
     def validate(self, document, schema=None):
+        ''' Validates a Python dictionary against a validation schema.
+
+        :param document: the dict to validate.
+        :param schema: the validation schema. Defaults to ``None``. If not
+                       provided here, the schema must have been provided at
+                       class instantation.
+
+        :return: True if validation succeeds, False otherwise. Check the
+                 :func:`errors` property for a list of validation errors.
+        '''
         return self._validate(document, schema, update=False)
 
     def _validate(self, document, schema=None, update=False):
 
-        self.errors = list()
+        self._errors = list()
         self.update = update
 
         if schema is not None:
@@ -74,13 +119,13 @@ class Validator(object):
         if not self.update:
             self._validate_required_fields()
 
-        return len(self.errors) == 0
+        return len(self._errors) == 0
 
     def _error(self, _error):
         if isinstance(_error, _str_type):
-            self.errors.append(_error)
+            self._errors.append(_error)
         else:
-            self.errors.extend(_error)
+            self._errors.extend(_error)
 
     def _validate_required_fields(self):
         required = list(field for field, definition in self.schema.items()
@@ -112,9 +157,9 @@ class Validator(object):
         if not isinstance(value, bool):
             self._error(ERROR_BAD_TYPE % (field, "boolean"))
 
-    def _validate_type_array(self, field, value):
-        if not isinstance(value, list):
-            self._error(ERROR_BAD_TYPE % (field, "array (list)"))
+    #def _validate_type_array(self, field, value):
+    #    if not isinstance(value, list):
+    #        self._error(ERROR_BAD_TYPE % (field, "array (list)"))
 
     def _validate_type_datetime(self, field, value):
         if not isinstance(value, datetime):

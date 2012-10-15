@@ -65,8 +65,8 @@ This is how we would go to implement that: ::
                 self._error("Value for field '%s' must be an odd number" % field)
 
 As simple as that. By simply subclassing Cerberus' ``Validator`` class and
-adding the ``_validate_RULENAME`` function, we enhanced Cerberus' functionality
-to suit our needs. ``RULENAME`` (``ìsodd``) is now available in the schema
+adding the ``_validate_RULENAME`` function, we enhanced Cerberus to suit our
+needs. The new rule ``RULENAME`` (``ìsodd``) is now available in the schema
 definition.
 
 Work in Progress

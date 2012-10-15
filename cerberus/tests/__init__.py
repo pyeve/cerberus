@@ -29,7 +29,7 @@ class TestBase(unittest.TestCase):
                 'readonly': True,
             },
             'an_array': {
-                'type': 'array',
+                'type': 'list',
                 'allowed': ["agent", "client", "vendor"],
             },
             'a_list_of_dicts': {
