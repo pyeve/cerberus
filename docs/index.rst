@@ -217,7 +217,8 @@ Exceptions
 
 Installation
 ------------
-::
+Cerberus is on `PyPI <http://pypi.python.org/pypi/Cerberus>`_ so all you need
+to do is:::
 
     pip install cerberus
 
