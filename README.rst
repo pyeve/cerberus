@@ -24,13 +24,17 @@ Complete documentation is available at http://cerberus.readthedocs.org
 
 Installation
 ------------
-Cerberus is on PyPI so all you need is:::
+Cerberus is on PyPI so all you need is:
+
+::
 
     pip install cerberus
 
 Testing
 -------
-Just run:::
+Just run:
+
+::
 
     python setup.py test
 
