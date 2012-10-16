@@ -218,6 +218,7 @@ Exceptions
 Installation
 ------------
 ::
+
     pip install cerberus
 
 Testing

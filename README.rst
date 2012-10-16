@@ -24,11 +24,13 @@ Complete documentation is available at http://cerberus.readthedocs.org
 
 Installation
 ------------
+
 ::
     pip install cerberus
 
 Testing
 -------
+
 ::
     python setup.py test
 
