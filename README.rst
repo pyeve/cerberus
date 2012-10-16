@@ -22,6 +22,16 @@ Documentation
 -------------
 Complete documentation is available at http://cerberus.readthedocs.org
 
+Installation
+------------
+::
+    pip install cerberus
+
+Testing
+-------
+::
+    python setup.py test
+
 Copyright
 ---------
 Cerberus is an open source project by `Nicola Iarocci

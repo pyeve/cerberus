@@ -215,6 +215,11 @@ Exceptions
 .. autoclass:: cerberus.ValidationError
   :members:
 
+Installation
+------------
+::
+    pip install cerberus
+
 Testing
 -------
 .. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master 
