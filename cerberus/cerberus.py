@@ -36,6 +36,9 @@ class Validator(object):
     :func:`validate_update` methods.
 
     :param schema: optional validation schema.
+
+    .. versionadded:: 0.0.2
+        Support for addition and validation of custom data types.
     '''
 
     def __init__(self, schema=None):
@@ -45,8 +48,8 @@ class Validator(object):
     def errors(self):
         '''
         :rtype: a list of validation errors. Will be empty if no errors
-                were found during. Resets after each call to :func:`validate` or
-                :func:`validate_update`.
+                were found during. Resets after each call to :func:`validate`
+                or :func:`validate_update`.
         '''
         return self._errors
 
@@ -201,7 +204,7 @@ class Validator(object):
 
     def _validate_schema(self, schema, field, value):
         if isinstance(value, dict):
-            validator = Validator(schema)
+            validator = self.__class__(schema)
             if not validator.validate(value):
                 self._error(["'%s': " % field + error
                             for error in validator.errors])
@@ -220,13 +223,13 @@ class Validator(object):
         else:
             for i in range(len(schemas)):
                 key = "_data" + str(i)
-                validator = Validator({key: schemas[i]})
+                validator = self.__class__({key: schemas[i]})
                 if not validator.validate({key: values[i]}):
                     self._error(["'%s': " % field + error
                                 for error in validator.errors])
 
     def _validate_items_schema(self, schema, field, value):
-        validator = Validator(schema)
+        validator = self.__class__(schema)
         for item in value:
             if not validator.validate(item):
                 self._error(["'%s': " % field + error

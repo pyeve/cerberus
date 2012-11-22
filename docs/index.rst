@@ -8,12 +8,6 @@ is designed to be easily extensible, allowing for easy custom validation. It
 has no dependancies and is thoroughly tested under Python 2.6 and 2.7. Support
 for Python 3.x is planned.
 
-
-.. note::
-    Development of Cerberus is still underway, any feedback and contribution is
-    welcome.
-
-
 Usage
 ------
 You define a validation schema and pass it to an instance of the
@@ -78,7 +72,7 @@ This is how we would go to implement that: ::
                 self._error("Value for field '%s' must be an odd number" % field)
 
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
-``_validate_RULENAME`` function, we just enhanced Cerberus to suit our needs.
+``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
 The custom rule ``ìsodd`` is now available in our schema and, what really
 matters, we can validate it: ::
 
@@ -90,6 +84,32 @@ matters, we can validate it: ::
 
     >>> v.validate({'oddity': 9})
     True
+
+.. _new-types:
+
+Adding new data-types
+'''''''''''''''''''''
+.. versionadded:: 0.0.2
+
+Cerberus supports and validates several standard data types (see `type`_).
+You can add and validate your own data types. For example `Eve
+<https://github.com/nicolaiarocci/eve>`_ (a tool for building and deploying
+proprietary REST Web APIs) supports a custom ``objectid`` type, which is used to validate
+that field values conform to the BSON/MongoDB ``ObjectId`` format.
+
+You extend the supported set of data types by adding
+a ``_validate_type_<typename>`` method to your own :class:`~cerberus.Validator`
+subclass. This snippet, directly from Eve source, shows how the ``objectid``
+has been implemented: ::
+
+     def _validate_type_objectid(self, field, value):
+        """ Enables validation for `objectid` schema attribute.
+
+        :param field: field name.
+        :param value: field value.
+        """
+        if not re.match('[a-f0-9]{24}', value):
+            self._error(ERROR_BAD_TYPE % (field, 'ObjectId'))
 
 Validation Schema
 -----------------
@@ -127,6 +147,8 @@ Data type allowed for the key value. Can be one of the following:
     * ``datetime``
     * ``dict``
     * ``list``
+
+You can extend this list and support custom types, see :ref:`new-types`.
 
 required
 ''''''''

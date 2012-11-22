@@ -1,3 +1,4 @@
+import re
 from ..cerberus import *
 from datetime import datetime
 from random import choice
@@ -179,3 +180,27 @@ class TestValidator(TestBase):
                 }
             }
         )
+
+    def test_custom_datatype(self):
+        class MyValidator(Validator):
+            def _validate_type_objectid(self, field, value):
+                if not re.match('[a-f0-9]{24}', value):
+                    self._error('Not an ObjectId')
+
+        schema = {'test_field': {'type': 'objectid'}}
+        v = MyValidator(schema)
+        self.assertTrue(v.validate({'test_field': '50ad188438345b1049c88a28'}))
+        self.assertFalse(v.validate({'test_field': 'hello'}))
+        self.assertError('Not an ObjectId', validator=v)
+
+    def test_custom_validator(self):
+        class MyValidator(Validator):
+            def _validate_isodd(self, isodd,  field, value):
+                if isodd and not bool(value & 1):
+                    self._error('Not an odd number')
+
+        schema = {'test_field': {'isodd': True}}
+        v = MyValidator(schema)
+        self.assertTrue(v.validate({'test_field': 7}))
+        self.assertFalse(v.validate({'test_field': 6}))
+        self.assertError('Not an odd number', validator=v)
