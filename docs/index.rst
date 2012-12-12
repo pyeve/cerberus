@@ -182,8 +182,8 @@ Minimum and maximum value allowed for ``ìnteger`` types.
 
 allowed
 '''''''
-Allowed values for ``list`` types. Validation will fail if target values are
-not included in the allowed list.::
+Allowed values for ``string`` or ``list`` types. Validation will fail if
+target values are not included in the allowed list.::
 
     >>> schema = {'role': {'type': 'list', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v.validate({'role': ['agent', 'supplier']})
@@ -193,6 +193,15 @@ not included in the allowed list.::
     False
     >>> v.errors
     ["unallowed values ['intern'] for field 'role'"]
+
+    >>> schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
+    >>> v.validate({'role': 'supplier'})
+    True
+
+    >>> v.validate({'role': 'intern'})
+    False
+    >>> v.errors
+    ["unallowed value 'intern' for field 'role'"]
 
 items (dict)
 ''''''''''''
