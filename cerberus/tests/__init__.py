@@ -28,6 +28,10 @@ class TestBase(unittest.TestCase):
                 'type': 'string',
                 'readonly': True,
             },
+            'a_restricted_string': {
+                'type': 'string',
+                'allowed': ["agent", "client", "vendor"],
+            },
             'an_array': {
                 'type': 'list',
                 'allowed': ["agent", "client", "vendor"],
