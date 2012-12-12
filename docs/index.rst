@@ -216,10 +216,15 @@ a ``list`` type:::
 
 schema
 ''''''
-Validation schema for ``dict`` types.::
+Validation schema for ``dict`` and ``list`` types.::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
+    >>> document = {'a_list': [3, 4, 5]}
     >>> v.validate(document, schema)
     True
 
