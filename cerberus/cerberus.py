@@ -197,7 +197,10 @@ class Validator(object):
                 self._error(ERROR_MIN_VALUE % (field, min_value))
 
     def _validate_allowed(self, allowed_values, field, value):
-        if isinstance(value, list):
+        if isinstance(value, _str_type):
+            if value not in allowed_values:
+                self._error(ERROR_UNALLOWED_VALUE % (value, field))
+        elif isinstance(value, list):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
                 self._error(ERROR_UNALLOWED_VALUES % (list(disallowed), field))
