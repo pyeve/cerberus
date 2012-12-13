@@ -47,6 +47,10 @@ class TestBase(unittest.TestCase):
                 'type': 'list',
                 'items': [{'type': 'string'}, {'type': 'integer'}, ]
             },
+            'a_list_of_integers': {
+                'type': 'list',
+                'schema': {'type': 'integer'},
+            },
             'a_dict': {
                 'type': 'dict',
                 'schema': {
