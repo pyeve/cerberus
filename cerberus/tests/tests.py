@@ -136,11 +136,22 @@ class TestValidator(TestBase):
         self.assertError("'%s': " % field + ERROR_BAD_TYPE %
                          ("_data1", 'integer'))
 
+    def test_bad_list_of_dicts_deprecated(self):
+        field = 'a_list_of_dicts_deprecated'
+        value = [{'sku': 'KT123', 'price': '100'}]
+        self.assertFail({field: value})
+        self.assertError("'%s': " % field + ERROR_BAD_TYPE %
+                         ('price', 'integer'))
+
+        value = ["not a dict"]
+        self.assertValidationError({field: value}, None, None,
+                                   ERROR_DOCUMENT_FORMAT % value[0])
+
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
-        self.assertError("'%s': " % field + ERROR_BAD_TYPE %
+        self.assertError("'%s': '_data0': " % field + ERROR_BAD_TYPE %
                          ('price', 'integer'))
 
         value = ["not a dict"]
@@ -164,6 +175,16 @@ class TestValidator(TestBase):
 
     def test_array(self):
         self.assertSuccess({'an_array': ['agent', 'client']})
+
+    def tst_a_list_of_dicts_deprecated(self):
+        self.assertSuccess(
+            {
+                'a_list_of_dicts_deprecated': [
+                    {'sku': 'AK345', 'price': 100},
+                    {'sku': 'YZ069', 'price': 25}
+                ]
+            }
+        )
 
     def tst_a_list_of_dicts(self):
         self.assertSuccess(
