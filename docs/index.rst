@@ -194,12 +194,17 @@ not included in the allowed list.::
     >>> v.errors
     ["unallowed values ['intern'] for field 'role'"]
 
+.. _items_dict:
+
 items (dict)
 ''''''''''''
+.. deprecated:: 0.0.3
+   Use :ref:`schema` instead.
+
 When a dictionary, ``items`` defines the validation schema for items in
 a ``list`` type:::
 
-    >>> schema = {'rows': {'type': 'list','items': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}
+    >>> schema = {'rows': {'type': 'list', 'items': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
@@ -212,7 +217,9 @@ a ``list`` type:::
     >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
     >>> document = {'list_of_values': ['hello', 100]}
     >>> v.validate(document, schema)
-    True   
+    True
+
+.. _schema:
 
 schema
 ''''''
@@ -225,6 +232,14 @@ Validation schema for ``dict`` and ``list`` types.::
 
     >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
     >>> document = {'a_list': [3, 4, 5]}
+    >>> v.validate(document, schema)
+    True
+
+Using the `schema` rule on ``list`` types is prefered over the deprecated
+:ref:`items_dict` rule for defining a list of dictionaries::
+
+    >>> schema = {'rows': {'type': 'list', 'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}}
+    >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
 
