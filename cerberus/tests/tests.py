@@ -129,6 +129,13 @@ class TestValidator(TestBase):
         self.assertFail({field: value})
         self.assertError(ERROR_ITEMS_LIST % (field, 2))
 
+    def test_bad_list_of_integers(self):
+        field = 'a_list_of_integers'
+        value = [34, 'not an integer']
+        self.assertFail({field: value})
+        self.assertError("'%s': " % field + ERROR_BAD_TYPE %
+                         ("_data1", 'integer'))
+
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
         value = [{'sku': 'KT123', 'price': '100'}]
@@ -185,6 +192,9 @@ class TestValidator(TestBase):
 
     def test_a_list_of_values(self):
         self.assertSuccess({'a_list_of_values': ['hello', 100]})
+
+    def test_a_list_of_integers(self):
+        self.assertSuccess({'a_list_of_integers': [99, 100]})
 
     def test_a_dict(self):
         self.assertSuccess(

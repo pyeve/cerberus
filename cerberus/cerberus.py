@@ -206,7 +206,14 @@ class Validator(object):
                 self._error(ERROR_UNALLOWED_VALUES % (list(disallowed), field))
 
     def _validate_schema(self, schema, field, value):
-        if isinstance(value, dict):
+        if isinstance(value, list):
+            for i in range(len(value)):
+                key = "_data" + str(i)
+                validator = self.__class__({key: schema})
+                if not validator.validate({key: value[i]}):
+                    self._error(["'%s': " % field + error
+                                for error in validator.errors])
+        elif isinstance(value, dict):
             validator = self.__class__(schema)
             if not validator.validate(value):
                 self._error(["'%s': " % field + error
