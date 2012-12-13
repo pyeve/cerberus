@@ -1,0 +1,28 @@
+Cerberus Changelog
+===============
+
+Here you can see the full list of changes between each Cerberus release.
+
+Version 0.0.3
+-------------
+
+Not yet released.
+
+- AUTHORS file added to sources.
+- CHANGES file added to sources.
+
+
+Version 0.0.2
+-------------
+
+Released on November 22 2012.
+
+- Added support for addition and validation of custom data types.
+- Several documentation improvements.
+
+Version 0.0.1
+-------------
+
+Released on October 16 2012.
+
+First public preview release.
