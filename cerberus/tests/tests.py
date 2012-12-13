@@ -140,11 +140,26 @@ class TestValidator(TestBase):
         self.assertValidationError({field: value}, None, None,
                                    ERROR_DOCUMENT_FORMAT % value[0])
 
+    def test_array_unallowed(self):
+        field = 'an_array'
+        value = ['agent', 'client', 'profit']
+        self.assertFail({field: value})
+        self.assertError(ERROR_UNALLOWED_VALUES % (['profit'], field))
+
+    def test_string_unallowed(self):
+        field = 'a_restricted_string'
+        value = 'profit'
+        self.assertFail({field: value})
+        self.assertError(ERROR_UNALLOWED_VALUE % (value, field))
+
     def test_validate_update(self):
         self.assertTrue(self.validator.validate_update({'an_integer': 100}))
 
     def test_string(self):
         self.assertSuccess({'a_required_string': 'john doe'})
+
+    def test_string_allowed(self):
+        self.assertSuccess({'a_restricted_string': 'client'})
 
     def test_integer(self):
         self.assertSuccess({'an_integer': 50})
