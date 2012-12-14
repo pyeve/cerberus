@@ -8,6 +8,10 @@ is designed to be easily extensible, allowing for easy custom validation. It
 has no dependancies and is thoroughly tested under Python 2.6 and 2.7. Support
 for Python 3.x is planned.
 
+    *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
+    entrance; everybody, sooner or later, had to go there, and nobody wanted to
+    carry off the entrance. -Ambrose Bierce, The Devil's Dictionary*
+
 Usage
 ------
 You define a validation schema and pass it to an instance of the
@@ -211,41 +215,52 @@ items (dict)
    Use :ref:`schema` instead.
 
 When a dictionary, ``items`` defines the validation schema for items in
-a ``list`` type:::
+a ``list`` type: ::
 
     >>> schema = {'rows': {'type': 'list', 'items': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
 
+.. note::
+
+    The :ref:`items_dict` rule is deprecated, and will be removed in a future release.
+
 items (list)
 ''''''''''''
-When a list, ``items`` defines a list of values allowed for the items in
-a ``list`` type:::
+When a list, ``items`` defines a list of values allowed in a ``list`` type of
+fixed length: ::
 
     >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
     >>> document = {'list_of_values': ['hello', 100]}
     >>> v.validate(document, schema)
     True
 
+See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
+
 .. _schema:
 
 schema
 ''''''
-Validation schema for ``dict`` and ``list`` types.::
+.. versionchanged:: 0.0.3
+   Schema rule for ``list`` types of arbitrary length
+
+Validation schema for ``dict`` and ``list`` types. On dictionaries: ::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
     >>> v.validate(document, schema)
     True
 
+You can also use this rule to validate arbitrary length ``list`` items. ::
+
     >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
     >>> document = {'a_list': [3, 4, 5]}
     >>> v.validate(document, schema)
     True
 
-Using the `schema` rule on ``list`` types is prefered over the deprecated
-:ref:`items_dict` rule for defining a list of dictionaries::
+The `schema` rule on ``list`` types is also the prefered method for defining
+and validating a list of dictionaries. ::
 
     >>> schema = {'rows': {'type': 'list', 'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
@@ -269,7 +284,7 @@ Exceptions
 Installation
 ------------
 Cerberus is on `PyPI <http://pypi.python.org/pypi/Cerberus>`_ so all you need
-to do is:::
+to do is: ::
 
     pip install cerberus
 
@@ -293,8 +308,3 @@ This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 informations.
-
-    *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
-    entrance; everybody, sooner or later, had to go there, and nobody wanted to
-    carry off the entrance. -Ambrose Bierce, The Devil's Dictionary*
-
