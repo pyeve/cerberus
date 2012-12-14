@@ -8,7 +8,8 @@ Version 0.0.3
 
 Not yet released.
 
-- 'Allowed' rule on strings, contributed by Martjin Vermaat.
+- 'Schema' rule on lists (of arbitrary lenght). Contributed by Martjin Vermaat.
+- 'Allowed' rule on strings. Contributed by Martjin Vermaat.
 - AUTHORS file added to sources.
 - CHANGES file added to sources.
 
