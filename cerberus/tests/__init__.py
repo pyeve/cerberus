@@ -36,16 +36,30 @@ class TestBase(unittest.TestCase):
                 'type': 'list',
                 'allowed': ["agent", "client", "vendor"],
             },
-            'a_list_of_dicts': {
+            'a_list_of_dicts_deprecated': {
                 'type': 'list',
                 'items': {
                     'sku': {'type': 'string'},
                     'price': {'type': 'integer'},
                 },
             },
+            'a_list_of_dicts': {
+                'type': 'list',
+                'schema': {
+                    'type': 'dict',
+                    'schema': {
+                        'sku': {'type': 'string'},
+                        'price': {'type': 'integer'},
+                    },
+                },
+            },
             'a_list_of_values': {
                 'type': 'list',
                 'items': [{'type': 'string'}, {'type': 'integer'}, ]
+            },
+            'a_list_of_integers': {
+                'type': 'list',
+                'schema': {'type': 'integer'},
             },
             'a_dict': {
                 'type': 'dict',
