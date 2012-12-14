@@ -8,8 +8,9 @@ Version 0.0.3
 
 Not yet released.
 
-- 'Schema' rule on lists (of arbitrary lenght). Contributed by Martjin Vermaat.
-- 'Allowed' rule on strings. Contributed by Martjin Vermaat.
+- 'schema' rule on lists (of arbitrary lenght). Contributed by Martjin Vermaat.
+- 'allowed' rule on strings. Contributed by Martjin Vermaat.
+- 'items' (dict) is now deprecated. Use the upgraded 'schema' rule instead.
 - AUTHORS file added to sources.
 - CHANGES file added to sources.
 
