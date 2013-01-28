@@ -122,8 +122,7 @@ class TestValidator(TestBase):
         field = 'a_list_of_values'
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
-        self.assertError("'%s': " % field + ERROR_BAD_TYPE %
-                         ("_data1", 'integer'))
+        self.assertError(ERROR_BAD_TYPE % ("%s[%s]" % (field, 1), 'integer'))
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
@@ -133,8 +132,7 @@ class TestValidator(TestBase):
         field = 'a_list_of_integers'
         value = [34, 'not an integer']
         self.assertFail({field: value})
-        self.assertError("'%s': " % field + ERROR_BAD_TYPE %
-                         ("_data1", 'integer'))
+        self.assertError(ERROR_BAD_TYPE % ("%s[%s]" % (field, 1), 'integer'))
 
     def test_bad_list_of_dicts_deprecated(self):
         field = 'a_list_of_dicts_deprecated'
@@ -151,8 +149,8 @@ class TestValidator(TestBase):
         field = 'a_list_of_dicts'
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
-        self.assertError("'%s': '_data0': " % field + ERROR_BAD_TYPE %
-                         ('price', 'integer'))
+        self.assertError("'%s[%s]': " % (field, 0) +
+                         ERROR_BAD_TYPE % ('price', 'integer'))
 
         value = ["not a dict"]
         self.assertValidationError({field: value}, None, None,

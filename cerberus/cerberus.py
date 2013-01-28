@@ -224,11 +224,10 @@ class Validator(object):
     def _validate_schema(self, schema, field, value):
         if isinstance(value, list):
             for i in range(len(value)):
-                key = "_data" + str(i)
+                key = "%s[%s]" % (field, str(i))
                 validator = self.__class__({key: schema})
                 if not validator.validate({key: value[i]}):
-                    self._error(["'%s': " % field + error
-                                for error in validator.errors])
+                    self._error([error for error in validator.errors])
         elif isinstance(value, dict):
             validator = self.__class__(schema)
             if not validator.validate(value):
@@ -243,16 +242,15 @@ class Validator(object):
         elif isinstance(items, list):
             self._validate_items_list(items, field, value)
 
-    def _validate_items_list(self, schemas, field, values):
-        if len(schemas) != len(values):
-            self._error(ERROR_ITEMS_LIST % (field, len(schemas)))
+    def _validate_items_list(self, schema, field, values):
+        if len(schema) != len(values):
+            self._error(ERROR_ITEMS_LIST % (field, len(schema)))
         else:
-            for i in range(len(schemas)):
-                key = "_data" + str(i)
-                validator = self.__class__({key: schemas[i]})
+            for i in range(len(schema)):
+                key = "%s[%s]" % (field, str(i))
+                validator = self.__class__({key: schema[i]})
                 if not validator.validate({key: values[i]}):
-                    self._error(["'%s': " % field + error
-                                for error in validator.errors])
+                    self._error([error for error in validator.errors])
 
     def _validate_items_schema(self, schema, field, value):
         validator = self.__class__(schema)
