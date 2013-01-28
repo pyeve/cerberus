@@ -36,13 +36,22 @@ class Validator(object):
     :func:`validate_update` methods.
 
     :param schema: optional validation schema.
+    :param transparent_schema_rules: if ``True`` unknown schema rules will be
+                                 ignored (no SchemaError will be raised).
+                                 Defaults to ``False``. Useful you need to
+                                 extend the schema grammar beyond Cerberus'
+                                 domain.
+
+    .. versionadded:: 0.0.3
+       Support for transparent schema rules.
 
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     '''
 
-    def __init__(self, schema=None):
+    def __init__(self, schema=None, transparent_schema_rules=False):
         self.schema = schema
+        self.transparent_schema_rules = transparent_schema_rules
 
     @property
     def errors(self):
@@ -110,7 +119,7 @@ class Validator(object):
                         validator = getattr(self, validatorname, None)
                         if validator:
                             validator(definition[rule], field, value)
-                        else:
+                        elif not self.transparent_schema_rules:
                             raise SchemaError(ERROR_UNKNOWN_RULE %
                                               (rule, field))
                 else:
