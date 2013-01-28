@@ -250,3 +250,15 @@ class TestValidator(TestBase):
         self.assertTrue(v.validate({'test_field': 7}))
         self.assertFalse(v.validate({'test_field': 6}))
         self.assertError('Not an odd number', validator=v)
+
+    def test_transparent_schema_rules(self):
+        field = 'test'
+        schema = {field: {'type': 'string', 'unknown_rule': 'a value'}}
+        document = {field: 'hey!'}
+        v = Validator(transparent_schema_rules=True)
+        self.assertSuccess(schema=schema, document=document, validator=v)
+        v.transparent_schema_rules = False
+        self.assertSchemaError(document, schema, v,
+                               ERROR_UNKNOWN_RULE % ('unknown_rule', field))
+        self.assertSchemaError(document, schema, None,
+                               ERROR_UNKNOWN_RULE % ('unknown_rule', field))
