@@ -156,7 +156,7 @@ You can extend this list and support custom types, see :ref:`new-types`.
 
 required
 ''''''''
-If True, the key/value pair is mandatory and validation will fail when
+If ``True``, the key/value pair is mandatory and validation will fail when
 :func:`~cerberus.Validator.validate` is called.  Validation will still succeed
 if the value is missing and :func:`~cerberus.Validator.validate_update` is
 called instead.::
@@ -171,9 +171,15 @@ called instead.::
     >>> v.validate_update(document)
     True
 
+.. note::
+
+   String fields with empty values will still be validated, even when
+   ``required`` is set to ``True``. If you don't want to accept empty values,
+   see the empty_ rule. 
+
 readonly
 ''''''''
-If True, the value is readonly. Validation will fail if this field is present
+If ``True``, the value is readonly. Validation will fail if this field is present
 in the target dictionary.
 
 minlength, maxlength
@@ -182,7 +188,7 @@ Minimum and maximum length allowed for ``string`` types.
 
 min, max
 ''''''''
-Minimum and maximum value allowed for ``ìnteger`` types.
+Minimum and maximum value allowed for ``integer`` types.
 
 allowed
 '''''''
@@ -206,6 +212,21 @@ target values are not included in the allowed list.::
     False
     >>> v.errors
     ["unallowed value 'intern' for field 'role'"]
+
+empty
+'''''
+.. versionadded:: 0.0.3
+
+Only applies to string fields. If ``False``, validation will fail if the value
+is empty. Defaults to ``True``. ::
+
+    >>> schema = {'name': {'type': 'string', 'empty': False}}
+    >>> document = {'name': ''}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    ["empty values not allowed for field 'name'"]
 
 .. _items_dict:
 

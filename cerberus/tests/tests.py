@@ -250,3 +250,18 @@ class TestValidator(TestBase):
         self.assertTrue(v.validate({'test_field': 7}))
         self.assertFalse(v.validate({'test_field': 6}))
         self.assertError('Not an odd number', validator=v)
+
+    def test_allow_empty_strings(self):
+        field = 'test'
+        schema = {field: {'type': 'string'}}
+        document = {field: ''}
+        self.assertSuccess(document, schema)
+        schema[field]['empty'] = False
+        self.assertFail(document, schema)
+        self.assertError(ERROR_EMPTY_NOT_ALLOWED % field)
+        schema[field]['empty'] = True
+        self.assertSuccess(document, schema)
+        schema = {field: {'type': 'integer', 'empty': True}}
+        document = {field: 0}
+        self.assertFail(document, schema)
+        self.assertError(ERROR_EMPTY_BAD_TYPE)

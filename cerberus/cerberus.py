@@ -37,6 +37,9 @@ class Validator(object):
 
     :param schema: optional validation schema.
 
+    .. versionadded:: 0.0.3
+        'empty' rule for string fields.
+
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     '''
@@ -204,6 +207,12 @@ class Validator(object):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
                 self._error(ERROR_UNALLOWED_VALUES % (list(disallowed), field))
+
+    def _validate_empty(self, empty, field, value):
+        if not isinstance(value, _str_type):
+            self._error(ERROR_EMPTY_BAD_TYPE)
+        elif len(value) == 0 and not empty:
+            self._error(ERROR_EMPTY_NOT_ALLOWED % field)
 
     def _validate_schema(self, schema, field, value):
         if isinstance(value, list):
