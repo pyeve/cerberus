@@ -262,3 +262,18 @@ class TestValidator(TestBase):
                                ERROR_UNKNOWN_RULE % ('unknown_rule', field))
         self.assertSchemaError(document, schema, None,
                                ERROR_UNKNOWN_RULE % ('unknown_rule', field))
+
+    def test_allow_empty_strings(self):
+        field = 'test'
+        schema = {field: {'type': 'string'}}
+        document = {field: ''}
+        self.assertSuccess(document, schema)
+        schema[field]['empty'] = False
+        self.assertFail(document, schema)
+        self.assertError(ERROR_EMPTY_NOT_ALLOWED % field)
+        schema[field]['empty'] = True
+        self.assertSuccess(document, schema)
+        schema = {field: {'type': 'integer', 'empty': True}}
+        document = {field: 0}
+        self.assertFail(document, schema)
+        self.assertError(ERROR_EMPTY_BAD_TYPE)

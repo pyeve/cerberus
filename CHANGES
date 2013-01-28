@@ -9,6 +9,7 @@ Version 0.0.3
 Not yet released.
 
 - 'transparent_schema_rules' option added.
+- 'empty' rule for string fields.
 - 'schema' rule on lists (of arbitrary lenght). Contributed by Martjin Vermaat.
 - 'allowed' rule on strings. Contributed by Martjin Vermaat.
 - 'items' (dict) is now deprecated. Use the upgraded 'schema' rule instead.
