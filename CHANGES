@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.0.3
 -------------
 
-Not yet released.
+Released on January 29 2013
 
 - when a list item fails, its offset is now returned along with the list name 
 - 'transparent_schema_rules' option added.
