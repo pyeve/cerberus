@@ -1,5 +1,5 @@
 import unittest
-from ..cerberus import *
+from ..cerberus import errors, SchemaError, Validator, ValidationError
 
 
 class TestBase(unittest.TestCase):
@@ -108,4 +108,4 @@ class TestBase(unittest.TestCase):
     def assertBadType(self, field, data_type, value):
         doc = {field: value}
         self.assertFail(doc)
-        self.assertError(ERROR_BAD_TYPE % (field, data_type))
+        self.assertError(errors.ERROR_BAD_TYPE % (field, data_type))
