@@ -184,7 +184,7 @@ in the target dictionary.
 
 minlength, maxlength
 ''''''''''''''''''''
-Minimum and maximum length allowed for ``string`` types. 
+Minimum and maximum length allowed for ``string`` and ``list`` types. 
 
 min, max
 ''''''''

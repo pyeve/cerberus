@@ -187,12 +187,12 @@ class Validator(object):
             self._error(ERROR_BAD_TYPE % (field, "list"))
 
     def _validate_maxlength(self, max_length, field, value):
-        if isinstance(value, _str_type):
+        if isinstance(value, (_str_type, list)):
             if len(value) > max_length:
                 self._error(ERROR_MAX_LENGTH % (field, max_length))
 
     def _validate_minlength(self, min_length, field, value):
-        if isinstance(value, _str_type):
+        if isinstance(value, (_str_type, list)):
             if len(value) < min_length:
                 self._error(ERROR_MIN_LENGTH % (field, min_length))
 
