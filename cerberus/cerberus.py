@@ -152,7 +152,8 @@ class Validator(object):
     def _validate_required_fields(self):
         required = list(field for field, definition in self.schema.items()
                         if definition.get('required') is True)
-        missing = set(required) - set(self.document.keys())
+        missing = set(required) - set(key for key in self.document.keys()
+                                      if self.document.get(key) is not None or not self.ignore_none_values)
         if len(missing):
             self._error(ERROR_REQUIRED_FIELD % ', '.join(missing))
 
