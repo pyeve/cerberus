@@ -3,6 +3,15 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 0.0.4
+-------------
+
+Not released yet.
+
+- 'minlenght' and 'maxlength' now apply to lists as well. Contributed by Harro
+  van der Klauw
+
+
 Version 0.0.3
 -------------
 
