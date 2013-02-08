@@ -109,12 +109,12 @@ class TestBase(unittest.TestCase):
     def assertError(self, error, validator=None):
         if validator is None:
             validator = self.validator
-        self.assertIn(error, validator.errors)
+        self.assertTrue(error in validator.errors)
 
     def assertNotError(self, error, validator=None):
         if validator is None:
             validator = self.validator
-        self.assertNotIn(error, validator.errors)
+        self.assertFalse(error in validator.errors)
 
     def assertBadType(self, field, data_type, value):
         doc = {field: value}
