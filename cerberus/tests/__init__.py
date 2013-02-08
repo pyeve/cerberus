@@ -68,6 +68,12 @@ class TestBase(unittest.TestCase):
                     'city': {'type': 'string', 'required': True}
                 },
             },
+            'a_list_length': {
+                'type': 'list',
+                'schema': {'type': 'integer'},
+                'minlength': 2,
+                'maxlength': 5,
+            }
         }
         self.validator = Validator(self.schema)
 
