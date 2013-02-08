@@ -5,7 +5,7 @@ This module implements Cerberus Validator class
 '''
 
 import sys
-from errors import *
+from . import errors
 from datetime import datetime
 
 if sys.version_info[0] == 3:
@@ -97,14 +97,14 @@ class Validator(object):
         if schema is not None:
             self.schema = schema
         elif self.schema is None:
-            raise SchemaError(ERROR_SCHEMA_MISSING)
+            raise SchemaError(errors.ERROR_SCHEMA_MISSING)
         if not isinstance(self.schema, dict):
-            raise SchemaError(ERROR_SCHEMA_FORMAT % str(self.schema))
+            raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(self.schema))
 
         if document is None:
-            raise ValidationError(ERROR_DOCUMENT_MISSING)
+            raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, dict):
-            raise ValidationError(ERROR_DOCUMENT_FORMAT % str(document))
+            raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 
         special_rules = ["required"]
@@ -121,13 +121,13 @@ class Validator(object):
                         if validator:
                             validator(definition[rule], field, value)
                         elif not self.transparent_schema_rules:
-                            raise SchemaError(ERROR_UNKNOWN_RULE %
+                            raise SchemaError(errors.ERROR_UNKNOWN_RULE %
                                               (rule, field))
                 else:
-                    raise SchemaError(ERROR_DEFINITION_FORMAT % field)
+                    raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
 
             else:
-                self._error(ERROR_UNKNOWN_FIELD % field)
+                self._error(errors.ERROR_UNKNOWN_FIELD % field)
 
         if not self.update:
             self._validate_required_fields()
@@ -145,30 +145,30 @@ class Validator(object):
                         if definition.get('required') is True)
         missing = set(required) - set(self.document.keys())
         if len(missing):
-            self._error(ERROR_REQUIRED_FIELD % ', '.join(missing))
+            self._error(errors.ERROR_REQUIRED_FIELD % ', '.join(missing))
 
     def _validate_readonly(self, read_only, field, value):
         if read_only:
-            self._error(ERROR_READONLY_FIELD % field)
+            self._error(errors.ERROR_READONLY_FIELD % field)
 
     def _validate_type(self, data_type, field, value):
         validator = getattr(self, "_validate_type_" + data_type, None)
         if validator:
             validator(field, value)
         else:
-            raise SchemaError(ERROR_UNKNOWN_TYPE % (data_type, field))
+            raise SchemaError(errors.ERROR_UNKNOWN_TYPE % (data_type, field))
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
-            self._error(ERROR_BAD_TYPE % (field, "string"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "string"))
 
     def _validate_type_integer(self, field, value):
         if not isinstance(value, _int_types):
-            self._error(ERROR_BAD_TYPE % (field, "integer"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "integer"))
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
-            self._error(ERROR_BAD_TYPE % (field, "boolean"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "boolean"))
 
     #def _validate_type_array(self, field, value):
     #    if not isinstance(value, list):
@@ -176,50 +176,50 @@ class Validator(object):
 
     def _validate_type_datetime(self, field, value):
         if not isinstance(value, datetime):
-            self._error(ERROR_BAD_TYPE % (field, "datetime"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "datetime"))
 
     def _validate_type_dict(self, field, value):
         if not isinstance(value, dict):
-            self._error(ERROR_BAD_TYPE % (field, "dict"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "dict"))
 
     def _validate_type_list(self, field, value):
         if not isinstance(value, list):
-            self._error(ERROR_BAD_TYPE % (field, "list"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "list"))
 
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, (_str_type, list)):
             if len(value) > max_length:
-                self._error(ERROR_MAX_LENGTH % (field, max_length))
+                self._error(errors.ERROR_MAX_LENGTH % (field, max_length))
 
     def _validate_minlength(self, min_length, field, value):
         if isinstance(value, (_str_type, list)):
             if len(value) < min_length:
-                self._error(ERROR_MIN_LENGTH % (field, min_length))
+                self._error(errors.ERROR_MIN_LENGTH % (field, min_length))
 
     def _validate_max(self, max_value, field, value):
         if isinstance(value, _int_types):
             if value > max_value:
-                self._error(ERROR_MAX_VALUE % (field, max_value))
+                self._error(errors.ERROR_MAX_VALUE % (field, max_value))
 
     def _validate_min(self, min_value, field, value):
         if isinstance(value, _int_types):
             if value < min_value:
-                self._error(ERROR_MIN_VALUE % (field, min_value))
+                self._error(errors.ERROR_MIN_VALUE % (field, min_value))
 
     def _validate_allowed(self, allowed_values, field, value):
         if isinstance(value, _str_type):
             if value not in allowed_values:
-                self._error(ERROR_UNALLOWED_VALUE % (value, field))
+                self._error(errors.ERROR_UNALLOWED_VALUE % (value, field))
         elif isinstance(value, list):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
-                self._error(ERROR_UNALLOWED_VALUES % (list(disallowed), field))
+                self._error(errors.ERROR_UNALLOWED_VALUES % (
+                    list(disallowed), field
+                ))
 
     def _validate_empty(self, empty, field, value):
-        if not isinstance(value, _str_type):
-            self._error(ERROR_EMPTY_BAD_TYPE)
-        elif len(value) == 0 and not empty:
-            self._error(ERROR_EMPTY_NOT_ALLOWED % field)
+        if isinstance(value, _str_type) and len(value) == 0 and not empty:
+            self._error(errors.ERROR_EMPTY_NOT_ALLOWED % field)
 
     def _validate_schema(self, schema, field, value):
         if isinstance(value, list):
@@ -234,7 +234,7 @@ class Validator(object):
                 self._error(["'%s': " % field + error
                             for error in validator.errors])
         else:
-            self._error(ERROR_BAD_TYPE % (field, "dict"))
+            self._error(errors.ERROR_BAD_TYPE % (field, "dict"))
 
     def _validate_items(self, items, field, value):
         if isinstance(items, dict):
@@ -244,7 +244,7 @@ class Validator(object):
 
     def _validate_items_list(self, schema, field, values):
         if len(schema) != len(values):
-            self._error(ERROR_ITEMS_LIST % (field, len(schema)))
+            self._error(errors.ERROR_ITEMS_LIST % (field, len(schema)))
         else:
             for i in range(len(schema)):
                 key = "%s[%s]" % (field, str(i))
