@@ -290,3 +290,22 @@ class TestValidator(TestBase):
         document = {field: 0}
         self.assertFail(document, schema)
         self.assertError(ERROR_EMPTY_BAD_TYPE)
+
+    def test_ignore_none_values(self):
+        field = 'test'
+        schema = {field: {'type': 'string', 'empty': False, 'required': False}}
+        document = {field: None}
+        # Test normal behaviour
+        v = Validator(schema, ignore_none_values=False)
+        self.assertFail(schema=schema, document=document, validator=v)
+        schema[field]['required'] = True
+        self.assertFail(schema=schema, document=document, validator=v)
+        self.assertNotError(ERROR_REQUIRED_FIELD % (field), validator=v)
+        # Test ignore None behaviour
+        v = Validator(schema, ignore_none_values=True)
+        schema[field]['required'] = False
+        self.assertSuccess(schema=schema, document=document, validator=v)
+        schema[field]['required'] = True
+        self.assertFail(schema=schema, document=document, validator=v)
+        self.assertError(ERROR_REQUIRED_FIELD % (field), validator=v)
+        self.assertNotError(ERROR_BAD_TYPE % (field, 'string'), validator=v)

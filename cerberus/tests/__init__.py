@@ -111,6 +111,11 @@ class TestBase(unittest.TestCase):
             validator = self.validator
         self.assertTrue(error in validator.errors)
 
+    def assertNotError(self, error, validator=None):
+        if validator is None:
+            validator = self.validator
+        self.assertFalse(error in validator.errors)
+
     def assertBadType(self, field, data_type, value):
         doc = {field: value}
         self.assertFail(doc)

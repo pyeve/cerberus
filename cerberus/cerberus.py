@@ -41,6 +41,10 @@ class Validator(object):
                                  Defaults to ``False``. Useful you need to
                                  extend the schema grammar beyond Cerberus'
                                  domain.
+    :param ignore_none_values: If ``True`` it will ignore None values for type
+                               checking. (no UnknowType error will be added).
+                               Defaults to ``False``. Useful if your document
+                               is composed from function kwargs with defaults.
 
     .. versionadded:: 0.0.3
        Support for transparent schema rules.
@@ -50,9 +54,11 @@ class Validator(object):
         Support for addition and validation of custom data types.
     '''
 
-    def __init__(self, schema=None, transparent_schema_rules=False):
+    def __init__(self, schema=None, transparent_schema_rules=False,
+                 ignore_none_values=False):
         self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
+        self.ignore_none_values = ignore_none_values
 
     @property
     def errors(self):
@@ -110,6 +116,9 @@ class Validator(object):
         special_rules = ["required"]
         for field, value in self.document.items():
 
+            if self.ignore_none_values and value is None:
+                continue
+
             definition = self.schema.get(field)
             if definition:
                 if isinstance(definition, dict):
@@ -143,7 +152,8 @@ class Validator(object):
     def _validate_required_fields(self):
         required = list(field for field, definition in self.schema.items()
                         if definition.get('required') is True)
-        missing = set(required) - set(self.document.keys())
+        missing = set(required) - set(key for key in self.document.keys()
+                                      if self.document.get(key) is not None or not self.ignore_none_values)
         if len(missing):
             self._error(ERROR_REQUIRED_FIELD % ', '.join(missing))
 
