@@ -232,9 +232,7 @@ class Validator(object):
                 )
 
     def _validate_empty(self, empty, field, value):
-        if not isinstance(value, _str_type):
-            self._error(errors.ERROR_EMPTY_BAD_TYPE)
-        elif len(value) == 0 and not empty:
+        if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(errors.ERROR_EMPTY_NOT_ALLOWED % field)
 
     def _validate_schema(self, schema, field, value):

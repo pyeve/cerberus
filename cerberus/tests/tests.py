@@ -302,10 +302,6 @@ class TestValidator(TestBase):
         self.assertError(errors.ERROR_EMPTY_NOT_ALLOWED % field)
         schema[field]['empty'] = True
         self.assertSuccess(document, schema)
-        schema = {field: {'type': 'integer', 'empty': True}}
-        document = {field: 0}
-        self.assertFail(document, schema)
-        self.assertError(errors.ERROR_EMPTY_BAD_TYPE)
 
     def test_ignore_none_values(self):
         field = 'test'
