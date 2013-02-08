@@ -46,6 +46,9 @@ class Validator(object):
                                Defaults to ``False``. Useful if your document
                                is composed from function kwargs with defaults.
 
+    .. versionadded:: 0.0.4
+       Option to ignore None values for type checking.
+
     .. versionadded:: 0.0.3
        Support for transparent schema rules.
        Added new 'empty' rule for string fields.

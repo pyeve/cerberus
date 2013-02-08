@@ -8,8 +8,9 @@ Version 0.0.4
 
 Not released yet.
 
-- 'minlenght' and 'maxlength' now apply to lists as well. Contributed by Harro
-  van der Klauw
+- 'ignore_none_values' option to ignore None values when type checking (Harro
+  van der Klauw).
+- 'minlenght' and 'maxlength' now apply to lists as well (Harro van der Klauw).
 
 
 Version 0.0.3
@@ -20,8 +21,8 @@ Released on January 29 2013
 - when a list item fails, its offset is now returned along with the list name 
 - 'transparent_schema_rules' option added.
 - 'empty' rule for string fields.
-- 'schema' rule on lists (of arbitrary lenght). Contributed by Martjin Vermaat.
-- 'allowed' rule on strings. Contributed by Martjin Vermaat.
+- 'schema' rule on lists of arbitrary lenght (Martjin Vermaat).
+- 'allowed' rule on strings (Martjin Vermaat).
 - 'items' (dict) is now deprecated. Use the upgraded 'schema' rule instead.
 - AUTHORS file added to sources.
 - CHANGES file added to sources.
