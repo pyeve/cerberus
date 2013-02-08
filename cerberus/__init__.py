@@ -11,3 +11,10 @@
 __version__ = "0.0.4"
 
 from cerberus import Validator, ValidationError, SchemaError
+
+
+__all__ = [
+    Validator.__name__,
+    ValidationError.__name__,
+    SchemaError.__name__
+]
