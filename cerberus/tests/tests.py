@@ -225,6 +225,21 @@ class TestValidator(TestBase):
             }
         )
 
+    def test_a_list_length(self):
+        field = 'a_list_length'
+        min_length = self.schema[field]['minlength']
+        max_length = self.schema[field]['maxlength']
+
+        self.assertFail({field: [1] * (min_length - 1)})
+        self.assertError(ERROR_MIN_LENGTH % (field, min_length))
+
+        for i in range(min_length, max_length):
+            value = [1] * i
+            self.assertSuccess({field: value})
+
+        self.assertFail({field: [1] * (max_length + 1)})
+        self.assertError(ERROR_MAX_LENGTH % (field, max_length))
+
     def test_custom_datatype(self):
         class MyValidator(Validator):
             def _validate_type_objectid(self, field, value):
