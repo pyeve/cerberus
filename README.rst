@@ -5,7 +5,7 @@ Cerberus
 
 Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
-::
+.. code-block:: python
 
     >>> v = Validator({'name': {'type': 'string'}})
     >>> v.validate({'name': 'john doe'})
