@@ -5,8 +5,8 @@ This module implements Cerberus Validator class
 '''
 
 import sys
-from . import errors
 from datetime import datetime
+from . import errors
 
 if sys.version_info[0] == 3:
     _str_type = str

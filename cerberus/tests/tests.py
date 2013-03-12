@@ -1,9 +1,9 @@
 import re
-from ..cerberus import Validator, errors
 from datetime import datetime
 from random import choice
-from string import lowercase
-from cerberus.tests import TestBase
+from string import ascii_lowercase
+from . import TestBase
+from ..cerberus import Validator, errors
 
 
 class TestValidator(TestBase):
@@ -88,7 +88,7 @@ class TestValidator(TestBase):
     def test_bad_max_length(self):
         field = 'a_required_string'
         max_length = self.schema[field]['maxlength']
-        value = "".join(choice(lowercase) for i in range(max_length + 1))
+        value = "".join(choice(ascii_lowercase) for i in range(max_length + 1))
         self.assertFail({field: value})
         self.assertError(
             errors.ERROR_MAX_LENGTH % ('a_required_string', max_length)
@@ -97,7 +97,7 @@ class TestValidator(TestBase):
     def test_bad_min_length(self):
         field = 'a_required_string'
         min_length = self.schema[field]['minlength']
-        value = "".join(choice(lowercase) for i in range(min_length - 1))
+        value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
         self.assertFail({field: value})
         self.assertError(errors.ERROR_MIN_LENGTH % (field, min_length))
 

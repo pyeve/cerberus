@@ -8,7 +8,8 @@ Version 0.0.4
 
 Not released yet. Codename: 'Claw'.
 
-- pep8 and pyflakes fixes (Harro van der Klauw)
+- support for Python 3.3.
+- pep8 and pyflakes fixes (Harro van der Klauw).
 - removed superflous typecheck for empty validator (Harro van der Klauw).
 - 'ignore_none_values' option to ignore None values when type checking (Harro
   van der Klauw).
