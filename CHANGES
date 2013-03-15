@@ -3,10 +3,11 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Version 0.0.4
+Version 0.1.0
 -------------
 
-Not released yet. Codename: 'Claw'.
+Released on March 15 2013. 
+Codename: 'Claw'.
 
 - support for Python 3.3.
 - pep8 and pyflakes fixes (Harro van der Klauw).
