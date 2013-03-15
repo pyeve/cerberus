@@ -9,7 +9,8 @@ Version 0.1.0
 Released on March 15 2013. 
 Codename: 'Claw'.
 
-- support for Python 3.3.
+- entering beta phase.
+- support for Python 3.
 - pep8 and pyflakes fixes (Harro van der Klauw).
 - removed superflous typecheck for empty validator (Harro van der Klauw).
 - 'ignore_none_values' option to ignore None values when type checking (Harro
