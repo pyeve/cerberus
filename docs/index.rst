@@ -74,7 +74,7 @@ option to ``True``: ::
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
-``allow_unknwon`` can also be set at initialization: ::
+``allow_unknown`` can also be set at initialization: ::
 
     >>> v = Validator(schema=schema, allow_unknown=True)
     >>> v.validate({'name': 'john', 'sex': 'M'})
