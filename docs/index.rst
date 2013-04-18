@@ -57,6 +57,29 @@ the first validation issue. The whole document will always be processed, and
 You will still get :class:`~cerberus.SchemaError` and
 :class:`~cerberus.ValidationError` exceptions. 
 
+Allowing the unknown
+~~~~~~~~~~~~~~~~~~~~
+By default only keys defined in the schema are allowed: ::
+
+    >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
+    >>> v.validate({'name': 'john', 'sex': 'M'})
+    False
+    >>> v.errors
+    ["unknown field 'sex'"]
+
+However, you can allow unknown key/value pairs by setting the ``allow_unknown``
+option to ``True``: ::
+
+    >>> v.allow_unknown = True
+    >>> v.validate({'name': 'john', 'sex': 'M'})
+    True
+
+``allow_unknwon`` can also be set at initialization: ::
+
+    >>> v = Validator(schema=schema, allow_unknown=True)
+    >>> v.validate({'name': 'john', 'sex': 'M'})
+    True
+
 Custom validators
 ~~~~~~~~~~~~~~~~~
 Cerberus makes custom validation simple. Suppose that in our specific and very
@@ -97,9 +120,9 @@ Adding new data-types
 
 Cerberus supports and validates several standard data types (see `type`_).
 You can add and validate your own data types. For example `Eve
-<https://github.com/nicolaiarocci/eve>`_ (a tool for building and deploying
-proprietary REST Web APIs) supports a custom ``objectid`` type, which is used to validate
-that field values conform to the BSON/MongoDB ``ObjectId`` format.
+<https://python-eve.org>`_ (a tool for building and deploying proprietary REST
+Web APIs) supports a custom ``objectid`` type, which is used to validate that
+field values conform to the BSON/MongoDB ``ObjectId`` format.
 
 You extend the supported set of data types by adding
 a ``_validate_type_<typename>`` method to your own :class:`~cerberus.Validator`
@@ -121,19 +144,12 @@ A validation schema is a dictionary. Schema keys are the keys allowed in
 the target dictionary. Schema values express the rules that must be  matched by
 the corresponding target values. ::
 
-    >>> schema = {'name': {'type': 'string', 'maxlenght': 10}}
+    >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
 
 In the example above we define a target dictionary with only one key, ``name``, 
 which is expected to be a string not longer than 10 characters. Something like
 ``{'name': 'john doe'}`` would validate, while something like ``{'name': 'a
 very long string'}`` or ``{'name': 99}`` would not. 
-
-Currently, only keys defined in the schema are allowed: ::
-
-    >>> v.validate({'name': 'john', 'sex': 'M'})
-    False
-    >>> v.errors
-    ["unknown field 'sex'"]
 
 By definition all keys are optional unless the `required`_ rule is set for
 a key.

@@ -45,8 +45,15 @@ class Validator(object):
                                checking. (no UnknowType error will be added).
                                Defaults to ``False``. Useful if your document
                                is composed from function kwargs with defaults.
+    :param allow_unknown: if ``True`` unknown key/value pairs (not present in
+                          the schema) will be ignored, and validation will
+                          pass. Defaults to ``False``, returning an 'unknown
+                          field error' un validation.
 
-    .. versionadded:: 0.0.4
+    .. versionadded:: 0.2.0
+       Option to allow unknown key/value pairs.
+
+    .. versionadded:: 0.1.0
        Option to ignore None values for type checking.
 
     .. versionadded:: 0.0.3
@@ -58,10 +65,11 @@ class Validator(object):
     '''
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False):
+                 ignore_none_values=False, allow_unknown=False):
         self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
+        self.allow_unknown = allow_unknown
 
     @property
     def errors(self):
@@ -139,7 +147,8 @@ class Validator(object):
                     raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
 
             else:
-                self._error(errors.ERROR_UNKNOWN_FIELD % field)
+                if not self.allow_unknown:
+                    self._error(errors.ERROR_UNKNOWN_FIELD % field)
 
         if not self.update:
             self._validate_required_fields()

@@ -323,3 +323,9 @@ class TestValidator(TestBase):
         self.assertNotError(
             errors.ERROR_BAD_TYPE % (field, 'string'), validator=v
         )
+
+    def test_unknown_keys(self):
+        document = {"unknown1": True, "unknown2": "yes"}
+        schema = {'a_field': {'type': 'string'}}
+        v = Validator(allow_unknown=True)
+        self.assertSuccess(schema=schema, document=document, validator=v)
