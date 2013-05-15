@@ -13,6 +13,10 @@ class TestBase(unittest.TestCase):
                 'maxlength': 10,
                 'required': True,
             },
+            'a_nullable_integer': {
+                'type': 'integer',
+                'nullable': True
+            },
             'an_integer': {
                 'type': 'integer',
                 'min': 1,

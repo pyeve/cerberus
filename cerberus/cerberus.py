@@ -51,6 +51,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded:: 0.2.0
+       Option so allow nullable field values.
        Option to allow unknown key/value pairs.
 
     .. versionadded:: 0.1.0
@@ -124,7 +125,7 @@ class Validator(object):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 
-        special_rules = ["required"]
+        special_rules = ["required", "nullable"]
         for field, value in self.document.items():
 
             if self.ignore_none_values and value is None:
@@ -133,6 +134,10 @@ class Validator(object):
             definition = self.schema.get(field)
             if definition:
                 if isinstance(definition, dict):
+
+                    if definition.get("nullable", False) == True and value is None:
+                        continue
+
                     definition_rules = [rule for rule in definition.keys()
                                         if rule not in special_rules]
                     for rule in definition_rules:

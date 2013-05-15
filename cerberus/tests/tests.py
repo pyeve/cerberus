@@ -55,6 +55,12 @@ class TestValidator(TestBase):
         self.assertFail({'an_integer': 1})
         self.assertError(errors.ERROR_REQUIRED_FIELD % 'a_required_string')
 
+    def test_nullable_field_field(self):
+        self.assertSuccess({'a_nullable_integer': None})
+        self.assertSuccess({'a_nullable_integer': 3})
+        self.assertFail({'a_nullable_integer': "foo"})
+        self.assertFail({'an_integer': None})
+
     def test_readonly_field(self):
         field = 'a_readonly_string'
         self.assertFail({field: 'update me if you can'})
