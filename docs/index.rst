@@ -172,12 +172,13 @@ You can extend this list and support custom types, see :ref:`new-types`.
 
 required
 ''''''''
-If ``True``, the key/value pair is mandatory and validation will fail when
+If ``True`` the key/value pair is mandatory and validation will fail when
 :func:`~cerberus.Validator.validate` is called.  Validation will still succeed
 if the value is missing and :func:`~cerberus.Validator.validate_update` is
 called instead.::
 
     >>> schema = {'name': {'required': True, 'type': 'string'}, 'age': {'type': 'integer'}}
+    >>> v = Validator(schema)
     >>> document = {'age': 10}
     >>> v.validate(document)
     False
@@ -195,11 +196,34 @@ called instead.::
 
 readonly
 ''''''''
-If ``True``, the value is readonly. Validation will fail if this field is present
+If ``True`` the value is readonly. Validation will fail if this field is present
 in the target dictionary.
 
-minlength, maxlength
-''''''''''''''''''''
+nullable
+''''''''
+.. versionadded:: 0.2.0
+
+If ``True`` the field value can be set to ``None``. It is essentially the
+functionality of the *ignore_non_values* parameter of the :ref:`validator`,
+but allowing for more fine grained control down to the field level. ::
+
+    >>> schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_ingeger': {'type': 'integer'}}
+    >>> v = Validator(schema)
+
+    >>> v.validate({'a_nullable_integer': 3})
+    True
+    >>> v.validate({'a_nullable_integer': None})
+    True
+
+    >>> v.validate({'an_integer': 3})
+    True
+    >>> v.validate({'an_integer': None})
+    False
+    >>> v.errors
+    ["value of field 'an_integer' must be of integer type"]
+
+minlength, maxlength 
+'''''''''''''''''''' 
 Minimum and maximum length allowed for ``string`` and ``list`` types. 
 
 min, max
@@ -212,6 +236,7 @@ Allowed values for ``string`` or ``list`` types. Validation will fail if
 target values are not included in the allowed list.::
 
     >>> schema = {'role': {'type': 'list', 'allowed': ['agent', 'client', 'supplier']}}
+    >>> v = Validator(schema)
     >>> v.validate({'role': ['agent', 'supplier']})
     True
 
@@ -221,6 +246,7 @@ target values are not included in the allowed list.::
     ["unallowed values ['intern'] for field 'role'"]
 
     >>> schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
+    >>> v = Validator(schema)
     >>> v.validate({'role': 'supplier'})
     True
 
@@ -233,7 +259,7 @@ empty
 '''''
 .. versionadded:: 0.0.3
 
-Only applies to string fields. If ``False``, validation will fail if the value
+Only applies to string fields. If ``False`` validation will fail if the value
 is empty. Defaults to ``True``. ::
 
     >>> schema = {'name': {'type': 'string', 'empty': False}}
@@ -303,6 +329,8 @@ and validating a list of dictionaries. ::
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
+
+.. _validator:
 
 Validator Class
 ---------------
