@@ -28,6 +28,9 @@ class TestBase(unittest.TestCase):
             'a_datetime': {
                 'type': 'datetime',
             },
+            'a_float': {
+                'type': 'float',
+            },
             'a_readonly_string': {
                 'type': 'string',
                 'readonly': True,

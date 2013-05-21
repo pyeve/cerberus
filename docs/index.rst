@@ -116,8 +116,6 @@ matters, we can validate it: ::
 
 Adding new data-types
 '''''''''''''''''''''
-.. versionadded:: 0.0.2
-
 Cerberus supports and validates several standard data types (see `type`_).
 You can add and validate your own data types. For example `Eve
 <https://python-eve.org>`_ (a tool for building and deploying proprietary REST
@@ -137,6 +135,8 @@ has been implemented: ::
         """
         if not re.match('[a-f0-9]{24}', value):
             self._error(ERROR_BAD_TYPE % (field, 'ObjectId'))
+
+.. versionadded:: 0.0.2
 
 Validation Schema
 -----------------
@@ -163,12 +163,16 @@ type
 Data type allowed for the key value. Can be one of the following:
     * ``string`` 
     * ``integer``
+    * ``float``
     * ``boolean``
     * ``datetime``
     * ``dict``
     * ``list``
 
 You can extend this list and support custom types, see :ref:`new-types`.
+
+.. versionchanged:: 0.2.0
+   Added the ``float`` data type.
 
 required
 ''''''''
@@ -201,8 +205,6 @@ in the target dictionary.
 
 nullable
 ''''''''
-.. versionadded:: 0.2.0
-
 If ``True`` the field value can be set to ``None``. It is essentially the
 functionality of the *ignore_non_values* parameter of the :ref:`validator`,
 but allowing for more fine grained control down to the field level. ::
@@ -221,6 +223,8 @@ but allowing for more fine grained control down to the field level. ::
     False
     >>> v.errors
     ["value of field 'an_integer' must be of integer type"]
+
+.. versionadded:: 0.2.0
 
 minlength, maxlength 
 '''''''''''''''''''' 
@@ -257,8 +261,6 @@ target values are not included in the allowed list.::
 
 empty
 '''''
-.. versionadded:: 0.0.3
-
 Only applies to string fields. If ``False`` validation will fail if the value
 is empty. Defaults to ``True``. ::
 
@@ -269,6 +271,8 @@ is empty. Defaults to ``True``. ::
 
     >>> v.errors
     ["empty values not allowed for field 'name'"]
+
+.. versionadded:: 0.0.3
 
 .. _items_dict:
 
@@ -305,9 +309,6 @@ See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
 
 schema
 ''''''
-.. versionchanged:: 0.0.3
-   Schema rule for ``list`` types of arbitrary length
-
 Validation schema for ``dict`` and ``list`` types. On dictionaries: ::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
@@ -329,6 +330,9 @@ and validating a list of dictionaries. ::
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
+
+.. versionchanged:: 0.0.3
+   Schema rule for ``list`` types of arbitrary length
 
 .. _validator:
 

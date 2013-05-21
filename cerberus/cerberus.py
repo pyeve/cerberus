@@ -194,6 +194,10 @@ class Validator(object):
         if not isinstance(value, _int_types):
             self._error(errors.ERROR_BAD_TYPE % (field, "integer"))
 
+    def _validate_type_float(self, field, value):
+        if not isinstance(value, float):
+            self._error(errors.ERROR_BAD_TYPE % (field, "float"))
+
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
             self._error(errors.ERROR_BAD_TYPE % (field, "boolean"))

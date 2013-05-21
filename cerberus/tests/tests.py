@@ -85,6 +85,9 @@ class TestValidator(TestBase):
     def test_not_a_datetime(self):
         self.assertBadType('a_datetime', 'datetime', "i'm not a datetime")
 
+    def test_not_a_float(self):
+        self.assertBadType('a_float', 'float', "i'm not a float")
+
     def test_not_a_list(self):
         self.assertBadType('a_list_of_values', 'list', "i'm not a list")
 
@@ -203,6 +206,9 @@ class TestValidator(TestBase):
 
     def test_datetime(self):
         self.assertSuccess({'a_datetime': datetime.now()})
+
+    def test_float(self):
+        self.assertSuccess({'a_float': 3.5})
 
     def test_array(self):
         self.assertSuccess({'an_array': ['agent', 'client']})
