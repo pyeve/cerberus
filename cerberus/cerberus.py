@@ -51,6 +51,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded:: 0.2.0
+       `self.errors` returns an empty list when validate() has not been called.
        Option so allow nullable field values.
        Option to allow unknown key/value pairs.
 
@@ -71,6 +72,7 @@ class Validator(object):
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self._errors = []
 
     @property
     def errors(self):
@@ -109,7 +111,7 @@ class Validator(object):
 
     def _validate(self, document, schema=None, update=False):
 
-        self._errors = list()
+        self._errors = []
         self.update = update
 
         if schema is not None:

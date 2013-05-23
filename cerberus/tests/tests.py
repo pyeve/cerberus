@@ -341,3 +341,9 @@ class TestValidator(TestBase):
         schema = {'a_field': {'type': 'string'}}
         v = Validator(allow_unknown=True)
         self.assertSuccess(schema=schema, document=document, validator=v)
+
+    def test_novalidate_noerrors(self):
+        '''In v0.1.0 and below `self.errors` raised an exception if no
+        validation had been performed yet.
+        '''
+        self.assertEqual(self.validator.errors, [])

@@ -8,6 +8,7 @@ Version 0.2.0
 
 Not released yet.
 
+- `self.errors` returns an empty list if validate() has not been called.
 - added validation for the 'float' data type.
 - 'nullable' rule added to allow for null field values to be accepted in
   validations. This is different than required in that you can actively change
