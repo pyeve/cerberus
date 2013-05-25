@@ -1,9 +1,7 @@
-'''
-
+"""
 This module contains the error messages issued by the Cerberus Validator.
 The test suite uses this module as well.
-
-'''
+"""
 ERROR_SCHEMA_MISSING = "validation schema missing"
 ERROR_SCHEMA_FORMAT = "'%s' is not a schema, must be a dict"
 ERROR_DOCUMENT_MISSING = "document is missing"

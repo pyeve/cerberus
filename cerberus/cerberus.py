@@ -1,8 +1,6 @@
-'''
-
+"""
 This module implements Cerberus Validator class
-
-'''
+"""
 
 import sys
 from datetime import datetime
@@ -17,20 +15,20 @@ else:
 
 
 class ValidationError(ValueError):
-    '''Raised when the target dictionary is missing or has the wrong format
-    '''
+    """ Raised when the target dictionary is missing or has the wrong format
+    """
     pass
 
 
 class SchemaError(ValueError):
-    '''Raised when the validation schema is missing, has the wrong format or
+    """ Raised when the validation schema is missing, has the wrong format or
     contains errors.
-    '''
+    """
     pass
 
 
 class Validator(object):
-    ''' Validator class. Validates any Python dict
+    """ Validator class. Validates any Python dict
     against a validation schema, which is provided as an argument at
     class instantiation, or upon calling the :func:`validate` or
     :func:`validate_update` methods.
@@ -64,7 +62,7 @@ class Validator(object):
 
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
-    '''
+    """
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
@@ -76,15 +74,15 @@ class Validator(object):
 
     @property
     def errors(self):
-        '''
+        """
         :rtype: a list of validation errors. Will be empty if no errors
                 were found during. Resets after each call to :func:`validate`
                 or :func:`validate_update`.
-        '''
+        """
         return self._errors
 
     def validate_update(self, document, schema=None):
-        ''' Validates a Python dicitionary against a validation schema. The
+        """ Validates a Python dicitionary against a validation schema. The
         difference with :func:`validate` is that the ``required`` rule will be
         ignored here.
 
@@ -93,11 +91,11 @@ class Validator(object):
                        class instantation.
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
-        '''
+        """
         return self._validate(document, schema, update=True)
 
     def validate(self, document, schema=None):
-        ''' Validates a Python dictionary against a validation schema.
+        """ Validates a Python dictionary against a validation schema.
 
         :param document: the dict to validate.
         :param schema: the validation schema. Defaults to ``None``. If not
@@ -106,7 +104,7 @@ class Validator(object):
 
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
-        '''
+        """
         return self._validate(document, schema, update=False)
 
     def _validate(self, document, schema=None, update=False):
@@ -137,7 +135,8 @@ class Validator(object):
             if definition:
                 if isinstance(definition, dict):
 
-                    if definition.get("nullable", False) == True and value is None:
+                    if definition.get("nullable", False) == True \
+                       and value is None:  # noqa
                         continue
 
                     definition_rules = [rule for rule in definition.keys()
