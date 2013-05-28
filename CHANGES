@@ -3,7 +3,7 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Version 0.2.0
+Version 0.3.0
 -------------
 
 Not released yet.
@@ -16,6 +16,12 @@ Not released yet.
   a value to None instead of omitting or ignoring it. It is essentially the
   ignore_none_values, allowing for more fine grained control down to the field
   level (Kaleb Pomeroy).
+
+Version 0.2.0
+-------------
+
+Released on April 18 2013. 
+
 - 'allow_unknown' option added.
 
 Version 0.1.0
