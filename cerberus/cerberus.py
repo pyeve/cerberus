@@ -1,5 +1,11 @@
 """
-This module implements Cerberus Validator class
+    Extensible validation for Python dictionaries.
+    This module implements Cerberus Validator class
+
+    :copyright: 2012-2013 by Nicola Iarocci.
+    :license: ISC, see LICENSE for more details.
+
+    Full documentation is available at http://cerberus.readthedocs.org/
 """
 
 import sys
