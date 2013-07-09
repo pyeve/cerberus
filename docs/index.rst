@@ -171,7 +171,7 @@ Data type allowed for the key value. Can be one of the following:
 
 You can extend this list and support custom types, see :ref:`new-types`.
 
-.. versionchanged:: 0.2.0
+.. versionchanged:: 0.3.0
    Added the ``float`` data type.
 
 required
@@ -224,7 +224,7 @@ but allowing for more fine grained control down to the field level. ::
     >>> v.errors
     ["value of field 'an_integer' must be of integer type"]
 
-.. versionadded:: 0.2.0
+.. versionadded:: 0.3.0
 
 minlength, maxlength 
 '''''''''''''''''''' 
