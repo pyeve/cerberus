@@ -35,7 +35,7 @@ Alternatively, you can pass both the dictionary and the schema to the
     >>> v.validate(document, schema)
     True
 
-Which can be handy if your schema is changing thorough the life of the
+Which can be handy if your schema is changing through the life of the
 instance. ``False`` will be returned if validation fails. You can then access
 the :func:`~cerberus.Validator.errors` property to get a list of validation
 errors (see below).
