@@ -100,7 +100,7 @@ This is how we would go to implement that: ::
 
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
 ``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
-The custom rule ``ìsodd`` is now available in our schema and, what really
+The custom rule ``isodd`` is now available in our schema and, what really
 matters, we can validate it: ::
 
     >>> v = MyValidator(schema)
