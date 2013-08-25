@@ -169,7 +169,20 @@ Data type allowed for the key value. Can be one of the following:
     * ``dict``
     * ``list``
 
-You can extend this list and support custom types, see :ref:`new-types`.
+You can extend this list and support custom types, see :ref:`new-types`. 
+
+.. note::
+
+    Please note that type validation is performed before any other validation
+    rule which might exist on the same field (only exception being the
+    ``nullable`` rule). In the occurrence of a type failure subsequent
+    validation rules on the field will be skipped and validation will continue
+    on other fields. This allows to safely assume that field type is correct
+    when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.4.0
+   Type validation is always executed first, and blocks other field validation
+   rules on failure.
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.

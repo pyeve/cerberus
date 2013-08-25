@@ -3,6 +3,15 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 0.4.0
+-------------
+
+Not released yet.
+
+- 'type' validation is always performed first (only exception being
+  'nullable'). On failure, subsequent rules on the same field are skipped.
+  Closes #18.
+
 Version 0.3.0
 -------------
 

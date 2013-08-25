@@ -276,6 +276,23 @@ class TestValidator(TestBase):
         self.assertFalse(v.validate({'test_field': 'hello'}))
         self.assertError('Not an ObjectId', validator=v)
 
+    def test_custom_datatype_rule(self):
+        class MyValidator(Validator):
+            def _validate_min_number(self, min_number, field, value):
+                if value < min_number:
+                    self._error('Below the min')
+
+            def _validate_type_number(self, field, value):
+                if not isinstance(value, int):
+                    self._error('Not a number')
+
+        schema = {'test_field': {'min_number': 1, 'type': 'number'}}
+        v = MyValidator(schema)
+        self.assertFalse(v.validate({'test_field': '0'}))
+        self.assertError('Not a number', validator=v)
+        self.assertFalse(v.validate({'test_field': 0}))
+        self.assertError('Below the min', validator=v)
+
     def test_custom_validator(self):
         class MyValidator(Validator):
             def _validate_isodd(self, isodd, field, value):

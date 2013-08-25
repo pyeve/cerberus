@@ -54,6 +54,11 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged:: 0.4.0
+       'type' validation is always performed first (only exception being
+       'nullable'). On failure, it blocks other rules on the same field. Closes
+       #18.
+
     .. versionadded:: 0.2.0
        `self.errors` returns an empty list when validate() has not been called.
        Option so allow nullable field values.
@@ -131,7 +136,7 @@ class Validator(object):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 
-        special_rules = ["required", "nullable"]
+        special_rules = ["required", "nullable", "type"]
         for field, value in self.document.items():
 
             if self.ignore_none_values and value is None:
@@ -144,6 +149,11 @@ class Validator(object):
                     if definition.get("nullable", False) == True \
                        and value is None:  # noqa
                         continue
+
+                    if 'type' in definition:
+                        self._validate_type(definition['type'], field, value)
+                        if self.errors:
+                            continue
 
                     definition_rules = [rule for rule in definition.keys()
                                         if rule not in special_rules]
