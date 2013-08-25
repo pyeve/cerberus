@@ -8,6 +8,7 @@ Version 0.4.0
 
 Not released yet.
 
+- documentation typo fix (Daniele Pizzolli).
 - 'type' validation is always performed first (only exception being
   'nullable'). On failure, subsequent rules on the same field are skipped.
   Closes #18.
