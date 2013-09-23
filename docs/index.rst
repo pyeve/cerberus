@@ -20,9 +20,10 @@ You define a validation schema and pass it to an instance of the
     >>> schema = {'name': {'type': 'string'}}
     >>> v = Validator(schema)
 
-Then you simply invoke the :func:`~cerberus.Validator.validate` or
-:func:`~cerberus.Validator.validate_update` methods to validate a dictionary
-against the schema. If validation succeeds, ``True`` is returned: ::
+Then you simply invoke the :func:`~cerberus.Validator.validate` to validate
+a dictionary against the schema. If validation succeeds, ``True`` is returned:
+
+::
 
     >>> document = {'name': 'john doe'}
     >>> v.validate(document)
@@ -189,10 +190,11 @@ You can extend this list and support custom types, see :ref:`new-types`.
 
 required
 ''''''''
-If ``True`` the key/value pair is mandatory and validation will fail when
-:func:`~cerberus.Validator.validate` is called.  Validation will still succeed
-if the value is missing and :func:`~cerberus.Validator.validate_update` is
-called instead.::
+If ``True`` the key/value pair is mandatory. Validation will fail when it is
+missing, unless :func:`~cerberus.Validator.validate` is called with
+``update=True``:
+
+::
 
     >>> schema = {'name': {'required': True, 'type': 'string'}, 'age': {'type': 'integer'}}
     >>> v = Validator(schema)
@@ -202,7 +204,7 @@ called instead.::
     >>> v.errors
     ["required field(s) are missing: 'name'"]
 
-    >>> v.validate_update(document)
+    >>> v.validate(document, update=True)
     True
 
 .. note::

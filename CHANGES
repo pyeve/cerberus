@@ -8,6 +8,8 @@ Version 0.4.0
 
 Not released yet.
 
+- 'validate_update' is deprecated and will be removed with next release. Use
+  'validate' with 'update=True' instead. Closes #21.
 - Fixed a minor encoding issue which made installing on Windows/Python3
   impossible. Closes #19 (Arsh Singh).
 - Fix documentation typo (Daniele Pizzolli).
@@ -32,14 +34,14 @@ Released on July 9 2013.
 Version 0.2.0
 -------------
 
-Released on April 18 2013. 
+Released on April 18 2013.
 
 - 'allow_unknown' option added.
 
 Version 0.1.0
 -------------
 
-Released on March 15 2013. 
+Released on March 15 2013.
 Codename: 'Claw'.
 
 - entering beta phase.
@@ -56,7 +58,7 @@ Version 0.0.3
 
 Released on January 29 2013
 
-- when a list item fails, its offset is now returned along with the list name 
+- when a list item fails, its offset is now returned along with the list name.
 - 'transparent_schema_rules' option added.
 - 'empty' rule for string fields.
 - 'schema' rule on lists of arbitrary lenght (Martjin Vermaat).

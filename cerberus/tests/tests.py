@@ -190,7 +190,8 @@ class TestValidator(TestBase):
         self.assertError(errors.ERROR_UNALLOWED_VALUE % (value, field))
 
     def test_validate_update(self):
-        self.assertTrue(self.validator.validate_update({'an_integer': 100}))
+        self.assertTrue(self.validator.validate({'an_integer': 100},
+                                                update=True))
 
     def test_string(self):
         self.assertSuccess({'a_required_string': 'john doe'})

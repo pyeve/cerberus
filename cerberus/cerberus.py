@@ -34,10 +34,9 @@ class SchemaError(ValueError):
 
 
 class Validator(object):
-    """ Validator class. Validates any Python dict
-    against a validation schema, which is provided as an argument at
-    class instantiation, or upon calling the :func:`validate` or
-    :func:`validate_update` methods.
+    """ Validator class. Validates any Python dict against a validation schema,
+    which is provided as an argument at class instantiation, or upon calling
+    the :func:`validate` method.
 
     :param schema: optional validation schema.
     :param transparent_schema_rules: if ``True`` unknown schema rules will be
@@ -55,9 +54,11 @@ class Validator(object):
                           field error' un validation.
 
     .. versionchanged:: 0.4.0
-       'type' validation is always performed first (only exception being
-       'nullable'). On failure, it blocks other rules on the same field. Closes
-       #18.
+       :func:`validate_update` is deprecated. Use :func:`validate` with
+       ``update=True`` instead.
+       Type validation is always performed first (only exception being
+       ``nullable``). On failure, it blocks other rules on the same field.
+       Closes #18.
 
     .. versionadded:: 0.2.0
        `self.errors` returns an empty list when validate() has not been called.
@@ -87,8 +88,7 @@ class Validator(object):
     def errors(self):
         """
         :rtype: a list of validation errors. Will be empty if no errors
-                were found during. Resets after each call to :func:`validate`
-                or :func:`validate_update`.
+                were found during. Resets after each call to :func:`validate`.
         """
         return self._errors
 
@@ -102,21 +102,29 @@ class Validator(object):
                        class instantation.
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
+
+        .. deprecated:: 0.4.0
+           Use :func:`validate` with ``update=True`` instead.
         """
         return self._validate(document, schema, update=True)
 
-    def validate(self, document, schema=None):
+    def validate(self, document, schema=None, update=False):
         """ Validates a Python dictionary against a validation schema.
 
         :param document: the dict to validate.
         :param schema: the validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
                        class instantation.
+        :param update: If ``True`` validation of required fields won't be
+                       performed.
 
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
+
+        .. versionchanged:: 0.4.0
+           Support for update mode.
         """
-        return self._validate(document, schema, update=False)
+        return self._validate(document, schema, update=update)
 
     def _validate(self, document, schema=None, update=False):
 
