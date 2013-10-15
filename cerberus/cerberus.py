@@ -83,6 +83,9 @@ class Validator(object):
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
         self._errors = []
+        
+    def __call__(self, *args, **kwargs):
+        return self.validate(*args, **kwargs)
 
     @property
     def errors(self):
