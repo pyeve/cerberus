@@ -85,7 +85,7 @@ class Validator(object):
         self._errors = []
         
     def __call__(self, *args, **kwargs):
-        self.validate(*args, **kwargs)
+        return self.validate(*args, **kwargs)
 
     @property
     def errors(self):
