@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.4.0
 -------------
 
-Not released yet.
+Released on September 24 2013.
 
 - 'validate_update' is deprecated and will be removed with next release. Use
   'validate' with 'update=True' instead. Closes #21.
