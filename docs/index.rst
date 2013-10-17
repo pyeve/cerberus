@@ -41,6 +41,17 @@ instance. ``False`` will be returned if validation fails. You can then access
 the :func:`~cerberus.Validator.errors` property to get a list of validation
 errors (see below).
 
+.. versionchanged:: 0.4.1
+    The Validator class is callable, allowing for the following shorthand
+    syntax:
+
+::
+
+    >>> document = {'name': 'john doe'}
+    >>> v(document)
+    True
+
+
 Non-blocking
 ~~~~~~~~~~~~
 Unlike other validation tools, Cerberus will not halt and raise an exception on
