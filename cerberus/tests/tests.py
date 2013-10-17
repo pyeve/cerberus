@@ -365,3 +365,15 @@ class TestValidator(TestBase):
         validation had been performed yet.
         '''
         self.assertEqual(self.validator.errors, [])
+
+    def test_callable_validator(self):
+        ''' Validator instance is callable, functions as a shorthand
+        passthrough to validate()
+        '''
+        schema = {'test_field': {'type': 'string'}}
+        v = Validator(schema)
+        self.assertTrue(v.validate({'test_field': 'foo'}))
+        self.assertTrue(v({'test_field': 'foo'}))
+        self.assertFalse(v.validate({'test_field': 1}))
+        self.assertFalse(v({'test_field': 1}))
+
