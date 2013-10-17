@@ -8,6 +8,10 @@ Version 0.4.1
 
 Not released yet.
 
+- Validator instances are now callable. Instead of 
+  `validated = validator.validate(document) you can now choose to do 
+  'validated = validator(document)' (Eelke Hermens).
+
 Version 0.4.0
 -------------
 
