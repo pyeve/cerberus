@@ -113,17 +113,18 @@ class TestBase(unittest.TestCase):
             validator = self.validator
         self.assertTrue(validator.validate(document, schema, update=True))
 
-    def assertError(self, error, validator=None):
+    def assertError(self, field, error, validator=None):
         if validator is None:
             validator = self.validator
-        self.assertTrue(error in validator.errors)
+        self.assertTrue(error in validator.errors.get(field, {}))
 
-    def assertNotError(self, error, validator=None):
+    def assertNoError(self, field, error, validator=None):
         if validator is None:
             validator = self.validator
-        self.assertFalse(error in validator.errors)
+        errs = validator.errors.get(field, {})
+        self.assertFalse(error in errs)
 
     def assertBadType(self, field, data_type, value):
         doc = {field: value}
         self.assertFail(doc)
-        self.assertError(errors.ERROR_BAD_TYPE % (field, data_type))
+        self.assertError(field, errors.ERROR_BAD_TYPE % data_type)

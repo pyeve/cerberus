@@ -53,6 +53,10 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged:: 0.4.1
+       ``validator.errors`` returns a dict where keys are document fields and
+       values are validation errors.
+
     .. versionchanged:: 0.4.0
        :func:`validate_update` is deprecated. Use :func:`validate` with
        ``update=True`` instead.
@@ -82,8 +86,8 @@ class Validator(object):
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
-        self._errors = []
-        
+        self._errors = {}
+
     def __call__(self, *args, **kwargs):
         return self.validate(*args, **kwargs)
 
@@ -131,7 +135,7 @@ class Validator(object):
 
     def _validate(self, document, schema=None, update=False):
 
-        self._errors = []
+        self._errors = {}
         self.update = update
 
         if schema is not None:
@@ -181,18 +185,24 @@ class Validator(object):
 
             else:
                 if not self.allow_unknown:
-                    self._error(errors.ERROR_UNKNOWN_FIELD % field)
+                    self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
             self._validate_required_fields()
 
         return len(self._errors) == 0
 
-    def _error(self, _error):
+    def _error(self, field, _error):
+        field_errors = self._errors.get(field, [])
         if isinstance(_error, _str_type):
-            self._errors.append(_error)
+            field_errors.append(_error)
+        elif isinstance(_error, dict):
+            field_errors.append(_error)
         else:
-            self._errors.extend(_error)
+            field_errors.extend(_error)
+        if len(field_errors) == 1:
+            field_errors = field_errors.pop()
+        self._errors[field] = field_errors
 
     def _validate_required_fields(self):
         required = list(field for field, definition in self.schema.items()
@@ -200,101 +210,98 @@ class Validator(object):
         missing = set(required) - set(key for key in self.document.keys()
                                       if self.document.get(key) is not None
                                       or not self.ignore_none_values)
-        if len(missing):
-            self._error(errors.ERROR_REQUIRED_FIELD % ', '.join(missing))
+        for field in missing:
+            self._error(field, errors.ERROR_REQUIRED_FIELD)
 
     def _validate_readonly(self, read_only, field, value):
         if read_only:
-            self._error(errors.ERROR_READONLY_FIELD % field)
+            self._error(field, errors.ERROR_READONLY_FIELD)
 
     def _validate_type(self, data_type, field, value):
         validator = getattr(self, "_validate_type_" + data_type, None)
         if validator:
             validator(field, value)
         else:
-            raise SchemaError(errors.ERROR_UNKNOWN_TYPE % (data_type, field))
+            raise SchemaError(errors.ERROR_UNKNOWN_TYPE % data_type)
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
-            self._error(errors.ERROR_BAD_TYPE % (field, "string"))
+            self._error(field, errors.ERROR_BAD_TYPE % "string")
 
     def _validate_type_integer(self, field, value):
         if not isinstance(value, _int_types):
-            self._error(errors.ERROR_BAD_TYPE % (field, "integer"))
+            self._error(field, errors.ERROR_BAD_TYPE % "integer")
 
     def _validate_type_float(self, field, value):
         if not isinstance(value, float):
-            self._error(errors.ERROR_BAD_TYPE % (field, "float"))
+            self._error(field, errors.ERROR_BAD_TYPE % "float")
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
-            self._error(errors.ERROR_BAD_TYPE % (field, "boolean"))
-
-    #def _validate_type_array(self, field, value):
-    #    if not isinstance(value, list):
-    #        self._error(errors.ERROR_BAD_TYPE % (field, "array (list)"))
+            self._error(field, errors.ERROR_BAD_TYPE % "boolean")
 
     def _validate_type_datetime(self, field, value):
         if not isinstance(value, datetime):
-            self._error(errors.ERROR_BAD_TYPE % (field, "datetime"))
+            self._error(field, errors.ERROR_BAD_TYPE % "datetime")
 
     def _validate_type_dict(self, field, value):
         if not isinstance(value, dict):
-            self._error(errors.ERROR_BAD_TYPE % (field, "dict"))
+            self._error(field, errors.ERROR_BAD_TYPE % "dict")
 
     def _validate_type_list(self, field, value):
         if not isinstance(value, list):
-            self._error(errors.ERROR_BAD_TYPE % (field, "list"))
+            self._error(field, errors.ERROR_BAD_TYPE % "list")
 
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, (_str_type, list)):
             if len(value) > max_length:
-                self._error(errors.ERROR_MAX_LENGTH % (field, max_length))
+                self._error(field, errors.ERROR_MAX_LENGTH % max_length)
 
     def _validate_minlength(self, min_length, field, value):
         if isinstance(value, (_str_type, list)):
             if len(value) < min_length:
-                self._error(errors.ERROR_MIN_LENGTH % (field, min_length))
+                self._error(field, errors.ERROR_MIN_LENGTH % min_length)
 
     def _validate_max(self, max_value, field, value):
         if isinstance(value, _int_types):
             if value > max_value:
-                self._error(errors.ERROR_MAX_VALUE % (field, max_value))
+                self._error(field, errors.ERROR_MAX_VALUE % max_value)
 
     def _validate_min(self, min_value, field, value):
         if isinstance(value, _int_types):
             if value < min_value:
-                self._error(errors.ERROR_MIN_VALUE % (field, min_value))
+                self._error(field, errors.ERROR_MIN_VALUE % min_value)
 
     def _validate_allowed(self, allowed_values, field, value):
         if isinstance(value, _str_type):
             if value not in allowed_values:
-                self._error(errors.ERROR_UNALLOWED_VALUE % (value, field))
+                self._error(field, errors.ERROR_UNALLOWED_VALUE % value)
         elif isinstance(value, list):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
-                self._error(
-                    errors.ERROR_UNALLOWED_VALUES % (list(disallowed), field)
-                )
+                self._error(field,
+                            errors.ERROR_UNALLOWED_VALUES % list(disallowed))
 
     def _validate_empty(self, empty, field, value):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
-            self._error(errors.ERROR_EMPTY_NOT_ALLOWED % field)
+            self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
     def _validate_schema(self, schema, field, value):
         if isinstance(value, list):
+            list_errors = {}
             for i in range(len(value)):
-                key = "%s[%s]" % (field, str(i))
-                validator = self.__class__({key: schema})
-                if not validator.validate({key: value[i]}):
-                    self._error([error for error in validator.errors])
+                validator = self.__class__({i: schema})
+                validator.validate({i: value[i]})
+                list_errors.update(validator.errors)
+            if len(list_errors):
+                self._error(field, list_errors)
         elif isinstance(value, dict):
             validator = self.__class__(schema)
-            if not validator.validate(value):
-                self._error(["'%s': " % field + error
-                            for error in validator.errors])
+            validator.validate(value)
+            if len(validator.errors):
+                self._error(field, validator.errors)
         else:
-            self._error(errors.ERROR_BAD_TYPE % (field, "dict"))
+            self._error(field, errors.ERROR_BAD_TYPE % "dict")
 
     def _validate_items(self, items, field, value):
         if isinstance(items, dict):
@@ -304,17 +311,16 @@ class Validator(object):
 
     def _validate_items_list(self, schema, field, values):
         if len(schema) != len(values):
-            self._error(errors.ERROR_ITEMS_LIST % (field, len(schema)))
+            self._error(field, errors.ERROR_ITEMS_LIST % len(schema))
         else:
             for i in range(len(schema)):
-                key = "%s[%s]" % (field, str(i))
-                validator = self.__class__({key: schema[i]})
-                if not validator.validate({key: values[i]}):
-                    self._error([error for error in validator.errors])
+                validator = self.__class__({i: schema[i]})
+                validator.validate({i: values[i]})
+                self.errors.update(validator.errors)
 
     def _validate_items_schema(self, schema, field, value):
         validator = self.__class__(schema)
         for item in value:
-            if not validator.validate(item):
-                self._error(["'%s': " % field + error
-                            for error in validator.errors])
+            validator.validate(item)
+            for field, error in validator.errors.items():
+                self._error(field, error)

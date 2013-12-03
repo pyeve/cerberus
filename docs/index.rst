@@ -64,7 +64,7 @@ the first validation issue. The whole document will always be processed, and
     >>> v.validate(document, schema)
     False
     >>> v.errors
-    ["min value for field 'age' is 10", "value of field 'name' must be of string type"]
+    {'age': 'min value is 10', 'name': 'must be of string type'}
 
 You will still get :class:`~cerberus.SchemaError` and
 :class:`~cerberus.ValidationError` exceptions. 
@@ -77,7 +77,7 @@ By default only keys defined in the schema are allowed: ::
     >>> v.validate({'name': 'john', 'sex': 'M'})
     False
     >>> v.errors
-    ["unknown field 'sex'"]
+    {'sex': 'unknown field'}
 
 However, you can allow unknown key/value pairs by setting the ``allow_unknown``
 option to ``True``: ::
@@ -108,7 +108,7 @@ This is how we would go to implement that: ::
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
             if isodd and not bool(value & 1):
-                self._error("Value for field '%s' must be an odd number" % field)
+                self._error(field, "Must be an odd number")
 
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
 ``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
@@ -119,7 +119,7 @@ matters, we can validate it: ::
     >>> v.validate({'oddity': 10})
     False
     >>> v.errors
-    ['Value for field 'oddity' must be an odd number']
+    {'oddity': 'Must be an odd number'}
 
     >>> v.validate({'oddity': 9})
     True
@@ -146,7 +146,7 @@ has been implemented: ::
         :param value: field value.
         """
         if not re.match('[a-f0-9]{24}', value):
-            self._error(ERROR_BAD_TYPE % (field, 'ObjectId'))
+            self._error(field, ERROR_BAD_TYPE % 'ObjectId')
 
 .. versionadded:: 0.0.2
 
@@ -213,7 +213,7 @@ missing, unless :func:`~cerberus.Validator.validate` is called with
     >>> v.validate(document)
     False
     >>> v.errors
-    ["required field(s) are missing: 'name'"]
+    {'name': 'must be of string type'}
 
     >>> v.validate(document, update=True)
     True
@@ -235,7 +235,7 @@ If ``True`` the field value can be set to ``None``. It is essentially the
 functionality of the *ignore_non_values* parameter of the :ref:`validator`,
 but allowing for more fine grained control down to the field level. ::
 
-    >>> schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_ingeger': {'type': 'integer'}}
+    >>> schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_integer': {'type': 'integer'}}
     >>> v = Validator(schema)
 
     >>> v.validate({'a_nullable_integer': 3})
@@ -248,7 +248,7 @@ but allowing for more fine grained control down to the field level. ::
     >>> v.validate({'an_integer': None})
     False
     >>> v.errors
-    ["value of field 'an_integer' must be of integer type"]
+    {'an_integer': 'must be of integer type'}
 
 .. versionadded:: 0.3.0
 
@@ -273,7 +273,7 @@ target values are not included in the allowed list.::
     >>> v.validate({'role': ['intern']})
     False
     >>> v.errors
-    ["unallowed values ['intern'] for field 'role'"]
+    {'role': "unallowed values ['intern']"}
 
     >>> schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v = Validator(schema)
@@ -283,7 +283,7 @@ target values are not included in the allowed list.::
     >>> v.validate({'role': 'intern'})
     False
     >>> v.errors
-    ["unallowed value 'intern' for field 'role'"]
+    {'role': 'unallowed value intern'}
 
 empty
 '''''
@@ -296,7 +296,7 @@ is empty. Defaults to ``True``. ::
     False
 
     >>> v.errors
-    ["empty values not allowed for field 'name'"]
+    {'name': 'empty values not allowed'}
 
 .. versionadded:: 0.0.3
 
