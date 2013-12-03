@@ -141,7 +141,6 @@ class TestValidator(TestBase):
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
         v = self.validator
-        print v.errors
         self.assertTrue(1 in v.errors)
         self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
                         v.errors[1])
