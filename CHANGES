@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.5
 -----------
 
-Not released yet.
+Released on December 4 2013
 
 - 'validator.errors' now returns a dictionary where keys are document fields
   and values are lists of validation errors for the field.
