@@ -22,6 +22,10 @@ class TestBase(unittest.TestCase):
                 'min': 1,
                 'max': 100,
             },
+            'a_restricted_integer': {
+                'type': 'integer',
+                'allowed': [-1, 0, 1],
+            },
             'a_boolean': {
                 'type': 'boolean',
             },
