@@ -191,6 +191,15 @@ class TestValidator(TestBase):
         self.assertFail({field: value})
         self.assertError(field, errors.ERROR_UNALLOWED_VALUE % value)
 
+    def test_integer_unallowed(self):
+        field = 'a_restricted_integer'
+        value = 2
+        self.assertFail({field: value})
+        self.assertError(field, errors.ERROR_UNALLOWED_VALUE % value)
+
+    def test_integer_allowed(self):
+        self.assertSuccess({'a_restricted_integer': -1})
+
     def test_validate_update(self):
         self.assertTrue(self.validator.validate({'an_integer': 100},
                                                 update=True))
