@@ -262,8 +262,8 @@ Minimum and maximum value allowed for ``integer`` types.
 
 allowed
 '''''''
-Allowed values for ``string`` or ``list`` types. Validation will fail if
-target values are not included in the allowed list.::
+Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
+if target values are not included in the allowed list.::
 
     >>> schema = {'role': {'type': 'list', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v = Validator(schema)
@@ -284,6 +284,19 @@ target values are not included in the allowed list.::
     False
     >>> v.errors
     {'role': 'unallowed value intern'}
+
+    >>> schema = {'a_restricted_integer': {'type': 'integer', 'allowed': [-1, 0, 1]}}
+    >>> v = Validator(schema)
+    >>> v.validate({'a_restricted_integer': -1})
+    True
+
+    >>> v.validate({'a_restricted_integer': 2})
+    False
+    >>> v.errors
+    {'a_restricted_unteger': 'unallowed value 2'}
+
+.. versionchanged:: 0.5.1
+   Added support for the ``int`` type.
 
 empty
 '''''

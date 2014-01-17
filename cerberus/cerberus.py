@@ -281,6 +281,9 @@ class Validator(object):
             if disallowed:
                 self._error(field,
                             errors.ERROR_UNALLOWED_VALUES % list(disallowed))
+        elif isinstance(value, int):
+            if value not in allowed_values:
+                self._error(field, errors.ERROR_UNALLOWED_VALUE % value)
 
     def _validate_empty(self, empty, field, value):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
