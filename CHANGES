@@ -3,6 +3,13 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 0.5.1
+-------------
+
+Not released yet.
+
+- Use 'allowed' field for integer just like for string (Peter Demin).
+
 Version 0.5
 -----------
 
