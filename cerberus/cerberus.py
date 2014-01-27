@@ -306,7 +306,7 @@ class Validator(object):
             if len(validator.errors):
                 self._error(field, validator.errors)
         else:
-            self._error(field, errors.ERROR_BAD_TYPE % "dict")
+            self._error(field, errors.ERROR_BAD_TYPE % "dict or list")
 
     def _validate_items(self, items, field, value):
         if isinstance(items, dict):
