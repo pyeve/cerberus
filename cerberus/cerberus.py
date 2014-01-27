@@ -194,6 +194,8 @@ class Validator(object):
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
+        if not isinstance(field_errors, list):
+            field_errors = [field_errors]
         if isinstance(_error, _str_type):
             field_errors.append(_error)
         elif isinstance(_error, dict):
@@ -304,7 +306,7 @@ class Validator(object):
             if len(validator.errors):
                 self._error(field, validator.errors)
         else:
-            self._error(field, errors.ERROR_BAD_TYPE % "dict")
+            self._error(field, errors.ERROR_BAD_TYPE % "dict or list")
 
     def _validate_items(self, items, field, value):
         if isinstance(items, dict):
