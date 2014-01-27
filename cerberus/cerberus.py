@@ -194,6 +194,8 @@ class Validator(object):
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
+        if not isinstance(field_errors, list):
+            field_errors = [field_errors]
         if isinstance(_error, _str_type):
             field_errors.append(_error)
         elif isinstance(_error, dict):
