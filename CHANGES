@@ -8,6 +8,8 @@ Version 0.5.1
 
 Not released yet.
 
+- Fix bug when _error() is calld twice for a field (Jaroslav Semančík).
+- More precise error message in rule 'schema' validation (Jaroslav Semančík).
 - Use 'allowed' field for integer just like for string (Peter Demin).
 
 Version 0.5
