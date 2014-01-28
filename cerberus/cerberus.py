@@ -147,7 +147,7 @@ class Validator(object):
 
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
-        if not isinstance(document, dict):
+        if not hasattr(document, 'items'):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 

@@ -308,6 +308,20 @@ class TestValidator(TestBase):
         self.assertFalse(v.validate({'test_field': 6}))
         self.assertError('test_field', 'Not an odd number', validator=v)
 
+    def test_custon_document(self):
+        class MyDocument(object):
+            def __init__(self, d):
+                self.__dict = d
+            def get(self, k, d=None):
+                return self.__dict.get(k, d)
+            def items(self):
+                return self.__dict.items()
+            def keys(self):
+                return self.__dict.keys()
+        schema = {'name': {'type': 'string'}}
+        document = MyDocument({'name': 'john doe'})
+        self.assertSuccess(document, schema)
+
     def test_transparent_schema_rules(self):
         field = 'test'
         schema = {field: {'type': 'string', 'unknown_rule': 'a value'}}
