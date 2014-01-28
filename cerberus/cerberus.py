@@ -167,7 +167,7 @@ class Validator(object):
 
                     if 'type' in definition:
                         self._validate_type(definition['type'], field, value)
-                        if self.errors:
+                        if self.errors.get(field):
                             continue
 
                     definition_rules = [rule for rule in definition.keys()
