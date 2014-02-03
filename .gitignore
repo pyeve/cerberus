@@ -28,3 +28,6 @@ pip-log.txt
 
 #Sphinx
 _build
+
+# my private cerberus playground
+run.py
