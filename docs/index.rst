@@ -176,6 +176,7 @@ Data type allowed for the key value. Can be one of the following:
     * ``string`` 
     * ``integer``
     * ``float``
+    * ``number`` (integer or float)
     * ``boolean``
     * ``datetime``
     * ``dict``
