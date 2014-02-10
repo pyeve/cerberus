@@ -88,6 +88,9 @@ class TestValidator(TestBase):
     def test_not_a_float(self):
         self.assertBadType('a_float', 'float', "i'm not a float")
 
+    def test_not_a_number(self):
+        self.assertBadType('a_number', 'number', "i'm not a number")
+
     def test_not_a_list(self):
         self.assertBadType('a_list_of_values', 'list', "i'm not a list")
 
@@ -221,6 +224,10 @@ class TestValidator(TestBase):
 
     def test_float(self):
         self.assertSuccess({'a_float': 3.5})
+
+    def test_number(self):
+        self.assertSuccess({'a_number': 3.5})
+        self.assertSuccess({'a_number': 3})
 
     def test_array(self):
         self.assertSuccess({'an_array': ['agent', 'client']})

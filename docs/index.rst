@@ -176,6 +176,7 @@ Data type allowed for the key value. Can be one of the following:
     * ``string`` 
     * ``integer``
     * ``float``
+    * ``number`` (integer or float)
     * ``boolean``
     * ``datetime``
     * ``dict``
@@ -191,6 +192,9 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.5.1
+   Added teh ``number`` data type.
 
 .. versionchanged:: 0.4.0
    Type validation is always executed first, and blocks other field validation
