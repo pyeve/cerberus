@@ -53,7 +53,7 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionadded:: 0.5.1
+    .. versionadded:: 0.6
        'number' (integer or float) validator.
 
     .. versionchanged:: 0.5.0

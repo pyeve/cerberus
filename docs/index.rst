@@ -193,8 +193,8 @@ You can extend this list and support custom types, see :ref:`new-types`.
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
 
-.. versionchanged:: 0.5.1
-   Added teh ``number`` data type.
+.. versionchanged:: 0.6
+   Added the ``number`` data type.
 
 .. versionchanged:: 0.4.0
    Type validation is always executed first, and blocks other field validation
