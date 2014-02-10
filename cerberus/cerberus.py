@@ -53,7 +53,10 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionchanged:: 0.4.1
+    .. versionadded:: 0.5.1
+       'number' (integer or float) validator.
+
+    .. versionchanged:: 0.5.0
        ``validator.errors`` returns a dict where keys are document fields and
        values are validation errors.
 
@@ -239,6 +242,9 @@ class Validator(object):
             self._error(field, errors.ERROR_BAD_TYPE % "float")
 
     def _validate_type_number(self, field, value):
+        """
+        .. versionadded:: 0.6
+        """
         if not isinstance(value, float) and not isinstance(value, _int_types):
             self._error(field, errors.ERROR_BAD_TYPE % "number")
 

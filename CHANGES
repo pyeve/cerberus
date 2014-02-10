@@ -8,6 +8,8 @@ Version 0.5.1
 
 Not released yet.
 
+- Added 'number' data type, which validates against both float and integer
+  values (Brandon Aubie).
 - Added support for running tests with py.test
 - Fix non-blocking problem introduced with 0.5 (Martin Ortbauer).
 - Fix bug when _error() is calld twice for a field (Jaroslav Semančík).
