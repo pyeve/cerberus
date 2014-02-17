@@ -34,9 +34,13 @@ class TestBase(unittest.TestCase):
             },
             'a_float': {
                 'type': 'float',
+                'min': 1,
+                'max': 100,
             },
             'a_number': {
                 'type': 'number',
+                'min': 1,
+                'max': 100,
             },
             'a_readonly_string': {
                 'type': 'string',

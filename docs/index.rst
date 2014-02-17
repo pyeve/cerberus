@@ -262,7 +262,11 @@ Minimum and maximum length allowed for ``string`` and ``list`` types.
 
 min, max
 ''''''''
-Minimum and maximum value allowed for ``integer`` types.
+Minimum and maximum value allowed for ``integer``, ``float`` and ``number``
+types.
+
+.. versionchanged:: 0.6.1
+   Added support for ``float`` and ``number`` types.
 
 allowed
 '''''''

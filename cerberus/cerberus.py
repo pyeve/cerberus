@@ -53,6 +53,9 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionadded:: 0.6.1
+       'mix', 'max' now apply on floats and numbers too. Closes #30.
+
     .. versionadded:: 0.6
        'number' (integer or float) validator.
 
@@ -275,12 +278,12 @@ class Validator(object):
                 self._error(field, errors.ERROR_MIN_LENGTH % min_length)
 
     def _validate_max(self, max_value, field, value):
-        if isinstance(value, _int_types):
+        if isinstance(value, (_int_types, float)):
             if value > max_value:
                 self._error(field, errors.ERROR_MAX_VALUE % max_value)
 
     def _validate_min(self, min_value, field, value):
-        if isinstance(value, _int_types):
+        if isinstance(value, (_int_types, float)):
             if value < min_value:
                 self._error(field, errors.ERROR_MIN_VALUE % min_value)
 

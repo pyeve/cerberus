@@ -112,18 +112,32 @@ class TestValidator(TestBase):
         self.assertError(field, errors.ERROR_MIN_LENGTH % min_length)
 
     def test_bad_max_value(self):
+        def assert_bad_max_value(field, inc):
+            max_value = self.schema[field]['max']
+            value = max_value + inc
+            self.assertFail({field: value})
+            self.assertError(field, errors.ERROR_MAX_VALUE % max_value)
+
         field = 'an_integer'
-        max_value = self.schema[field]['max']
-        value = max_value + 1
-        self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MAX_VALUE % max_value)
+        assert_bad_max_value(field, 1)
+        field = 'a_float'
+        assert_bad_max_value(field, 1.0)
+        field = 'a_number'
+        assert_bad_max_value(field, 1)
 
     def test_bad_min_value(self):
+        def assert_bad_min_value(field, inc):
+            min_value = self.schema[field]['min']
+            value = min_value - inc
+            self.assertFail({field: value})
+            self.assertError(field, errors.ERROR_MIN_VALUE % min_value)
+
         field = 'an_integer'
-        min_value = self.schema[field]['min']
-        value = min_value - 1
-        self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MIN_VALUE % min_value)
+        assert_bad_min_value(field, 1)
+        field = 'a_float'
+        assert_bad_min_value(field, 1.0)
+        field = 'a_number'
+        assert_bad_min_value(field, 1)
 
     def test_bad_schema(self):
         field = 'a_dict'
