@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.6
 -----------
 
-Not released yet.
+Released on February 10 2014
 
 - Added 'number' data type, which validates against both float and integer
   values (Brandon Aubie).
