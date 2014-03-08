@@ -8,6 +8,7 @@ Version 0.6.1
 
 Not released yet.
 
+- python trove classifiers added to setup.py. Closes #32.
 - 'min' and 'max' now apply to floats and numbers too. Closes #30.
 
 Version 0.6
