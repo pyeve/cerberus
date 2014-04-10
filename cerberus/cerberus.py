@@ -161,9 +161,11 @@ class Validator(object):
             if definition:
                 if isinstance(definition, dict):
 
-                    if definition.get("nullable", False) == True \
-                       and value is None:  # noqa
-                        continue
+                    if value is None:
+                        if definition.get("nullable", False) == True:
+                            continue
+                        else:
+                            self._error(field, errors.ERROR_NOT_NULLABLE)
 
                     if 'type' in definition:
                         self._validate_type(definition['type'], field, value)

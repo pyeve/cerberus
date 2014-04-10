@@ -84,7 +84,12 @@ class TestBase(unittest.TestCase):
                 'schema': {'type': 'integer'},
                 'minlength': 2,
                 'maxlength': 5,
-            }
+            },
+            'a_nullable_field_without_type': {
+                'nullable': True
+            },
+            'a_not_nullable_field_without_type': {
+            },
         }
         self.validator = Validator(self.schema)
 

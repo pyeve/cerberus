@@ -58,8 +58,10 @@ class TestValidator(TestBase):
     def test_nullable_field_field(self):
         self.assertSuccess({'a_nullable_integer': None})
         self.assertSuccess({'a_nullable_integer': 3})
+        self.assertSuccess({'a_nullable_field_without_type': None})
         self.assertFail({'a_nullable_integer': "foo"})
         self.assertFail({'an_integer': None})
+        self.assertFail({'a_not_nullable_field_without_type': None})
 
     def test_readonly_field(self):
         field = 'a_readonly_string'
