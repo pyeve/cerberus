@@ -55,7 +55,7 @@ class TestValidator(TestBase):
         self.assertFail({'an_integer': 1})
         self.assertError('a_required_string', errors.ERROR_REQUIRED_FIELD)
 
-    def test_nullable_field_field(self):
+    def test_nullable_field(self):
         self.assertSuccess({'a_nullable_integer': None})
         self.assertSuccess({'a_nullable_integer': 3})
         self.assertSuccess({'a_nullable_field_without_type': None})
