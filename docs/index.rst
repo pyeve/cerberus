@@ -254,6 +254,7 @@ but allowing for more fine grained control down to the field level. ::
     >>> v.errors
     {'an_integer': 'must be of integer type'}
 
+.. versionchanged:: 0.6.1 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
 
 minlength, maxlength 
