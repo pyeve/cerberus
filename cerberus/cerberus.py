@@ -157,7 +157,7 @@ class Validator(object):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 
-        special_rules = ["required", "nullable", "type"]
+        special_rules = ["required", "nullable", "type", "dependencies"]
         for field, value in self.document.items():
 
             if self.ignore_none_values and value is None:
@@ -168,13 +168,22 @@ class Validator(object):
                 if isinstance(definition, dict):
 
                     if value is None:
-                        if definition.get("nullable", False) == True:
+                        if definition.get("nullable", False):
                             continue
                         else:
                             self._error(field, errors.ERROR_NOT_NULLABLE)
 
                     if 'type' in definition:
                         self._validate_type(definition['type'], field, value)
+                        if self.errors.get(field):
+                            continue
+
+                    if "dependencies" in definition:
+                        self._validate_dependencies(
+                            document=self.document,
+                            dependencies=definition["dependencies"],
+                            field=field
+                        )
                         if self.errors.get(field):
                             continue
 
@@ -344,3 +353,14 @@ class Validator(object):
             validator.validate(item)
             for field, error in validator.errors.items():
                 self._error(field, error)
+
+    def _validate_dependencies(self, document, dependencies, field):
+
+        # handle cases where dependencies is a string or list of strings
+        if isinstance(dependencies, _str_type):
+            dependencies = [dependencies]
+
+        if isinstance(dependencies, (list, tuple)):
+            for dependency in dependencies:
+                if dependency not in document:
+                    self._error(field, errors.ERROR_DEPENDENCIES_FIELD % dependency)
