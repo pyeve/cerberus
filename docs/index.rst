@@ -382,6 +382,21 @@ and validating a list of dictionaries. ::
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
 
+.. _keyschema:
+
+keyschema
+'''''''''
+Validation schema for all keys of a ``dict``. The ``dict`` can have arbitrary
+keys, all of which must validate the given schema: ::
+
+    >>> schema = {'a_dict_with_keyschema': {'type': 'dict', 'keyschema': {'type': 'integer'}}}
+    >>> document = {'a_dict_with_keyschema': {'an integer': 99, 'another integer': 100}}
+    >>> v.validate(document, schema)
+    True
+
+.. versionadded:: 0.6.2
+   Validation schema for all keys of a ``dict``
+
 .. _validator:
 
 Validator Class
