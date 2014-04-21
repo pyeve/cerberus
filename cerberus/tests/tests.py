@@ -155,6 +155,17 @@ class TestValidator(TestBase):
         self.assertTrue(errors.ERROR_REQUIRED_FIELD in
                         v.errors[field]['city'])
 
+    def test_bad_keyschema(self):
+        field = 'a_dict_with_keyschema'
+        schema_field = 'a_string'
+        value = {schema_field: 'not an integer'}
+        self.assertFail({field: value})
+        v = self.validator
+        self.assertTrue(field in v.errors)
+        self.assertTrue(schema_field in v.errors[field])
+        self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
+                        v.errors[field][schema_field])
+
     def test_bad_list_of_values(self):
         field = 'a_list_of_values'
         value = ['a string', 'not an integer']
@@ -280,6 +291,16 @@ class TestValidator(TestBase):
                 'a_dict': {
                     'address': 'i live here',
                     'city': 'in my own town'
+                }
+            }
+        )
+
+    def test_a_dict_with_keyschema(self):
+        self.assertSuccess(
+            {
+                'a_dict_with_keyschema': {
+                    'an integer': 99,
+                    'another integer': 100
                 }
             }
         )
