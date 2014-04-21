@@ -323,6 +323,13 @@ class Validator(object):
         else:
             self._error(field, errors.ERROR_BAD_TYPE % "dict or list")
 
+    def _validate_keyschema(self, schema, field, value):
+        for key, document in value.items():
+            validator = self.__class__(schema)
+            validator.validate({key: document}, {key: schema})
+            if len(validator.errors):
+                self._error(field, validator.errors)
+
     def _validate_items(self, items, field, value):
         if isinstance(items, dict):
             self._validate_items_schema(items, field, value)
