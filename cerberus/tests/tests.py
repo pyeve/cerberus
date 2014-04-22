@@ -248,6 +248,9 @@ class TestValidator(TestBase):
     def test_array(self):
         self.assertSuccess({'an_array': ['agent', 'client']})
 
+    def test_set(self):
+        self.assertSuccess({'a_set': set(['hello', 1])})
+
     def tst_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
             {

@@ -42,6 +42,9 @@ class TestBase(unittest.TestCase):
                 'min': 1,
                 'max': 100,
             },
+            'a_set': {
+                'type': 'set',
+            },
             'a_readonly_string': {
                 'type': 'string',
                 'readonly': True,

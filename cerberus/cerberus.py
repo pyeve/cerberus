@@ -55,6 +55,7 @@ class Validator(object):
 
     .. versionadded:: 0.7
        'mix', 'max' now apply on floats and numbers too. Closes #30.
+       'set' data type.
 
     .. versionadded:: 0.6
        'number' (integer or float) validator.
@@ -268,6 +269,10 @@ class Validator(object):
     def _validate_type_list(self, field, value):
         if not isinstance(value, list):
             self._error(field, errors.ERROR_BAD_TYPE % "list")
+
+    def _validate_type_set(self, field, value):
+        if not isinstance(value, set):
+            self._error(field, errors.ERROR_BAD_TYPE % "set")
 
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, (_str_type, list)):
