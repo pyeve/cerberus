@@ -168,7 +168,7 @@ class Validator(object):
                 if isinstance(definition, dict):
 
                     if value is None:
-                        if definition.get("nullable", False) == True:
+                        if definition.get("nullable", False) is True:
                             continue
                         else:
                             self._error(field, errors.ERROR_NOT_NULLABLE)
