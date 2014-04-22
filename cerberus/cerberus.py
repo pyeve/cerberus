@@ -53,7 +53,7 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionadded:: 0.6.1
+    .. versionadded:: 0.7
        'mix', 'max' now apply on floats and numbers too. Closes #30.
 
     .. versionadded:: 0.6
