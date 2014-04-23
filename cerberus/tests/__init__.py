@@ -45,6 +45,10 @@ class TestBase(unittest.TestCase):
             'a_set': {
                 'type': 'set',
             },
+            'a_regex_email': {
+                'type': 'string',
+                'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            },
             'a_readonly_string': {
                 'type': 'string',
                 'readonly': True,

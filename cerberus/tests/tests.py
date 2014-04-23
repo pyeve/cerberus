@@ -251,6 +251,13 @@ class TestValidator(TestBase):
     def test_set(self):
         self.assertSuccess({'a_set': set(['hello', 1])})
 
+    def test_regex(self):
+        field = 'a_regex_email'
+        self.assertSuccess({field: 'valid.email@gmail.com'})
+        self.assertFalse(self.validator.validate({field: 'invalid'},
+                                                 self.schema, update=True))
+        self.assertError(field, 'does not match regex')
+
     def tst_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
             {

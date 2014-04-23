@@ -8,6 +8,7 @@ Version 0.7
 
 Not released yet.
 
+- Added 'regex' validation rule. Closes #29.
 - Added 'set' as a core data type. Closes #31.
 - Not-nullable fields are validated independetly of their type definition
   (Jaroslav Semančík).

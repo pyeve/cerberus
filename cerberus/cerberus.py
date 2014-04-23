@@ -9,6 +9,7 @@
 """
 
 import sys
+import re
 from datetime import datetime
 from . import errors
 
@@ -227,6 +228,14 @@ class Validator(object):
     def _validate_readonly(self, read_only, field, value):
         if read_only:
             self._error(field, errors.ERROR_READONLY_FIELD)
+
+    def _validate_regex(self, match, field, value):
+        """
+        .. versionadded:: 0.7
+        """
+        pattern = re.compile(match)
+        if not pattern.match(value):
+            self._error(field, errors.ERROR_REGEX % match)
 
     def _validate_type(self, data_type, field, value):
         validator = getattr(self, "_validate_type_" + data_type, None)

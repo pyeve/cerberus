@@ -386,6 +386,27 @@ and validating a list of dictionaries. ::
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
 
+regex
+'''''
+Validation will fail if field value does not match the provided regex rule. Only applies to string fiels. ::
+
+    >>> schema = {'email': {'type': 'string', 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'}}
+    >>> document = {'email': 'john@example.com'}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'email': 'john_at_example_dot_com'}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'email': 'value does not match regex "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"}
+
+For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
+
+.. versionadded:: 0.7
+
+
 .. _validator:
 
 Validator Class
@@ -429,3 +450,5 @@ This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 informations.
+
+.. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
