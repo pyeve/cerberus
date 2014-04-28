@@ -93,6 +93,10 @@ class TestBase(unittest.TestCase):
                     'city': {'type': 'string', 'required': True}
                 },
             },
+            'a_dict_with_keyschema': {
+                'type': 'dict',
+                'keyschema': {'type': 'integer'}
+            },
             'a_list_length': {
                 'type': 'list',
                 'schema': {'type': 'integer'},
