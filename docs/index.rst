@@ -359,15 +359,21 @@ See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
 
 .. _schema:
 
-schema
-''''''
-Validation schema for ``dict`` and ``list`` types. On dictionaries: ::
+schema (dict)
+'''''''''''''
+Validation rules for ``dict`` fields. ::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
     >>> v.validate(document, schema)
     True
 
+.. note::
+
+    If all keys should share the same validation rules you probably want to use :ref:`keyschema` instead.
+
+schema (list)
+'''''''''''''
 You can also use this rule to validate arbitrary length ``list`` items. ::
 
     >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
@@ -386,6 +392,27 @@ and validating a list of dictionaries. ::
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
 
+.. _keyschema:
+
+keyschema
+'''''''''
+Validation schema for all keys of a ``dict``. The ``dict`` can have arbitrary
+keys, all of which must validate the given schema: ::
+
+    >>> schema = {'numbers': {'type': 'dict', 'keyschema': {'type': 'integer', min: 10}}}
+    >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'numbers': {'an integer': 9}}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'numbers': {'an integer': 'min value is 10'}}
+
+.. versionadded:: 0.7
+
 regex
 '''''
 Validation will fail if field value does not match the provided regex rule. Only applies to string fiels. ::
@@ -403,20 +430,6 @@ Validation will fail if field value does not match the provided regex rule. Only
     {'email': 'value does not match regex "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"}
 
 For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
-
-.. versionadded:: 0.7
-
-.. _keyschema:
-
-keyschema
-'''''''''
-Validation schema for all keys of a ``dict``. The ``dict`` can have arbitrary
-keys, all of which must validate the given schema: ::
-
-    >>> schema = {'a_dict_with_keyschema': {'type': 'dict', 'keyschema': {'type': 'integer'}}}
-    >>> document = {'a_dict_with_keyschema': {'an integer': 99, 'another integer': 100}}
-    >>> v.validate(document, schema)
-    True
 
 .. versionadded:: 0.7
 
