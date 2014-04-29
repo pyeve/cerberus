@@ -55,6 +55,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded:: 0.7
+       'keyschema' validation rule.
        'mix', 'max' now apply on floats and numbers too. Closes #30.
        'set' data type.
 
