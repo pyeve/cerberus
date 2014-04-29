@@ -205,16 +205,18 @@ class Validator(object):
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
+
         if not isinstance(field_errors, list):
             field_errors = [field_errors]
-        if isinstance(_error, _str_type):
-            field_errors.append(_error)
-        elif isinstance(_error, dict):
+
+        if isinstance(_error, (_str_type, dict)):
             field_errors.append(_error)
         else:
             field_errors.extend(_error)
+
         if len(field_errors) == 1:
             field_errors = field_errors.pop()
+
         self._errors[field] = field_errors
 
     def _validate_required_fields(self):
