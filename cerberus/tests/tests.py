@@ -446,7 +446,8 @@ class TestValidator(TestBase):
         self.assertFalse(v({'test_field': 1}))
 
     def test_dependencies_field(self):
-        schema = {'test_field': {'dependencies': 'foo'}, 'foo': {'type': 'string'}}
+        schema = {'test_field': {'dependencies': 'foo'}, 'foo': {'type':
+                                                                 'string'}}
         v = Validator(schema)
 
         self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
@@ -460,5 +461,6 @@ class TestValidator(TestBase):
         }
         v = Validator(schema)
 
-        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar', 'bar': 'foo'}))
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar',
+                                    'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
