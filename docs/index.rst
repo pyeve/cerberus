@@ -431,6 +431,24 @@ Validation will fail if field value does not match the provided regex rule. Only
 
 For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
 
+dependencies
+''''''''''''
+This rule allows a list of fields that must be present in order for the target
+field to be allowed. ::
+
+    >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': ['field1']}}
+    >>> document = {'field1': 7}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'field2': 7}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'field2': 'field "field1" is required'}
+
+
 .. versionadded:: 0.7
 
 .. _validator:
