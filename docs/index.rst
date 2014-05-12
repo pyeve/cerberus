@@ -396,8 +396,8 @@ and validating a list of dictionaries. ::
 
 keyschema
 '''''''''
-Validation schema for all keys of a ``dict``. The ``dict`` can have arbitrary
-keys, all of which must validate the given schema: ::
+Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
+keys, the values for all of which must validate with given schema: ::
 
     >>> schema = {'numbers': {'type': 'dict', 'keyschema': {'type': 'integer', min: 10}}}
     >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
