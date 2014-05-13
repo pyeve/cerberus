@@ -431,6 +431,8 @@ Validation will fail if field value does not match the provided regex rule. Only
 
 For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
 
+.. versionadded:: 0.7
+
 dependencies
 ''''''''''''
 This rule allows a list of fields that must be present in order for the target
