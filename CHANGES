@@ -8,6 +8,7 @@ Version 0.7
 
 Not released yet.
 
+- Python 3.4 is now supported.
 - Added 'dependencies' validation rule (Lujeni).
 - Added 'keyschema' validation rule (Florian Rathgeber).
 - Added 'regex' validation rule. Closes #29.
