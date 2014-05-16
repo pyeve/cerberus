@@ -130,15 +130,16 @@ class TestBase(unittest.TestCase):
         except Exception as e:
             self.fail("%s not raised." % known_exception)
 
-    def assertFail(self, document, schema=None, validator=None):
+    def assertFail(self, document, schema=None, validator=None, **kwargs):
         if validator is None:
             validator = self.validator
-        self.assertFalse(validator.validate(document, schema))
+        self.assertFalse(validator.validate(document, schema, **kwargs))
 
-    def assertSuccess(self, document, schema=None, validator=None):
+    def assertSuccess(self, document, schema=None, validator=None, **kwargs):
+        kwargs.setdefault('update', True)
         if validator is None:
             validator = self.validator
-        self.assertTrue(validator.validate(document, schema, update=True))
+        self.assertTrue(validator.validate(document, schema, **kwargs))
 
     def assertError(self, field, error, validator=None):
         if validator is None:

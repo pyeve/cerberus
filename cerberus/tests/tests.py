@@ -66,8 +66,14 @@ class TestValidator(TestBase):
 
     def test_readonly_field(self):
         field = 'a_readonly_string'
-        self.assertFail({field: 'update me if you can'})
+        self.assertFail({field: 'update me if you can'}, update=True)
         self.assertError(field, errors.ERROR_READONLY_FIELD)
+        self.assertSuccess(
+            {
+                field: 'update me if you can',
+                'a_required_string': 'required',  # for full re-validation
+            },
+            update=False)
 
     def test_unknown_data_type(self):
         field = 'name'

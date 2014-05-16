@@ -239,7 +239,7 @@ class Validator(object):
             self._error(field, errors.ERROR_REQUIRED_FIELD)
 
     def _validate_readonly(self, read_only, field, value):
-        if read_only:
+        if read_only and self.update:
             self._error(field, errors.ERROR_READONLY_FIELD)
 
     def _validate_regex(self, match, field, value):
