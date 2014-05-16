@@ -471,7 +471,11 @@ class TestMock(TestBase):
 
     def test_blank_object(self):
         blank_object = CerberusMock(self.schema)
-        self.assertEqual(blank_object, {'a_required_string': '**'})
+        self.assertEqual(blank_object, {'a_required_string': 'aa'})
+        blank_object = CerberusMock(
+            self.schema, create_missing=True, allow_unknown=True)
+        self.assertEqual(blank_object, {
+            'a_required_string', 'aa'})
 
     def test_valid_initialisation(self):
         data = {
