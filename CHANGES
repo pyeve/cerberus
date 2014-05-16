@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.7
 -----------
 
-Not released yet.
+Released on May 16 2014.
 
 - Python 3.4 is now supported.
 - tox support.
