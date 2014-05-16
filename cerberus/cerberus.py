@@ -11,6 +11,7 @@
 import sys
 import re
 from datetime import datetime
+from collections import MutableMapping, MutableSequence
 from . import errors
 
 if sys.version_info[0] == 3:
@@ -151,12 +152,12 @@ class Validator(object):
             self.schema = schema
         elif self.schema is None:
             raise SchemaError(errors.ERROR_SCHEMA_MISSING)
-        if not isinstance(self.schema, dict):
+        if not isinstance(self.schema, MutableMapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(self.schema))
 
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
-        if not isinstance(document, dict):
+        if not isinstance(document, MutableMapping):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
         self.document = document
 
@@ -284,7 +285,7 @@ class Validator(object):
             self._error(field, errors.ERROR_BAD_TYPE % "datetime")
 
     def _validate_type_dict(self, field, value):
-        if not isinstance(value, dict):
+        if not isinstance(value, MutableMapping):
             self._error(field, errors.ERROR_BAD_TYPE % "dict")
 
     def _validate_type_list(self, field, value):
@@ -333,7 +334,7 @@ class Validator(object):
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
     def _validate_schema(self, schema, field, value):
-        if isinstance(value, list):
+        if isinstance(value, MutableSequence):
             list_errors = {}
             for i in range(len(value)):
                 validator = self.__class__({i: schema})
@@ -341,7 +342,7 @@ class Validator(object):
                 list_errors.update(validator.errors)
             if len(list_errors):
                 self._error(field, list_errors)
-        elif isinstance(value, dict):
+        elif isinstance(value, MutableMapping):
             validator = self.__class__(schema)
             validator.validate(value)
             if len(validator.errors):
