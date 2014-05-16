@@ -3,7 +3,8 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from . import TestBase
-from ..cerberus import Validator, errors
+from ..cerberus import Validator, errors, ValidationError
+from ..mock import CerberusMock
 
 
 class TestValidator(TestBase):
@@ -464,3 +465,25 @@ class TestValidator(TestBase):
         self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar',
                                     'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+
+
+class TestMock(TestBase):
+
+    def test_blank_object(self):
+        blank_object = CerberusMock(self.schema)
+        self.assertEqual(blank_object, {'a_required_string': '**'})
+
+    def test_valid_initialisation(self):
+        data = {
+            'a_required_string': 'hello worl',
+            'an_integer': 3}
+        initialised_object = CerberusMock(self.schema, data)
+        self.assertEqual(initialised_object, data)
+
+    def test_invalid_initialisation(self):
+        with self.assertRaises(ValidationError):
+            CerberusMock(self.schema, {'an_integer', 3})
+        with self.assertRaises(ValidationError):
+            CerberusMock(self.schema, {
+                'a_required_string': 'hello world',
+                'an_integer': 'not an integer'})
