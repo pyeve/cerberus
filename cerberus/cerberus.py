@@ -104,7 +104,7 @@ class Validator(object):
     @property
     def errors(self):
         """
-        :rtype: a list of validation errors. Will be empty if no errors
+        :rtype: a dict of validation errors. Will be empty if no errors
                 were found during. Resets after each call to :func:`validate`.
         """
         return self._errors
