@@ -114,7 +114,11 @@ class CerberusMock(MutableMapping):
 
     @classmethod
     def _integer_from_constraints(cls, constraints):
-        return constraints.get('min', 0)
+        allowed = constraints.get('allowed')
+        if allowed:
+            return allowed[0]
+        else:
+            return constraints.get('min', 0)
     _number_from_constraints = _integer_from_constraints
 
     @classmethod

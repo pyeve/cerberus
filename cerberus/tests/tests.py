@@ -480,8 +480,33 @@ class TestMock(TestBase):
         self.assertEqual(blank_object, {'a_required_string': 'aa'})
         blank_object = CerberusMock(
             self.schema, create_missing=True, allow_unknown=True)
-        self.assertEqual(blank_object, {
-            'a_required_string', 'aa'})
+        expected = {
+            'a_required_string': 'aa',
+            'a_nullable_integer': None,
+            'an_integer': 1,
+            'a_restricted_integer': -1,
+            'a_boolean': False,
+            'a_datetime': datetime.fromtimestamp(0),
+            'a_float': 1.0,
+            'a_number': 1,
+            'a_set': set(),
+            'a_regex_email': 'a@a.a',
+            'a_readonly_string': '',
+            'a_restricted_string': 'agent',
+            'an_array': [],
+            'a_list_of_dicts_deprecated': [CerberusMock(schema={})],
+            'a_list_of_dicts': [],
+            'a_list_of_values': ['', 0],
+            'a_list_of_integers': [],
+            'a_dict': CerberusMock(
+                schema=self.schema['a_dict']['schema'],
+                document={'city': ''}),
+            'a_dict_with_keyschema': CerberusMock(schema={}),
+            'a_list_length': [0, 0],
+            'a_nullable_field_without_type': None,
+            'a_not_nullable_field_without_type': '',
+        }
+        self.assertEqual(blank_object, expected)
 
     def test_valid_initialisation(self):
         data = {
