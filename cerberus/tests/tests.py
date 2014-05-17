@@ -4,7 +4,7 @@ from random import choice
 from string import ascii_lowercase
 from . import TestBase
 from ..cerberus import Validator, errors, ValidationError
-from ..mock import CerberusMock
+from ..mock import CerberusMock, CerberusKeySchemaMock
 
 
 class TestValidator(TestBase):
@@ -501,12 +501,18 @@ class TestMock(TestBase):
             'a_dict': CerberusMock(
                 schema=self.schema['a_dict']['schema'],
                 document={'city': ''}),
-            'a_dict_with_keyschema': CerberusMock(schema={}),
+            'a_dict_with_keyschema': CerberusKeySchemaMock(keyschema={
+                'type': 'integer'}),
             'a_list_length': [0, 0],
             'a_nullable_field_without_type': None,
             'a_not_nullable_field_without_type': '',
         }
         self.assertEqual(blank_object, expected)
+        self.assertIsInstance(blank_object['a_dict'], CerberusMock)
+        self.assertIsInstance(
+            blank_object['a_dict_with_keyschema'], CerberusKeySchemaMock)
+        self.assertIsInstance(
+            blank_object['a_list_of_dicts_deprecated'][0], CerberusMock)
 
     def test_valid_initialisation(self):
         data = {
@@ -549,6 +555,23 @@ class TestMock(TestBase):
         self.assertIsInstance(mock['a_list_of_dicts'][0], CerberusMock)
         self.assertEqual(mock['a_list_of_dicts'], new_data)
 
+    def test_update(self):
+        mock = CerberusMock(self.schema)
+        new_data = {
+            'a_set': {1, 2, 3},
+            'an_array': ['agent', 'client', 'client'],
+            'a_dict_with_keyschema': {'hello': 5}}
+        mock.update(new_data)
+        self.assertIsInstance(
+            mock['a_dict_with_keyschema'], CerberusKeySchemaMock)
+        expected = {
+            'a_required_string': 'aa',
+            'a_set': {1, 2, 3},
+            'an_array': ['agent', 'client', 'client'],
+            'a_dict_with_keyschema': CerberusKeySchemaMock(
+                keyschema={'type': 'integer'}, document={'hello': 5})}
+        self.assertEqual(mock, expected)
+
     def test_delete_readonly_field(self):
         mock = CerberusMock(self.schema)
         with self.assertRaises(KeyError):
@@ -563,3 +586,17 @@ class TestMock(TestBase):
         mock = CerberusMock(self.schema)
         with self.assertRaisesRegexp(ValidationError, 'required field'):
             del mock['a_required_string']
+
+
+class TestKeySchemaMock(TestBase):
+    def setUp(self):
+        super(TestBase, self).setUp()
+        self.mock = CerberusKeySchemaMock(keyschema={'type': 'integer'})
+
+    def test_bad_setitem(self):
+        with self.assertRaises(ValidationError):
+            self.mock['foo'] = 'hello world'
+
+    def test_setitem(self):
+        self.mock['foo'] = 3
+        self.assertEqual(self.mock['foo'], 3)

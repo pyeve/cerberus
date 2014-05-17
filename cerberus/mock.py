@@ -39,7 +39,11 @@ class CerberusMock(MutableMapping):
         self._validate_and_raise({key: value}, update=True)
         item_schema = self.schema[key].get('schema')
         if isinstance(value, MutableMapping):
-            value = self.__class__(item_schema, value)
+            keyschema = self.schema[key].get('keyschema')
+            if keyschema:
+                value = CerberusKeySchemaMock(keyschema, value)
+            else:
+                value = self.__class__(item_schema, value)
         elif isinstance(value, MutableSequence):
             value = [
                 self.__class__(item_schema['schema'], i) if
@@ -47,7 +51,7 @@ class CerberusMock(MutableMapping):
         self._document[key] = value
 
     def __delitem__(self, key):
-        _ = self._document[key]  # Die if key missing
+        self._document[key]  # Die if key missing
         constraints = self.schema[key]
         if constraints.get('readonly'):
             raise ValidationError(
@@ -129,8 +133,12 @@ class CerberusMock(MutableMapping):
 
     @classmethod
     def _dict_from_constraints(cls, constraints):
-        schema = constraints.get('schema', {})
-        return cls(schema)
+        keyschema = constraints.get('keyschema')
+        if keyschema:
+            return CerberusKeySchemaMock(keyschema)
+        else:
+            schema = constraints.get('schema', {})
+            return cls(schema)
 
     @classmethod
     def _integer_from_constraints(cls, constraints):
@@ -148,6 +156,35 @@ class CerberusMock(MutableMapping):
     @classmethod
     def _datetime_from_constraints(cls, constraints):
         return datetime.fromtimestamp(0)
+
+
+class CerberusKeySchemaMock(MutableMapping):
+    def __init__(self, keyschema, document=None):
+        self.keyschema = keyschema
+        self._document = {}
+        self._validator = Validator()
+        if document:
+            self.update(document)
+
+    def __getitem__(self, key):
+        return self._document[key]
+
+    def __setitem__(self, key, value):
+        if self._validator.validate(
+                {key: value}, schema={key: self.keyschema}):
+            self._document[key] = value
+        else:
+            key, error = next(iter(self._validator.errors.items()))
+            raise ValidationError('{}: {}'.format(key, error))
+
+    def __delitem__(self, key):
+        del self._document[key]
+
+    def __len__(self):
+        return len(self._document)
+
+    def __iter__(self):
+        return iter(self._document)
 
 
 def _traverse_regex(tree):
