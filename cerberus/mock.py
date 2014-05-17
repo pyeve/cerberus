@@ -4,7 +4,7 @@
 
 import re
 import string
-from collections import MutableMapping
+from collections import MutableMapping, MutableSequence
 from datetime import datetime
 from cerberus import Validator, ValidationError
 
@@ -27,9 +27,7 @@ class CerberusMock(MutableMapping):
         self._document = document or self._create_blank_from_schema(
             schema, create_missing)
         self._validator = Validator(schema, **kwargs)
-        if not self._validator.validate(self._document):
-            key, error = next(iter(self._validator.errors.items()))
-            raise ValidationError('{}: {}'.format(key, error))
+        self._validate_and_raise(self._document)
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self._document)
@@ -38,16 +36,38 @@ class CerberusMock(MutableMapping):
         return self._document[key]
 
     def __setitem__(self, key, value):
+        self._validate_and_raise({key: value}, update=True)
+        item_schema = self.schema[key].get('schema')
+        if isinstance(value, MutableMapping):
+            value = self.__class__(item_schema, value)
+        elif isinstance(value, MutableSequence):
+            value = [
+                self.__class__(item_schema['schema'], i) if
+                isinstance(i, MutableMapping) else i for i in value]
         self._document[key] = value
 
     def __delitem__(self, key):
-        del self._document[key]
+        _ = self._document[key]  # Die if key missing
+        constraints = self.schema[key]
+        if constraints.get('readonly'):
+            raise ValidationError(
+                "Can't delete read-only field {!r}".format(key))
+        elif constraints.get('required'):
+            raise ValidationError(
+                "Can't delete required field {!r}".format(key))
+        else:
+            del self._document[key]
 
     def __iter__(self):
         return iter(self._document)
 
     def __len__(self):
         return len(self._document)
+
+    def _validate_and_raise(self, *args, **kwargs):
+        if not self._validator.validate(*args, **kwargs):
+            key, error = next(iter(self._validator.errors.items()))
+            raise ValidationError('{}: {}'.format(key, error))
 
     @classmethod
     def _create_blank_from_schema(cls, schema, create_missing):

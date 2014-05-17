@@ -520,5 +520,46 @@ class TestMock(TestBase):
             CerberusMock(self.schema, {'an_integer', 3})
         with self.assertRaises(ValidationError):
             CerberusMock(self.schema, {
-                'a_required_string': 'hello world',
+                'a_required_string': 'hello worl',
                 'an_integer': 'not an integer'})
+
+    def test_set_read_only(self):
+        mock = CerberusMock(self.schema)
+        with self.assertRaises(ValidationError):
+            mock['a_readonly_string'] = 'new value'
+        with self.assertRaises(ValidationError):
+            mock.update({'a_readonly_string': 'new value'})
+
+    def test_set_bad_value(self):
+        mock = CerberusMock(self.schema)
+        with self.assertRaises(ValidationError):
+            mock['a_dict'] = {'city': 'Reading', 'address': 300}
+
+    def test_set_dict(self):
+        mock = CerberusMock(self.schema)
+        new_data = {'city': 'Reading', 'address': '300 Longwater Av'}
+        mock['a_dict'] = new_data
+        self.assertIsInstance(mock['a_dict'], CerberusMock)
+        self.assertEqual(mock['a_dict'], new_data)
+
+    def test_set_list(self):
+        mock = CerberusMock(self.schema)
+        new_data = [{'sku': 'sounds like ska', 'price': 28}]
+        mock['a_list_of_dicts'] = new_data
+        self.assertIsInstance(mock['a_list_of_dicts'][0], CerberusMock)
+        self.assertEqual(mock['a_list_of_dicts'], new_data)
+
+    def test_delete_readonly_field(self):
+        mock = CerberusMock(self.schema)
+        with self.assertRaises(KeyError):
+            # Mock not populated with value yet
+            del mock['a_readonly_string']
+        mock = CerberusMock(
+            self.schema, create_missing=True, allow_unknown=True)
+        with self.assertRaisesRegexp(ValidationError, 'read-only field'):
+            del mock['a_readonly_string']
+
+    def test_delete_required_field(self):
+        mock = CerberusMock(self.schema)
+        with self.assertRaisesRegexp(ValidationError, 'required field'):
+            del mock['a_required_string']
