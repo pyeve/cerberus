@@ -3,7 +3,8 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from . import TestBase
-from ..cerberus import Validator, errors
+from ..cerberus import Validator, errors, ValidationError
+from ..mock import CerberusMock, CerberusKeySchemaMock
 
 
 class TestValidator(TestBase):
@@ -65,8 +66,14 @@ class TestValidator(TestBase):
 
     def test_readonly_field(self):
         field = 'a_readonly_string'
-        self.assertFail({field: 'update me if you can'})
+        self.assertFail({field: 'update me if you can'}, update=True)
         self.assertError(field, errors.ERROR_READONLY_FIELD)
+        self.assertSuccess(
+            {
+                field: 'update me if you can',
+                'a_required_string': 'required',  # for full re-validation
+            },
+            update=False)
 
     def test_unknown_data_type(self):
         field = 'name'
@@ -464,3 +471,133 @@ class TestValidator(TestBase):
         self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar',
                                     'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+
+
+class TestMock(TestBase):
+
+    def test_blank_object(self):
+        blank_object = CerberusMock(self.schema)
+        self.assertEqual(blank_object, {'a_required_string': 'aa'})
+        blank_object = CerberusMock(
+            self.schema, create_missing=True, allow_unknown=True)
+        expected = {
+            'a_required_string': 'aa',
+            'a_nullable_integer': None,
+            'an_integer': 1,
+            'a_restricted_integer': -1,
+            'a_boolean': False,
+            'a_datetime': datetime.fromtimestamp(0),
+            'a_float': 1.0,
+            'a_number': 1,
+            'a_set': set(),
+            'a_regex_email': 'a@a.a',
+            'a_readonly_string': '',
+            'a_restricted_string': 'agent',
+            'an_array': [],
+            'a_list_of_dicts_deprecated': [CerberusMock(schema={})],
+            'a_list_of_dicts': [],
+            'a_list_of_values': ['', 0],
+            'a_list_of_integers': [],
+            'a_dict': CerberusMock(
+                schema=self.schema['a_dict']['schema'],
+                document={'city': ''}),
+            'a_dict_with_keyschema': CerberusKeySchemaMock(keyschema={
+                'type': 'integer'}),
+            'a_list_length': [0, 0],
+            'a_nullable_field_without_type': None,
+            'a_not_nullable_field_without_type': '',
+        }
+        self.assertEqual(blank_object, expected)
+        self.assertTrue(isinstance(blank_object['a_dict'], CerberusMock))
+        self.assertTrue(isinstance(
+            blank_object['a_dict_with_keyschema'], CerberusKeySchemaMock))
+        self.assertTrue(isinstance(
+            blank_object['a_list_of_dicts_deprecated'][0], CerberusMock))
+
+    def test_valid_initialisation(self):
+        data = {
+            'a_required_string': 'hello worl',
+            'an_integer': 3}
+        initialised_object = CerberusMock(self.schema, data)
+        self.assertEqual(initialised_object, data)
+
+    def test_invalid_initialisation(self):
+        self.assertRaises(
+            ValidationError, CerberusMock, self.schema, set(('an_integer', 3)))
+        self.assertRaises(
+            ValidationError, CerberusMock, self.schema, {
+                'a_required_string': 'hello worl',
+                'an_integer': 'not an integer'})
+
+    def test_set_read_only(self):
+        mock = CerberusMock(self.schema)
+        self.assertRaises(
+            ValidationError, mock.__setitem__,
+            'a_readonly_string', 'new value')
+        self.assertRaises(
+            ValidationError, mock.update, {'a_readonly_string': 'new value'})
+
+    def test_set_bad_value(self):
+        mock = CerberusMock(self.schema)
+        self.assertRaises(
+            ValidationError, mock.__setitem__, 'a_dict',
+            {'city': 'Reading', 'address': 300})
+
+    def test_set_dict(self):
+        mock = CerberusMock(self.schema)
+        new_data = {'city': 'Reading', 'address': '300 Longwater Av'}
+        mock['a_dict'] = new_data
+        self.assertTrue(isinstance(mock['a_dict'], CerberusMock))
+        self.assertEqual(mock['a_dict'], new_data)
+
+    def test_set_list(self):
+        mock = CerberusMock(self.schema)
+        new_data = [{'sku': 'sounds like ska', 'price': 28}]
+        mock['a_list_of_dicts'] = new_data
+        self.assertTrue(isinstance(mock['a_list_of_dicts'][0], CerberusMock))
+        self.assertEqual(mock['a_list_of_dicts'], new_data)
+
+    def test_update(self):
+        mock = CerberusMock(self.schema)
+        new_data = {
+            'a_set': set((1, 2, 3)),
+            'an_array': ['agent', 'client', 'client'],
+            'a_dict_with_keyschema': {'hello': 5}}
+        mock.update(new_data)
+        self.assertTrue(isinstance(
+            mock['a_dict_with_keyschema'], CerberusKeySchemaMock))
+        expected = {
+            'a_required_string': 'aa',
+            'a_set': set((1, 2, 3)),
+            'an_array': ['agent', 'client', 'client'],
+            'a_dict_with_keyschema': CerberusKeySchemaMock(
+                keyschema={'type': 'integer'}, document={'hello': 5})}
+        self.assertEqual(mock, expected)
+
+    def test_delete_readonly_field(self):
+        mock = CerberusMock(self.schema)
+        # Mock not populated with value yet:
+        self.assertRaises(KeyError, mock.__delitem__, 'a_readonly_string')
+        mock = CerberusMock(
+            self.schema, create_missing=True, allow_unknown=True)
+        self.assertRaises(
+            ValidationError, mock.__delitem__, 'a_readonly_string')
+
+    def test_delete_required_field(self):
+        mock = CerberusMock(self.schema)
+        self.assertRaises(
+            ValidationError, mock.__delitem__, 'a_required_string')
+
+
+class TestKeySchemaMock(TestBase):
+    def setUp(self):
+        super(TestBase, self).setUp()
+        self.mock = CerberusKeySchemaMock(keyschema={'type': 'integer'})
+
+    def test_bad_setitem(self):
+        self.assertRaises(
+            ValidationError, self.mock.__setitem__, 'foo', 'hello world')
+
+    def test_setitem(self):
+        self.mock['foo'] = 3
+        self.assertEqual(self.mock['foo'], 3)
