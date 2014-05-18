@@ -30,7 +30,7 @@ class CerberusMock(MutableMapping):
         self._validate_and_raise(self._document)
 
     def __repr__(self):
-        return '{}({!r})'.format(self.__class__.__name__, self._document)
+        return '{0}({1!r})'.format(self.__class__.__name__, self._document)
 
     def __getitem__(self, key):
         return self._document[key]
@@ -55,10 +55,10 @@ class CerberusMock(MutableMapping):
         constraints = self.schema[key]
         if constraints.get('readonly'):
             raise ValidationError(
-                "Can't delete read-only field {!r}".format(key))
+                "Can't delete read-only field {0!r}".format(key))
         elif constraints.get('required'):
             raise ValidationError(
-                "Can't delete required field {!r}".format(key))
+                "Can't delete required field {0!r}".format(key))
         else:
             del self._document[key]
 
@@ -71,7 +71,7 @@ class CerberusMock(MutableMapping):
     def _validate_and_raise(self, *args, **kwargs):
         if not self._validator.validate(*args, **kwargs):
             key, error = next(iter(self._validator.errors.items()))
-            raise ValidationError('{}: {}'.format(key, error))
+            raise ValidationError('{0}: {1}'.format(key, error))
 
     @classmethod
     def _create_blank_from_schema(cls, schema, create_missing):
@@ -89,7 +89,7 @@ class CerberusMock(MutableMapping):
         if type_name:
             try:
                 factory = getattr(
-                    cls, '_{}_from_constraints'.format(type_name))
+                    cls, '_{0}_from_constraints'.format(type_name))
             except AttributeError:
                 factory = cls._type_name_mapping[type_name]
                 return factory()
@@ -175,7 +175,7 @@ class CerberusKeySchemaMock(MutableMapping):
             self._document[key] = value
         else:
             key, error = next(iter(self._validator.errors.items()))
-            raise ValidationError('{}: {}'.format(key, error))
+            raise ValidationError('{0}: {1}'.format(key, error))
 
     def __delitem__(self, key):
         del self._document[key]
