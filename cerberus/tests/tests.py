@@ -522,24 +522,26 @@ class TestMock(TestBase):
         self.assertEqual(initialised_object, data)
 
     def test_invalid_initialisation(self):
-        with self.assertRaises(ValidationError):
-            CerberusMock(self.schema, set(('an_integer', 3)))
-        with self.assertRaises(ValidationError):
-            CerberusMock(self.schema, {
+        self.assertRaises(
+            ValidationError, CerberusMock, self.schema, set(('an_integer', 3)))
+        self.assertRaises(
+            ValidationError, CerberusMock, self.schema, {
                 'a_required_string': 'hello worl',
                 'an_integer': 'not an integer'})
 
     def test_set_read_only(self):
         mock = CerberusMock(self.schema)
-        with self.assertRaises(ValidationError):
-            mock['a_readonly_string'] = 'new value'
-        with self.assertRaises(ValidationError):
-            mock.update({'a_readonly_string': 'new value'})
+        self.assertRaises(
+            ValidationError, mock.__setitem__,
+            'a_readonly_string', 'new value')
+        self.assertRaises(
+            ValidationError, mock.update, {'a_readonly_string': 'new value'})
 
     def test_set_bad_value(self):
         mock = CerberusMock(self.schema)
-        with self.assertRaises(ValidationError):
-            mock['a_dict'] = {'city': 'Reading', 'address': 300}
+        self.assertRaises(
+            ValidationError, mock.__setitem__, 'a_dict',
+            {'city': 'Reading', 'address': 300})
 
     def test_set_dict(self):
         mock = CerberusMock(self.schema)
@@ -574,18 +576,19 @@ class TestMock(TestBase):
 
     def test_delete_readonly_field(self):
         mock = CerberusMock(self.schema)
-        with self.assertRaises(KeyError):
-            # Mock not populated with value yet
-            del mock['a_readonly_string']
+        # Mock not populated with value yet:
+        self.assertRaises(KeyError, mock.__delitem__, 'a_readonly_string')
         mock = CerberusMock(
             self.schema, create_missing=True, allow_unknown=True)
-        with self.assertRaisesRegexp(ValidationError, 'read-only field'):
-            del mock['a_readonly_string']
+        self.assertRaisesRegexp(
+            ValidationError, 'read-only field', mock.__delitem__,
+            'a_readonly_string')
 
     def test_delete_required_field(self):
         mock = CerberusMock(self.schema)
-        with self.assertRaisesRegexp(ValidationError, 'required field'):
-            del mock['a_required_string']
+        self.assertRaisesRegexp(
+            ValidationError, 'required field', mock.__delitem__,
+            'a_required_string')
 
 
 class TestKeySchemaMock(TestBase):
@@ -594,8 +597,8 @@ class TestKeySchemaMock(TestBase):
         self.mock = CerberusKeySchemaMock(keyschema={'type': 'integer'})
 
     def test_bad_setitem(self):
-        with self.assertRaises(ValidationError):
-            self.mock['foo'] = 'hello world'
+        self.assertRaises(
+            ValidationError, self.mock.__setitem__, 'foo', 'hello world')
 
     def test_setitem(self):
         self.mock['foo'] = 3
