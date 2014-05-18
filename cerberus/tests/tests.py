@@ -523,7 +523,7 @@ class TestMock(TestBase):
 
     def test_invalid_initialisation(self):
         with self.assertRaises(ValidationError):
-            CerberusMock(self.schema, {'an_integer', 3})
+            CerberusMock(self.schema, set(('an_integer', 3)))
         with self.assertRaises(ValidationError):
             CerberusMock(self.schema, {
                 'a_required_string': 'hello worl',
@@ -558,7 +558,7 @@ class TestMock(TestBase):
     def test_update(self):
         mock = CerberusMock(self.schema)
         new_data = {
-            'a_set': {1, 2, 3},
+            'a_set': set((1, 2, 3)),
             'an_array': ['agent', 'client', 'client'],
             'a_dict_with_keyschema': {'hello': 5}}
         mock.update(new_data)
@@ -566,7 +566,7 @@ class TestMock(TestBase):
             mock['a_dict_with_keyschema'], CerberusKeySchemaMock)
         expected = {
             'a_required_string': 'aa',
-            'a_set': {1, 2, 3},
+            'a_set': set((1, 2, 3)),
             'an_array': ['agent', 'client', 'client'],
             'a_dict_with_keyschema': CerberusKeySchemaMock(
                 keyschema={'type': 'integer'}, document={'hello': 5})}
