@@ -10,6 +10,7 @@
 
 import sys
 import re
+import copy
 from datetime import datetime
 from . import errors
 
@@ -53,6 +54,10 @@ class Validator(object):
                           the schema) will be ignored, and validation will
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
+
+    .. versionchanged:: 0.7.1
+       Validator options like 'allow_unknown' and 'ignore_none_values' are now
+       taken into consideration when validating sub-dictionaries.
 
     .. versionadded:: 0.7
        'keyschema' validation rule.
@@ -344,7 +349,8 @@ class Validator(object):
             if len(list_errors):
                 self._error(field, list_errors)
         elif isinstance(value, dict):
-            validator = self.__class__(schema)
+            validator = copy.copy(self)
+            validator.schema = schema
             validator.validate(value)
             if len(validator.errors):
                 self._error(field, validator.errors)
