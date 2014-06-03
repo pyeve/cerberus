@@ -466,8 +466,8 @@ class TestValidator(TestBase):
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
     def test_options_passed_to_nested_validators(self):
-        schema = {'sub_dict': {'type': 'dict', 'schema': {'foo':
-                                                         {'type': 'string'}}}}
+        schema = {'sub_dict': {'type': 'dict',
+                               'schema': {'foo': {'type': 'string'}}}}
         v = Validator(schema, allow_unknown=True)
         self.assertTrue(v.validate({'sub_dict': {'foo': 'bar',
                                                  'unknown': True}}))
