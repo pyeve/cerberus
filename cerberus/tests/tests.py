@@ -3,7 +3,7 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from . import TestBase
-from ..cerberus import Validator, errors
+from ..cerberus import Validator, errors, SchemaError
 
 
 class TestValidator(TestBase):
@@ -14,14 +14,39 @@ class TestValidator(TestBase):
                                errors.ERROR_SCHEMA_MISSING)
 
     def test_bad_schema_type(self):
-        schema = "this string should really be  dict"
-        v = Validator(schema)
-        self.assertSchemaError(self.document, None, v,
-                               errors.ERROR_SCHEMA_FORMAT % schema)
+        schema = "this string should really be dict"
+        try:
+            Validator(schema)
+        except SchemaError as e:
+            self.assertEqual(str(e), errors.ERROR_SCHEMA_FORMAT % schema)
+        else:
+            self.fail('SchemaError not raised')
 
         v = Validator()
         self.assertSchemaError(self.document, schema, v,
                                errors.ERROR_SCHEMA_FORMAT % schema)
+
+    def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except SchemaError as e:
+            self.assertIn(err_msg, str(e))
+        else:
+            self.fail('SchemaError not raised')
+
+    def test_invalid_schema(self):
+        schema = {'foo': {'unknown': 'rule'}}
+        err_msg = ' '.join(errors.ERROR_UNKNOWN_RULE.split()[:2])
+        self._check_schema_content_error(err_msg, Validator, schema)
+        v = Validator()
+        self._check_schema_content_error(
+            err_msg, v.validate, {}, schema=schema)
+
+    def test_bad_constraint_value_type(self):
+        for constraint in ('nullable', 'required'):
+            schema = {'foo': {constraint: 'bad_type'}}
+            err_msg = errors.ERROR_BAD_TYPE % bool
+            self._check_schema_content_error(err_msg, Validator, schema)
 
     def test_empty_document(self):
         self.assertValidationError(None, None, None,

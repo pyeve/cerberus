@@ -37,6 +37,7 @@ class SchemaError(ValueError):
 
 class Validator(object):
     """ Validator class. Validates any Python dict against a validation schema,
+
     which is provided as an argument at class instantiation, or upon calling
     the :func:`validate` method.
 
@@ -96,13 +97,14 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
-        self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        if schema:
+            self.validate_schema(schema)
+        self.schema = schema
         self._errors = {}
 
     def __call__(self, *args, **kwargs):
@@ -156,11 +158,10 @@ class Validator(object):
         self.update = update
 
         if schema is not None:
+            self.validate_schema(schema)
             self.schema = schema
         elif self.schema is None:
             raise SchemaError(errors.ERROR_SCHEMA_MISSING)
-        if not isinstance(self.schema, dict):
-            raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(self.schema))
 
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
@@ -240,6 +241,43 @@ class Validator(object):
             field_errors = field_errors.pop()
 
         self._errors[field] = field_errors
+
+    def validate_schema(self, schema):
+        """
+        :param schema: the schema to be validated as a legal cerberus schema
+                       according to the rules of this Validator object.
+        """
+        if not isinstance(schema, dict):
+            raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
+
+        for field, constraints in schema.items():
+            if not isinstance(constraints, dict):
+                raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
+            for constraint, value in constraints.items():
+                if constraint == 'type':
+                    if not hasattr(self, '_validate_type_' + value):
+                        raise SchemaError(
+                            errors.ERROR_UNKNOWN_TYPE % value)
+                elif constraint in ('required', 'nullable'):
+                    if not isinstance(value, bool):
+                        raise SchemaError(
+                            errors.ERROR_BAD_TYPE % bool)
+                elif constraint == 'schema':
+                    if constraints['type'] == 'list':
+                        self.validate_schema({'schema': value})
+                    else:
+                        self.validate_schema(value)
+                elif constraint == 'items':
+                    if isinstance(value, dict):
+                        # list of dicts, deprecated
+                        self.validate_schema(value)
+                    else:
+                        for item_schema in value:
+                            self.validate_schema({'schema': item_schema})
+                elif not hasattr(self, '_validate_' + constraint):
+                    if not self.transparent_schema_rules:
+                            raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
+                                constraint, field))
 
     def _validate_required_fields(self, document):
         required = list(field for field, definition in self.schema.items()
