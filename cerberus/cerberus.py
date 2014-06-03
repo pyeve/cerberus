@@ -365,7 +365,7 @@ class Validator(object):
 
     def _validate_keyschema(self, schema, field, value):
         for key, document in value.items():
-            validator = self.__class__(schema)
+            validator = self.__class__()
             validator.validate(
                 {key: document}, {key: schema}, context=self.document)
             if len(validator.errors):
