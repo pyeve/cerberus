@@ -176,47 +176,38 @@ class Validator(object):
 
         special_rules = ["required", "nullable", "type", "dependencies"]
         for field, value in document.items():
-
             if self.ignore_none_values and value is None:
                 continue
 
             definition = self.schema.get(field)
             if definition:
-                if isinstance(definition, dict):
+                if value is None:
+                    if definition.get("nullable", False) is True:
+                        continue
+                    else:
+                        self._error(field, errors.ERROR_NOT_NULLABLE)
 
-                    if value is None:
-                        if definition.get("nullable", False) is True:
-                            continue
-                        else:
-                            self._error(field, errors.ERROR_NOT_NULLABLE)
+                if 'type' in definition:
+                    self._validate_type(definition['type'], field, value)
+                    if self.errors.get(field):
+                        continue
 
-                    if 'type' in definition:
-                        self._validate_type(definition['type'], field, value)
-                        if self.errors.get(field):
-                            continue
+                if "dependencies" in definition:
+                    self._validate_dependencies(
+                        document=document,
+                        dependencies=definition["dependencies"],
+                        field=field
+                    )
+                    if self.errors.get(field):
+                        continue
 
-                    if "dependencies" in definition:
-                        self._validate_dependencies(
-                            document=document,
-                            dependencies=definition["dependencies"],
-                            field=field
-                        )
-                        if self.errors.get(field):
-                            continue
-
-                    definition_rules = [rule for rule in definition.keys()
-                                        if rule not in special_rules]
-                    for rule in definition_rules:
-                        validatorname = "_validate_" + rule.replace(" ", "_")
-                        validator = getattr(self, validatorname, None)
-                        if validator:
-                            validator(definition[rule], field, value)
-                        elif not self.transparent_schema_rules:
-                            raise SchemaError(errors.ERROR_UNKNOWN_RULE %
-                                              (rule, field))
-                else:
-                    raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
-
+                definition_rules = [rule for rule in definition.keys()
+                                    if rule not in special_rules]
+                for rule in definition_rules:
+                    validatorname = "_validate_" + rule.replace(" ", "_")
+                    validator = getattr(self, validatorname, None)
+                    if validator:
+                        validator(definition[rule], field, value)
             else:
                 if not self.allow_unknown:
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
@@ -302,10 +293,7 @@ class Validator(object):
 
     def _validate_type(self, data_type, field, value):
         validator = getattr(self, "_validate_type_" + data_type, None)
-        if validator:
-            validator(field, value)
-        else:
-            raise SchemaError(errors.ERROR_UNKNOWN_TYPE % data_type)
+        validator(field, value)
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
