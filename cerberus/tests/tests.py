@@ -471,3 +471,35 @@ class TestValidator(TestBase):
         v = Validator(schema, allow_unknown=True)
         self.assertTrue(v.validate({'sub_dict': {'foo': 'bar',
                                                  'unknown': True}}))
+
+    def test_self_document_always_root(self):
+        ''' Make sure self.document is always the root document.
+        See:
+        * https://github.com/nicolaiarocci/cerberus/pull/42
+        * https://github.com/nicolaiarocci/eve/issues/295
+        '''
+        class MyValidator(Validator):
+            def _validate_root_doc(self, root_doc, field, value):
+                if('sub' not in self.document or
+                        len(self.document['sub']) != 2):
+                    self._error(field, 'self.document is not the root doc!')
+
+        schema = {
+            'sub': {
+                'type': 'list',
+                'schema': {
+                    'type': 'dict',
+                    'root_doc': True,
+                    'schema': {
+                        'foo': {
+                            'type': 'string',
+                            'root_doc': True
+                        }
+                    }
+                }
+            }
+        }
+        v = MyValidator(schema)
+
+        obj = {'sub': [{'foo': 'bar'}, {'foo': 'baz'}]}
+        self.assertTrue(v.validate(obj))
