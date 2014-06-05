@@ -166,10 +166,10 @@ class Validator(object):
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, dict):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
+
+        # make root document available for validators (Cerberus #42, Eve #295)
         if context is not None:
-            print 'setting via context'
             self.document = context
-            # self.document = document
         else:
             self.document = document
 

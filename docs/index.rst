@@ -126,6 +126,9 @@ matters, we can validate it: ::
 
 .. _new-types:
 
+Custom validators also have access to a special ``self.document`` variable that
+allows validation of a field to happen in context of the rest of the document.
+
 Adding new data-types
 '''''''''''''''''''''
 Cerberus supports and validates several standard data types (see `type`_).
