@@ -58,6 +58,7 @@ class Validator(object):
     .. versionchanged:: 0.7.1
        Validator options like 'allow_unknown' and 'ignore_none_values' are now
        taken into consideration when validating sub-dictionaries.
+       Make self.document always the root level document.
 
     .. versionadded:: 0.7
        'keyschema' validation rule.
@@ -115,7 +116,7 @@ class Validator(object):
         """
         return self._errors
 
-    def validate_update(self, document, schema=None):
+    def validate_update(self, document, schema=None, context=None):
         """ Validates a Python dicitionary against a validation schema. The
         difference with :func:`validate` is that the ``required`` rule will be
         ignored here.
@@ -129,9 +130,9 @@ class Validator(object):
         .. deprecated:: 0.4.0
            Use :func:`validate` with ``update=True`` instead.
         """
-        return self._validate(document, schema, update=True)
+        return self._validate(document, schema, update=True, context=context)
 
-    def validate(self, document, schema=None, update=False):
+    def validate(self, document, schema=None, update=False, context=None):
         """ Validates a Python dictionary against a validation schema.
 
         :param document: the dict to validate.
@@ -147,9 +148,9 @@ class Validator(object):
         .. versionchanged:: 0.4.0
            Support for update mode.
         """
-        return self._validate(document, schema, update=update)
+        return self._validate(document, schema, update=update, context=context)
 
-    def _validate(self, document, schema=None, update=False):
+    def _validate(self, document, schema=None, update=False, context=None):
 
         self._errors = {}
         self.update = update
@@ -165,10 +166,15 @@ class Validator(object):
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, dict):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
-        self.document = document
+
+        # make root document available for validators (Cerberus #42, Eve #295)
+        if context is not None:
+            self.document = context
+        else:
+            self.document = document
 
         special_rules = ["required", "nullable", "type", "dependencies"]
-        for field, value in self.document.items():
+        for field, value in document.items():
 
             if self.ignore_none_values and value is None:
                 continue
@@ -190,7 +196,7 @@ class Validator(object):
 
                     if "dependencies" in definition:
                         self._validate_dependencies(
-                            document=self.document,
+                            document=document,
                             dependencies=definition["dependencies"],
                             field=field
                         )
@@ -215,7 +221,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields()
+            self._validate_required_fields(document)
 
         return len(self._errors) == 0
 
@@ -235,11 +241,11 @@ class Validator(object):
 
         self._errors[field] = field_errors
 
-    def _validate_required_fields(self):
+    def _validate_required_fields(self, document):
         required = list(field for field, definition in self.schema.items()
                         if definition.get('required') is True)
-        missing = set(required) - set(key for key in self.document.keys()
-                                      if self.document.get(key) is not None
+        missing = set(required) - set(key for key in document.keys()
+                                      if document.get(key) is not None
                                       or not self.ignore_none_values)
         for field in missing:
             self._error(field, errors.ERROR_REQUIRED_FIELD)
@@ -344,14 +350,14 @@ class Validator(object):
             list_errors = {}
             for i in range(len(value)):
                 validator = self.__class__({i: schema})
-                validator.validate({i: value[i]})
+                validator.validate({i: value[i]}, context=self.document)
                 list_errors.update(validator.errors)
             if len(list_errors):
                 self._error(field, list_errors)
         elif isinstance(value, dict):
             validator = copy.copy(self)
             validator.schema = schema
-            validator.validate(value)
+            validator.validate(value, context=self.document)
             if len(validator.errors):
                 self._error(field, validator.errors)
         else:
@@ -360,7 +366,8 @@ class Validator(object):
     def _validate_keyschema(self, schema, field, value):
         for key, document in value.items():
             validator = self.__class__(schema)
-            validator.validate({key: document}, {key: schema})
+            validator.validate(
+                {key: document}, {key: schema}, context=self.document)
             if len(validator.errors):
                 self._error(field, validator.errors)
 
@@ -376,13 +383,13 @@ class Validator(object):
         else:
             for i in range(len(schema)):
                 validator = self.__class__({i: schema[i]})
-                validator.validate({i: values[i]})
+                validator.validate({i: values[i]}, context=self.document)
                 self.errors.update(validator.errors)
 
     def _validate_items_schema(self, schema, field, value):
         validator = self.__class__(schema)
         for item in value:
-            validator.validate(item)
+            validator.validate(item, context=self.document)
             for field, error in validator.errors.items():
                 self._error(field, error)
 

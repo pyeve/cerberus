@@ -124,6 +124,10 @@ matters, we can validate it: ::
     >>> v.validate({'oddity': 9})
     True
 
+.. versionadded:: 0.7.1
+    Custom validators also have access to a special ``self.document`` variable that
+    allows validation of a field to happen in context of the rest of the document.
+
 .. _new-types:
 
 Adding new data-types
