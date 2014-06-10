@@ -97,6 +97,8 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
+    special_rules = "required", "nullable", "type", "dependencies"
+
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
         self.transparent_schema_rules = transparent_schema_rules
@@ -174,7 +176,6 @@ class Validator(object):
         else:
             self.document = document
 
-        special_rules = ["required", "nullable", "type", "dependencies"]
         for field, value in document.items():
             if self.ignore_none_values and value is None:
                 continue
@@ -202,7 +203,7 @@ class Validator(object):
                         continue
 
                 definition_rules = [rule for rule in definition.keys()
-                                    if rule not in special_rules]
+                                    if rule not in self.special_rules]
                 for rule in definition_rules:
                     validatorname = "_validate_" + rule.replace(" ", "_")
                     validator = getattr(self, validatorname, None)
@@ -249,10 +250,8 @@ class Validator(object):
                     if not hasattr(self, '_validate_type_' + value):
                         raise SchemaError(
                             errors.ERROR_UNKNOWN_TYPE % value)
-                elif constraint in ('required', 'nullable'):
-                    if not isinstance(value, bool):
-                        raise SchemaError(
-                            errors.ERROR_BAD_TYPE % bool)
+                elif constraint in self.special_rules:
+                    pass
                 elif constraint == 'schema':
                     if constraints['type'] == 'list':
                         self.validate_schema({'schema': value})

@@ -42,12 +42,6 @@ class TestValidator(TestBase):
         self._check_schema_content_error(
             err_msg, v.validate, {}, schema=schema)
 
-    def test_bad_constraint_value_type(self):
-        for constraint in ('nullable', 'required'):
-            schema = {'foo': {constraint: 'bad_type'}}
-            err_msg = errors.ERROR_BAD_TYPE % bool
-            self._check_schema_content_error(err_msg, Validator, schema)
-
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
                                    errors.ERROR_DOCUMENT_MISSING)
