@@ -30,7 +30,7 @@ class TestValidator(TestBase):
         try:
             func(*args, **kwargs)
         except SchemaError as e:
-            self.assertIn(err_msg, str(e))
+            self.assertTrue(err_msg in str(e))
         else:
             self.fail('SchemaError not raised')
 
