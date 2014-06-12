@@ -419,7 +419,6 @@ class Validator(object):
                 self._error(field, error)
 
     def _validate_dependencies(self, document, dependencies, field):
-
         # handle cases where dependencies is a string or list of strings
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
