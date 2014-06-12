@@ -8,6 +8,9 @@ Version 0.7.1
 
 Not released yet.
 
+- Validation schemas are now validated up-front. When you pass a Schema to the
+  Validator it will be validated against the supported ruleset (Paul Weaver).
+  Closes #39.
 - Custom validators also have access to a special 'self.document' variable that
   allows validation of a field to happen in context of the rest of the document
   (Josh Villbrandt).
