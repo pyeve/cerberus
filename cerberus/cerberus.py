@@ -60,6 +60,7 @@ class Validator(object):
        Validator options like 'allow_unknown' and 'ignore_none_values' are now
        taken into consideration when validating sub-dictionaries.
        Make self.document always the root level document.
+       Up-front validation for schemas.
 
     .. versionadded:: 0.7
        'keyschema' validation rule.
