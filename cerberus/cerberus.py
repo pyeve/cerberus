@@ -238,6 +238,8 @@ class Validator(object):
         """
         :param schema: the schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
+
+        .. versionadded:: 0.7.1
         """
         if not isinstance(schema, dict):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
