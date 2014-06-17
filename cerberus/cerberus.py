@@ -12,6 +12,7 @@ import sys
 import re
 import copy
 from datetime import datetime
+from collections import Mapping, Sequence
 from . import errors
 
 if sys.version_info[0] == 3:
@@ -168,7 +169,7 @@ class Validator(object):
 
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
-        if not isinstance(document, dict):
+        if not isinstance(document, Mapping):
             raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
 
         # make root document available for validators (Cerberus #42, Eve #295)
@@ -236,17 +237,19 @@ class Validator(object):
         self._errors[field] = field_errors
 
     def validate_schema(self, schema):
-        """
+        """ Validates a schema against supported rules.
+
         :param schema: the schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
 
         .. versionadded:: 0.7.1
         """
-        if not isinstance(schema, dict):
+
+        if not isinstance(schema, Mapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
 
         for field, constraints in schema.items():
-            if not isinstance(constraints, dict):
+            if not isinstance(constraints, Mapping):
                 raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
             for constraint, value in constraints.items():
                 if constraint == 'type':
@@ -261,7 +264,7 @@ class Validator(object):
                     else:
                         self.validate_schema(value)
                 elif constraint == 'items':
-                    if isinstance(value, dict):
+                    if isinstance(value, Mapping):
                         # list of dicts, deprecated
                         self.validate_schema(value)
                     else:
@@ -325,11 +328,12 @@ class Validator(object):
             self._error(field, errors.ERROR_BAD_TYPE % "datetime")
 
     def _validate_type_dict(self, field, value):
-        if not isinstance(value, dict):
+        if not isinstance(value, Mapping):
             self._error(field, errors.ERROR_BAD_TYPE % "dict")
 
     def _validate_type_list(self, field, value):
-        if not isinstance(value, list):
+        if not isinstance(value, Sequence) or isinstance(
+                value, _str_type):
             self._error(field, errors.ERROR_BAD_TYPE % "list")
 
     def _validate_type_set(self, field, value):
@@ -337,12 +341,12 @@ class Validator(object):
             self._error(field, errors.ERROR_BAD_TYPE % "set")
 
     def _validate_maxlength(self, max_length, field, value):
-        if isinstance(value, (_str_type, list)):
+        if isinstance(value, Sequence):
             if len(value) > max_length:
                 self._error(field, errors.ERROR_MAX_LENGTH % max_length)
 
     def _validate_minlength(self, min_length, field, value):
-        if isinstance(value, (_str_type, list)):
+        if isinstance(value, Sequence):
             if len(value) < min_length:
                 self._error(field, errors.ERROR_MIN_LENGTH % min_length)
 
@@ -360,7 +364,7 @@ class Validator(object):
         if isinstance(value, _str_type):
             if value not in allowed_values:
                 self._error(field, errors.ERROR_UNALLOWED_VALUE % value)
-        elif isinstance(value, list):
+        elif isinstance(value, Sequence):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
                 self._error(field,
@@ -374,7 +378,7 @@ class Validator(object):
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
     def _validate_schema(self, schema, field, value):
-        if isinstance(value, list):
+        if isinstance(value, Sequence):
             list_errors = {}
             for i in range(len(value)):
                 validator = self.__class__({i: schema})
@@ -382,7 +386,7 @@ class Validator(object):
                 list_errors.update(validator.errors)
             if len(list_errors):
                 self._error(field, list_errors)
-        elif isinstance(value, dict):
+        elif isinstance(value, Mapping):
             validator = copy.copy(self)
             validator.schema = schema
             validator.validate(value, context=self.document)
@@ -400,9 +404,9 @@ class Validator(object):
                 self._error(field, validator.errors)
 
     def _validate_items(self, items, field, value):
-        if isinstance(items, dict):
+        if isinstance(items, Mapping):
             self._validate_items_schema(items, field, value)
-        elif isinstance(items, list):
+        elif isinstance(items, Sequence):
             self._validate_items_list(items, field, value)
 
     def _validate_items_list(self, schema, field, values):
@@ -422,12 +426,11 @@ class Validator(object):
                 self._error(field, error)
 
     def _validate_dependencies(self, document, dependencies, field):
-
         # handle cases where dependencies is a string or list of strings
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
-        if isinstance(dependencies, (list, tuple)):
+        if isinstance(dependencies, Sequence):
             for dependency in dependencies:
                 if dependency not in document:
                     self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
