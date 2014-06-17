@@ -183,8 +183,8 @@ Data type allowed for the key value. Can be one of the following:
     * ``number`` (integer or float)
     * ``boolean``
     * ``datetime``
-    * ``dict``
-    * ``list``
+    * ``dict`` (formally ``collections.mapping``)
+    * ``list`` (formally ``collections.sequence``, exluding strings)
     * ``set``
 
 You can extend this list and support custom types, see :ref:`new-types`. 
@@ -197,6 +197,15 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.7.1
+   ``dict`` and ``list`` typechecking are now performed with the more generic
+   ``Mapping`` and ``Sequence`` types from the builtin ``collections`` module.
+   This means that instances of custom types designed to the same interface as
+   the builtin ``dict`` and ``list`` types can be validated with Cerberus. We
+   exclude strings when type checking for ``list``/``Sequence`` because it
+   in the validation situation it is almost certain the string was not the
+   intended data type for a sequence.
 
 .. versionchanged:: 0.7
    Added the ``set`` data type.
