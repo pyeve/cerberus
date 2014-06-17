@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.7.1
 -------------
 
-Not released yet.
+Released on Jun 17 2014.
 
 - Validation schemas are now validated up-front. When you pass a Schema to the
   Validator it will be validated against the supported ruleset (Paul Weaver).
