@@ -17,7 +17,6 @@ setup(
     license=open('LICENSE').read(),
     platforms=["any"],
     packages=find_packages(),
-    #package_data={'': ['LICENSE', 'README.rst']},
     include_package_data=True,
     test_suite="cerberus.tests",
     install_requires=[],
