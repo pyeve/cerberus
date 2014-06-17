@@ -236,10 +236,12 @@ class Validator(object):
         self._errors[field] = field_errors
 
     def validate_schema(self, schema):
-        """
+        """ Validates a schema against supported rules.
+
         :param schema: the schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
         """
+
         if not isinstance(schema, Mapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
 
