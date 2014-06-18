@@ -270,6 +270,7 @@ class TestValidator(TestBase):
 
     def test_float(self):
         self.assertSuccess({'a_float': 3.5})
+        self.assertSuccess({'a_float': 1})
 
     def test_number(self):
         self.assertSuccess({'a_number': 3.5})
