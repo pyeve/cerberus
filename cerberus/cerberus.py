@@ -57,6 +57,9 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged:: 0.7.2
+       Successfully validate int as a float type.
+
     .. versionchanged:: 0.7.1
        Validator options like 'allow_unknown' and 'ignore_none_values' are now
        taken into consideration when validating sub-dictionaries.
@@ -309,7 +312,7 @@ class Validator(object):
             self._error(field, errors.ERROR_BAD_TYPE % "integer")
 
     def _validate_type_float(self, field, value):
-        if not isinstance(value, float):
+        if not isinstance(value, float) and not isinstance(value, _int_types):
             self._error(field, errors.ERROR_BAD_TYPE % "float")
 
     def _validate_type_number(self, field, value):
