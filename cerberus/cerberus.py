@@ -256,6 +256,10 @@ class Validator(object):
                 raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
             for constraint, value in constraints.items():
                 if constraint == 'type':
+                    # Check if an object type is passed in
+                    if isinstance(value, type):
+                        value = value.__name__
+
                     if not hasattr(self, '_validate_type_' + value):
                         raise SchemaError(
                             errors.ERROR_UNKNOWN_TYPE % value)
@@ -275,8 +279,8 @@ class Validator(object):
                             self.validate_schema({'schema': item_schema})
                 elif not hasattr(self, '_validate_' + constraint):
                     if not self.transparent_schema_rules:
-                            raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
-                                constraint, field))
+                        raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
+                            constraint, field))
 
     def _validate_required_fields(self, document):
         required = list(field for field, definition in self.schema.items()
@@ -307,6 +311,12 @@ class Validator(object):
         if not isinstance(value, _str_type):
             self._error(field, errors.ERROR_BAD_TYPE % "string")
 
+    def _validate_type_int(self, field, value):
+        """
+        .. versionadded:: 0.7.3
+        """
+        self._validate_type_integer(field, value)
+
     def _validate_type_integer(self, field, value):
         if not isinstance(value, _int_types):
             self._error(field, errors.ERROR_BAD_TYPE % "integer")
@@ -321,6 +331,12 @@ class Validator(object):
         """
         if not isinstance(value, float) and not isinstance(value, _int_types):
             self._error(field, errors.ERROR_BAD_TYPE % "number")
+
+    def _validate_type_bool(self, field, value):
+        """
+        .. versionadded:: 0.7.3
+        """
+        self._validate_type_boolean(field, value)
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):

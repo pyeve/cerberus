@@ -22,6 +22,11 @@ class TestBase(unittest.TestCase):
                 'min': 1,
                 'max': 100,
             },
+            'an_integer_native': {
+                'type': int,
+                'min': 1,
+                'max': 100,
+            },
             'a_restricted_integer': {
                 'type': 'integer',
                 'allowed': [-1, 0, 1],
@@ -29,11 +34,19 @@ class TestBase(unittest.TestCase):
             'a_boolean': {
                 'type': 'boolean',
             },
+            'a_boolean_native': {
+                'type': bool,
+            },
             'a_datetime': {
                 'type': 'datetime',
             },
             'a_float': {
                 'type': 'float',
+                'min': 1,
+                'max': 100,
+            },
+            'a_float_native': {
+                'type': float,
                 'min': 1,
                 'max': 100,
             },
