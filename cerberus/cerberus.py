@@ -300,8 +300,6 @@ class Validator(object):
                 if definition.get('required') is True:
                     required.append(field)
 
-        list(field for field, definition in self.schema.items()
-                        if definition.get('required') is True)
         missing = set(required) - set(key for key in document.keys()
                                       if document.get(key) is not None
                                       or not self.ignore_none_values)
