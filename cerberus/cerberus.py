@@ -281,7 +281,8 @@ class Validator(object):
     def _validate_required_fields(self, document):
         required = []
         for field, definition in self.schema.items():
-            # If dependencies are precised then check field's 'required' if and only if all dependencies are validated
+            # If dependencies are precised then check field's 'required'
+            # if and only if all dependencies are validated
             dependencies_validated = True
             if 'dependencies' in definition:
                 dependencies = definition['dependencies']

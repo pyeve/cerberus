@@ -502,7 +502,8 @@ class TestValidator(TestBase):
         # False: dependencies are validated and field is required
         self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
 
-        # True: All dependencies are optional, so do not check the field if dependencies do not exist
+        # True: All dependencies are optional
+        # so do not check the field if dependencies do not exist
         self.assertTrue(v.validate({}))
 
         # True: dependency missing
