@@ -485,6 +485,33 @@ class TestValidator(TestBase):
                                     'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
+    def test_dependencies_with_required_field(self):
+        schema = {
+            'test_field': {'required': True, 'dependencies': ['foo', 'bar']},
+            'foo': {'type': 'string'},
+            'bar': {'type': 'string'}
+        }
+        v = Validator(schema)
+
+        # False: all dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar'}))
+
+        # False: one of dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+
+        # False: dependencies are validated and field is required
+        self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
+        # True: All dependencies are optional, so do not check the field if dependencies do not exist
+        self.assertTrue(v.validate({}))
+
+        # True: dependency missing
+        self.assertTrue(v.validate({'foo': 'bar'}))
+
+        # True: dependencies are validated but field is not required
+        schema['test_field']['required'] = False
+        self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
     def test_options_passed_to_nested_validators(self):
         schema = {'sub_dict': {'type': 'dict',
                                'schema': {'foo': {'type': 'string'}}}}
