@@ -6,6 +6,6 @@ env:
   - TOX_ENV=py33
   - TOX_ENV=py34
   - TOX_ENV=flake8
-install: pip install tox
+install: travis_retry pip install tox
 script: 
   - tox -e $TOX_ENV
