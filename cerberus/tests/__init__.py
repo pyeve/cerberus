@@ -34,6 +34,20 @@ class TestBase(unittest.TestCase):
             },
             'a_float': {
                 'type': 'float',
+                'min': 1,
+                'max': 100,
+            },
+            'a_number': {
+                'type': 'number',
+                'min': 1,
+                'max': 100,
+            },
+            'a_set': {
+                'type': 'set',
+            },
+            'a_regex_email': {
+                'type': 'string',
+                'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
             },
             'a_readonly_string': {
                 'type': 'string',
@@ -78,6 +92,10 @@ class TestBase(unittest.TestCase):
                     'address': {'type': 'string'},
                     'city': {'type': 'string', 'required': True}
                 },
+            },
+            'a_dict_with_keyschema': {
+                'type': 'dict',
+                'keyschema': {'type': 'integer'}
             },
             'a_list_length': {
                 'type': 'list',

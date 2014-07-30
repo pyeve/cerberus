@@ -3,7 +3,7 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from . import TestBase
-from ..cerberus import Validator, errors
+from ..cerberus import Validator, errors, SchemaError
 
 
 class TestValidator(TestBase):
@@ -14,14 +14,33 @@ class TestValidator(TestBase):
                                errors.ERROR_SCHEMA_MISSING)
 
     def test_bad_schema_type(self):
-        schema = "this string should really be  dict"
-        v = Validator(schema)
-        self.assertSchemaError(self.document, None, v,
-                               errors.ERROR_SCHEMA_FORMAT % schema)
+        schema = "this string should really be dict"
+        try:
+            Validator(schema)
+        except SchemaError as e:
+            self.assertEqual(str(e), errors.ERROR_SCHEMA_FORMAT % schema)
+        else:
+            self.fail('SchemaError not raised')
 
         v = Validator()
         self.assertSchemaError(self.document, schema, v,
                                errors.ERROR_SCHEMA_FORMAT % schema)
+
+    def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except SchemaError as e:
+            self.assertTrue(err_msg in str(e))
+        else:
+            self.fail('SchemaError not raised')
+
+    def test_invalid_schema(self):
+        schema = {'foo': {'unknown': 'rule'}}
+        err_msg = ' '.join(errors.ERROR_UNKNOWN_RULE.split()[:2])
+        self._check_schema_content_error(err_msg, Validator, schema)
+        v = Validator()
+        self._check_schema_content_error(
+            err_msg, v.validate, {}, schema=schema)
 
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
@@ -90,6 +109,9 @@ class TestValidator(TestBase):
     def test_not_a_float(self):
         self.assertBadType('a_float', 'float', "i'm not a float")
 
+    def test_not_a_number(self):
+        self.assertBadType('a_number', 'number', "i'm not a number")
+
     def test_not_a_list(self):
         self.assertBadType('a_list_of_values', 'list', "i'm not a list")
 
@@ -111,18 +133,32 @@ class TestValidator(TestBase):
         self.assertError(field, errors.ERROR_MIN_LENGTH % min_length)
 
     def test_bad_max_value(self):
+        def assert_bad_max_value(field, inc):
+            max_value = self.schema[field]['max']
+            value = max_value + inc
+            self.assertFail({field: value})
+            self.assertError(field, errors.ERROR_MAX_VALUE % max_value)
+
         field = 'an_integer'
-        max_value = self.schema[field]['max']
-        value = max_value + 1
-        self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MAX_VALUE % max_value)
+        assert_bad_max_value(field, 1)
+        field = 'a_float'
+        assert_bad_max_value(field, 1.0)
+        field = 'a_number'
+        assert_bad_max_value(field, 1)
 
     def test_bad_min_value(self):
+        def assert_bad_min_value(field, inc):
+            min_value = self.schema[field]['min']
+            value = min_value - inc
+            self.assertFail({field: value})
+            self.assertError(field, errors.ERROR_MIN_VALUE % min_value)
+
         field = 'an_integer'
-        min_value = self.schema[field]['min']
-        value = min_value - 1
-        self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MIN_VALUE % min_value)
+        assert_bad_min_value(field, 1)
+        field = 'a_float'
+        assert_bad_min_value(field, 1.0)
+        field = 'a_number'
+        assert_bad_min_value(field, 1)
 
     def test_bad_schema(self):
         field = 'a_dict'
@@ -137,6 +173,17 @@ class TestValidator(TestBase):
         self.assertTrue('city' in v.errors[field])
         self.assertTrue(errors.ERROR_REQUIRED_FIELD in
                         v.errors[field]['city'])
+
+    def test_bad_keyschema(self):
+        field = 'a_dict_with_keyschema'
+        schema_field = 'a_string'
+        value = {schema_field: 'not an integer'}
+        self.assertFail({field: value})
+        v = self.validator
+        self.assertTrue(field in v.errors)
+        self.assertTrue(schema_field in v.errors[field])
+        self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
+                        v.errors[field][schema_field])
 
     def test_bad_list_of_values(self):
         field = 'a_list_of_values'
@@ -223,9 +270,24 @@ class TestValidator(TestBase):
 
     def test_float(self):
         self.assertSuccess({'a_float': 3.5})
+        self.assertSuccess({'a_float': 1})
+
+    def test_number(self):
+        self.assertSuccess({'a_number': 3.5})
+        self.assertSuccess({'a_number': 3})
 
     def test_array(self):
         self.assertSuccess({'an_array': ['agent', 'client']})
+
+    def test_set(self):
+        self.assertSuccess({'a_set': set(['hello', 1])})
+
+    def test_regex(self):
+        field = 'a_regex_email'
+        self.assertSuccess({field: 'valid.email@gmail.com'})
+        self.assertFalse(self.validator.validate({field: 'invalid'},
+                                                 self.schema, update=True))
+        self.assertError(field, 'does not match regex')
 
     def tst_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
@@ -259,6 +321,16 @@ class TestValidator(TestBase):
                 'a_dict': {
                     'address': 'i live here',
                     'city': 'in my own town'
+                }
+            }
+        )
+
+    def test_a_dict_with_keyschema(self):
+        self.assertSuccess(
+            {
+                'a_dict_with_keyschema': {
+                    'an integer': 99,
+                    'another integer': 100
                 }
             }
         )
@@ -392,3 +464,62 @@ class TestValidator(TestBase):
         self.assertTrue(v({'test_field': 'foo'}))
         self.assertFalse(v.validate({'test_field': 1}))
         self.assertFalse(v({'test_field': 1}))
+
+    def test_dependencies_field(self):
+        schema = {'test_field': {'dependencies': 'foo'}, 'foo': {'type':
+                                                                 'string'}}
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+        self.assertFalse(v.validate({'test_field': 'foobar'}))
+
+    def test_dependencies_list(self):
+        schema = {
+            'test_field': {'dependencies': ['foo', 'bar']},
+            'foo': {'type': 'string'},
+            'bar': {'type': 'string'}
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar',
+                                    'bar': 'foo'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+
+    def test_options_passed_to_nested_validators(self):
+        schema = {'sub_dict': {'type': 'dict',
+                               'schema': {'foo': {'type': 'string'}}}}
+        v = Validator(schema, allow_unknown=True)
+        self.assertTrue(v.validate({'sub_dict': {'foo': 'bar',
+                                                 'unknown': True}}))
+
+    def test_self_document_always_root(self):
+        ''' Make sure self.document is always the root document.
+        See:
+        * https://github.com/nicolaiarocci/cerberus/pull/42
+        * https://github.com/nicolaiarocci/eve/issues/295
+        '''
+        class MyValidator(Validator):
+            def _validate_root_doc(self, root_doc, field, value):
+                if('sub' not in self.document or
+                        len(self.document['sub']) != 2):
+                    self._error(field, 'self.document is not the root doc!')
+
+        schema = {
+            'sub': {
+                'type': 'list',
+                'schema': {
+                    'type': 'dict',
+                    'root_doc': True,
+                    'schema': {
+                        'foo': {
+                            'type': 'string',
+                            'root_doc': True
+                        }
+                    }
+                }
+            }
+        }
+        v = MyValidator(schema)
+
+        obj = {'sub': [{'foo': 'bar'}, {'foo': 'baz'}]}
+        self.assertTrue(v.validate(obj))

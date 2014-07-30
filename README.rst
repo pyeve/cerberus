@@ -16,7 +16,7 @@ Features
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be non-blocking and easily extensible, allowing for custom
 validation. It has no dependancies and is thoroughly tested under Python 2.6,
-Python 2.7 and Python 3.3.
+Python 2.7, Python 3.3 and Python 3.4.
 
 Documentation
 -------------
@@ -26,17 +26,25 @@ Installation
 ------------
 Cerberus is on PyPI so all you need is:
 
-::
+.. code-block:: console
 
-    pip install cerberus
+    $ pip install cerberus
 
 Testing
 -------
 Just run:
 
-::
+.. code-block:: console
 
-    python setup.py test
+    $ python setup.py test
+
+Or you can use tox to run the tests under all supported Python versions. Make
+sure the required python versions are installed and run:
+
+.. code-block:: console
+
+    $ pip install tox  # first time only
+    $ tox
 
 Contributing
 ------------

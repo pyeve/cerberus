@@ -3,11 +3,62 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Version 0.5.1
+Version 0.7.3
 -------------
 
 Not released yet.
 
+- [CI] Add travis_retry to pip install in case of network issues (Helgi
+  Þormar Þorbjörnsson #49)
+
+Version 0.7.2
+-------------
+
+Released on Jun 19 2014.
+
+- Successfully validate int as float type (Florian Rathgeber).
+
+Version 0.7.1
+-------------
+
+Released on Jun 17 2014.
+
+- Validation schemas are now validated up-front. When you pass a Schema to the
+  Validator it will be validated against the supported ruleset (Paul Weaver).
+  Closes #39.
+- Custom validators also have access to a special 'self.document' variable that
+  allows validation of a field to happen in context of the rest of the document
+  (Josh Villbrandt).
+- Validator options like 'allow_unknown' and 'ignore_none_values' are now taken
+  into consideration when validating sub-dictionaries. Closes #40.
+
+Version 0.7
+-----------
+
+Released on May 16 2014.
+
+- Python 3.4 is now supported.
+- tox support.
+- Added 'dependencies' validation rule (Lujeni).
+- Added 'keyschema' validation rule (Florian Rathgeber).
+- Added 'regex' validation rule. Closes #29.
+- Added 'set' as a core data type. Closes #31.
+- Not-nullable fields are validated independetly of their type definition
+  (Jaroslav Semančík).
+- Python trove classifiers added to setup.py. Closes #32.
+- 'min' and 'max' now apply to floats and numbers too. Closes #30.
+
+Version 0.6
+-----------
+
+Released on February 10 2014
+
+- Added 'number' data type, which validates against both float and integer
+  values (Brandon Aubie).
+- Added support for running tests with py.test
+- Fix non-blocking problem introduced with 0.5 (Martin Ortbauer).
+- Fix bug when _error() is calld twice for a field (Jaroslav Semančík).
+- More precise error message in rule 'schema' validation (Jaroslav Semančík).
 - Use 'allowed' field for integer just like for string (Peter Demin).
 
 Version 0.5

@@ -5,8 +5,8 @@ Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be easily extensible, allowing for easy custom validation. It
-has no dependancies and is thoroughly tested under Python 2.6, Python 2.7 and
-Python 3.3.
+has no dependancies and is thoroughly tested under Python 2.6, Python 2.7,
+Python 3.3 and Python 3.4.
 
     *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
     entrance; everybody, sooner or later, had to go there, and nobody wanted to
@@ -124,6 +124,10 @@ matters, we can validate it: ::
     >>> v.validate({'oddity': 9})
     True
 
+.. versionadded:: 0.7.1
+    Custom validators also have access to a special ``self.document`` variable that
+    allows validation of a field to happen in context of the rest of the document.
+
 .. _new-types:
 
 Adding new data-types
@@ -176,10 +180,12 @@ Data type allowed for the key value. Can be one of the following:
     * ``string`` 
     * ``integer``
     * ``float``
+    * ``number`` (integer or float)
     * ``boolean``
     * ``datetime``
-    * ``dict``
-    * ``list``
+    * ``dict`` (formally ``collections.mapping``)
+    * ``list`` (formally ``collections.sequence``, exluding strings)
+    * ``set``
 
 You can extend this list and support custom types, see :ref:`new-types`. 
 
@@ -191,6 +197,21 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.7.1
+   ``dict`` and ``list`` typechecking are now performed with the more generic
+   ``Mapping`` and ``Sequence`` types from the builtin ``collections`` module.
+   This means that instances of custom types designed to the same interface as
+   the builtin ``dict`` and ``list`` types can be validated with Cerberus. We
+   exclude strings when type checking for ``list``/``Sequence`` because it
+   in the validation situation it is almost certain the string was not the
+   intended data type for a sequence.
+
+.. versionchanged:: 0.7
+   Added the ``set`` data type.
+
+.. versionchanged:: 0.6
+   Added the ``number`` data type.
 
 .. versionchanged:: 0.4.0
    Type validation is always executed first, and blocks other field validation
@@ -250,6 +271,7 @@ but allowing for more fine grained control down to the field level. ::
     >>> v.errors
     {'an_integer': 'must be of integer type'}
 
+.. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
 
 minlength, maxlength 
@@ -258,7 +280,11 @@ Minimum and maximum length allowed for ``string`` and ``list`` types.
 
 min, max
 ''''''''
-Minimum and maximum value allowed for ``integer`` types.
+Minimum and maximum value allowed for ``integer``, ``float`` and ``number``
+types.
+
+.. versionchanged:: 0.7
+   Added support for ``float`` and ``number`` types.
 
 allowed
 '''''''
@@ -346,15 +372,21 @@ See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
 
 .. _schema:
 
-schema
-''''''
-Validation schema for ``dict`` and ``list`` types. On dictionaries: ::
+schema (dict)
+'''''''''''''
+Validation rules for ``dict`` fields. ::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
     >>> v.validate(document, schema)
     True
 
+.. note::
+
+    If all keys should share the same validation rules you probably want to use :ref:`keyschema` instead.
+
+schema (list)
+'''''''''''''
 You can also use this rule to validate arbitrary length ``list`` items. ::
 
     >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
@@ -372,6 +404,67 @@ and validating a list of dictionaries. ::
 
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
+
+.. _keyschema:
+
+keyschema
+'''''''''
+Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
+keys, the values for all of which must validate with given schema: ::
+
+    >>> schema = {'numbers': {'type': 'dict', 'keyschema': {'type': 'integer', min: 10}}}
+    >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'numbers': {'an integer': 9}}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'numbers': {'an integer': 'min value is 10'}}
+
+.. versionadded:: 0.7
+
+regex
+'''''
+Validation will fail if field value does not match the provided regex rule. Only applies to string fiels. ::
+
+    >>> schema = {'email': {'type': 'string', 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'}}
+    >>> document = {'email': 'john@example.com'}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'email': 'john_at_example_dot_com'}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'email': 'value does not match regex "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"}
+
+For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
+
+.. versionadded:: 0.7
+
+dependencies
+''''''''''''
+This rule allows a list of fields that must be present in order for the target
+field to be allowed. ::
+
+    >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': ['field1']}}
+    >>> document = {'field1': 7}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'field2': 7}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'field2': 'field "field1" is required'}
+
+
+.. versionadded:: 0.7
 
 .. _validator:
 
@@ -416,3 +509,5 @@ This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 informations.
+
+.. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
