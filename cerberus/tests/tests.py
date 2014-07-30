@@ -70,6 +70,11 @@ class TestValidator(TestBase):
             errors.ERROR_UNKNOWN_RULE % ('unknown_rule', field)
         )
 
+    def test_empty_field_definition(self):
+        field = 'name'
+        schema = {field: {}}
+        self.assertSuccess(self.document, schema)
+
     def test_required_field(self):
         self.assertFail({'an_integer': 1})
         self.assertError('a_required_string', errors.ERROR_REQUIRED_FIELD)
