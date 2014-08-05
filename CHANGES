@@ -8,6 +8,7 @@ Version 0.7.3
 
 Not released yet.
 
+- Documentation typo (Nikita Vlaznev #55).
 - [CI] Add travis_retry to pip install in case of network issues (Helgi
   Þormar Þorbjörnsson #49)
 
