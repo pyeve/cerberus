@@ -253,7 +253,7 @@ in the target dictionary.
 nullable
 ''''''''
 If ``True`` the field value can be set to ``None``. It is essentially the
-functionality of the *ignore_non_values* parameter of the :ref:`validator`,
+functionality of the *ignore_none_values* parameter of the :ref:`validator`,
 but allowing for more fine grained control down to the field level. ::
 
     >>> schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_integer': {'type': 'integer'}}
