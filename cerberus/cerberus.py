@@ -279,8 +279,25 @@ class Validator(object):
                                 constraint, field))
 
     def _validate_required_fields(self, document):
-        required = list(field for field, definition in self.schema.items()
-                        if definition.get('required') is True)
+        required = []
+        for field, definition in self.schema.items():
+            # If dependencies are precised then check field's 'required'
+            # if and only if all dependencies are validated
+            dependencies_validated = True
+            if 'dependencies' in definition:
+                dependencies = definition['dependencies']
+                if isinstance(dependencies, _str_type):
+                    dependencies = [dependencies]
+
+                if isinstance(dependencies, Sequence):
+                    for dependency in dependencies:
+                        if dependency not in document:
+                            dependencies_validated = False
+                            break
+
+            if dependencies_validated and definition.get('required') is True:
+                required.append(field)
+
         missing = set(required) - set(key for key in document.keys()
                                       if document.get(key) is not None
                                       or not self.ignore_none_values)
