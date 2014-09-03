@@ -243,7 +243,9 @@ missing, unless :func:`~cerberus.Validator.validate` is called with
 
    String fields with empty values will still be validated, even when
    ``required`` is set to ``True``. If you don't want to accept empty values,
-   see the empty_ rule. 
+   see the empty_ rule. Also, if dependencies_ are declared for the field, its
+   ``required`` rule will only be validated if all dependencies are
+   included with the document.
 
 readonly
 ''''''''
