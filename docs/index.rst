@@ -247,6 +247,9 @@ missing, unless :func:`~cerberus.Validator.validate` is called with
    ``required`` rule will only be validated if all dependencies are
    included with the document.
 
+.. versionchanged:: 0.7.3
+   Check field dependencies.
+
 readonly
 ''''''''
 If ``True`` the value is readonly. Validation will fail if this field is present
