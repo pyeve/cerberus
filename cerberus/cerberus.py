@@ -279,30 +279,25 @@ class Validator(object):
                                 constraint, field))
 
     def _validate_required_fields(self, document):
-        required = []
-        for field, definition in self.schema.items():
-            # If dependencies are precised then check field's 'required'
-            # if and only if all dependencies are validated
-            dependencies_validated = True
-            if 'dependencies' in definition:
-                dependencies = definition['dependencies']
-                if isinstance(dependencies, _str_type):
-                    dependencies = [dependencies]
+        """ Validates that required fields are not missing. If dependencies
+        are precised then validate 'required' only if all dependencies
+        are validated.
 
-                if isinstance(dependencies, Sequence):
-                    for dependency in dependencies:
-                        if dependency not in document:
-                            dependencies_validated = False
-                            break
-
-            if dependencies_validated and definition.get('required') is True:
-                required.append(field)
-
+        :param document: the document being validated.
+        """
+        required = list(field for field, definition in self.schema.items()
+                        if definition.get('required') is True)
         missing = set(required) - set(key for key in document.keys()
                                       if document.get(key) is not None
                                       or not self.ignore_none_values)
+
         for field in missing:
-            self._error(field, errors.ERROR_REQUIRED_FIELD)
+            dependencies = self.schema[field].get('dependencies')
+            dependencies_validated = self._validate_dependencies(
+                document, dependencies, field, break_on_error=True)
+
+            if dependencies_validated:
+                self._error(field, errors.ERROR_REQUIRED_FIELD)
 
     def _validate_readonly(self, read_only, field, value):
         if read_only:
@@ -445,7 +440,8 @@ class Validator(object):
             for field, error in validator.errors.items():
                 self._error(field, error)
 
-    def _validate_dependencies(self, document, dependencies, field):
+    def _validate_dependencies(self, document, dependencies, field,
+                               break_on_error=False):
         # handle cases where dependencies is a string or list of strings
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
@@ -453,5 +449,9 @@ class Validator(object):
         if isinstance(dependencies, Sequence):
             for dependency in dependencies:
                 if dependency not in document:
-                    self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                dependency)
+                    if not break_on_error:
+                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
+                                    dependency)
+                    else:
+                        return False
+        return True

@@ -8,6 +8,8 @@ Version 0.7.3
 
 Not released yet.
 
+- If dependencies are precised for a 'required' field, then the presence of
+  the field is only validated if all dependencies are present (Trong Hieu HA).
 - Documentation typo (Nikita Vlaznev #55).
 - [CI] Add travis_retry to pip install in case of network issues (Helgi
   Þormar Þorbjörnsson #49)
