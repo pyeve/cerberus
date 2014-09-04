@@ -186,7 +186,7 @@ class Validator(object):
                 continue
 
             definition = self.schema.get(field)
-            if definition:
+            if definition is not None:
                 if value is None:
                     if definition.get("nullable", False) is True:
                         continue
