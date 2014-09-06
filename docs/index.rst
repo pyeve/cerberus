@@ -94,12 +94,21 @@ option to ``True``: ::
 
 Custom validators
 ~~~~~~~~~~~~~~~~~
-Cerberus makes custom validation simple. Suppose that in our specific and very
-peculiar use case a certain value can only be expressed as an odd integer,
-therefore we decide to add support for a new ``isodd`` rule to our validation
-schema: ::
+Cerberus supports custom validation in two styles:
+    * Class-based style
+    * Function-based style
 
-    >>> schema = {'oddity': {'isodd': True, 'type': 'integer'}}
+As a general rule, when you are customizing validators in your application,
+``Class-based`` style is more suitable for common validators, which are
+also more human-readable (since the rule name is defined by yourself), while
+``Function-based`` style is more suitable for special and one-off ones.
+
+Class-based style
+'''''''''''''''''
+Suppose that in our use case some values can only be expressed as odd integers,
+therefore we decide to add support for a new ``isodd`` rule to our validation schema: ::
+
+    >>> schema = {'oddity': {'isodd': True, 'type': 'integer'}, 'another': {'isodd': True}}
 
 This is how we would go to implement that: ::
 
@@ -113,15 +122,15 @@ This is how we would go to implement that: ::
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
 ``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
 The custom rule ``isodd`` is now available in our schema and, what really
-matters, we can validate it: ::
+matters, we can use it to validate all odd values: ::
 
     >>> v = MyValidator(schema)
-    >>> v.validate({'oddity': 10})
+    >>> v.validate({'oddity': 10, 'another': 12})
     False
     >>> v.errors
-    {'oddity': 'Must be an odd number'}
+    {'oddity': 'Must be an odd number', 'another': 'Must be an odd number'}
 
-    >>> v.validate({'oddity': 9})
+    >>> v.validate({'oddity': 9, 'another': 11})
     True
 
 .. versionadded:: 0.7.1
@@ -130,8 +139,36 @@ matters, we can validate it: ::
 
 .. _new-types:
 
+Function-based style
+''''''''''''''''''''
+With a special rule ``validator``, you can customize validators by defining
+your own functions with the following prototype: ::
+
+    def validate_fieldname(field, value, error):
+        pass
+
+As a contrast, if the odd value is a special case, you may want to make the
+above rule ``isodd`` into ``Function-based`` style, which is a more lightweight
+alternative: ::
+
+    def validate_oddity(field, value, error):
+        if not bool(value & 1):
+            error(field, "Must be an odd number")
+
+Then, you can validate an odd value like this: ::
+
+    >>> schema = {'oddity': {'validator': validate_oddity}}
+    >>> v = Validator(schema)
+    >>> v.validate({'oddity': 10})
+    False
+    >>> v.errors
+    {'oddity': 'Must be an odd number'}
+
+    >>> v.validate({'oddity': 9})
+    True
+
 Adding new data-types
-'''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~
 Cerberus supports and validates several standard data types (see `type`_).
 You can add and validate your own data types. For example `Eve
 <https://python-eve.org>`_ (a tool for building and deploying proprietary REST
