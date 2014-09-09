@@ -455,3 +455,7 @@ class Validator(object):
                     else:
                         return False
         return True
+
+    def _validate_validator(self, validator, field, value):
+        # call customized validator function
+        validator(field, value, self._error)

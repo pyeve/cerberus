@@ -556,3 +556,19 @@ class TestValidator(TestBase):
 
         obj = {'sub': [{'foo': 'bar'}, {'foo': 'baz'}]}
         self.assertTrue(v.validate(obj))
+
+    def test_validator_rule(self):
+        def validate_name(field, value, error):
+            if not value.islower():
+                error(field, 'must be lowercase')
+
+        schema = {
+            'name': {'validator': validate_name},
+            'age': {'type': 'integer'}
+        }
+        v = Validator(schema)
+
+        self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
+        self.assertError('name', 'must be lowercase', validator=v)
+
+        self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
