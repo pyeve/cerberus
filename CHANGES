@@ -8,6 +8,7 @@ Version 0.7.3
 
 Not released yet.
 
+- New function-based custom validation mode (Luo Peng).
 - Fields with empty definitions in schema were reported as non-existent. Now
   they are considered as valid, whatever their value is (Jaroslav Semančík).
 - If dependencies are precised for a 'required' field, then the presence of the
