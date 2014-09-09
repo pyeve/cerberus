@@ -95,6 +95,7 @@ option to ``True``: ::
 Custom validators
 ~~~~~~~~~~~~~~~~~
 Cerberus supports custom validation in two styles:
+
     * Class-based
     * Function-based 
 
