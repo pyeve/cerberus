@@ -57,6 +57,9 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionadded: 0.8
+       Support for function-based validation mode.
+
     .. versionchanged:: 0.7.2
        Successfully validate int as a float type.
 

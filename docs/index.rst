@@ -167,6 +167,8 @@ Then, you can validate an odd value like this: ::
     >>> v.validate({'oddity': 9})
     True
 
+.. versionadded:: 0.8
+
 .. _new-types:
 
 Adding new data-types
@@ -286,7 +288,7 @@ missing, unless :func:`~cerberus.Validator.validate` is called with
    ``required`` rule will only be validated if all dependencies are
    included with the document.
 
-.. versionchanged:: 0.7.3
+.. versionchanged:: 0.8
    Check field dependencies.
 
 readonly
