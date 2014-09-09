@@ -95,18 +95,19 @@ option to ``True``: ::
 Custom validators
 ~~~~~~~~~~~~~~~~~
 Cerberus supports custom validation in two styles:
-    * Class-based style
-    * Function-based style
+    * Class-based
+    * Function-based 
 
 As a general rule, when you are customizing validators in your application,
 ``Class-based`` style is more suitable for common validators, which are
 also more human-readable (since the rule name is defined by yourself), while
 ``Function-based`` style is more suitable for special and one-off ones.
 
-Class-based style
-'''''''''''''''''
+Class-based custom validators
+'''''''''''''''''''''''''''''
 Suppose that in our use case some values can only be expressed as odd integers,
-therefore we decide to add support for a new ``isodd`` rule to our validation schema: ::
+therefore we decide to add support for a new ``isodd`` rule to our validation
+schema: ::
 
     >>> schema = {'oddity': {'isodd': True, 'type': 'integer'}, 'another': {'isodd': True}}
 
@@ -134,17 +135,16 @@ matters, we can use it to validate all odd values: ::
     True
 
 .. versionadded:: 0.7.1
-    Custom validators also have access to a special ``self.document`` variable that
-    allows validation of a field to happen in context of the rest of the document.
+    Custom validators also have access to a special ``self.document`` variable
+    that allows validation of a field to happen in context of the rest of the
+    document.
 
-.. _new-types:
-
-Function-based style
-''''''''''''''''''''
+Function-based custom validation
+''''''''''''''''''''''''''''''''
 With a special rule ``validator``, you can customize validators by defining
 your own functions with the following prototype: ::
 
-    def validate_fieldname(field, value, error):
+    def validate_<fieldname>(field, value, error):
         pass
 
 As a contrast, if the odd value is a special case, you may want to make the
@@ -166,6 +166,8 @@ Then, you can validate an odd value like this: ::
 
     >>> v.validate({'oddity': 9})
     True
+
+.. _new-types:
 
 Adding new data-types
 ~~~~~~~~~~~~~~~~~~~~~
