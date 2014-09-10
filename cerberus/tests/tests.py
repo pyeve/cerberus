@@ -448,10 +448,21 @@ class TestValidator(TestBase):
         )
 
     def test_unknown_keys(self):
-        document = {"unknown1": True, "unknown2": "yes"}
-        schema = {'a_field': {'type': 'string'}}
-        v = Validator(allow_unknown=True)
-        self.assertSuccess(schema=schema, document=document, validator=v)
+        schema = {}
+
+        # test that unknown fields are allowed when allow_unknown is True.
+        v = Validator(allow_unknown=True, schema=schema)
+        self.assertSuccess({"unknown1": True, "unknown2": "yes"}, validator=v)
+
+        # test that unknown fields are allowed only if they meet the
+        # allow_unknown schema when provided.
+        v.allow_unknown = {'type': 'string'}
+        self.assertSuccess(document={'name': 'mark'}, validator=v)
+        self.assertFail({"name": 1}, validator=v)
+
+        # test that unknown fields are not allowed if allow_unknown is False
+        v.allow_unknown = False
+        self.assertFail({'name': 'mark'}, validator=v)
 
     def test_novalidate_noerrors(self):
         '''In v0.1.0 and below `self.errors` raised an exception if no

@@ -79,18 +79,32 @@ By default only keys defined in the schema are allowed: ::
     >>> v.errors
     {'sex': 'unknown field'}
 
-However, you can allow unknown key/value pairs by setting the ``allow_unknown``
-option to ``True``: ::
+However, you can allow unknown key/value pairs by either setting
+``allow_unknown`` to ``True``: ::
 
     >>> v.allow_unknown = True
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
+
+Or you can set ``allow_unknown`` to a validation schema, in which case
+unknown fields will be validated against it: ::
+
+    >>> v.allow_unknown = {'type': 'string'}
+    >>> v.validate({'an_unknown_field': 'john'})
+    True
+    >>> v.validate({'an_unknown_field': 1})
+    False
+    >>> v.errors
+    {'an_unknown_field': 'must be of string type'}
 
 ``allow_unknown`` can also be set at initialization: ::
 
     >>> v = Validator(schema=schema, allow_unknown=True)
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
+
+.. versionchanged:: 0.8
+   ``allow_unknown`` can also be set to a validation schema.
 
 Custom validators
 ~~~~~~~~~~~~~~~~~

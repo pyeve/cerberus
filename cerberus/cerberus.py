@@ -58,6 +58,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded: 0.8
+      'allow_unknown' can be a schema used to validate unknown fields.
        Support for function-based validation mode.
 
     .. versionchanged:: 0.7.2
@@ -218,7 +219,19 @@ class Validator(object):
                     if validator:
                         validator(definition[rule], field, value)
             else:
-                if not self.allow_unknown:
+                if self.allow_unknown:
+                    if isinstance(self.allow_unknown, Mapping):
+                        # validate that unknown fields matches the schema
+                        # for unknown_fields
+                        unknown_validator = Validator({field:
+                                                       self.allow_unknown})
+                        if not unknown_validator.validate({field: value}):
+                            self._error(field, unknown_validator.errors[field])
+                    else:
+                        # allow uknown field to pass without any kind of
+                        # validation
+                        pass
+                else:
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
