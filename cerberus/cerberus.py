@@ -190,6 +190,35 @@ class Validator(object):
                 continue
 
             definition = self.schema.get(field)
+
+            # handle nested "dot notation" field names (e.g. "a.b.c")
+            # todo: this code currently requires a schema for each part in the
+            #       dotted name, i.e. b must be in a's schema & c in b's schema
+            if definition is None and '.' in field:
+                # traverse the dotted names to find the schema of the final part
+                parts = field.split('.')
+                p_schema = self.schema
+                try:
+                    for p in parts[:-1]:
+                        p_schema = p_schema[p]['schema']
+                except KeyError:
+                    p_schema = None
+                # if we couldn't find a schema the code continues as before,
+                # handling the field according to allow_unknown rules
+                if p_schema is not None:
+                    # the final part of the dotted name (the actual field to
+                    # be validated) was found in the schema of its "parent"
+                    _field = parts[-1]
+                    validator = copy.copy(self)
+                    validator.schema = p_schema
+                    validator.validate({_field: value},
+                        update=update, context=self.document)
+                    if len(validator.errors):
+                        # todo: should the error be reported for _field or
+                        #       field here?
+                        self._error(_field, validator.errors)
+                    continue
+
             if definition is not None:
                 if value is None:
                     if definition.get("nullable", False) is True:
