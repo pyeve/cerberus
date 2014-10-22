@@ -195,7 +195,8 @@ class Validator(object):
             # todo: this code currently requires a schema for each part in the
             #       dotted name, i.e. b must be in a's schema & c in b's schema
             if definition is None and '.' in field:
-                # traverse the dotted names to find the schema of the final part
+                # traverse the dotted names to find the schema of the final
+                # part
                 parts = field.split('.')
                 p_schema = self.schema
                 try:
@@ -211,8 +212,11 @@ class Validator(object):
                     _field = parts[-1]
                     validator = copy.copy(self)
                     validator.schema = p_schema
-                    validator.validate({_field: value},
-                        update=update, context=self.document)
+                    validator.validate(
+                        {_field: value},
+                        update=update,
+                        context=self.document
+                    )
                     if len(validator.errors):
                         # todo: should the error be reported for _field or
                         #       field here?
