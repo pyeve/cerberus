@@ -330,6 +330,13 @@ class TestValidator(TestBase):
             }
         )
 
+    def test_a_dict_nested(self):
+        self.assertSuccess({'a_dict.city': 'in my own town'})
+        self.assertFail({'a_dict.city': 34})
+        v = self.validator
+        self.assertTrue('city' in v.errors)
+        self.assertFail({'a_dict.nonsense': 123})
+
     def test_a_dict_with_keyschema(self):
         self.assertSuccess(
             {
