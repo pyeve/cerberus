@@ -289,9 +289,18 @@ class Validator(object):
                 if isinstance(dependencies, _str_type):
                     dependencies = [dependencies]
 
+                # If dependencies is Sequence then we check just the present of attr
                 if isinstance(dependencies, Sequence):
                     for dependency in dependencies:
                         if dependency not in document:
+                            dependencies_validated = False
+                            break
+                # If dependencies is dict then we check just the present of attr and the value of attr
+                elif isinstance(dependencies, dict):
+                    for dep_name, dep_values in dependencies.items():
+                        if not isinstance(dep_values, Sequence):
+                            dep_values = [dep_values]
+                        if dep_name not in document or document[dep_name] not in dep_values:
                             dependencies_validated = False
                             break
 

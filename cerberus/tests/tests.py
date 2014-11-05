@@ -485,6 +485,18 @@ class TestValidator(TestBase):
                                     'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
+    def test_dependencies_dict(self):
+        schema = {
+            'test_field': {'required': True, 'dependencies': {'foo': 'foo'}},
+            'foo': {'type': 'string'},
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'foo'}))
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+        self.assertTrue(v.validate({'foo': 'bar'}))
+        self.assertFalse(v.validate({'foo': 'foo'}))
+
     def test_dependencies_with_required_field(self):
         schema = {
             'test_field': {'required': True, 'dependencies': ['foo', 'bar']},
