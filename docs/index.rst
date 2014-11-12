@@ -190,7 +190,7 @@ Adding new data-types
 ~~~~~~~~~~~~~~~~~~~~~
 Cerberus supports and validates several standard data types (see `type`_).
 You can add and validate your own data types. For example `Eve
-<https://python-eve.org>`_ (a tool for building and deploying proprietary REST
+<http://python-eve.org>`_ (a tool for building and deploying proprietary REST
 Web APIs) supports a custom ``objectid`` type, which is used to validate that
 field values conform to the BSON/MongoDB ``ObjectId`` format.
 
