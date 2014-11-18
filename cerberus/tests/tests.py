@@ -501,7 +501,7 @@ class TestValidator(TestBase):
                                     'bar': 'foo'}))
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
-    def test_dependencies_with_required_field(self):
+    def test_dependencies_list_with_required_field(self):
         schema = {
             'test_field': {'required': True, 'dependencies': ['foo', 'bar']},
             'foo': {'type': 'string'},
@@ -524,6 +524,57 @@ class TestValidator(TestBase):
 
         # True: dependency missing
         self.assertTrue(v.validate({'foo': 'bar'}))
+
+        # True: dependencies are validated but field is not required
+        schema['test_field']['required'] = False
+        self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
+    def test_dependencies_dict(self):
+        schema = {
+            'test_field': {'dependencies': {'foo': 'foo', 'bar': 'bar'}},
+            'foo': {'type': 'string'},
+            'bar': {'type': 'string'}
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'foo',
+                                    'bar': 'bar'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'foo'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'bar'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'foo'}))
+        self.assertFalse(v.validate({'test_field': 'foobar'}))
+
+    def test_dependencies_dict_with_required_field(self):
+        schema = {
+            'test_field': {
+                'required': True,
+                'dependencies': {'foo': 'foo', 'bar': 'bar'}
+            },
+            'foo': {'type': 'string'},
+            'bar': {'type': 'string'}
+        }
+        v = Validator(schema)
+
+        # False: all dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar'}))
+
+        # False: one of dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'foo'}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'bar'}))
+
+        # False: dependencies are validated and field is required
+        self.assertFalse(v.validate({'foo': 'foo', 'bar': 'bar'}))
+
+        # True: All dependencies are optional
+        # so do not check the field if dependencies do not exist
+        self.assertTrue(v.validate({}))
+
+        # True: dependency missing
+        self.assertTrue(v.validate({'foo': 'bar'}))
+
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'foo': 'foo', 'bar': 'bar'}))
 
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False

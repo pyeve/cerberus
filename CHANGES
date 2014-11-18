@@ -8,6 +8,7 @@ Version 0.8
 
 Not released yet.
 
+- 'dependencies' also supports dependency values.
 - 'allow_unknown' can also be set to a validation schema, in which case unknown
   fields will be validated against it. Closes nicolaiarocci/eve#405.
 - New function-based custom validation mode (Luo Peng).

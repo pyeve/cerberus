@@ -509,8 +509,9 @@ For details on regex rules, see `Regular Expressions Syntax`_ on Python official
 
 dependencies
 ''''''''''''
-This rule allows a list of fields that must be present in order for the target
-field to be allowed. ::
+This rule allows for either a list or dict of dependencies. When a list is
+provided, all listed fields must be present in order for the target field to be
+validated. ::
 
     >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': ['field1']}}
     >>> document = {'field1': 7}
@@ -524,6 +525,39 @@ field to be allowed. ::
     >>> v.errors
     {'field2': 'field "field1" is required'}
 
+When a dictionary is provided, then not only all dependencies must be present,
+but also any of their allowed values must be matched. ::
+
+    >>> schema = {'field1': {'required': False}, 'field2': {'required': True, 'dependencies': {'field1': ['one', 'two']}}}
+    >>> document = {'field1': 'one', 'field2': 7}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'field1': 'three', 'field2': 7}
+    False
+
+    >>> v.errors
+    {'field2': "field 'field1' is required with values: ['one', 'two']"}
+
+
+    >>> # same as using a dependencies list
+    >>> document = {'field2': 7}  
+    >>> v.validate(document, schema)
+    {'field2': "field 'field1' is required"}
+
+    >>> # one can also pass a single dependency value
+    >>> schema = {'field1': {'required': False}, 'field2': {'dependencies': {'field1': 'one'}}}
+    >>> document = {'field1': 'one', 'field2': 7}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'field1': 'two', 'field2': 7}
+    False
+
+    >>> v.errors
+    {'field2': "field 'field1' is required with values: one"}
+
+.. versionchanged:: 0.8 Support for dependencies as a dictionary.
 
 .. versionadded:: 0.7
 

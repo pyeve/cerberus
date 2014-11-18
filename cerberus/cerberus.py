@@ -58,6 +58,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded: 0.8
+      'dependencies' also support a dict of dependencies.
       'allow_unknown' can be a schema used to validate unknown fields.
        Support for function-based validation mode.
 
@@ -470,6 +471,26 @@ class Validator(object):
                                     dependency)
                     else:
                         return False
+
+        # If dependencies is dict then we check just the present of attr and the value of attr
+        elif isinstance(dependencies, Mapping):
+            for dep_name, dep_values in dependencies.items():
+                if not isinstance(dep_values, Sequence):
+                    dep_values = [dep_values]
+                if dep_name not in document:
+                    if not break_on_error:
+                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
+                                    dep_name)
+                        break
+                    else:
+                        return False
+                if document[dep_name] not in dep_values:
+                    if not break_on_error:
+                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD_VALUE %
+                                    (dep_name, dep_values))
+                    else:
+                        return False
+
         return True
 
     def _validate_validator(self, validator, field, value):
