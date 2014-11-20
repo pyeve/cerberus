@@ -472,7 +472,8 @@ class Validator(object):
                     else:
                         return False
 
-        # If dependencies is dict then we check just the present of attr and the value of attr
+        # If dependencies is dict then we check just the present of attr and
+        # the value of attr
         elif isinstance(dependencies, Mapping):
             for dep_name, dep_values in dependencies.items():
                 if not isinstance(dep_values, Sequence):
@@ -486,8 +487,9 @@ class Validator(object):
                         return False
                 if document[dep_name] not in dep_values:
                     if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD_VALUE %
-                                    (dep_name, dep_values))
+                        self._error(field,
+                                    errors.ERROR_DEPENDENCIES_FIELD_VALUE
+                                    % (dep_name, dep_values))
                     else:
                         return False
 
