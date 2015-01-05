@@ -561,6 +561,13 @@ but also any of their allowed values must be matched. ::
 
 .. versionadded:: 0.7
 
+FAQ
+---
+
+1. *Can I use Cerberus to validate objects instead of dicts?*
+
+   Yes. See `Validating user objects with Cerberus`_.
+
 .. _validator:
 
 Validator Class
@@ -606,3 +613,4 @@ This is an open source project by `Nicola Iarocci
 informations.
 
 .. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
+.. _`Validating user objects with Cerberus`: http://nicolaiarocci.com/validating-user-objects-cerberus/
