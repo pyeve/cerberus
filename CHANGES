@@ -3,10 +3,17 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Next Release
+------------
+
+Not released yet (you guessed it).
+
+- Fix typo in docstrings (Riccardo.)
+
 Version 0.8
 -----------
 
-Not released yet.
+Released on Jan 7 2015.
 
 - 'dependencies' also supports dependency values.
 - 'allow_unknown' can also be set to a validation schema, in which case unknown

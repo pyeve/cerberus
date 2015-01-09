@@ -131,7 +131,7 @@ class Validator(object):
         return self._errors
 
     def validate_update(self, document, schema=None, context=None):
-        """ Validates a Python dicitionary against a validation schema. The
+        """ Validates a Python dictionary against a validation schema. The
         difference with :func:`validate` is that the ``required`` rule will be
         ignored here.
 
