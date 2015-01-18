@@ -15,7 +15,7 @@ from datetime import datetime
 from collections import Mapping, Sequence
 from . import errors
 
-if sys.version_info[0] == 3:
+if sys.version_info[0] >= 3:
     _str_type = str
     _int_types = (int,)
 else:
