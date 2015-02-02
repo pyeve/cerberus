@@ -464,6 +464,19 @@ class TestValidator(TestBase):
         v.allow_unknown = False
         self.assertFail({'name': 'mark'}, validator=v)
 
+    def test_unknown_keys_retain_custom_rules(self):
+        # test that allow_unknown schema respect custom validation rules.
+        # See #66.
+        class CustomValidator(Validator):
+            def _validate_type_foo(self, field, value):
+                if not value == "foo":
+                    self.error(field, "Expected a foo")
+
+        v = CustomValidator({})
+        v.allow_unknown = {"type": "foo"}
+        self.assertSuccess(document={"fred": "foo", "barney": "foo"},
+                           validator=v)
+
     def test_novalidate_noerrors(self):
         '''In v0.1.0 and below `self.errors` raised an exception if no
         validation had been performed yet.

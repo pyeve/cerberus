@@ -8,6 +8,7 @@ Next Release
 
 Not released yet (you guessed it).
 
+- Fix: allow_unknown does not respect custom rules. Closes #66.
 - Fix typo in docstrings (Riccardo.)
 
 Version 0.8

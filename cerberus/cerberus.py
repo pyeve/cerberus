@@ -224,8 +224,8 @@ class Validator(object):
                     if isinstance(self.allow_unknown, Mapping):
                         # validate that unknown fields matches the schema
                         # for unknown_fields
-                        unknown_validator = Validator({field:
-                                                       self.allow_unknown})
+                        unknown_validator = \
+                            self.__class__({field: self.allow_unknown})
                         if not unknown_validator.validate({field: value}):
                             self._error(field, unknown_validator.errors[field])
                     else:
