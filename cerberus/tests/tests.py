@@ -18,13 +18,13 @@ class TestValidator(TestBase):
         try:
             Validator(schema)
         except SchemaError as e:
-            self.assertEqual(str(e), errors.ERROR_SCHEMA_FORMAT % schema)
+            self.assertEqual(str(e), errors.ERROR_SCHEMA_FORMAT.format(schema))
         else:
             self.fail('SchemaError not raised')
 
         v = Validator()
         self.assertSchemaError(self.document, schema, v,
-                               errors.ERROR_SCHEMA_FORMAT % schema)
+                               errors.ERROR_SCHEMA_FORMAT.format(schema))
 
     def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
         try:
@@ -49,13 +49,13 @@ class TestValidator(TestBase):
     def test_bad_document_type(self):
         document = "not a dict"
         self.assertValidationError(document, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT % document)
+                                   errors.ERROR_DOCUMENT_FORMAT.format(document))
 
     def test_bad_schema_definition(self):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_DEFINITION_FORMAT % field)
+                               errors.ERROR_DEFINITION_FORMAT.format(field))
 
     def test_unknown_field(self):
         field = 'surname'
@@ -67,7 +67,7 @@ class TestValidator(TestBase):
         schema = {field: {'unknown_rule': True, 'type': 'string'}}
         self.assertSchemaError(
             self.document, schema, None,
-            errors.ERROR_UNKNOWN_RULE % ('unknown_rule', field)
+            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field)
         )
 
     def test_empty_field_definition(self):
@@ -97,7 +97,7 @@ class TestValidator(TestBase):
         value = 'catch_me'
         schema = {field: {'type': value}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_UNKNOWN_TYPE % value)
+                               errors.ERROR_UNKNOWN_TYPE.format(value))
 
     def test_not_a_string(self):
         self.assertBadType('a_required_string', 'string', 1)
@@ -128,21 +128,21 @@ class TestValidator(TestBase):
         max_length = self.schema[field]['maxlength']
         value = "".join(choice(ascii_lowercase) for i in range(max_length + 1))
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MAX_LENGTH % max_length)
+        self.assertError(field, errors.ERROR_MAX_LENGTH.format(max_length))
 
     def test_bad_min_length(self):
         field = 'a_required_string'
         min_length = self.schema[field]['minlength']
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MIN_LENGTH % min_length)
+        self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
 
     def test_bad_max_value(self):
         def assert_bad_max_value(field, inc):
             max_value = self.schema[field]['max']
             value = max_value + inc
             self.assertFail({field: value})
-            self.assertError(field, errors.ERROR_MAX_VALUE % max_value)
+            self.assertError(field, errors.ERROR_MAX_VALUE.format(max_value))
 
         field = 'an_integer'
         assert_bad_max_value(field, 1)
@@ -156,7 +156,7 @@ class TestValidator(TestBase):
             min_value = self.schema[field]['min']
             value = min_value - inc
             self.assertFail({field: value})
-            self.assertError(field, errors.ERROR_MIN_VALUE % min_value)
+            self.assertError(field, errors.ERROR_MIN_VALUE.format(min_value))
 
         field = 'an_integer'
         assert_bad_min_value(field, 1)
@@ -173,7 +173,7 @@ class TestValidator(TestBase):
         v = self.validator
         self.assertTrue(field in v.errors)
         self.assertTrue(schema_field in v.errors[field])
-        self.assertTrue(errors.ERROR_BAD_TYPE % 'string' in
+        self.assertTrue(errors.ERROR_BAD_TYPE.format('string') in
                         v.errors[field][schema_field])
         self.assertTrue('city' in v.errors[field])
         self.assertTrue(errors.ERROR_REQUIRED_FIELD in
@@ -187,7 +187,7 @@ class TestValidator(TestBase):
         v = self.validator
         self.assertTrue(field in v.errors)
         self.assertTrue(schema_field in v.errors[field])
-        self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
+        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
                         v.errors[field][schema_field])
 
     def test_bad_list_of_values(self):
@@ -196,12 +196,12 @@ class TestValidator(TestBase):
         self.assertFail({field: value})
         v = self.validator
         self.assertTrue(1 in v.errors)
-        self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
+        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
                         v.errors[1])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_ITEMS_LIST % 2)
+        self.assertError(field, errors.ERROR_ITEMS_LIST.format(2))
 
     def test_bad_list_of_integers(self):
         field = 'a_list_of_integers'
@@ -212,11 +212,11 @@ class TestValidator(TestBase):
         field = 'a_list_of_dicts_deprecated'
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
-        self.assertError('price', errors.ERROR_BAD_TYPE % 'integer')
+        self.assertError('price', errors.ERROR_BAD_TYPE.format('integer'))
 
         value = ["not a dict"]
         self.assertValidationError({field: value}, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT % value[0])
+                                   errors.ERROR_DOCUMENT_FORMAT.format(value[0]))
 
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
@@ -226,30 +226,30 @@ class TestValidator(TestBase):
         self.assertTrue(field in v.errors)
         self.assertTrue(0 in v.errors[field])
         self.assertTrue('price' in v.errors[field][0])
-        self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
+        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
                         v.errors[field][0]['price'])
 
         value = ["not a dict"]
         self.assertValidationError({field: value}, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT % value[0])
+                                   errors.ERROR_DOCUMENT_FORMAT.format(value[0]))
 
     def test_array_unallowed(self):
         field = 'an_array'
         value = ['agent', 'client', 'profit']
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUES % ['profit'])
+        self.assertError(field, errors.ERROR_UNALLOWED_VALUES.format(['profit']))
 
     def test_string_unallowed(self):
         field = 'a_restricted_string'
         value = 'profit'
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUE % value)
+        self.assertError(field, errors.ERROR_UNALLOWED_VALUE.format(value))
 
     def test_integer_unallowed(self):
         field = 'a_restricted_integer'
         value = 2
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUE % value)
+        self.assertError(field, errors.ERROR_UNALLOWED_VALUE.format(value))
 
     def test_integer_allowed(self):
         self.assertSuccess({'a_restricted_integer': -1})
@@ -346,14 +346,14 @@ class TestValidator(TestBase):
         max_length = self.schema[field]['maxlength']
 
         self.assertFail({field: [1] * (min_length - 1)})
-        self.assertError(field, errors.ERROR_MIN_LENGTH % min_length)
+        self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
 
         for i in range(min_length, max_length):
             value = [1] * i
             self.assertSuccess({field: value})
 
         self.assertFail({field: [1] * (max_length + 1)})
-        self.assertError(field, errors.ERROR_MAX_LENGTH % max_length)
+        self.assertError(field, errors.ERROR_MAX_LENGTH.format(max_length))
 
     def test_custom_datatype(self):
         class MyValidator(Validator):
@@ -405,11 +405,11 @@ class TestValidator(TestBase):
         v.transparent_schema_rules = False
         self.assertSchemaError(
             document, schema, v,
-            errors.ERROR_UNKNOWN_RULE % ('unknown_rule', field)
+            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field)
         )
         self.assertSchemaError(
             document, schema, None,
-            errors.ERROR_UNKNOWN_RULE % ('unknown_rule', field)
+            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field)
         )
 
     def test_allow_empty_strings(self):
@@ -444,7 +444,7 @@ class TestValidator(TestBase):
         self.assertError(field, errors.ERROR_REQUIRED_FIELD, validator=v)
         self.assertNoError(
             field,
-            errors.ERROR_BAD_TYPE % 'string', validator=v
+            errors.ERROR_BAD_TYPE.format('string', validator=v)
         )
 
     def test_unknown_keys(self):

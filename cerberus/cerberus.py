@@ -292,8 +292,8 @@ class Validator(object):
                             self.validate_schema({'schema': item_schema})
                 elif not hasattr(self, '_validate_' + constraint):
                     if not self.transparent_schema_rules:
-                            raise SchemaError(errors.ERROR_UNKNOWN_RULE.format((
-                                constraint, field)))
+                            raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
+                                constraint, field))
 
     def _validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
@@ -467,8 +467,7 @@ class Validator(object):
             for dependency in dependencies:
                 if dependency not in document:
                     if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dependency)
+                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD.format(dependency))
                     else:
                         return False
 
@@ -480,16 +479,14 @@ class Validator(object):
                     dep_values = [dep_values]
                 if dep_name not in document:
                     if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dep_name)
+                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD.format(dep_name))
                         break
                     else:
                         return False
                 if document[dep_name] not in dep_values:
                     if not break_on_error:
                         self._error(field,
-                                    errors.ERROR_DEPENDENCIES_FIELD_VALUE
-                                   .format((dep_name, dep_values)))
+                                    errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(dep_name, dep_values))
                     else:
                         return False
 
