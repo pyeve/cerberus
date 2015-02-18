@@ -119,7 +119,7 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
     special_rules = "required", "nullable", "type", "dependencies", "readonly",\
-                    "allow_unknown", "schema"
+                    "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False, **kwargs):
@@ -196,9 +196,9 @@ class Validator(object):
 
         # make root document available for validators (Cerberus #42, Eve #295)
         if context is not None:
-            self.document = context
+            self.document = copy.deepcopy(context)
         else:
-            self.document = document
+            self.document = copy.deepcopy(document)
 
         for field, value in document.items():
             if self.ignore_none_values and value is None:
@@ -211,6 +211,11 @@ class Validator(object):
                         continue
                     else:
                         self._error(field, errors.ERROR_NOT_NULLABLE)
+
+                if 'coerce' in definition:
+                    value = self._validate_coerce(definition['coerce'], field,
+                                                  value)
+                    self.document[field] = value
 
                 if 'readonly' in definition:
                     self._validate_readonly(definition['readonly'], field,
@@ -338,6 +343,13 @@ class Validator(object):
                     if not self.transparent_schema_rules:
                             raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
                                 constraint, field))
+
+    def _validate_coerce(self, coerce, field, value):
+        try:
+            value = coerce(value)
+        except (TypeError, ValueError):
+            self._error(field, errors.ERROR_COERCION_FAILED % field)
+        return value
 
     def _validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
