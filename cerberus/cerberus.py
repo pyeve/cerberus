@@ -107,7 +107,7 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies"
+    special_rules = "required", "nullable", "type", "dependencies", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
@@ -197,6 +197,12 @@ class Validator(object):
                         continue
                     else:
                         self._error(field, errors.ERROR_NOT_NULLABLE)
+
+                if 'coerce' in definition:
+                    value = self._validate_coerce(definition['coerce'], field, value)
+                    self.document[field] = value
+                    if self.errors.get(field):
+                        continue
 
                 if 'type' in definition:
                     self._validate_type(definition['type'], field, value)
@@ -294,6 +300,13 @@ class Validator(object):
                     if not self.transparent_schema_rules:
                             raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
                                 constraint, field))
+
+    def _validate_coerce(self, coerce, field, value):
+        try:
+            value = coerce(value)
+        except ValueError:
+            self._error(field, errors.ERROR_BAD_TYPE)
+        return value
 
     def _validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
