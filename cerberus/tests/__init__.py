@@ -154,4 +154,4 @@ class TestBase(unittest.TestCase):
     def assertBadType(self, field, data_type, value):
         doc = {field: value}
         self.assertFail(doc)
-        self.assertError(field, errors.ERROR_BAD_TYPE % data_type)
+        self.assertError(field, errors.ERROR_BAD_TYPE.format(data_type))
