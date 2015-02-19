@@ -304,7 +304,7 @@ class Validator(object):
     def _validate_coerce(self, coerce, field, value):
         try:
             value = coerce(value)
-        except ValueError:
+        except (TypeError, ValueError):
             self._error(field, errors.ERROR_BAD_TYPE)
         return value
 
