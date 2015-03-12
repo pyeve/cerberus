@@ -8,6 +8,8 @@ Next Release
 
 Not released yet (you guessed it).
 
+- Fix: readonly validation should happen before any other validation. 
+  Closes #63.
 - Fix: allow_unknown does not apply to sub-dictionaries in a list. Closes #67.
 - Fix: two tests being ignored because of name typo.
 - Fix: update mode does not ignore required fields in subdocuments. Closes #72.

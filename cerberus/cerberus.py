@@ -58,11 +58,11 @@ class Validator(object):
                           field error' un validation.
 
     .. versionchanged: 0.8.1
-       Fix: allow_unknown does not apply to sub-dictionaries in a list.
+       'readonly' should be validated before any other validation. Closes #63.
+       'allow_unknown' does not apply to sub-dictionaries in a list.
        Closes #67.
-       Fix: update mode does not ignore required fields in subdocuments.
-       Closes #72.
-       Fix: allow_unknown does not respect custom rules. Closes #66.
+       update mode does not ignore required fields in subdocuments. Closes #72.
+       'allow_unknown' does not respect custom rules. Closes #66.
 
     .. versionadded: 0.8
       'dependencies' also support a dict of dependencies.
@@ -114,7 +114,7 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies"
+    special_rules = "required", "nullable", "type", "dependencies", "readonly"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
@@ -204,6 +204,12 @@ class Validator(object):
                         continue
                     else:
                         self._error(field, errors.ERROR_NOT_NULLABLE)
+
+                if 'readonly' in definition:
+                    self._validate_readonly(definition['readonly'], field,
+                                            value)
+                    if self.errors.get(field):
+                        continue
 
                 if 'type' in definition:
                     self._validate_type(definition['type'], field, value)

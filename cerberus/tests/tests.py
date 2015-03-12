@@ -92,6 +92,22 @@ class TestValidator(TestBase):
         self.assertFail({field: 'update me if you can'})
         self.assertError(field, errors.ERROR_READONLY_FIELD)
 
+    def test_readonly_field_first_rule(self):
+        # test that readonly rule is checked before any other rule, and blocks.
+        # See #63.
+        schema = {
+            'a_readonly_number': {
+                'type': 'integer',
+                'readonly': True,
+                'max': 1
+            }
+        }
+        v = Validator(schema)
+        v.validate({'a_readonly_number': 2})
+        # it would be a list if there's more than one error; we get a dict
+        # instead.
+        self.assertTrue('read-only' in v.errors['a_readonly_number'])
+
     def test_unknown_data_type(self):
         field = 'name'
         value = 'catch_me'
