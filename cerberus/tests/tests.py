@@ -295,7 +295,7 @@ class TestValidator(TestBase):
                                                  self.schema, update=True))
         self.assertError(field, 'does not match regex')
 
-    def tst_a_list_of_dicts_deprecated(self):
+    def test_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
             {
                 'a_list_of_dicts_deprecated': [
@@ -305,7 +305,7 @@ class TestValidator(TestBase):
             }
         )
 
-    def tst_a_list_of_dicts(self):
+    def test_a_list_of_dicts(self):
         self.assertSuccess(
             {
                 'a_list_of_dicts': [
