@@ -57,14 +57,14 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionchanged: 0.8.1
+    .. versionchanged:: 0.8.1
        'readonly' should be validated before any other validation. Closes #63.
        'allow_unknown' does not apply to sub-dictionaries in a list.
        Closes #67.
        update mode does not ignore required fields in subdocuments. Closes #72.
        'allow_unknown' does not respect custom rules. Closes #66.
 
-    .. versionadded: 0.8
+    .. versionadded:: 0.8
       'dependencies' also support a dict of dependencies.
       'allow_unknown' can be a schema used to validate unknown fields.
        Support for function-based validation mode.
