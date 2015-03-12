@@ -465,6 +465,15 @@ class TestValidator(TestBase):
         v.allow_unknown = False
         self.assertFail({'name': 'mark'}, validator=v)
 
+    def test_unknown_keys_list_of_dicts(self):
+        # test that allow_unknown is honored even for subdicts in lists.
+        # See 67.
+        self.validator.allow_unknown = True
+        document = {'a_list_of_dicts': [{'sku': 'YZ069', 'price': 25,
+                                         'extra': True}]}
+
+        self.assertSuccess(document)
+
     def test_unknown_keys_retain_custom_rules(self):
         # test that allow_unknown schema respect custom validation rules.
         # See #66.

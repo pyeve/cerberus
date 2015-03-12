@@ -58,6 +58,8 @@ class Validator(object):
                           field error' un validation.
 
     .. versionchanged: 0.8.1
+       Fix: allow_unknown does not apply to sub-dictionaries in a list.
+       Closes #67.
        Fix: update mode does not ignore required fields in subdocuments.
        Closes #72.
        Fix: allow_unknown does not respect custom rules. Closes #66.
@@ -418,7 +420,8 @@ class Validator(object):
         if isinstance(value, Sequence):
             list_errors = {}
             for i in range(len(value)):
-                validator = self.__class__({i: schema})
+                validator = self.__class__({i: schema},
+                                           allow_unknown=self.allow_unknown)
                 validator.validate({i: value[i]}, context=self.document)
                 list_errors.update(validator.errors)
             if len(list_errors):
