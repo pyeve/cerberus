@@ -57,6 +57,11 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged: 0.8.1
+       Fix: update mode does not ignore required fields in subdocuments.
+       Closes #72.
+       Fix: allow_unknown does not respect custom rules. Closes #66.
+
     .. versionadded: 0.8
       'dependencies' also support a dict of dependencies.
       'allow_unknown' can be a schema used to validate unknown fields.
@@ -421,7 +426,8 @@ class Validator(object):
         elif isinstance(value, Mapping):
             validator = copy.copy(self)
             validator.schema = schema
-            validator.validate(value, context=self.document)
+            validator.validate(value, context=self.document,
+                               update=self.update)
             if len(validator.errors):
                 self._error(field, validator.errors)
         else:

@@ -255,7 +255,8 @@ class TestValidator(TestBase):
         self.assertSuccess({'a_restricted_integer': -1})
 
     def test_validate_update(self):
-        self.assertTrue(self.validator.validate({'an_integer': 100},
+        self.assertTrue(self.validator.validate({'an_integer': 100,
+                                                 'a_dict': {'address': 'adr'}},
                                                 update=True))
 
     def test_string(self):
