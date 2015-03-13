@@ -3,10 +3,10 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Next Release
-------------
+Version 0.8.1
+-------------
 
-Not released yet (you guessed it).
+Not released yet.
 
 - Fix: dependency on a sub-document field does not work. Closes #64.
 - Fix: readonly validation should happen before any other validation. 

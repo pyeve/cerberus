@@ -8,7 +8,7 @@
 
 """
 
-__version__ = "0.8"
+__version__ = "0.8.1"
 
 from .cerberus import Validator, ValidationError, SchemaError
 
