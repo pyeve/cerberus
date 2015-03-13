@@ -554,6 +554,9 @@ class TestValidator(TestBase):
         # False: one of dependencies missing
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
+        # False: one of dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'foo'}))
+
         # False: dependencies are validated and field is required
         self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
 
@@ -567,6 +570,25 @@ class TestValidator(TestBase):
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
         self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
+    def test_dependencies_list_with_subodcuments_fields(self):
+        schema = {
+            'test_field': {'dependencies': ['a_dict.foo', 'a_dict.bar']},
+            'a_dict': {
+                'type': 'dict',
+                'schema': {
+                    'foo': {'type': 'string'},
+                    'bar': {'type': 'string'}
+                }
+            }
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'a_dict': {}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'foo': 'foo'}}))
 
     def test_dependencies_dict(self):
         schema = {
@@ -618,6 +640,33 @@ class TestValidator(TestBase):
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
         self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
+    def test_dependencies_dict_with_subodcuments_fields(self):
+        schema = {
+            'test_field': {'dependencies': {'a_dict.foo': ['foo', 'bar'],
+                                            'a_dict.bar': 'bar'}},
+            'a_dict': {
+                'type': 'dict',
+                'schema': {
+                    'foo': {'type': 'string'},
+                    'bar': {'type': 'string'}
+                }
+            }
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'bar', 'bar': 'bar'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'foo': 'foo', 'bar': 'foo'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'bar': 'foo'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'bar': 'bar'}}))
 
     def test_options_passed_to_nested_validators(self):
         schema = {'sub_dict': {'type': 'dict',

@@ -8,6 +8,7 @@ Next Release
 
 Not released yet (you guessed it).
 
+- Fix: dependency on a sub-document field does not work. Closes #64.
 - Fix: readonly validation should happen before any other validation. 
   Closes #63.
 - Fix: allow_unknown does not apply to sub-dictionaries in a list. Closes #67.

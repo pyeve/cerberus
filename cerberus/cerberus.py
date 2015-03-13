@@ -58,6 +58,7 @@ class Validator(object):
                           field error' un validation.
 
     .. versionchanged:: 0.8.1
+       'dependencies' for sub-document fields. Closes #64.
        'readonly' should be validated before any other validation. Closes #63.
        'allow_unknown' does not apply to sub-dictionaries in a list.
        Closes #67.
@@ -474,33 +475,42 @@ class Validator(object):
 
     def _validate_dependencies(self, document, dependencies, field,
                                break_on_error=False):
-        # handle cases where dependencies is a string or list of strings
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
         if isinstance(dependencies, Sequence):
             for dependency in dependencies:
-                if dependency not in document:
-                    if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dependency)
+                parts = dependency.split('.')
+                subdoc = copy.copy(document)
+                for part in parts:
+                    if part not in subdoc:
+                        if not break_on_error:
+                            self._error(field,
+                                        errors.ERROR_DEPENDENCIES_FIELD %
+                                        dependency)
+                        else:
+                            return False
                     else:
-                        return False
+                        subdoc = subdoc[part]
 
-        # If dependencies is dict then we check just the present of attr and
-        # the value of attr
         elif isinstance(dependencies, Mapping):
             for dep_name, dep_values in dependencies.items():
-                if not isinstance(dep_values, Sequence):
+                if isinstance(dep_values, _str_type):
                     dep_values = [dep_values]
-                if dep_name not in document:
-                    if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dep_name)
-                        break
+                parts = dep_name.split('.')
+                subdoc = copy.copy(document)
+                for part in parts:
+                    if part not in subdoc:
+                        if not break_on_error:
+                            self._error(field,
+                                        errors.ERROR_DEPENDENCIES_FIELD_VALUE
+                                        % (dep_name, dep_values))
+                            break
+                        else:
+                            return False
                     else:
-                        return False
-                if document[dep_name] not in dep_values:
+                        subdoc = subdoc[part]
+                if isinstance(subdoc, _str_type) and subdoc not in dep_values:
                     if not break_on_error:
                         self._error(field,
                                     errors.ERROR_DEPENDENCIES_FIELD_VALUE

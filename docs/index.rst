@@ -557,6 +557,28 @@ but also any of their allowed values must be matched. ::
     >>> v.errors
     {'field2': "field 'field1' is required with values: one"}
 
+Dependencies on sub-document fields are also supported: ::
+
+    >>> schema = {
+    ...   'test_field': {'dependencies': ['a_dict.foo', 'a_dict.bar']},
+    ...   'a_dict': {
+    ...     'type': 'dict',
+    ...     'schema': {
+    ...       'foo': {'type': 'string'},
+    ...       'bar': {'type': 'string'}
+    ...     }
+    ...   }
+    ... }
+            
+    >>> document = {'test_field': 'foobar', 'a_dict': {'foo': 'foo'}}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'field1': "field 'a_dict.bar' is required"}
+
+.. versionchanged:: 0.8.1 Support for sub-document fields as dependencies.
+
 .. versionchanged:: 0.8 Support for dependencies as a dictionary.
 
 .. versionadded:: 0.7
