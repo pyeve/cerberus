@@ -575,7 +575,7 @@ Dependencies on sub-document fields are also supported: ::
     False
 
     >>> v.errors
-    {'field1': "field 'a_dict.bar' is required"}
+    {'test_field': "field 'a_dict.bar' is required"}
 
 .. versionchanged:: 0.8.1 Support for sub-document fields as dependencies.
 
