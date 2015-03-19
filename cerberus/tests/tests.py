@@ -32,10 +32,10 @@ class TestValidator(TestBase):
         self.assertSchemaError(self.document, schema, None,
                                errors.ERROR_SCHEMA_TYPE % field)
 
-        schema = {field: {'type': 'integer', 'schema': {'bar': {'type': 'string'}}}}
+        schema = {field: {'type': 'integer',
+                          'schema': {'bar': {'type': 'string'}}}}
         self.assertSchemaError(self.document, schema, None,
                                errors.ERROR_SCHEMA_TYPE % field)
-
 
     def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
         try:
