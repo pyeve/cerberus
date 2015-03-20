@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.8.1
 -------------
 
-Not released yet.
+Released on Mar 16 2015.
 
 - Fix: dependency on a sub-document field does not work. Closes #64.
 - Fix: readonly validation should happen before any other validation. 
