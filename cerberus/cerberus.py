@@ -293,10 +293,13 @@ class Validator(object):
                 elif constraint in self.special_rules:
                     pass
                 elif constraint == 'schema':
-                    if constraints['type'] == 'list':
+                    constraint_type = constraints.get('type')
+                    if constraint_type == 'list':
                         self.validate_schema({'schema': value})
-                    else:
+                    elif constraint_type == 'dict':
                         self.validate_schema(value)
+                    else:
+                        raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
                 elif constraint == 'items':
                     if isinstance(value, Mapping):
                         # list of dicts, deprecated
