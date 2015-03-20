@@ -3,6 +3,14 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 0.8.2
+-------------
+
+Not released yet
+
+- Fix: saise SchemaError when an unallowed 'type' is used in conjuction with
+  'schema' rule (otibsa.)
+
 Version 0.8.1
 -------------
 
