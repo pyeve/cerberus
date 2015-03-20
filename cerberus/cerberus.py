@@ -297,8 +297,6 @@ class Validator(object):
                     if not hasattr(self, '_validate_type_' + value):
                         raise SchemaError(
                             errors.ERROR_UNKNOWN_TYPE % value)
-                elif constraint in self.special_rules:
-                    pass
                 elif constraint == 'schema':
                     constraint_type = constraints.get('type')
                     if constraint_type == 'list':
@@ -307,6 +305,8 @@ class Validator(object):
                         self.validate_schema(value)
                     else:
                         raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
+                elif constraint in self.special_rules:
+                    pass
                 elif constraint == 'items':
                     if isinstance(value, Mapping):
                         # list of dicts, deprecated
