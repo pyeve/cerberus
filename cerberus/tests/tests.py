@@ -514,6 +514,26 @@ class TestValidator(TestBase):
         self.assertSuccess(document={"fred": "foo", "barney": "foo"},
                            validator=v)
 
+    def test_nested_unknown_keys(self):
+        schema = {
+            'field1': {
+                'type': 'dict',
+                'allow_unknown': True,
+                'schema': {'nested1': {'type': 'string'}}
+            }
+        }
+        document = {
+            'field1': {
+                'nested1': 'foo',
+                'arb1': 'bar',
+                'arb2': 42
+            }
+        }
+        self.assertSuccess(document=document, schema=schema)
+
+        schema['field1']['allow_unknown'] = {'type': 'string'}
+        self.assertFail(document=document, schema=schema)
+
     def test_novalidate_noerrors(self):
         '''In v0.1.0 and below `self.errors` raised an exception if no
         validation had been performed yet.
