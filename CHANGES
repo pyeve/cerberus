@@ -9,7 +9,7 @@ Version 0.8.2
 Not released yet
 
 - Fix: saise SchemaError when an unallowed 'type' is used in conjuction with
-  'schema' rule (otibsa.)
+  'schema' rule (Tobias Betz.)
 
 Version 0.8.1
 -------------
