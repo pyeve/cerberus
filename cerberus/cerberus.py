@@ -115,7 +115,8 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies", "readonly"
+    special_rules = "required", "nullable", "type", "dependencies", "readonly",\
+                    "allow_unknown", "schema"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
@@ -226,6 +227,12 @@ class Validator(object):
                     if self.errors.get(field):
                         continue
 
+                if 'schema' in definition:
+                    self._validate_schema(definition['schema'],
+                                          field,
+                                          value,
+                                          definition.get('allow_unknown'))
+
                 definition_rules = [rule for rule in definition.keys()
                                     if rule not in self.special_rules]
                 for rule in definition_rules:
@@ -290,8 +297,6 @@ class Validator(object):
                     if not hasattr(self, '_validate_type_' + value):
                         raise SchemaError(
                             errors.ERROR_UNKNOWN_TYPE % value)
-                elif constraint in self.special_rules:
-                    pass
                 elif constraint == 'schema':
                     constraint_type = constraints.get('type')
                     if constraint_type == 'list':
@@ -300,6 +305,8 @@ class Validator(object):
                         self.validate_schema(value)
                     else:
                         raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
+                elif constraint in self.special_rules:
+                    pass
                 elif constraint == 'items':
                     if isinstance(value, Mapping):
                         # list of dicts, deprecated
@@ -426,7 +433,7 @@ class Validator(object):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
-    def _validate_schema(self, schema, field, value):
+    def _validate_schema(self, schema, field, value, nested_allow_unknown):
         if isinstance(value, Sequence):
             list_errors = {}
             for i in range(len(value)):
@@ -439,6 +446,8 @@ class Validator(object):
         elif isinstance(value, Mapping):
             validator = copy.copy(self)
             validator.schema = schema
+            if not validator.allow_unknown:
+                validator.allow_unknown = nested_allow_unknown
             validator.validate(value, context=self.document,
                                update=self.update)
             if len(validator.errors):
