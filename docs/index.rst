@@ -103,6 +103,38 @@ unknown fields will be validated against it: ::
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
+``allow_unknown`` can also be set for nested dictionaries ::
+
+    >>> # by default allow_unknown is False for the whole document.
+    >>> v = Validator()
+    >>> v.allow_unknown  
+    False
+
+    >>> # we can switch it on (or set it to a validation schema) for individual subdocuments
+    >>> schema = {
+    ...   'name': {'type': 'string'},
+    ...   'a_dict': {
+    ...     'type': 'dict',
+    ...     'allow_unknown': True,
+    ...     'schema': {
+    ...       'address': {'type': 'string'}
+    ...     }
+    ...   }
+    ... }
+
+    >>> v.validate({'name': john', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    True
+
+    >>> # this fails as allow_unknown is still False for the parent document.
+    >>> v.validate({'name': john', 'an_unknown_field': 'is not allowed', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    False
+
+    >>> v.errors
+    {'an_unknown_field': 'unknown field'}
+
+.. versionchanged:: 0.8.2
+   ``allow_unknown`` can also be set for nested dict fields.
+
 .. versionchanged:: 0.8
    ``allow_unknown`` can also be set to a validation schema.
 
