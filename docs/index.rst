@@ -122,11 +122,11 @@ unknown fields will be validated against it: ::
     ...   }
     ... }
 
-    >>> v.validate({'name': john', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    >>> v.validate({'name': 'john', 'a_dict': {'an_unknown_field': 'is allowed'}}, schema)
     True
 
     >>> # this fails as allow_unknown is still False for the parent document.
-    >>> v.validate({'name': john', 'an_unknown_field': 'is not allowed', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    >>> v.validate({'name': 'john', 'an_unknown_field': 'is not allowed', 'a_dict': {'an_unknown_field': 'is allowed'}}, schema)
     False
 
     >>> v.errors
