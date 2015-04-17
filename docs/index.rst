@@ -274,6 +274,7 @@ Data type allowed for the key value. Can be one of the following:
     * ``dict`` (formally ``collections.mapping``)
     * ``list`` (formally ``collections.sequence``, exluding strings)
     * ``set``
+    * ``defined``
 
 You can extend this list and support custom types, see :ref:`new-types`. 
 
@@ -285,6 +286,9 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+ .. versionchanged:: 0.8.2
+   Added the ``defined`` data type.
 
 .. versionchanged:: 0.7.1
    ``dict`` and ``list`` typechecking are now performed with the more generic

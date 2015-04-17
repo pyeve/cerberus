@@ -150,6 +150,9 @@ class TestValidator(TestBase):
     def test_not_a_dict(self):
         self.assertBadType('a_dict', 'dict', "i'm not a dict")
 
+    def test_not_defined(self):
+        self.assertBadType('a_defined_value', 'defined', None)
+
     def test_bad_max_length(self):
         field = 'a_required_string'
         max_length = self.schema[field]['maxlength']

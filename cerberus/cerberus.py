@@ -396,6 +396,10 @@ class Validator(object):
         if not isinstance(value, set):
             self._error(field, errors.ERROR_BAD_TYPE % "set")
 
+    def _validate_type_defined(self, field, value):
+        if value is None:
+            self._error(field, errors.ERROR_BAD_TYPE % "defined")
+
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, Sequence):
             if len(value) > max_length:
