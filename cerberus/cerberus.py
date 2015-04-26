@@ -57,6 +57,9 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionadded:: 0.8.2
+       'type' can be a list of valid types.
+
     .. versionchanged:: 0.8.1
        'dependencies' for sub-document fields. Closes #64.
        'readonly' should be validated before any other validation. Closes #63.
@@ -294,15 +297,20 @@ class Validator(object):
                 raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
             for constraint, value in constraints.items():
                 if constraint == 'type':
-                    if not hasattr(self, '_validate_type_' + value):
-                        raise SchemaError(
-                            errors.ERROR_UNKNOWN_TYPE % value)
+                    values = value if isinstance(value, list) else [value]
+                    for value in values:
+                        if not hasattr(self, '_validate_type_' + value):
+                            raise SchemaError(
+                                errors.ERROR_UNKNOWN_TYPE % value)
                 elif constraint == 'schema':
                     constraint_type = constraints.get('type')
-                    if constraint_type == 'list':
-                        self.validate_schema({'schema': value})
-                    elif constraint_type == 'dict':
-                        self.validate_schema(value)
+                    if constraint_type is not None:
+                        if constraint_type == 'list' or \
+                                'list' in constraint_type:
+                            self.validate_schema({'schema': value})
+                        elif constraint_type == 'dict' or \
+                                'dict' in constraint_type:
+                            self.validate_schema(value)
                     else:
                         raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
                 elif constraint in self.special_rules:
@@ -348,13 +356,24 @@ class Validator(object):
         """
         .. versionadded:: 0.7
         """
+        if not isinstance(value, _str_type):
+            return
         pattern = re.compile(match)
         if not pattern.match(value):
             self._error(field, errors.ERROR_REGEX % match)
 
     def _validate_type(self, data_type, field, value):
-        validator = getattr(self, "_validate_type_" + data_type, None)
-        validator(field, value)
+        data_types = data_type if isinstance(data_type, list) else [data_type]
+        for data_type in data_types:
+            validator = getattr(self, "_validate_type_" + data_type, None)
+            validator(field, value)
+        if field in self._errors.keys():
+            if isinstance(self._errors[field], str):
+                _errors = 1
+            elif isinstance(self._errors[field], list):
+                _errors = len(self._errors[field])
+            if _errors < len(data_types):
+                del self._errors[field]
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):

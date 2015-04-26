@@ -277,6 +277,14 @@ Data type allowed for the key value. Can be one of the following:
     * ``list`` (formally ``collections.sequence``, excluding strings)
     * ``set``
 
+A list of types can be used to allow different values: ::
+
+    >>> v = Validator({'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}})
+    >>> v.validate({'quotes': 'Hello world!'})
+    True
+    >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
+    True
+
 You can extend this list and support custom types, see :ref:`new-types`.
 
 .. note::
@@ -287,6 +295,9 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.8.2
+   If a list of types is given, the key value must match *any* of them.
 
 .. versionchanged:: 0.7.1
    ``dict`` and ``list`` typechecking are now performed with the more generic
