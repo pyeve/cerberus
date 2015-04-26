@@ -49,7 +49,7 @@ class Validator(object):
                                  extend the schema grammar beyond Cerberus'
                                  domain.
     :param ignore_none_values: If ``True`` it will ignore None values for type
-                               checking. (no UnknowType error will be added).
+                               checking. (no UnknownType error will be added).
                                Defaults to ``False``. Useful if your document
                                is composed from function kwargs with defaults.
     :param allow_unknown: if ``True`` unknown key/value pairs (not present in
@@ -146,7 +146,7 @@ class Validator(object):
 
         :param schema: optional validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
-                       class instantation.
+                       class instantiation.
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
 
@@ -161,7 +161,7 @@ class Validator(object):
         :param document: the dict to validate.
         :param schema: the validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
-                       class instantation.
+                       class instantiation.
         :param update: If ``True`` validation of required fields won't be
                        performed.
 
@@ -250,7 +250,7 @@ class Validator(object):
                         if not unknown_validator.validate({field: value}):
                             self._error(field, unknown_validator.errors[field])
                     else:
-                        # allow uknown field to pass without any kind of
+                        # allow unknown field to pass without any kind of
                         # validation
                         pass
                 else:
