@@ -661,6 +661,10 @@ Source Code
 Source code is available at `GitHub
 <https://github.com/nicolaiarocci/cerberus>`_.
 
+Authors
+-------
+.. include:: ../AUTHORS
+
 Copyright Notice
 ----------------
 This is an open source project by `Nicola Iarocci
