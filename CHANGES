@@ -8,6 +8,7 @@ Version 0.8.2
 
 Not released yet
 
+- Improve allow_unknown documentation (Frank Sachsenheim).
 - Fix: allow_unknown can also be set for nested dicts. Closes #75 (Tobias
   Betz.)
 - Fix: saise SchemaError when an unallowed 'type' is used in conjuction with
