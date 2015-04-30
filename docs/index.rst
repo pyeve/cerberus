@@ -279,11 +279,19 @@ Data type allowed for the key value. Can be one of the following:
 
 A list of types can be used to allow different values: ::
 
-    >>> v = Validator({'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}})
+    >>> v = Validator({'quotes': {'type': ['string', 'list']}})
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
     True
+
+    >>> v = Validator({'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}})
+    >>> v.validate({'quotes': 'Hello world!'})
+    True
+    >>> v.validate({'quotes': [1, 'Heureka!']})
+    False
+    >>> v.errors
+    {'quotes': {0: 'must be of string type'}}
 
 You can extend this list and support custom types, see :ref:`new-types`.
 
