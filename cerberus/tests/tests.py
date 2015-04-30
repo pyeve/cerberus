@@ -315,6 +315,12 @@ class TestValidator(TestBase):
     def test_set(self):
         self.assertSuccess({'a_set': set(['hello', 1])})
 
+    def test_one_of_two_types(self):
+        self.assertSuccess({'one_or_more_strings': 'foo'})
+        self.assertSuccess({'one_or_more_strings': ['foo', 'bar']})
+        self.assertFail({'one_or_more_strings': 23})
+        self.assertFail({'one_or_more_strings': ['foo', 23]})
+
     def test_regex(self):
         field = 'a_regex_email'
         self.assertSuccess({field: 'valid.email@gmail.com'})
@@ -535,15 +541,17 @@ class TestValidator(TestBase):
         self.assertFail(document=document, schema=schema)
 
     def test_novalidate_noerrors(self):
-        '''In v0.1.0 and below `self.errors` raised an exception if no
+        """
+        In v0.1.0 and below `self.errors` raised an exception if no
         validation had been performed yet.
-        '''
+        """
         self.assertEqual(self.validator.errors, {})
 
     def test_callable_validator(self):
-        ''' Validator instance is callable, functions as a shorthand
+        """
+        Validator instance is callable, functions as a shorthand
         passthrough to validate()
-        '''
+        """
         schema = {'test_field': {'type': 'string'}}
         v = Validator(schema)
         self.assertTrue(v.validate({'test_field': 'foo'}))
@@ -707,11 +715,11 @@ class TestValidator(TestBase):
                                                  'unknown': True}}))
 
     def test_self_document_always_root(self):
-        ''' Make sure self.document is always the root document.
+        """ Make sure self.document is always the root document.
         See:
         * https://github.com/nicolaiarocci/cerberus/pull/42
         * https://github.com/nicolaiarocci/eve/issues/295
-        '''
+        """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
                 if('sub' not in self.document or
