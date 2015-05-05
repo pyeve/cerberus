@@ -761,3 +761,20 @@ class TestValidator(TestBase):
         self.assertError('name', 'must be lowercase', validator=v)
 
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
+
+
+class TestDockerCompose(TestBase):
+    """ Tests for https://github.com/docker/compose """
+    def setUp(self):
+        self.validator = Validator()
+
+    def test_environment(self):
+        schema = {'environment': {'type': ['dict', 'list'],
+                  'keyschema': {'type': 'string', 'nullable': True},
+                  'schema': {'type': 'string'}}}
+
+        document = {'environment': {'VARIABLE': 'FOO'}}
+        self.assertSuccess(document, schema)
+
+        document = {'environment': ['VARIABLE=FOO']}
+        self.assertSuccess(document, schema)

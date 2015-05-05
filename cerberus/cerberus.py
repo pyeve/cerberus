@@ -302,6 +302,15 @@ class Validator(object):
                         if not hasattr(self, '_validate_type_' + value):
                             raise SchemaError(
                                 errors.ERROR_UNKNOWN_TYPE % value)
+                    if 'dict' in values and 'list' in values:
+                        if 'keyschema' in constraints and \
+                            'schema' not in constraints:  # noqa
+                                raise SchemaError('You must provide a compleme'
+                                                  'ntary `schema`')
+                        if 'schema' in constraints and \
+                            'keyschema' not in constraints:  # noqa
+                                raise SchemaError('You must provide a compleme'
+                                                  'ntary `keyschema`')
                 elif constraint == 'schema':
                     constraint_type = constraints.get('type')
                     if constraint_type is not None:
@@ -363,17 +372,23 @@ class Validator(object):
             self._error(field, errors.ERROR_REGEX % match)
 
     def _validate_type(self, data_type, field, value):
-        data_types = data_type if isinstance(data_type, list) else [data_type]
-        for data_type in data_types:
-            validator = getattr(self, "_validate_type_" + data_type, None)
+
+        def call_type_validation(_type, value):
+            validator = getattr(self, "_validate_type_" + _type, None)
             validator(field, value)
-        if field in self._errors.keys():
-            if isinstance(self._errors[field], str):
-                _errors = 1
-            elif isinstance(self._errors[field], list):
-                _errors = len(self._errors[field])
-            if _errors < len(data_types):
-                del self._errors[field]
+
+        if isinstance(data_type, _str_type):
+            call_type_validation(data_type, value)
+        elif isinstance(data_type, list):
+            prev_errors = self._errors.copy()
+            for _type in data_type:
+                call_type_validation(_type, value)
+                if len(self._errors) == len(prev_errors):
+                    return
+                else:
+                    self._errors = prev_errors
+            self._error(field, errors.ERROR_BAD_TYPE % ", ".
+                        join(data_type[:-1]) + ' or ' + data_type[-1])
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
@@ -453,7 +468,7 @@ class Validator(object):
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
     def _validate_schema(self, schema, field, value, nested_allow_unknown):
-        if isinstance(value, Sequence):
+        if isinstance(value, Sequence) and not isinstance(value, _str_type):
             list_errors = {}
             for i in range(len(value)):
                 validator = self.__class__({i: schema},
@@ -463,6 +478,8 @@ class Validator(object):
             if len(list_errors):
                 self._error(field, list_errors)
         elif isinstance(value, Mapping):
+            if 'list' in self.schema[field]['type']:
+                return
             validator = copy.copy(self)
             validator.schema = schema
             if not validator.allow_unknown:
@@ -471,10 +488,10 @@ class Validator(object):
                                update=self.update)
             if len(validator.errors):
                 self._error(field, validator.errors)
-        else:
-            self._error(field, errors.ERROR_BAD_TYPE % "dict or list")
 
     def _validate_keyschema(self, schema, field, value):
+        if not isinstance(value, Mapping):
+            return
         for key, document in value.items():
             validator = self.__class__()
             validator.validate(
