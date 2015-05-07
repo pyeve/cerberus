@@ -3,11 +3,29 @@ Cerberus Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Next Release
-------------
+Version 0.8.2
+-------------
 
-Not released yet (you guessed it).
+Not released yet
 
+- Change: 'type' can also be a list of types (Frank Sachsenheim).
+- Improve 'allow_unknown' documentation (Frank Sachsenheim).
+- Fix: allow_unknown can also be set for nested dicts. Closes #75 (Tobias
+  Betz.)
+- Fix: saise SchemaError when an unallowed 'type' is used in conjuction with
+  'schema' rule (Tobias Betz.)
+
+Version 0.8.1
+-------------
+
+Released on Mar 16 2015.
+
+- Fix: dependency on a sub-document field does not work. Closes #64.
+- Fix: readonly validation should happen before any other validation. 
+  Closes #63.
+- Fix: allow_unknown does not apply to sub-dictionaries in a list. Closes #67.
+- Fix: two tests being ignored because of name typo.
+- Fix: update mode does not ignore required fields in subdocuments. Closes #72.
 - Fix: allow_unknown does not respect custom rules. Closes #66.
 - Fix typo in docstrings (Riccardo.)
 

@@ -26,6 +26,17 @@ class TestValidator(TestBase):
         self.assertSchemaError(self.document, schema, v,
                                errors.ERROR_SCHEMA_FORMAT % schema)
 
+    def test_bad_schema_type_field(self):
+        field = 'foo'
+        schema = {field: {'schema': {'bar': {'type': 'string'}}}}
+        self.assertSchemaError(self.document, schema, None,
+                               errors.ERROR_SCHEMA_TYPE % field)
+
+        schema = {field: {'type': 'integer',
+                          'schema': {'bar': {'type': 'string'}}}}
+        self.assertSchemaError(self.document, schema, None,
+                               errors.ERROR_SCHEMA_TYPE % field)
+
     def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -91,6 +102,22 @@ class TestValidator(TestBase):
         field = 'a_readonly_string'
         self.assertFail({field: 'update me if you can'})
         self.assertError(field, errors.ERROR_READONLY_FIELD)
+
+    def test_readonly_field_first_rule(self):
+        # test that readonly rule is checked before any other rule, and blocks.
+        # See #63.
+        schema = {
+            'a_readonly_number': {
+                'type': 'integer',
+                'readonly': True,
+                'max': 1
+            }
+        }
+        v = Validator(schema)
+        v.validate({'a_readonly_number': 2})
+        # it would be a list if there's more than one error; we get a dict
+        # instead.
+        self.assertTrue('read-only' in v.errors['a_readonly_number'])
 
     def test_unknown_data_type(self):
         field = 'name'
@@ -255,7 +282,8 @@ class TestValidator(TestBase):
         self.assertSuccess({'a_restricted_integer': -1})
 
     def test_validate_update(self):
-        self.assertTrue(self.validator.validate({'an_integer': 100},
+        self.assertTrue(self.validator.validate({'an_integer': 100,
+                                                 'a_dict': {'address': 'adr'}},
                                                 update=True))
 
     def test_string(self):
@@ -287,6 +315,12 @@ class TestValidator(TestBase):
     def test_set(self):
         self.assertSuccess({'a_set': set(['hello', 1])})
 
+    def test_one_of_two_types(self):
+        self.assertSuccess({'one_or_more_strings': 'foo'})
+        self.assertSuccess({'one_or_more_strings': ['foo', 'bar']})
+        self.assertFail({'one_or_more_strings': 23})
+        self.assertFail({'one_or_more_strings': ['foo', 23]})
+
     def test_regex(self):
         field = 'a_regex_email'
         self.assertSuccess({field: 'valid.email@gmail.com'})
@@ -294,7 +328,7 @@ class TestValidator(TestBase):
                                                  self.schema, update=True))
         self.assertError(field, 'does not match regex')
 
-    def tst_a_list_of_dicts_deprecated(self):
+    def test_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
             {
                 'a_list_of_dicts_deprecated': [
@@ -304,7 +338,7 @@ class TestValidator(TestBase):
             }
         )
 
-    def tst_a_list_of_dicts(self):
+    def test_a_list_of_dicts(self):
         self.assertSuccess(
             {
                 'a_list_of_dicts': [
@@ -464,6 +498,15 @@ class TestValidator(TestBase):
         v.allow_unknown = False
         self.assertFail({'name': 'mark'}, validator=v)
 
+    def test_unknown_keys_list_of_dicts(self):
+        # test that allow_unknown is honored even for subdicts in lists.
+        # See 67.
+        self.validator.allow_unknown = True
+        document = {'a_list_of_dicts': [{'sku': 'YZ069', 'price': 25,
+                                         'extra': True}]}
+
+        self.assertSuccess(document)
+
     def test_unknown_keys_retain_custom_rules(self):
         # test that allow_unknown schema respect custom validation rules.
         # See #66.
@@ -477,16 +520,38 @@ class TestValidator(TestBase):
         self.assertSuccess(document={"fred": "foo", "barney": "foo"},
                            validator=v)
 
+    def test_nested_unknown_keys(self):
+        schema = {
+            'field1': {
+                'type': 'dict',
+                'allow_unknown': True,
+                'schema': {'nested1': {'type': 'string'}}
+            }
+        }
+        document = {
+            'field1': {
+                'nested1': 'foo',
+                'arb1': 'bar',
+                'arb2': 42
+            }
+        }
+        self.assertSuccess(document=document, schema=schema)
+
+        schema['field1']['allow_unknown'] = {'type': 'string'}
+        self.assertFail(document=document, schema=schema)
+
     def test_novalidate_noerrors(self):
-        '''In v0.1.0 and below `self.errors` raised an exception if no
+        """
+        In v0.1.0 and below `self.errors` raised an exception if no
         validation had been performed yet.
-        '''
+        """
         self.assertEqual(self.validator.errors, {})
 
     def test_callable_validator(self):
-        ''' Validator instance is callable, functions as a shorthand
+        """
+        Validator instance is callable, functions as a shorthand
         passthrough to validate()
-        '''
+        """
         schema = {'test_field': {'type': 'string'}}
         v = Validator(schema)
         self.assertTrue(v.validate({'test_field': 'foo'}))
@@ -528,6 +593,9 @@ class TestValidator(TestBase):
         # False: one of dependencies missing
         self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
 
+        # False: one of dependencies missing
+        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'foo'}))
+
         # False: dependencies are validated and field is required
         self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
 
@@ -541,6 +609,25 @@ class TestValidator(TestBase):
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
         self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+
+    def test_dependencies_list_with_subodcuments_fields(self):
+        schema = {
+            'test_field': {'dependencies': ['a_dict.foo', 'a_dict.bar']},
+            'a_dict': {
+                'type': 'dict',
+                'schema': {
+                    'foo': {'type': 'string'},
+                    'bar': {'type': 'string'}
+                }
+            }
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar', 'a_dict': {}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'foo': 'foo'}}))
 
     def test_dependencies_dict(self):
         schema = {
@@ -593,6 +680,33 @@ class TestValidator(TestBase):
         schema['test_field']['required'] = False
         self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
 
+    def test_dependencies_dict_with_subodcuments_fields(self):
+        schema = {
+            'test_field': {'dependencies': {'a_dict.foo': ['foo', 'bar'],
+                                            'a_dict.bar': 'bar'}},
+            'a_dict': {
+                'type': 'dict',
+                'schema': {
+                    'foo': {'type': 'string'},
+                    'bar': {'type': 'string'}
+                }
+            }
+        }
+        v = Validator(schema)
+
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
+        self.assertTrue(v.validate({'test_field': 'foobar',
+                                    'a_dict': {'foo': 'bar', 'bar': 'bar'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'foo': 'foo', 'bar': 'foo'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'bar': 'foo'}}))
+        self.assertFalse(v.validate({'test_field': 'foobar',
+                                     'a_dict': {'bar': 'bar'}}))
+
     def test_options_passed_to_nested_validators(self):
         schema = {'sub_dict': {'type': 'dict',
                                'schema': {'foo': {'type': 'string'}}}}
@@ -601,11 +715,11 @@ class TestValidator(TestBase):
                                                  'unknown': True}}))
 
     def test_self_document_always_root(self):
-        ''' Make sure self.document is always the root document.
+        """ Make sure self.document is always the root document.
         See:
         * https://github.com/nicolaiarocci/cerberus/pull/42
         * https://github.com/nicolaiarocci/eve/issues/295
-        '''
+        """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
                 if('sub' not in self.document or

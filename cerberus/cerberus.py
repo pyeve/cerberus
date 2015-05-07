@@ -49,7 +49,7 @@ class Validator(object):
                                  extend the schema grammar beyond Cerberus'
                                  domain.
     :param ignore_none_values: If ``True`` it will ignore None values for type
-                               checking. (no UnknowType error will be added).
+                               checking. (no UnknownType error will be added).
                                Defaults to ``False``. Useful if your document
                                is composed from function kwargs with defaults.
     :param allow_unknown: if ``True`` unknown key/value pairs (not present in
@@ -57,7 +57,18 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionadded: 0.8
+    .. versionadded:: 0.8.2
+       'type' can be a list of valid types.
+
+    .. versionchanged:: 0.8.1
+       'dependencies' for sub-document fields. Closes #64.
+       'readonly' should be validated before any other validation. Closes #63.
+       'allow_unknown' does not apply to sub-dictionaries in a list.
+       Closes #67.
+       update mode does not ignore required fields in subdocuments. Closes #72.
+       'allow_unknown' does not respect custom rules. Closes #66.
+
+    .. versionadded:: 0.8
       'dependencies' also support a dict of dependencies.
       'allow_unknown' can be a schema used to validate unknown fields.
        Support for function-based validation mode.
@@ -107,7 +118,8 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies", "coerce"
+    special_rules = "required", "nullable", "type", "dependencies", "readonly",\
+                    "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False):
@@ -137,7 +149,7 @@ class Validator(object):
 
         :param schema: optional validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
-                       class instantation.
+                       class instantiation.
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
 
@@ -152,7 +164,7 @@ class Validator(object):
         :param document: the dict to validate.
         :param schema: the validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
-                       class instantation.
+                       class instantiation.
         :param update: If ``True`` validation of required fields won't be
                        performed.
 
@@ -201,6 +213,11 @@ class Validator(object):
                 if 'coerce' in definition:
                     value = self._validate_coerce(definition['coerce'], field, value)
                     self.document[field] = value
+
+                if 'readonly' in definition:
+                    self._validate_readonly(definition['readonly'], field,
+                                            value)
+
                     if self.errors.get(field):
                         continue
 
@@ -217,6 +234,12 @@ class Validator(object):
                     )
                     if self.errors.get(field):
                         continue
+
+                if 'schema' in definition:
+                    self._validate_schema(definition['schema'],
+                                          field,
+                                          value,
+                                          definition.get('allow_unknown'))
 
                 definition_rules = [rule for rule in definition.keys()
                                     if rule not in self.special_rules]
@@ -235,7 +258,7 @@ class Validator(object):
                         if not unknown_validator.validate({field: value}):
                             self._error(field, unknown_validator.errors[field])
                     else:
-                        # allow uknown field to pass without any kind of
+                        # allow unknown field to pass without any kind of
                         # validation
                         pass
                 else:
@@ -279,16 +302,24 @@ class Validator(object):
                 raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
             for constraint, value in constraints.items():
                 if constraint == 'type':
-                    if not hasattr(self, '_validate_type_' + value):
-                        raise SchemaError(
-                            errors.ERROR_UNKNOWN_TYPE % value)
+                    values = value if isinstance(value, list) else [value]
+                    for value in values:
+                        if not hasattr(self, '_validate_type_' + value):
+                            raise SchemaError(
+                                errors.ERROR_UNKNOWN_TYPE % value)
+                elif constraint == 'schema':
+                    constraint_type = constraints.get('type')
+                    if constraint_type is not None:
+                        if constraint_type == 'list' or \
+                                'list' in constraint_type:
+                            self.validate_schema({'schema': value})
+                        elif constraint_type == 'dict' or \
+                                'dict' in constraint_type:
+                            self.validate_schema(value)
+                    else:
+                        raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
                 elif constraint in self.special_rules:
                     pass
-                elif constraint == 'schema':
-                    if constraints['type'] == 'list':
-                        self.validate_schema({'schema': value})
-                    else:
-                        self.validate_schema(value)
                 elif constraint == 'items':
                     if isinstance(value, Mapping):
                         # list of dicts, deprecated
@@ -337,13 +368,24 @@ class Validator(object):
         """
         .. versionadded:: 0.7
         """
+        if not isinstance(value, _str_type):
+            return
         pattern = re.compile(match)
         if not pattern.match(value):
             self._error(field, errors.ERROR_REGEX % match)
 
     def _validate_type(self, data_type, field, value):
-        validator = getattr(self, "_validate_type_" + data_type, None)
-        validator(field, value)
+        data_types = data_type if isinstance(data_type, list) else [data_type]
+        for data_type in data_types:
+            validator = getattr(self, "_validate_type_" + data_type, None)
+            validator(field, value)
+        if field in self._errors.keys():
+            if isinstance(self._errors[field], str):
+                _errors = 1
+            elif isinstance(self._errors[field], list):
+                _errors = len(self._errors[field])
+            if _errors < len(data_types):
+                del self._errors[field]
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
@@ -422,11 +464,12 @@ class Validator(object):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
-    def _validate_schema(self, schema, field, value):
+    def _validate_schema(self, schema, field, value, nested_allow_unknown):
         if isinstance(value, Sequence):
             list_errors = {}
             for i in range(len(value)):
-                validator = self.__class__({i: schema})
+                validator = self.__class__({i: schema},
+                                           allow_unknown=self.allow_unknown)
                 validator.validate({i: value[i]}, context=self.document)
                 list_errors.update(validator.errors)
             if len(list_errors):
@@ -434,7 +477,10 @@ class Validator(object):
         elif isinstance(value, Mapping):
             validator = copy.copy(self)
             validator.schema = schema
-            validator.validate(value, context=self.document)
+            if not validator.allow_unknown:
+                validator.allow_unknown = nested_allow_unknown
+            validator.validate(value, context=self.document,
+                               update=self.update)
             if len(validator.errors):
                 self._error(field, validator.errors)
         else:
@@ -472,33 +518,42 @@ class Validator(object):
 
     def _validate_dependencies(self, document, dependencies, field,
                                break_on_error=False):
-        # handle cases where dependencies is a string or list of strings
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
         if isinstance(dependencies, Sequence):
             for dependency in dependencies:
-                if dependency not in document:
-                    if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dependency)
+                parts = dependency.split('.')
+                subdoc = copy.copy(document)
+                for part in parts:
+                    if part not in subdoc:
+                        if not break_on_error:
+                            self._error(field,
+                                        errors.ERROR_DEPENDENCIES_FIELD %
+                                        dependency)
+                        else:
+                            return False
                     else:
-                        return False
+                        subdoc = subdoc[part]
 
-        # If dependencies is dict then we check just the present of attr and
-        # the value of attr
         elif isinstance(dependencies, Mapping):
             for dep_name, dep_values in dependencies.items():
-                if not isinstance(dep_values, Sequence):
+                if isinstance(dep_values, _str_type):
                     dep_values = [dep_values]
-                if dep_name not in document:
-                    if not break_on_error:
-                        self._error(field, errors.ERROR_DEPENDENCIES_FIELD %
-                                    dep_name)
-                        break
+                parts = dep_name.split('.')
+                subdoc = copy.copy(document)
+                for part in parts:
+                    if part not in subdoc:
+                        if not break_on_error:
+                            self._error(field,
+                                        errors.ERROR_DEPENDENCIES_FIELD_VALUE
+                                        % (dep_name, dep_values))
+                            break
+                        else:
+                            return False
                     else:
-                        return False
-                if document[dep_name] not in dep_values:
+                        subdoc = subdoc[part]
+                if isinstance(subdoc, _str_type) and subdoc not in dep_values:
                     if not break_on_error:
                         self._error(field,
                                     errors.ERROR_DEPENDENCIES_FIELD_VALUE

@@ -4,6 +4,7 @@ The test suite uses this module as well.
 """
 ERROR_SCHEMA_MISSING = "validation schema missing"
 ERROR_SCHEMA_FORMAT = "'%s' is not a schema, must be a dict"
+ERROR_SCHEMA_TYPE = "type of field '%s' must be either 'list' or 'dict'"
 ERROR_DOCUMENT_MISSING = "document is missing"
 ERROR_DOCUMENT_FORMAT = "'%s' is not a document, must be a dict"
 ERROR_UNKNOWN_RULE = "unknown rule '%s' for field '%s'"

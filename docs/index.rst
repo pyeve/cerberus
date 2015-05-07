@@ -5,7 +5,7 @@ Cerberus is an ISC Licensed validation tool for Python dictionaries.
 
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be easily extensible, allowing for easy custom validation. It
-has no dependancies and is thoroughly tested under Python 2.6, Python 2.7,
+has no dependencies and is thoroughly tested under Python 2.6, Python 2.7,
 Python 3.3 and Python 3.4.
 
     *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
@@ -13,7 +13,7 @@ Python 3.3 and Python 3.4.
     carry off the entrance. -Ambrose Bierce, The Devil's Dictionary*
 
 Usage
-------
+-----
 You define a validation schema and pass it to an instance of the
 :class:`~cerberus.Validator` class: ::
 
@@ -67,7 +67,7 @@ the first validation issue. The whole document will always be processed, and
     {'age': 'min value is 10', 'name': 'must be of string type'}
 
 You will still get :class:`~cerberus.SchemaError` and
-:class:`~cerberus.ValidationError` exceptions. 
+:class:`~cerberus.ValidationError` exceptions.
 
 Allowing the unknown
 ~~~~~~~~~~~~~~~~~~~~
@@ -82,6 +82,7 @@ By default only keys defined in the schema are allowed: ::
 However, you can allow unknown key/value pairs by either setting
 ``allow_unknown`` to ``True``: ::
 
+    >>> v = Validator(schema={})
     >>> v.allow_unknown = True
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
@@ -89,6 +90,7 @@ However, you can allow unknown key/value pairs by either setting
 Or you can set ``allow_unknown`` to a validation schema, in which case
 unknown fields will be validated against it: ::
 
+    >>> v = Validator(schema={})
     >>> v.allow_unknown = {'type': 'string'}
     >>> v.validate({'an_unknown_field': 'john'})
     True
@@ -103,6 +105,38 @@ unknown fields will be validated against it: ::
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
+``allow_unknown`` can also be set for nested dictionaries ::
+
+    >>> # by default allow_unknown is False for the whole document.
+    >>> v = Validator()
+    >>> v.allow_unknown
+    False
+
+    >>> # we can switch it on (or set it to a validation schema) for individual subdocuments
+    >>> schema = {
+    ...   'name': {'type': 'string'},
+    ...   'a_dict': {
+    ...     'type': 'dict',
+    ...     'allow_unknown': True,
+    ...     'schema': {
+    ...       'address': {'type': 'string'}
+    ...     }
+    ...   }
+    ... }
+
+    >>> v.validate({'name': 'john', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    True
+
+    >>> # this fails as allow_unknown is still False for the parent document.
+    >>> v.validate({'name': 'john', 'an_unknown_field': 'is not allowed', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    False
+
+    >>> v.errors
+    {'an_unknown_field': 'unknown field'}
+
+.. versionchanged:: 0.8.2
+   ``allow_unknown`` can also be set for nested dict fields.
+
 .. versionchanged:: 0.8
    ``allow_unknown`` can also be set to a validation schema.
 
@@ -111,7 +145,7 @@ Custom validators
 Cerberus supports custom validation in two styles:
 
     * Class-based
-    * Function-based 
+    * Function-based
 
 As a general rule, when you are customizing validators in your application,
 ``Class-based`` style is more suitable for common validators, which are
@@ -218,10 +252,10 @@ the corresponding target values. ::
 
     >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
 
-In the example above we define a target dictionary with only one key, ``name``, 
+In the example above we define a target dictionary with only one key, ``name``,
 which is expected to be a string not longer than 10 characters. Something like
 ``{'name': 'john doe'}`` would validate, while something like ``{'name': 'a
-very long string'}`` or ``{'name': 99}`` would not. 
+very long string'}`` or ``{'name': 99}`` would not.
 
 By definition all keys are optional unless the `required`_ rule is set for
 a key.
@@ -233,17 +267,33 @@ The following rules are currently supported:
 type
 ''''
 Data type allowed for the key value. Can be one of the following:
-    * ``string`` 
+    * ``string``
     * ``integer``
     * ``float``
     * ``number`` (integer or float)
     * ``boolean``
     * ``datetime``
     * ``dict`` (formally ``collections.mapping``)
-    * ``list`` (formally ``collections.sequence``, exluding strings)
+    * ``list`` (formally ``collections.sequence``, excluding strings)
     * ``set``
 
-You can extend this list and support custom types, see :ref:`new-types`. 
+A list of types can be used to allow different values: ::
+
+    >>> v = Validator({'quotes': {'type': ['string', 'list']}})
+    >>> v.validate({'quotes': 'Hello world!'})
+    True
+    >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
+    True
+
+    >>> v = Validator({'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}})
+    >>> v.validate({'quotes': 'Hello world!'})
+    True
+    >>> v.validate({'quotes': [1, 'Heureka!']})
+    False
+    >>> v.errors
+    {'quotes': {0: 'must be of string type'}}
+
+You can extend this list and support custom types, see :ref:`new-types`.
 
 .. note::
 
@@ -253,6 +303,9 @@ You can extend this list and support custom types, see :ref:`new-types`.
     validation rules on the field will be skipped and validation will continue
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.8.2
+   If a list of types is given, the key value must match *any* of them.
 
 .. versionchanged:: 0.7.1
    ``dict`` and ``list`` typechecking are now performed with the more generic
@@ -335,9 +388,9 @@ but allowing for more fine grained control down to the field level. ::
 .. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
 
-minlength, maxlength 
-'''''''''''''''''''' 
-Minimum and maximum length allowed for ``string`` and ``list`` types. 
+minlength, maxlength
+''''''''''''''''''''
+Minimum and maximum length allowed for ``string`` and ``list`` types.
 
 min, max
 ''''''''
@@ -541,7 +594,7 @@ but also any of their allowed values must be matched. ::
 
 
     >>> # same as using a dependencies list
-    >>> document = {'field2': 7}  
+    >>> document = {'field2': 7}
     >>> v.validate(document, schema)
     {'field2': "field 'field1' is required"}
 
@@ -556,6 +609,28 @@ but also any of their allowed values must be matched. ::
 
     >>> v.errors
     {'field2': "field 'field1' is required with values: one"}
+
+Dependencies on sub-document fields are also supported: ::
+
+    >>> schema = {
+    ...   'test_field': {'dependencies': ['a_dict.foo', 'a_dict.bar']},
+    ...   'a_dict': {
+    ...     'type': 'dict',
+    ...     'schema': {
+    ...       'foo': {'type': 'string'},
+    ...       'bar': {'type': 'string'}
+    ...     }
+    ...   }
+    ... }
+
+    >>> document = {'test_field': 'foobar', 'a_dict': {'foo': 'foo'}}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'test_field': "field 'a_dict.bar' is required"}
+
+.. versionchanged:: 0.8.1 Support for sub-document fields as dependencies.
 
 .. versionchanged:: 0.8 Support for dependencies as a dictionary.
 
@@ -593,7 +668,7 @@ to do is: ::
 
 Testing
 -------
-.. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master 
+.. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master
         :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
 
 ::
@@ -605,12 +680,16 @@ Source Code
 Source code is available at `GitHub
 <https://github.com/nicolaiarocci/cerberus>`_.
 
+Authors
+-------
+.. include:: ../AUTHORS
+
 Copyright Notice
 ----------------
 This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
-informations.
+information.
 
 .. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
 .. _`Validating user objects with Cerberus`: http://nicolaiarocci.com/validating-user-objects-cerberus/
