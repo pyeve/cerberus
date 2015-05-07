@@ -244,6 +244,42 @@ has been implemented: ::
 
 .. versionadded:: 0.0.2
 
+.. _type-coercion
+
+Type coercion
+~~~~~~~~~~~~~
+Type coercion allows you to apply a callable to a value before any other
+validators run.  The return value of the callable replaces the new value in
+the document.  This can be used to convert values or sanitize data before it is
+validated. ::
+
+    >>> v = Validator({'amount': {'type': 'integer'}})
+    >>> v.validate({'amount': '1'})
+    False
+
+    >>> v = Validator({'amount': {'type': 'integer', 'coerce': int}})
+    >>> v.validate({'amount': '1'})
+    True
+    >>> v.document
+    {'amount': 1}
+
+    >>> to_bool = lambda v: v.lower() in ['true', '1']
+    >>> v = Validator({'flag': {'type': 'boolean', 'coerce': to_bool}})
+    >>> v.validate({'flag': 'true'})
+    True
+    >>> v.document
+    {'flag': True}
+
+If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
+exception will be caught and the validation with fail.  All other exception pass
+through.
+
+Also, keep in mind that using type coercion with ``coerce`` will change the
+original document that you passed into the validator.  To maintain the original
+document you should make a copy of it before you pass it to ``validate()``.
+
+.. versionadded:: 0.8.2
+
 Validation Schema
 -----------------
 A validation schema is a dictionary. Schema keys are the keys allowed in
