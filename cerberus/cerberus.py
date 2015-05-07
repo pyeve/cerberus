@@ -211,7 +211,8 @@ class Validator(object):
                         self._error(field, errors.ERROR_NOT_NULLABLE)
 
                 if 'coerce' in definition:
-                    value = self._validate_coerce(definition['coerce'], field, value)
+                    value = self._validate_coerce(definition['coerce'], field,
+                                                  value)
                     self.document[field] = value
 
                 if 'readonly' in definition:
