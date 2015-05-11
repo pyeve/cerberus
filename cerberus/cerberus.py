@@ -122,13 +122,15 @@ class Validator(object):
                     "allow_unknown", "schema"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False):
+                 ignore_none_values=False, allow_unknown=False, **kwargs):
+        self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self._additional_kwargs = kwargs
+
         if schema:
             self.validate_schema(schema)
-        self.schema = schema
         self._errors = {}
 
     def __call__(self, *args, **kwargs):
@@ -249,7 +251,8 @@ class Validator(object):
                         # validate that unknown fields matches the schema
                         # for unknown_fields
                         unknown_validator = \
-                            self.__class__({field: self.allow_unknown})
+                            self.__get_child_validator(
+                                schema={field: self.allow_unknown})
                         if not unknown_validator.validate({field: value}):
                             self._error(field, unknown_validator.errors[field])
                     else:
@@ -363,17 +366,23 @@ class Validator(object):
             self._error(field, errors.ERROR_REGEX % match)
 
     def _validate_type(self, data_type, field, value):
-        data_types = data_type if isinstance(data_type, list) else [data_type]
-        for data_type in data_types:
-            validator = getattr(self, "_validate_type_" + data_type, None)
+
+        def call_type_validation(_type, value):
+            validator = getattr(self, "_validate_type_" + _type, None)
             validator(field, value)
-        if field in self._errors.keys():
-            if isinstance(self._errors[field], str):
-                _errors = 1
-            elif isinstance(self._errors[field], list):
-                _errors = len(self._errors[field])
-            if _errors < len(data_types):
-                del self._errors[field]
+
+        if isinstance(data_type, _str_type):
+            call_type_validation(data_type, value)
+        elif isinstance(data_type, list):
+            prev_errors = self._errors.copy()
+            for _type in data_type:
+                call_type_validation(_type, value)
+                if len(self._errors) == len(prev_errors):
+                    return
+                else:
+                    self._errors = prev_errors
+            self._error(field, errors.ERROR_BAD_TYPE % ", ".
+                        join(data_type[:-1]) + ' or ' + data_type[-1])
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
@@ -453,11 +462,11 @@ class Validator(object):
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
     def _validate_schema(self, schema, field, value, nested_allow_unknown):
-        if isinstance(value, Sequence):
+        if isinstance(value, Sequence) and not isinstance(value, _str_type):
             list_errors = {}
             for i in range(len(value)):
-                validator = self.__class__({i: schema},
-                                           allow_unknown=self.allow_unknown)
+                validator = self.__get_child_validator(
+                    schema={i: schema}, allow_unknown=self.allow_unknown)
                 validator.validate({i: value[i]}, context=self.document)
                 list_errors.update(validator.errors)
             if len(list_errors):
@@ -471,16 +480,15 @@ class Validator(object):
                                update=self.update)
             if len(validator.errors):
                 self._error(field, validator.errors)
-        else:
-            self._error(field, errors.ERROR_BAD_TYPE % "dict or list")
 
     def _validate_keyschema(self, schema, field, value):
-        for key, document in value.items():
-            validator = self.__class__()
-            validator.validate(
-                {key: document}, {key: schema}, context=self.document)
-            if len(validator.errors):
-                self._error(field, validator.errors)
+        if isinstance(value, Mapping):
+            for key, document in value.items():
+                validator = self.__get_child_validator()
+                validator.validate(
+                    {key: document}, {key: schema}, context=self.document)
+                if len(validator.errors):
+                    self._error(field, validator.errors)
 
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
@@ -493,12 +501,12 @@ class Validator(object):
             self._error(field, errors.ERROR_ITEMS_LIST % len(schema))
         else:
             for i in range(len(schema)):
-                validator = self.__class__({i: schema[i]})
+                validator = self.__get_child_validator(schema={i: schema[i]})
                 validator.validate({i: values[i]}, context=self.document)
                 self.errors.update(validator.errors)
 
     def _validate_items_schema(self, schema, field, value):
-        validator = self.__class__(schema)
+        validator = self.__get_child_validator(schema=schema)
         for item in value:
             validator.validate(item, context=self.document)
             for field, error in validator.errors.items():
@@ -554,3 +562,9 @@ class Validator(object):
     def _validate_validator(self, validator, field, value):
         # call customized validator function
         validator(field, value, self._error)
+
+    def __get_child_validator(self, **kwargs):
+        """ creates a new instance of Validator-(sub-)class """
+        cumulated_kwargs = self._additional_kwargs.copy()
+        cumulated_kwargs.update(kwargs)
+        return self.__class__(**cumulated_kwargs)

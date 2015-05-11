@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
+from unittest import TestCase
 from . import TestBase
 from ..cerberus import Validator, errors, SchemaError
 
@@ -761,3 +762,23 @@ class TestValidator(TestBase):
         self.assertError('name', 'must be lowercase', validator=v)
 
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
+
+
+class InheritedValidator(Validator):
+    def __init__(self, *args, **kwargs):
+        if 'working_dir' in kwargs:
+            self.working_dir = kwargs['working_dir']
+        super(InheritedValidator, self).\
+            __init__(*args, **kwargs)
+
+    def _validate_type_test(self, field, value):
+        if not self.working_dir:
+            self._error('self.working_dir', 'is None')
+
+
+class TestInheritance(TestCase):
+    def test_contextual_data_preservation(self):
+        v = InheritedValidator({'test': {'type': 'list',
+                                         'schema': {'type': 'test'}}},
+                               working_dir='/tmp')
+        self.assertTrue(v.validate({'test': ['foo']}))
