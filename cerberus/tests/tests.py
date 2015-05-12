@@ -761,3 +761,36 @@ class TestValidator(TestBase):
         self.assertError('name', 'must be lowercase', validator=v)
 
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
+
+    def test_coerce(self):
+        schema = {
+            'amount': {'coerce': int}
+        }
+        v = Validator(schema)
+        v.validate({'amount': '1'})
+        self.assertEqual(v.document['amount'], 1)
+
+    def test_coerce_not_destructive(self):
+        schema = {
+            'amount': {'coerce': int}
+        }
+        v = Validator(schema)
+        doc = {'amount': '1'}
+        v.validate(doc)
+        self.assertNotEqual(id(v.document), id(doc))
+
+    def test_coerce_catches_ValueError(self):
+        schema = {
+            'amount': {'coerce': int}
+        }
+        v = Validator(schema)
+        self.assertFalse(v.validate({'amount': 'not_a_number'}))
+        self.assertError('amount', errors.ERROR_COERCION_FAILED % 'amount', v)
+
+    def test_coerce_catches_TypeError(self):
+        schema = {
+            'name': {'coerce': str.lower}
+        }
+        v = Validator(schema)
+        self.assertFalse(v.validate({'name': 1234}))
+        self.assertError('name', errors.ERROR_COERCION_FAILED % 'name', v)
