@@ -274,10 +274,6 @@ If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
 exception will be caught and the validation with fail.  All other exception pass
 through.
 
-Also, keep in mind that using type coercion with ``coerce`` will change the
-original document that you passed into the validator.  To maintain the original
-document you should make a copy of it before you pass it to ``validate()``.
-
 .. versionadded:: 0.8.2
 
 Validation Schema
