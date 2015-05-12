@@ -337,7 +337,7 @@ class Validator(object):
         try:
             value = coerce(value)
         except (TypeError, ValueError):
-            self._error(field, errors.ERROR_BAD_TYPE)
+            self._error(field, errors.ERROR_COERCION_FAILED % field)
         return value
 
     def _validate_required_fields(self, document):
