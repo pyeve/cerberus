@@ -768,8 +768,7 @@ class InheritedValidator(Validator):
     def __init__(self, *args, **kwargs):
         if 'working_dir' in kwargs:
             self.working_dir = kwargs['working_dir']
-        super(InheritedValidator, self).\
-            __init__(*args, **kwargs)
+        super(InheritedValidator, self).__init__(*args, **kwargs)
 
     def _validate_type_test(self, field, value):
         if not self.working_dir:
