@@ -122,13 +122,15 @@ class Validator(object):
                     "allow_unknown", "schema"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False):
+                 ignore_none_values=False, allow_unknown=False, **kwargs):
+        self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self._additional_kwargs = kwargs
+
         if schema:
             self.validate_schema(schema)
-        self.schema = schema
         self._errors = {}
 
     def __call__(self, *args, **kwargs):
@@ -249,7 +251,8 @@ class Validator(object):
                         # validate that unknown fields matches the schema
                         # for unknown_fields
                         unknown_validator = \
-                            self.__class__({field: self.allow_unknown})
+                            self.__get_child_validator(
+                                schema={field: self.allow_unknown})
                         if not unknown_validator.validate({field: value}):
                             self._error(field, unknown_validator.errors[field])
                     else:
@@ -471,8 +474,8 @@ class Validator(object):
         if isinstance(value, Sequence) and not isinstance(value, _str_type):
             list_errors = {}
             for i in range(len(value)):
-                validator = self.__class__({i: schema},
-                                           allow_unknown=self.allow_unknown)
+                validator = self.__get_child_validator(
+                    schema={i: schema}, allow_unknown=self.allow_unknown)
                 validator.validate({i: value[i]}, context=self.document)
                 list_errors.update(validator.errors)
             if len(list_errors):
@@ -490,14 +493,13 @@ class Validator(object):
                 self._error(field, validator.errors)
 
     def _validate_keyschema(self, schema, field, value):
-        if not isinstance(value, Mapping):
-            return
-        for key, document in value.items():
-            validator = self.__class__()
-            validator.validate(
-                {key: document}, {key: schema}, context=self.document)
-            if len(validator.errors):
-                self._error(field, validator.errors)
+        if isinstance(value, Mapping):
+            for key, document in value.items():
+                validator = self.__get_child_validator()
+                validator.validate(
+                    {key: document}, {key: schema}, context=self.document)
+                if len(validator.errors):
+                    self._error(field, validator.errors)
 
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
@@ -510,12 +512,12 @@ class Validator(object):
             self._error(field, errors.ERROR_ITEMS_LIST % len(schema))
         else:
             for i in range(len(schema)):
-                validator = self.__class__({i: schema[i]})
+                validator = self.__get_child_validator(schema={i: schema[i]})
                 validator.validate({i: values[i]}, context=self.document)
                 self.errors.update(validator.errors)
 
     def _validate_items_schema(self, schema, field, value):
-        validator = self.__class__(schema)
+        validator = self.__get_child_validator(schema=schema)
         for item in value:
             validator.validate(item, context=self.document)
             for field, error in validator.errors.items():
@@ -571,3 +573,9 @@ class Validator(object):
     def _validate_validator(self, validator, field, value):
         # call customized validator function
         validator(field, value, self._error)
+
+    def __get_child_validator(self, **kwargs):
+        """ creates a new instance of Validator-(sub-)class """
+        cumulated_kwargs = self._additional_kwargs.copy()
+        cumulated_kwargs.update(kwargs)
+        return self.__class__(**cumulated_kwargs)
