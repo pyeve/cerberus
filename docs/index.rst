@@ -188,6 +188,21 @@ matters, we can use it to validate all odd values: ::
     that allows validation of a field to happen in context of the rest of the
     document.
 
+To make use of additional contextual information in a sub-class of :class:`~cerberus.Validator`,
+use a pattern like this: ::
+
+    class MyValidator(Validator):
+        def __init__(self, *args, **kwargs):
+            if 'additional_context' in kwargs:
+                self.additional_context = kwargs['additional_context']
+            super(InheritedValidator, self).__init__(*args, **kwargs)
+
+        def _validate_type_foo(self, field, value):
+            make_use_of(self.additional_context)
+            …
+
+.. versionadded:: 0.8.2
+
 Function-based custom validation
 ''''''''''''''''''''''''''''''''
 With a special rule ``validator``, you can customize validators by defining
