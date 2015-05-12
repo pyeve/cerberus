@@ -194,9 +194,9 @@ class Validator(object):
 
         # make root document available for validators (Cerberus #42, Eve #295)
         if context is not None:
-            self.document = context
+            self.document = copy.deepcopy(context)
         else:
-            self.document = document
+            self.document = copy.deepcopy(document)
 
         for field, value in document.items():
             if self.ignore_none_values and value is None:
