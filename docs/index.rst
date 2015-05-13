@@ -259,7 +259,7 @@ has been implemented: ::
 
 .. versionadded:: 0.0.2
 
-.. _type-coercion
+.. _type-coercion:
 
 Type coercion
 ~~~~~~~~~~~~~
