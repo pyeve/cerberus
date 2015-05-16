@@ -223,9 +223,9 @@ class TestValidator(TestBase):
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(1 in v.errors)
+        self.assertTrue('[1]' in v.errors)
         self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
-                        v.errors[1])
+                        v.errors['[1]'])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
@@ -252,10 +252,10 @@ class TestValidator(TestBase):
         self.assertFail({field: value})
         v = self.validator
         self.assertTrue(field in v.errors)
-        self.assertTrue(0 in v.errors[field])
-        self.assertTrue('price' in v.errors[field][0])
+        self.assertTrue('[0]' in v.errors[field])
+        self.assertTrue('price' in v.errors[field]['[0]'])
         self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
-                        v.errors[field][0]['price'])
+                        v.errors[field]['[0]']['price'])
 
         value = ["not a dict"]
         self.assertValidationError({field: value}, None, None,

@@ -69,6 +69,19 @@ the first validation issue. The whole document will always be processed, and
 You will still get :class:`~cerberus.SchemaError` and
 :class:`~cerberus.ValidationError` exceptions.
 
+If you want to aggregate the errors of several, equally structured documents,
+you may set a prefix that will be prepended to the keys of the dictionary that
+contains all encountered errors. ::
+
+    >>> v = Validator(schema, error_source_prefix='myprefix')
+
+    v = Validator(schema)
+    errors = {}
+    for name, doc in documents.items():
+        v.error_source_prefix = name + ':'
+        v.validate(doc)
+        errors.update(v.errors)
+
 Allowing the unknown
 ~~~~~~~~~~~~~~~~~~~~
 By default only keys defined in the schema are allowed: ::

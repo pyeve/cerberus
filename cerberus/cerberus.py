@@ -122,11 +122,13 @@ class Validator(object):
                     "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False, **kwargs):
+                 ignore_none_values=False, allow_unknown=False,
+                 error_source_prefix='', **kwargs):
         self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self.error_source_prefix = error_source_prefix
         self._additional_kwargs = kwargs
 
         if schema:
@@ -273,6 +275,11 @@ class Validator(object):
         return len(self._errors) == 0
 
     def _error(self, field, _error):
+        if isinstance(field, int):
+            field = '[' + str(field) + ']'
+        if self.error_source_prefix is not None:
+            field = self.error_source_prefix + field
+
         field_errors = self._errors.get(field, [])
 
         if not isinstance(field_errors, list):
