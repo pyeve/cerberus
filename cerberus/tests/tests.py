@@ -223,9 +223,9 @@ class TestValidator(TestBase):
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(1 in v.errors)
+        self.assertTrue(field in v.errors)
         self.assertTrue(errors.ERROR_BAD_TYPE % 'integer' in
-                        v.errors[1])
+                        v.errors[field][1])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
