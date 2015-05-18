@@ -8,6 +8,10 @@ Version 0.8.2
 
 Not released yet
 
+- when 'items' is applied to a list, field name is used as key for
+  'validator.errors', and offending field indexes are used as keys for field
+  errors ({'a_list_of_strings': {1: 'not a string'}}) 'type' can be a list of
+  valid types.
 - Type coercion (Brett.)
 - Ensure that additional **kwargs of a subclass persist through validation
   (Frank Sachsenheim.)

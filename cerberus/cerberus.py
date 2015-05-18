@@ -58,6 +58,9 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded:: 0.8.2
+       when 'items' is applied to a list, field name is used as key for
+       'validator.errors', and offending field indexes are used as keys for
+       field errors ({'a_list_of_strings': {1: 'not a string'}})
        'type' can be a list of valid types.
 
     .. versionchanged:: 0.8.1
@@ -529,7 +532,9 @@ class Validator(object):
             for i in range(len(schema)):
                 validator = self.__get_child_validator(schema={i: schema[i]})
                 validator.validate({i: values[i]}, context=self.document)
-                self.errors.update(validator.errors)
+                for error in validator.errors:
+                    self.errors.setdefault(field, {})
+                    self.errors[field].update(validator.errors)
 
     def _validate_items_schema(self, schema, field, value):
         validator = self.__get_child_validator(schema=schema)
