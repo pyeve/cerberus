@@ -12,7 +12,7 @@ import sys
 import re
 import copy
 from datetime import datetime
-from collections import Mapping, Sequence
+from collections import Iterable, Mapping, Sequence
 from . import errors
 
 if sys.version_info[0] == 3:
@@ -234,7 +234,7 @@ class Validator(object):
                     if self.errors.get(field):
                         continue
 
-                if "dependencies" in definition:
+                if 'dependencies' in definition:
                     self._validate_dependencies(
                         document=document,
                         dependencies=definition["dependencies"],
@@ -395,19 +395,20 @@ class Validator(object):
     def _validate_type(self, data_type, field, value):
 
         def call_type_validation(_type, value):
-            validator = getattr(self, "_validate_type_" + _type, None)
+            validator = getattr(self, "_validate_type_" + _type)
             validator(field, value)
 
         if isinstance(data_type, _str_type):
             call_type_validation(data_type, value)
-        elif isinstance(data_type, list):
+        elif isinstance(data_type, Iterable):
             prev_errors = self._errors.copy()
+
             for _type in data_type:
                 call_type_validation(_type, value)
                 if len(self._errors) == len(prev_errors):
                     return
                 else:
-                    self._errors = prev_errors
+                    self._errors = prev_errors.copy()
             self._error(field, errors.ERROR_BAD_TYPE % ", ".
                         join(data_type[:-1]) + ' or ' + data_type[-1])
 
