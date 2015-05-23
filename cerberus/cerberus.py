@@ -19,8 +19,8 @@ if sys.version_info[0] == 3:
     _str_type = str
     _int_types = (int,)
 else:
-    _str_type = basestring
-    _int_types = (int, long)
+    _str_type = basestring  # noqa
+    _int_types = (int, long)  # noqa
 
 
 class ValidationError(ValueError):
@@ -62,6 +62,10 @@ class Validator(object):
        'validator.errors', and offending field indexes are used as keys for
        field errors ({'a_list_of_strings': {1: 'not a string'}})
        'type' can be a list of valid types.
+       'keyschema' is renamed to 'valueschema'. Closes #92.
+       'coerce' rule
+       additional **kwargs that are passed to the __init__-method of an
+       instance of Validator-(sub-)class are passed to child-validators.
 
     .. versionchanged:: 0.8.1
        'dependencies' for sub-document fields. Closes #64.
@@ -72,8 +76,8 @@ class Validator(object):
        'allow_unknown' does not respect custom rules. Closes #66.
 
     .. versionadded:: 0.8
-      'dependencies' also support a dict of dependencies.
-      'allow_unknown' can be a schema used to validate unknown fields.
+       'dependencies' also support a dict of dependencies.
+       'allow_unknown' can be a schema used to validate unknown fields.
        Support for function-based validation mode.
 
     .. versionchanged:: 0.7.2
@@ -121,8 +125,8 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies", "readonly",\
-                    "allow_unknown", "schema", "coerce"
+    special_rules = "required", "nullable", "type", "dependencies",\
+                    "readonly", "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False, **kwargs):
@@ -306,6 +310,21 @@ class Validator(object):
         if not isinstance(schema, Mapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
 
+        # TODO remove on next major release
+        def update_to_valueschema(schema, warning_printed=False):
+            if 'keyschema' in schema:
+                schema['valueschema'] = schema['keyschema']
+                del schema['keyschema']
+                if not warning_printed:
+                    print('WARNING cerberus: `keyschema` is deprecated, '
+                          'use `valueschema` instead')
+                    warning_printed = True
+            for key, value in schema.items():
+                if isinstance(value, Mapping):
+                    schema[key] = update_to_valueschema(value, warning_printed)
+            return schema
+        schema = update_to_valueschema(schema)
+
         for field, constraints in schema.items():
             if not isinstance(constraints, Mapping):
                 raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
@@ -317,14 +336,14 @@ class Validator(object):
                             raise SchemaError(
                                 errors.ERROR_UNKNOWN_TYPE % value)
                     if 'dict' in values and 'list' in values:
-                        if 'keyschema' in constraints and \
+                        if 'valueschema' in constraints and \
                             'schema' not in constraints:  # noqa
                                 raise SchemaError('You must provide a compleme'
                                                   'ntary `schema`')
                         if 'schema' in constraints and \
-                            'keyschema' not in constraints:  # noqa
+                            'valueschema' not in constraints:  # noqa
                                 raise SchemaError('You must provide a compleme'
-                                                  'ntary `keyschema`')
+                                                  'ntary `valueschema`')
                 elif constraint == 'schema':
                     constraint_type = constraints.get('type')
                     if constraint_type is not None:
@@ -367,8 +386,8 @@ class Validator(object):
         required = list(field for field, definition in self.schema.items()
                         if definition.get('required') is True)
         missing = set(required) - set(key for key in document.keys()
-                                      if document.get(key) is not None
-                                      or not self.ignore_none_values)
+                                      if document.get(key) is not None or
+                                      not self.ignore_none_values)
 
         for field in missing:
             dependencies = self.schema[field].get('dependencies')
@@ -510,7 +529,7 @@ class Validator(object):
             if len(validator.errors):
                 self._error(field, validator.errors)
 
-    def _validate_keyschema(self, schema, field, value):
+    def _validate_valueschema(self, schema, field, value):
         if isinstance(value, Mapping):
             for key, document in value.items():
                 validator = self.__get_child_validator()

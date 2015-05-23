@@ -8,6 +8,8 @@ Version 0.8.2
 
 Not released yet
 
+- 'keyschema' renamed to 'valueschema', print a deprecation warning (Frank
+  Sachsenheim.)
 - when 'items' is applied to a list, field name is used as key for
   'validator.errors', and offending field indexes are used as keys for field
   errors ({'a_list_of_strings': {1: 'not a string'}}) 'type' can be a list of
@@ -23,7 +25,7 @@ Not released yet
 - Improve 'allow_unknown' documentation (Frank Sachsenheim).
 - Fix: allow_unknown can also be set for nested dicts. Closes #75 (Tobias
   Betz.)
-- Fix: saise SchemaError when an unallowed 'type' is used in conjuction with
+- Fix: raise SchemaError when an unallowed 'type' is used in conjunction with
   'schema' rule (Tobias Betz.)
 
 Version 0.8.1
@@ -32,7 +34,7 @@ Version 0.8.1
 Released on Mar 16 2015.
 
 - Fix: dependency on a sub-document field does not work. Closes #64.
-- Fix: readonly validation should happen before any other validation. 
+- Fix: readonly validation should happen before any other validation.
   Closes #63.
 - Fix: allow_unknown does not apply to sub-dictionaries in a list. Closes #67.
 - Fix: two tests being ignored because of name typo.

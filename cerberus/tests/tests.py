@@ -207,8 +207,8 @@ class TestValidator(TestBase):
         self.assertTrue(errors.ERROR_REQUIRED_FIELD in
                         v.errors[field]['city'])
 
-    def test_bad_keyschema(self):
-        field = 'a_dict_with_keyschema'
+    def test_bad_valueschema(self):
+        field = 'a_dict_with_valueschema'
         schema_field = 'a_string'
         value = {schema_field: 'not an integer'}
         self.assertFail({field: value})
@@ -365,10 +365,10 @@ class TestValidator(TestBase):
             }
         )
 
-    def test_a_dict_with_keyschema(self):
+    def test_a_dict_with_valueschema(self):
         self.assertSuccess(
             {
-                'a_dict_with_keyschema': {
+                'a_dict_with_valueschema': {
                     'an integer': 99,
                     'another integer': 100
                 }
@@ -797,6 +797,16 @@ class TestValidator(TestBase):
         self.assertError('name', errors.ERROR_COERCION_FAILED % 'name', v)
 
 
+# TODO remove on next major release
+class BackwardCompatibility(TestBase):
+    def test_keyschema(self):
+        schema = {'a_field': {'type': 'list',
+                              'schema': {'keyschema': {'type': 'string'}}}}
+        document = {'a_field': [{'a_key': 'a_string'}]}
+        v = Validator()
+        self.assertSuccess(document, schema, v)
+
+
 class InheritedValidator(Validator):
     def __init__(self, *args, **kwargs):
         if 'working_dir' in kwargs:
@@ -823,8 +833,8 @@ class TestDockerCompose(TestBase):
 
     def test_environment(self):
         schema = {'environment': {'type': ['dict', 'list'],
-                  'keyschema': {'type': 'string', 'nullable': True},
-                  'schema': {'type': 'string'}}}
+                  'valueschema': {'type': 'string', 'nullable': True},
+                                  'schema': {'type': 'string'}}}
 
         document = {'environment': {'VARIABLE': 'FOO'}}
         self.assertSuccess(document, schema)

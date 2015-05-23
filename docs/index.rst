@@ -544,7 +544,7 @@ Validation rules for ``dict`` fields. ::
 
 .. note::
 
-    If all keys should share the same validation rules you probably want to use :ref:`keyschema` instead.
+    If all keys should share the same validation rules you probably want to use :ref:`valueschema` instead.
 
 schema (list)
 '''''''''''''
@@ -566,14 +566,14 @@ and validating a list of dictionaries. ::
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
 
-.. _keyschema:
+.. _valueschema:
 
-keyschema
+valueschema
 '''''''''
 Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
 keys, the values for all of which must validate with given schema: ::
 
-    >>> schema = {'numbers': {'type': 'dict', 'keyschema': {'type': 'integer', min: 10}}}
+    >>> schema = {'numbers': {'type': 'dict', 'valueschema': {'type': 'integer', min: 10}}}
     >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
     >>> v.validate(document, schema)
     True
@@ -586,6 +586,8 @@ keys, the values for all of which must validate with given schema: ::
     {'numbers': {'an integer': 'min value is 10'}}
 
 .. versionadded:: 0.7
+.. versionchanged:: 0.8.2
+   renamed ``keyschema`` to ``valueschema``
 
 regex
 '''''
