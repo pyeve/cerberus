@@ -97,9 +97,9 @@ class TestBase(unittest.TestCase):
                     'city': {'type': 'string', 'required': True}
                 },
             },
-            'a_dict_with_keyschema': {
+            'a_dict_with_valueschema': {
                 'type': 'dict',
-                'keyschema': {'type': 'integer'}
+                'valueschema': {'type': 'integer'}
             },
             'a_list_length': {
                 'type': 'list',
