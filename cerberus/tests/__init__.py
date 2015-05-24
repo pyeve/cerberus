@@ -104,6 +104,10 @@ class TestBase(unittest.TestCase):
                 'type': 'dict',
                 'valueschema': {'type': 'integer'}
             },
+            'a_dict_with_propertyschema': {
+                'type': 'dict',
+                'propertyschema': {'type': 'string', 'regex': '[a-z]+'}
+            },
             'a_list_length': {
                 'type': 'list',
                 'schema': {'type': 'integer'},

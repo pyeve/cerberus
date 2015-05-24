@@ -64,6 +64,7 @@ class Validator(object):
        'type' can be a list of valid types.
        'keyschema' is renamed to 'valueschema'. Closes #92.
        'coerce' rule
+       'propertyschema' validation rule.
        additional kwargs that are passed to the __init__-method of an
        instance of Validator-(sub-)class are passed to child-validators.
        :func:`validated` added
@@ -549,6 +550,15 @@ class Validator(object):
                     {key: document}, {key: schema}, context=self.document)
                 if len(validator.errors):
                     self._error(field, validator.errors)
+
+    def _validate_propertyschema(self, schema, field, value):
+        if isinstance(value, Mapping):
+            validator = self.__get_child_validator(
+                schema={field: {'type': 'list', 'schema': schema}})
+            validator.validate({field: list(value.keys())},
+                               context=self.document)
+            for error in validator.errors:
+                self._error(field, error)
 
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
