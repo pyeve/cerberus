@@ -7,6 +7,22 @@ from . import TestBase
 from ..cerberus import Validator, errors, SchemaError
 
 
+class TestTestBase(TestBase):
+    def run_test_to_fail(self, test, *args):
+        try:
+            test(*args)
+        except AssertionError as e:  # noqa
+            pass
+        else:
+            raise AssertionError("test didn't fail")
+
+    def test_fail(self):
+        self.run_test_to_fail(self.assertFail, {'an_integer': 60})
+
+    def test_success(self):
+        self.run_test_to_fail(self.assertSuccess, {'an_integer': 110})
+
+
 class TestValidator(TestBase):
 
     def test_empty_schema(self):
@@ -88,7 +104,8 @@ class TestValidator(TestBase):
         self.assertSuccess(self.document, schema)
 
     def test_required_field(self):
-        self.assertFail({'an_integer': 1})
+        self.assertFail({'an_integer': 1},
+                        self.schema.update(self.required_string_extension))
         self.assertError('a_required_string', errors.ERROR_REQUIRED_FIELD)
 
     def test_nullable_field(self):
@@ -128,7 +145,7 @@ class TestValidator(TestBase):
                                errors.ERROR_UNKNOWN_TYPE % value)
 
     def test_not_a_string(self):
-        self.assertBadType('a_required_string', 'string', 1)
+        self.assertBadType('a_string', 'string', 1)
 
     def test_not_a_integer(self):
         self.assertBadType('an_integer', 'integer', "i'm not an integer")
@@ -152,14 +169,14 @@ class TestValidator(TestBase):
         self.assertBadType('a_dict', 'dict', "i'm not a dict")
 
     def test_bad_max_length(self):
-        field = 'a_required_string'
+        field = 'a_string'
         max_length = self.schema[field]['maxlength']
         value = "".join(choice(ascii_lowercase) for i in range(max_length + 1))
         self.assertFail({field: value})
         self.assertError(field, errors.ERROR_MAX_LENGTH % max_length)
 
     def test_bad_min_length(self):
-        field = 'a_required_string'
+        field = 'a_string'
         min_length = self.schema[field]['minlength']
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
         self.assertFail({field: value})
@@ -288,7 +305,7 @@ class TestValidator(TestBase):
                                                 update=True))
 
     def test_string(self):
-        self.assertSuccess({'a_required_string': 'john doe'})
+        self.assertSuccess({'a_string': 'john doe'})
 
     def test_string_allowed(self):
         self.assertSuccess({'a_restricted_string': 'client'})
