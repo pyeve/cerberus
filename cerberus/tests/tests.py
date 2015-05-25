@@ -831,3 +831,37 @@ class TestDockerCompose(TestBase):
 
         document = {'environment': ['VARIABLE=FOO']}
         self.assertSuccess(document, schema)
+
+    def test_one_of_dict_list_string(self):
+        ptrn_domain = '[a-z0-9-]+(\.[a-z0-9-]+)+'
+        ptrn_hostname = '[a-z0-9-]+'
+        ptrn_ip4 = '(([0-9]{1,3})\.){3}[0-9]{1,3}'
+        ptrn_ip6 = '([0-9a-f]{4}:){7}[0-9a-f]{4}'
+        ptrn_ip = '^(' + ptrn_ip4 + '|' + ptrn_ip6 + ')$'
+        ptrn_extra_host = '^(' + ptrn_hostname + '|' + ptrn_domain + '):'\
+            + ptrn_ip[1:-1] + '$'
+        schema = {'image': {'type': 'string'},
+                  'extra_hosts': {'type': ['dict', 'list', 'string'],
+                                  'schema': {'type': ['dict', 'string'],
+                                             'regex': ptrn_extra_host,
+                                             'keyschema': {'type': 'string',
+                                                           'regex': ptrn_ip}},
+                                  'keyschema': {'type': 'string',
+                                                'regex': ptrn_ip},
+                                  'regex': ptrn_extra_host}}
+
+        document = {'image': 'busybox',
+                    'extra_hosts': 'www.domain.net:127.0.0.1'}
+        self.assertSuccess(document, schema)
+
+        document = {'image': 'busybox',
+                    'extra_hosts': ['www.domain.net:127.0.0.1']}
+        self.assertSuccess(document, schema)
+
+        document = {'image': 'busybox',
+                    'extra_hosts': {'www.domain.net': '127.0.0.1'}}
+        self.assertSuccess(document, schema)
+
+        document = {'image': 'busybox',
+                    'extra_hosts': [{'www.domain.net': '127.0.0.1'}]}
+        self.assertSuccess(document, schema)
