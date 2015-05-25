@@ -19,8 +19,8 @@ if sys.version_info[0] == 3:
     _str_type = str
     _int_types = (int,)
 else:
-    _str_type = basestring
-    _int_types = (int, long)
+    _str_type = basestring  # noqa
+    _int_types = (int, long)  # noqa
 
 
 class ValidationError(ValueError):
@@ -121,8 +121,8 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies", "readonly",\
-                    "allow_unknown", "schema", "coerce"
+    special_rules = "required", "nullable", "type", "dependencies", \
+                    "readonly", "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False, **kwargs):
@@ -367,8 +367,8 @@ class Validator(object):
         required = list(field for field, definition in self.schema.items()
                         if definition.get('required') is True)
         missing = set(required) - set(key for key in document.keys()
-                                      if document.get(key) is not None
-                                      or not self.ignore_none_values)
+                                      if document.get(key) is not None or
+                                      not self.ignore_none_values)
 
         for field in missing:
             dependencies = self.schema[field].get('dependencies')

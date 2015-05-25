@@ -8,10 +8,9 @@
 
 """
 
-__version__ = "0.8.2-dev"
-
 from .cerberus import Validator, ValidationError, SchemaError
 
+__version__ = "0.8.2-dev"
 
 __all__ = [
     Validator.__name__,
