@@ -66,6 +66,7 @@ class Validator(object):
        'coerce' rule
        additional kwargs that are passed to the __init__-method of an
        instance of Validator-(sub-)class are passed to child-validators.
+       :func:`validated` added
 
     .. versionchanged:: 0.8.1
        'dependencies' for sub-document fields. Closes #64.
@@ -184,6 +185,16 @@ class Validator(object):
            Support for update mode.
         """
         return self._validate(document, schema, update=update, context=context)
+
+    def validated(self, *args, **kwargs):
+        """ Wrapper around ``Validator.validate`` that returns the validated
+        document or ``None`` if validation failed.
+        """
+        self.validate(*args, **kwargs)
+        if self.errors:
+            return None
+        else:
+            return self.document
 
     def _validate(self, document, schema=None, update=False, context=None):
 

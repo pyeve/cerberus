@@ -28,6 +28,8 @@ Not released yet
   Betz).
 - Fix: raise SchemaError when an unallowed 'type' is used in conjunction with
   'schema' rule (Tobias Betz).
+- 'validator.validated' takes a document as argument and returns a validated
+  document or 'None' if validation failed (Frank Sachsenheim).
 
 Version 0.8.1
 -------------
