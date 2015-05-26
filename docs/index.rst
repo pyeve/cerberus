@@ -6,7 +6,7 @@ Cerberus is an ISC Licensed validation tool for Python dictionaries.
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be easily extensible, allowing for easy custom validation. It
 has no dependencies and is thoroughly tested under Python 2.6, Python 2.7,
-Python 3.3 and Python 3.4.
+Python 3.3, Python 3.4, PyPy and PyPy3.
 
     *CERBERUS, n. The watch-dog of Hades, whose duty it was to guard the
     entrance; everybody, sooner or later, had to go there, and nobody wanted to
