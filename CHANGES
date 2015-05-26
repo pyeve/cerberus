@@ -8,26 +8,26 @@ Version 0.9
 
 Not released yet
 
-- PyPy support (Frank Sachsenheim.)
+- PyPy support (Frank Sachsenheim).
 - 'keyschema' renamed to 'valueschema', print a deprecation warning (Frank
-  Sachsenheim.)
+  Sachsenheim).
 - when 'items' is applied to a list, field name is used as key for
   'validator.errors', and offending field indexes are used as keys for field
   errors ({'a_list_of_strings': {1: 'not a string'}}) 'type' can be a list of
   valid types.
-- Type coercion (Brett.)
+- Type coercion (Brett).
 - Ensure that additional **kwargs of a subclass persist through validation
-  (Frank Sachsenheim.)
+  (Frank Sachsenheim).
 - Fix: improve failure message when testing against multiple types (Frank
-  Sachsenheim.)
-- Fix: ignore 'keyschema' when not a mapping (Frank Sachsenheim.)
-- Fix: ignore 'schema' when not a sequence (Frank Sachsenheim.)
+  Sachsenheim).
+- Fix: ignore 'keyschema' when not a mapping (Frank Sachsenheim).
+- Fix: ignore 'schema' when not a sequence (Frank Sachsenheim).
 - Change: 'type' can also be a list of types (Frank Sachsenheim).
 - Improve 'allow_unknown' documentation (Frank Sachsenheim).
 - Fix: allow_unknown can also be set for nested dicts. Closes #75 (Tobias
-  Betz.)
+  Betz).
 - Fix: raise SchemaError when an unallowed 'type' is used in conjunction with
-  'schema' rule (Tobias Betz.)
+  'schema' rule (Tobias Betz).
 
 Version 0.8.1
 -------------
@@ -41,7 +41,7 @@ Released on Mar 16 2015.
 - Fix: two tests being ignored because of name typo.
 - Fix: update mode does not ignore required fields in subdocuments. Closes #72.
 - Fix: allow_unknown does not respect custom rules. Closes #66.
-- Fix typo in docstrings (Riccardo.)
+- Fix typo in docstrings (Riccardo).
 
 Version 0.8
 -----------
