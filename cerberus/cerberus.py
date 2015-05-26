@@ -125,7 +125,7 @@ class Validator(object):
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
     """
-    special_rules = "required", "nullable", "type", "dependencies",\
+    special_rules = "required", "nullable", "type", "dependencies", \
                     "readonly", "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,

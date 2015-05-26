@@ -4,15 +4,18 @@ from ..cerberus import Validator, SchemaError, ValidationError, errors
 
 class TestBase(unittest.TestCase):
 
+    required_string_extension = {
+        'a_required_string': {'type': 'string',
+                              'minlength': 2,
+                              'maxlength': 10,
+                              'required': True}}
+
     def setUp(self):
         self.document = {'name': 'john doe'}
         self.schema = {
-            'a_required_string': {
-                'type': 'string',
-                'minlength': 2,
-                'maxlength': 10,
-                'required': True,
-            },
+            'a_string': {'type': 'string',
+                         'minlength': 2,
+                         'maxlength': 10},
             'a_nullable_integer': {
                 'type': 'integer',
                 'nullable': True
