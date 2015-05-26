@@ -134,7 +134,7 @@ unknown fields will be validated against it: ::
     >>> v.errors
     {'an_unknown_field': 'unknown field'}
 
-.. versionchanged:: 0.8.2
+.. versionchanged:: 0.9
    ``allow_unknown`` can also be set for nested dict fields.
 
 .. versionchanged:: 0.8
@@ -201,7 +201,7 @@ use a pattern like this: ::
             make_use_of(self.additional_context)
             …
 
-.. versionadded:: 0.8.2
+.. versionadded:: 0.9
 
 Function-based custom validation
 ''''''''''''''''''''''''''''''''
@@ -289,7 +289,7 @@ If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
 exception will be caught and the validation with fail.  All other exception pass
 through.
 
-.. versionadded:: 0.8.2
+.. versionadded:: 0.9
 
 Validation Schema
 -----------------
@@ -351,7 +351,7 @@ You can extend this list and support custom types, see :ref:`new-types`.
     on other fields. This allows to safely assume that field type is correct
     when other (standard or custom) rules are invoked.
 
-.. versionchanged:: 0.8.2
+.. versionchanged:: 0.9
    If a list of types is given, the key value must match *any* of them.
 
 .. versionchanged:: 0.7.1
@@ -586,7 +586,7 @@ keys, the values for all of which must validate with given schema: ::
     {'numbers': {'an integer': 'min value is 10'}}
 
 .. versionadded:: 0.7
-.. versionchanged:: 0.8.2
+.. versionchanged:: 0.9
    renamed ``keyschema`` to ``valueschema``
 
 regex

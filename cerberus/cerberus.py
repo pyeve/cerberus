@@ -57,7 +57,7 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
-    .. versionadded:: 0.8.2
+    .. versionadded:: 0.9
        when 'items' is applied to a list, field name is used as key for
        'validator.errors', and offending field indexes are used as keys for
        field errors ({'a_list_of_strings': {1: 'not a string'}})
