@@ -733,16 +733,14 @@ Authors
 -------
 .. include:: ../AUTHORS
 
-Changelog
----------
-.. include:: ../CHANGES
-
 Copyright Notice
 ----------------
 This is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 information.
+
+.. include:: ../CHANGES
 
 .. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
 .. _`Validating user objects with Cerberus`: http://nicolaiarocci.com/validating-user-objects-cerberus/
