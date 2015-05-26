@@ -8,6 +8,7 @@ Version 0.8.2
 
 Not released yet
 
+- PyPy support (Frank Sachsenheim.)
 - 'keyschema' renamed to 'valueschema', print a deprecation warning (Frank
   Sachsenheim.)
 - when 'items' is applied to a list, field name is used as key for
