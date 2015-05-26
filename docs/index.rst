@@ -569,7 +569,7 @@ and validating a list of dictionaries. ::
 .. _valueschema:
 
 valueschema
-'''''''''
+'''''''''''
 Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
 keys, the values for all of which must validate with given schema: ::
 
@@ -732,6 +732,10 @@ Source code is available at `GitHub
 Authors
 -------
 .. include:: ../AUTHORS
+
+Changelog
+---------
+.. include:: ../CHANGES
 
 Copyright Notice
 ----------------

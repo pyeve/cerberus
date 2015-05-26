@@ -64,7 +64,7 @@ class Validator(object):
        'type' can be a list of valid types.
        'keyschema' is renamed to 'valueschema'. Closes #92.
        'coerce' rule
-       additional **kwargs that are passed to the __init__-method of an
+       additional kwargs that are passed to the __init__-method of an
        instance of Validator-(sub-)class are passed to child-validators.
 
     .. versionchanged:: 0.8.1
