@@ -285,15 +285,19 @@ validated. ::
     >>> v.document
     {'flag': True}
 
-There's a wrapper-method ``validated`` that returns the validated document for
-flows like this: ::
+.. versionadded:: 0.9
+
+`Validated` wrapper-method
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+There's a wrapper-method ``validated`` that returns the validated document. It
+can be useful for flows like this: ::
 
     v = Validator(schema)
     valid_documents = [x for x in [v.validated(y) for y in documents] if x is not None]
 
 If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
-exception will be caught and the validation with fail.  All other exception pass
-through.
+exception will be caught and the validation with fail.  All other exception
+pass through.
 
 .. versionadded:: 0.9
 
