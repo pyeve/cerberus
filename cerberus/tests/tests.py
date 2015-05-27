@@ -1,4 +1,5 @@
 import re
+import sys
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
@@ -812,6 +813,17 @@ class TestValidator(TestBase):
         v = Validator(schema)
         self.assertFalse(v.validate({'name': 1234}))
         self.assertError('name', errors.ERROR_COERCION_FAILED % 'name', v)
+
+    def test_validated(self):
+        schema = {'property': {'type': 'string'}}
+        v = Validator(schema)
+        document = {'property': 'string'}
+        self.assertEqual(v.validated(document), document)
+        document = {'property': 0}
+        if sys.version_info[0] * 10 + sys.version_info[1] < 27:
+            self.assertEqual(v.validated(document), None)
+        else:
+            self.assertIsNone(v.validated(document))
 
 
 # TODO remove on next major release

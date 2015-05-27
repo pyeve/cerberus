@@ -8,6 +8,8 @@ Version 0.9
 
 Not released yet
 
+- 'validator.validated' takes a document as argument and returns a validated
+  document or 'None' if validation failed (Frank Sachsenheim).
 - PyPy support (Frank Sachsenheim).
 - 'keyschema' renamed to 'valueschema', print a deprecation warning (Frank
   Sachsenheim).
