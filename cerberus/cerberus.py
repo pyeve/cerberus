@@ -252,7 +252,7 @@ class Validator(object):
 
                 if 'dependencies' in definition:
                     self._validate_dependencies(
-                        document=document,
+                        document=self.document,
                         dependencies=definition["dependencies"],
                         field=field
                     )
@@ -290,7 +290,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields(document)
+            self._validate_required_fields(self.document)
 
         return len(self._errors) == 0
 
