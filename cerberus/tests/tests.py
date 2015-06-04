@@ -393,6 +393,23 @@ class TestValidator(TestBase):
             }
         )
 
+    def test_a_dict_with_propertyschema(self):
+        self.assertSuccess(
+            {
+                'a_dict_with_propertyschema': {
+                    'key': 'value'
+                }
+            }
+        )
+
+        self.assertFail(
+            {
+                'a_dict_with_propertyschema': {
+                    'KEY': 'value'
+                }
+            }
+        )
+
     def test_a_list_length(self):
         field = 'a_list_length'
         min_length = self.schema[field]['minlength']
@@ -836,19 +853,19 @@ class BackwardCompatibility(TestBase):
         self.assertSuccess(document, schema, v)
 
 
-class InheritedValidator(Validator):
-    def __init__(self, *args, **kwargs):
-        if 'working_dir' in kwargs:
-            self.working_dir = kwargs['working_dir']
-        super(InheritedValidator, self).__init__(*args, **kwargs)
-
-    def _validate_type_test(self, field, value):
-        if not self.working_dir:
-            self._error('self.working_dir', 'is None')
-
-
 class TestInheritance(TestCase):
     def test_contextual_data_preservation(self):
+
+        class InheritedValidator(Validator):
+            def __init__(self, *args, **kwargs):
+                if 'working_dir' in kwargs:
+                    self.working_dir = kwargs['working_dir']
+                super(InheritedValidator, self).__init__(*args, **kwargs)
+
+            def _validate_type_test(self, field, value):
+                if not self.working_dir:
+                    self._error('self.working_dir', 'is None')
+
         v = InheritedValidator({'test': {'type': 'list',
                                          'schema': {'type': 'test'}}},
                                working_dir='/tmp')
@@ -874,33 +891,33 @@ class TestDockerCompose(TestBase):
     def test_one_of_dict_list_string(self):
         ptrn_domain = '[a-z0-9-]+(\.[a-z0-9-]+)+'
         ptrn_hostname = '[a-z0-9-]+'
-        ptrn_ip4 = '(([0-9]{1,3})\.){3}[0-9]{1,3}'
-        ptrn_ip6 = '([0-9a-f]{4}:){7}[0-9a-f]{4}'
-        ptrn_ip = '^(' + ptrn_ip4 + '|' + ptrn_ip6 + ')$'
-        ptrn_extra_host = '^(' + ptrn_hostname + '|' + ptrn_domain + '):'\
-            + ptrn_ip[1:-1] + '$'
-        schema = {'image': {'type': 'string'},
-                  'extra_hosts': {'type': ['dict', 'list', 'string'],
-                                  'schema': {'type': ['dict', 'string'],
-                                             'regex': ptrn_extra_host,
-                                             'keyschema': {'type': 'string',
-                                                           'regex': ptrn_ip}},
-                                  'keyschema': {'type': 'string',
-                                                'regex': ptrn_ip},
-                                  'regex': ptrn_extra_host}}
+        ptrn_ip = '(([0-9]{1,3})\.){3}[0-9]{1,3}'
+        ptrn_extra_host = '^(' + ptrn_hostname + '|' + ptrn_domain + '):' + ptrn_ip + '$'  # noqa
+        schema = {'extra_hosts': {'type': ['string', 'list', 'dict'],  # DRY?!?
+                                  'regex': ptrn_extra_host,  # string
+                                  'schema': {'type': ['string', 'dict'], 'regex': ptrn_extra_host,  # string in list  # noqa
+                                             'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # dict in list  # noqa
+                                             'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}},  # dict in list  # noqa
+                                  'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # dict  # noqa
+                                  'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}}  # dict  # noqa
 
-        document = {'image': 'busybox',
-                    'extra_hosts': 'www.domain.net:127.0.0.1'}
+        document = {'extra_hosts': ["www.domain.net:127.0.0.1"]}
         self.assertSuccess(document, schema)
 
-        document = {'image': 'busybox',
-                    'extra_hosts': ['www.domain.net:127.0.0.1']}
+        document = {'extra_hosts': "www.domain.net:127.0.0.1"}
         self.assertSuccess(document, schema)
 
-        document = {'image': 'busybox',
-                    'extra_hosts': {'www.domain.net': '127.0.0.1'}}
+        document = {'extra_hosts': ["somehost:127.0.0.1"]}
         self.assertSuccess(document, schema)
 
-        document = {'image': 'busybox',
-                    'extra_hosts': [{'www.domain.net': '127.0.0.1'}]}
+        document = {'extra_hosts': [{"somehost": "127.0.0.1"}]}
         self.assertSuccess(document, schema)
+
+        document = {'extra_hosts': {"somehost": "127.0.0.1"}}
+        self.assertSuccess(document, schema)
+
+        document = {'extra_hosts': "127.0.0.1:somehost"}
+        self.assertFail(document, schema)
+
+        document = {'extra_hosts': "somehost::alias:127.0.0.1"}
+        self.assertFail(document, schema)

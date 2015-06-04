@@ -599,6 +599,23 @@ keys, the values for all of which must validate with given schema: ::
 .. versionchanged:: 0.9
    renamed ``keyschema`` to ``valueschema``
 
+propertyschema
+''''''''''''''
+
+This is the counterpart to ``valueschema`` that validates the `keys` of a ``dict``. For historical reasons
+it is `not` named ``keyschema``. ::
+
+    >>> schema = 'a_dict': {'type': 'dict', 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}}
+    >>> document = {'a_dict': {'key': 'value'}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'a_dict': {'KEY': 'value'}}
+    >>> v.validate(document, schema)
+    False
+
+.. versionadded:: 0.9
+
 regex
 '''''
 Validation will fail if field value does not match the provided regex rule. Only applies to string fiels. ::

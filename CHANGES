@@ -30,6 +30,7 @@ Not released yet
   Betz).
 - Fix: raise SchemaError when an unallowed 'type' is used in conjunction with
   'schema' rule (Tobias Betz).
+- Added 'propertyschema' validation rule (Frank Sachsenheim).
 
 Version 0.8.1
 -------------
