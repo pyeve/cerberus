@@ -211,7 +211,7 @@ class Validator(object):
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
-            raise ValidationError(errors.ERROR_DOCUMENT_FORMAT % str(document))
+            raise ValidationError(errors.ERROR_DOCUMENT_FORMAT.format(document))
 
         # make root document available for validators (Cerberus #42, Eve #295)
         target = context if context is not None else document
@@ -320,7 +320,7 @@ class Validator(object):
         """
 
         if not isinstance(schema, Mapping):
-            raise SchemaError(errors.ERROR_SCHEMA_FORMAT % str(schema))
+            raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
 
         # TODO remove on next major release
         def update_to_valueschema(schema, warning_printed=False):
@@ -339,14 +339,14 @@ class Validator(object):
 
         for field, constraints in schema.items():
             if not isinstance(constraints, Mapping):
-                raise SchemaError(errors.ERROR_DEFINITION_FORMAT % field)
+                raise SchemaError(errors.ERROR_DEFINITION_FORMAT.format(field))
             for constraint, value in constraints.items():
                 if constraint == 'type':
                     values = value if isinstance(value, list) else [value]
                     for value in values:
                         if not hasattr(self, '_validate_type_' + value):
                             raise SchemaError(
-                                errors.ERROR_UNKNOWN_TYPE % value)
+                                errors.ERROR_UNKNOWN_TYPE.format(value))
                     if 'dict' in values and 'list' in values:
                         if 'valueschema' in constraints and \
                             'schema' not in constraints:  # noqa
@@ -366,7 +366,7 @@ class Validator(object):
                                 'dict' in constraint_type:
                             self.validate_schema(value)
                     else:
-                        raise SchemaError(errors.ERROR_SCHEMA_TYPE % field)
+                        raise SchemaError(errors.ERROR_SCHEMA_TYPE.format(field))
                 elif constraint in self.special_rules:
                     pass
                 elif constraint == 'items':
@@ -378,14 +378,14 @@ class Validator(object):
                             self.validate_schema({'schema': item_schema})
                 elif not hasattr(self, '_validate_' + constraint):
                     if not self.transparent_schema_rules:
-                            raise SchemaError(errors.ERROR_UNKNOWN_RULE % (
+                            raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
                                 constraint, field))
 
     def _validate_coerce(self, coerce, field, value):
         try:
             value = coerce(value)
         except (TypeError, ValueError):
-            self._error(field, errors.ERROR_COERCION_FAILED % field)
+            self._error(field, errors.ERROR_COERCION_FAILED.format(field))
         return value
 
     def _validate_required_fields(self, document):
@@ -421,7 +421,7 @@ class Validator(object):
             return
         pattern = re.compile(match)
         if not pattern.match(value):
-            self._error(field, errors.ERROR_REGEX % match)
+            self._error(field, errors.ERROR_REGEX.format(match))
 
     def _validate_type(self, data_type, field, value):
 
@@ -440,81 +440,81 @@ class Validator(object):
                     return
                 else:
                     self._errors = prev_errors.copy()
-            self._error(field, errors.ERROR_BAD_TYPE % ", ".
-                        join(data_type[:-1]) + ' or ' + data_type[-1])
+            self._error(field, errors.ERROR_BAD_TYPE.format(", ".
+                        join(data_type[:-1]) + ' or ' + data_type[-1]))
 
     def _validate_type_string(self, field, value):
         if not isinstance(value, _str_type):
-            self._error(field, errors.ERROR_BAD_TYPE % "string")
+            self._error(field, errors.ERROR_BAD_TYPE.format("string"))
 
     def _validate_type_integer(self, field, value):
         if not isinstance(value, _int_types):
-            self._error(field, errors.ERROR_BAD_TYPE % "integer")
+            self._error(field, errors.ERROR_BAD_TYPE.format("integer"))
 
     def _validate_type_float(self, field, value):
         if not isinstance(value, float) and not isinstance(value, _int_types):
-            self._error(field, errors.ERROR_BAD_TYPE % "float")
+            self._error(field, errors.ERROR_BAD_TYPE.format("float"))
 
     def _validate_type_number(self, field, value):
         """
         .. versionadded:: 0.6
         """
         if not isinstance(value, float) and not isinstance(value, _int_types):
-            self._error(field, errors.ERROR_BAD_TYPE % "number")
+            self._error(field, errors.ERROR_BAD_TYPE.format("number"))
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
-            self._error(field, errors.ERROR_BAD_TYPE % "boolean")
+            self._error(field, errors.ERROR_BAD_TYPE.format("boolean"))
 
     def _validate_type_datetime(self, field, value):
         if not isinstance(value, datetime):
-            self._error(field, errors.ERROR_BAD_TYPE % "datetime")
+            self._error(field, errors.ERROR_BAD_TYPE.format("datetime"))
 
     def _validate_type_dict(self, field, value):
         if not isinstance(value, Mapping):
-            self._error(field, errors.ERROR_BAD_TYPE % "dict")
+            self._error(field, errors.ERROR_BAD_TYPE.format("dict"))
 
     def _validate_type_list(self, field, value):
         if not isinstance(value, Sequence) or isinstance(
                 value, _str_type):
-            self._error(field, errors.ERROR_BAD_TYPE % "list")
+            self._error(field, errors.ERROR_BAD_TYPE.format("list"))
 
     def _validate_type_set(self, field, value):
         if not isinstance(value, set):
-            self._error(field, errors.ERROR_BAD_TYPE % "set")
+            self._error(field, errors.ERROR_BAD_TYPE.format("set"))
 
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, Sequence):
             if len(value) > max_length:
-                self._error(field, errors.ERROR_MAX_LENGTH % max_length)
+                self._error(field, errors.ERROR_MAX_LENGTH.format(max_length))
 
     def _validate_minlength(self, min_length, field, value):
         if isinstance(value, Sequence):
             if len(value) < min_length:
-                self._error(field, errors.ERROR_MIN_LENGTH % min_length)
+                self._error(field, errors.ERROR_MIN_LENGTH.format(min_length))
 
     def _validate_max(self, max_value, field, value):
         if isinstance(value, (_int_types, float)):
             if value > max_value:
-                self._error(field, errors.ERROR_MAX_VALUE % max_value)
+                self._error(field, errors.ERROR_MAX_VALUE.format(max_value))
 
     def _validate_min(self, min_value, field, value):
         if isinstance(value, (_int_types, float)):
             if value < min_value:
-                self._error(field, errors.ERROR_MIN_VALUE % min_value)
+                self._error(field, errors.ERROR_MIN_VALUE.format(min_value))
 
     def _validate_allowed(self, allowed_values, field, value):
         if isinstance(value, _str_type):
             if value not in allowed_values:
-                self._error(field, errors.ERROR_UNALLOWED_VALUE % value)
+                self._error(field, errors.ERROR_UNALLOWED_VALUE.format(value))
         elif isinstance(value, Sequence):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
                 self._error(field,
-                            errors.ERROR_UNALLOWED_VALUES % list(disallowed))
+                            errors.ERROR_UNALLOWED_VALUES.format(list(disallowed)))
         elif isinstance(value, int):
             if value not in allowed_values:
-                self._error(field, errors.ERROR_UNALLOWED_VALUE % value)
+                self._error(field, errors.ERROR_UNALLOWED_VALUE.format(value))
 
     def _validate_empty(self, empty, field, value):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
@@ -568,7 +568,7 @@ class Validator(object):
 
     def _validate_items_list(self, schema, field, values):
         if len(schema) != len(values):
-            self._error(field, errors.ERROR_ITEMS_LIST % len(schema))
+            self._error(field, errors.ERROR_ITEMS_LIST.format(len(schema)))
         else:
             for i in range(len(schema)):
                 validator = self.__get_child_validator(schema={i: schema[i]})
@@ -597,8 +597,8 @@ class Validator(object):
                     if part not in subdoc:
                         if not break_on_error:
                             self._error(field,
-                                        errors.ERROR_DEPENDENCIES_FIELD %
-                                        dependency)
+                                        errors.ERROR_DEPENDENCIES_FIELD
+                                        .format(dependency))
                         else:
                             return False
                     else:
@@ -615,7 +615,7 @@ class Validator(object):
                         if not break_on_error:
                             self._error(field,
                                         errors.ERROR_DEPENDENCIES_FIELD_VALUE
-                                        % (dep_name, dep_values))
+                                       .format((dep_name, dep_values)))
                             break
                         else:
                             return False
@@ -625,7 +625,7 @@ class Validator(object):
                     if not break_on_error:
                         self._error(field,
                                     errors.ERROR_DEPENDENCIES_FIELD_VALUE
-                                    % (dep_name, dep_values))
+                                   .format((dep_name, dep_values)))
                     else:
                         return False
 
