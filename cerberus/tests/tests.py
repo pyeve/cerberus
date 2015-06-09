@@ -850,6 +850,11 @@ class TestValidator(TestBase):
         else:
             self.assertIsNone(v.validated(document))
 
+    def test_issue_107(self):
+        schema = {'info': {'type': 'dict',
+                  'schema': {'name': {'type': 'string', 'required': True}}}}
+        self.assertSuccess({'info': {'name': 'my name'}}, schema)
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
