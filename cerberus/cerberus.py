@@ -130,16 +130,25 @@ class Validator(object):
     special_rules = "required", "nullable", "type", "dependencies", \
                     "readonly", "allow_unknown", "schema", "coerce"
 
-    def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False, **kwargs):
-        self.schema = schema
-        self.transparent_schema_rules = transparent_schema_rules
-        self.ignore_none_values = ignore_none_values
-        self.allow_unknown = allow_unknown
-        self._additional_kwargs = kwargs
+    def __init__(self, *args, **kwargs):
+        signature = ('schema', 'transparent_schema_rules',
+                     'ignore_none_values', 'allow_unknown')
+        for i, p in enumerate(signature[:len(args)]):
+            if p in kwargs:
+                raise TypeError("__init__ got multiple values for argument "
+                                "'%s'" % p)
+            else:
+                kwargs[p] = args[i]
 
-        if schema:
-            self.validate_schema(schema)
+        self.__config = kwargs
+        self.schema = kwargs.get('schema')
+        self.transparent_schema_rules = kwargs.get('transparent_schema_rules',
+                                                   False)
+        self.ignore_none_values = kwargs.get('ignore_none_values', False)
+        self.allow_unknown = kwargs.get('allow_unknown', False)
+
+        if self.schema:
+            self.validate_schema(self.schema)
         self._errors = {}
         self._current = None
 
@@ -239,7 +248,7 @@ class Validator(object):
             self._current = document
 
         # copy keys since the document might change during its iteration
-        for field in [f for f in document.keys()]:
+        for field in [f for f in self._current]:
             value = self._current[field]
 
             if self.ignore_none_values and value is None:
@@ -729,7 +738,11 @@ class Validator(object):
         self._validate_logical('oneof', definitions, field, value)
 
     def __get_child_validator(self, **kwargs):
-        """ creates a new instance of Validator-(sub-)class """
-        cumulated_kwargs = self._additional_kwargs.copy()
-        cumulated_kwargs.update(kwargs)
-        return self.__class__(**cumulated_kwargs)
+        """ creates a new instance of Validator-(sub-)class, all initial
+        parameters of the parent are passed to the initialization, unless
+        a parameter is given as an explicit *keyword*-parameter.
+
+        :rtype: an instance of self.__class__"""
+        child_config = self.__config.copy()
+        child_config.update(kwargs)
+        return self.__class__(**child_config)
