@@ -8,6 +8,8 @@ Version 0.9
 
 Not released yet
 
+- Use 'str.format' in error messages so if someone wants to override them does
+  not get an excpetion if arguments are not passed. Closes #105 (Brett).
 - Fix: useages of 'document' to 'self.document' in '_validate' (Frank
   Sachsenheim).
 - 'validator.validated' takes a document as argument and returns a validated
