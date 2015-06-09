@@ -77,8 +77,10 @@ class TestValidator(TestBase):
 
     def test_bad_document_type(self):
         document = "not a dict"
-        self.assertValidationError(document, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT.format(document))
+        self.assertValidationError(
+            document, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+                document)
+        )
 
     def test_bad_schema_definition(self):
         field = 'name'
@@ -260,8 +262,10 @@ class TestValidator(TestBase):
         self.assertError('price', errors.ERROR_BAD_TYPE.format('integer'))
 
         value = ["not a dict"]
-        self.assertValidationError({field: value}, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT.format(value[0]))
+        self.assertValidationError(
+            {field: value}, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+                value[0])
+        )
 
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
@@ -275,14 +279,17 @@ class TestValidator(TestBase):
                         v.errors[field][0]['price'])
 
         value = ["not a dict"]
-        self.assertValidationError({field: value}, None, None,
-                                   errors.ERROR_DOCUMENT_FORMAT.format(value[0]))
+        self.assertValidationError(
+            {field: value}, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+                value[0])
+        )
 
     def test_array_unallowed(self):
         field = 'an_array'
         value = ['agent', 'client', 'profit']
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUES.format(['profit']))
+        self.assertError(
+            field, errors.ERROR_UNALLOWED_VALUES.format(['profit']))
 
     def test_string_unallowed(self):
         field = 'a_restricted_string'
@@ -820,7 +827,8 @@ class TestValidator(TestBase):
         }
         v = Validator(schema)
         self.assertFalse(v.validate({'amount': 'not_a_number'}))
-        self.assertError('amount', errors.ERROR_COERCION_FAILED.format('amount'), v)
+        self.assertError('amount',
+                         errors.ERROR_COERCION_FAILED.format('amount'), v)
 
     def test_coerce_catches_TypeError(self):
         schema = {
@@ -828,7 +836,8 @@ class TestValidator(TestBase):
         }
         v = Validator(schema)
         self.assertFalse(v.validate({'name': 1234}))
-        self.assertError('name', errors.ERROR_COERCION_FAILED.format('name'), v)
+        self.assertError('name',
+                         errors.ERROR_COERCION_FAILED.format('name'), v)
 
     def test_validated(self):
         schema = {'property': {'type': 'string'}}

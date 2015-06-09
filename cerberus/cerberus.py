@@ -211,7 +211,8 @@ class Validator(object):
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
-            raise ValidationError(errors.ERROR_DOCUMENT_FORMAT.format(document))
+            raise ValidationError(
+                errors.ERROR_DOCUMENT_FORMAT.format(document))
 
         # make root document available for validators (Cerberus #42, Eve #295)
         target = context if context is not None else document
@@ -366,7 +367,8 @@ class Validator(object):
                                 'dict' in constraint_type:
                             self.validate_schema(value)
                     else:
-                        raise SchemaError(errors.ERROR_SCHEMA_TYPE.format(field))
+                        raise SchemaError(
+                            errors.ERROR_SCHEMA_TYPE.format(field))
                 elif constraint in self.special_rules:
                     pass
                 elif constraint == 'items':
@@ -510,8 +512,10 @@ class Validator(object):
         elif isinstance(value, Sequence):
             disallowed = set(value) - set(allowed_values)
             if disallowed:
-                self._error(field,
-                            errors.ERROR_UNALLOWED_VALUES.format(list(disallowed)))
+                self._error(
+                    field,
+                    errors.ERROR_UNALLOWED_VALUES.format(list(disallowed))
+                )
         elif isinstance(value, int):
             if value not in allowed_values:
                 self._error(field, errors.ERROR_UNALLOWED_VALUE.format(value))
@@ -613,9 +617,11 @@ class Validator(object):
                 for part in parts:
                     if part not in subdoc:
                         if not break_on_error:
-                            self._error(field,
-                                        errors.ERROR_DEPENDENCIES_FIELD_VALUE
-                                       .format((dep_name, dep_values)))
+                            self._error(
+                                field,
+                                errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
+                                    (dep_name, dep_values))
+                            )
                             break
                         else:
                             return False
@@ -623,9 +629,11 @@ class Validator(object):
                         subdoc = subdoc[part]
                 if isinstance(subdoc, _str_type) and subdoc not in dep_values:
                     if not break_on_error:
-                        self._error(field,
-                                    errors.ERROR_DEPENDENCIES_FIELD_VALUE
-                                   .format((dep_name, dep_values)))
+                        self._error(
+                            field,
+                            errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
+                                (dep_name, dep_values))
+                        )
                     else:
                         return False
 
