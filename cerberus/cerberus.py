@@ -218,12 +218,11 @@ class Validator(object):
             errorstack = []
             # for each schema...
             for s in self.schema:
-                validator = copy.copy(self)
-                validator.schema = s
+                validator = self.__get_child_validator( schema=s )
                 validator.validate(document
                                  , context=context
                                  , update=update)
-                if len(validator.errors):
+                if validator.errors:
                     # there were errors. append to the list
                     errorstack.append( validator.errors )
                 else:
@@ -235,7 +234,7 @@ class Validator(object):
                 # no schema in the list validated.
                 # add all the errors we have collected to the errors list
                 for i in xrange(len(errorstack)):
-                    self._error( "candidate %d"%i, errorstack[i] )
+                    self._error( "schema %d"%i, errorstack[i] )
 
             return valid
 

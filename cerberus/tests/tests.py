@@ -857,8 +857,8 @@ class TestValidator(TestBase):
                                { 'type' : [ 'dict', 'string' ]
                                , 'schema' :
                                  [
-                                   { 'model number'   : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer'}  }
-                                  ,{ 'serial number' : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer'}   }
+                                   { 'model number'   : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer', 'required' : True}  }
+                                  ,{ 'serial number'  : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer'}   }
                                  ]
                                }
                             }
@@ -868,7 +868,7 @@ class TestValidator(TestBase):
 
       document = { 'parts' : [
                               { 'model number'  : 'MX-009', 'count' : 100 }
-                             ,{ 'serial number' : '898-001', 'count' : 20 }
+                             ,{ 'serial number' : '898-001' }
                              ,  'misc'
                              ]
                  }
@@ -894,11 +894,17 @@ class TestValidator(TestBase):
 
 
 
+      document['parts'].append( {'product name' : "Monitors", 'count' : 18 } )
       document['parts'].append( 10 )
       # and invalid. numbers are not allowed.
       try:
         self.assertTrue( v.validate( document ) )
       except AssertionError as e:  # noqa
+          # should be multiple errors that occured, each schemas errors should be in the errors dict.
+          # check that they are.
+          self.assertEqual( v.errors['parts'][3]['schema 0']['model number'], "required field" )
+          self.assertEqual( v.errors['parts'][3]['schema 1']['serial number'], "required field" )
+          self.assertEqual( v.errors['parts'][4]                             , "must be of dict or string type" )
           pass
       else:
           raise AssertionError("validation didn't fail")
