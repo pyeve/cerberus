@@ -208,6 +208,37 @@ class Validator(object):
         elif self.schema is None:
             raise SchemaError(errors.ERROR_SCHEMA_MISSING)
 
+
+        # if self.schema is a list, then we want to validate the document against each item
+        # in the list and return true if one schema in the list validates.
+        if isinstance( self.schema, Sequence ) and not isinstance(self.schema, _str_type):
+            # assume that we no schemas validate
+            valid = False
+            # keep an error stack to pass on in case no schemas validate
+            errorstack = []
+            # for each schema...
+            for s in self.schema:
+                validator = copy.copy(self)
+                validator.schema = s
+                validator.validate(document
+                                 , context=context
+                                 , update=update)
+                if len(validator.errors):
+                    # there were errors. append to the list
+                    errorstack.append( validator.errors )
+                else:
+                    # no errors occured, set valid and get out of here
+                    valid = True
+                    break
+
+            if not valid:
+                # no schema in the list validated.
+                # add all the errors we have collected to the errors list
+                for i in xrange(len(errorstack)):
+                    self._error( "candidate %d"%i, errorstack[i] )
+
+            return valid
+
         if document is None:
             raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
@@ -319,6 +350,12 @@ class Validator(object):
 
         .. versionadded:: 0.7.1
         """
+        # if schema is a list, validate that each schema is valid
+        if isinstance( schema, Sequence ) and not isinstance( schema, _str_type):
+            for s in schema:
+                self.validate_schema( s )
+            return
+
 
         if not isinstance(schema, Mapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
