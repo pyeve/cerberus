@@ -858,10 +858,10 @@ class TestValidator(TestBase):
                       'type': ['dict', 'string'],
                       'schema': [
                           {'model number': {
-                           'type': 'string', 'required': True},
-                           'count': {'type': 'integer', 'required': True}},
+                           'type': 'string'},
+                           'count': {'type': 'integer'}},
                           {'serial number': {
-                           'type': 'string', 'required': True},
+                           'type': 'string',},
                            'count': {'type': 'integer'}}
                           ]}}}
         v = Validator(schema)
@@ -873,35 +873,36 @@ class TestValidator(TestBase):
                     ]}
 
         # document is valid. each entry in 'parts' matches a type or schema
-        self.assertTrue(v.validate(document))
+        self.assertTrue(v.validate(document, update=True))
 
         document['parts'].append({'product name': "Monitors", 'count': 18})
         # document is invalid. 'product name' does not match any valid schemas
         try:
-            self.assertTrue(v.validate(document))
+            self.assertTrue(v.validate(document,update=True))
         except AssertionError as e:  # noqa
+            print v.errors
             pass
         else:
             raise AssertionError("validation didn't fail")
 
         document['parts'].pop()
         # document is valid again
-        self.assertTrue(v.validate(document))
+        self.assertTrue(v.validate(document,update=True))
 
         document['parts'].append({'product name': "Monitors", 'count': 18})
         document['parts'].append(10)
         # and invalid. numbers are not allowed.
         try:
-            self.assertTrue(v.validate(document))
+            self.assertTrue(v.validate(document,update=True))
         except AssertionError as e:  # noqa
             # should be multiple errors that occured, each schemas errors
             # should be in the errors dict.  check that they are.
             self.assertEqual(
-                v.errors['parts'][3]['schema 0']['model number'],
-                "required field")
+                v.errors['parts'][3]['schema 0']['product name'],
+                "unknown field")
             self.assertEqual(
-                v.errors['parts'][3]['schema 1']['serial number'],
-                "required field")
+                v.errors['parts'][3]['schema 1']['product name'],
+                "unknown field")
             self.assertEqual(
                 v.errors['parts'][4],
                 "must be of dict or string type")
