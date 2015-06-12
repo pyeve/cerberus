@@ -233,7 +233,7 @@ class Validator(object):
             if not valid:
                 # no schema in the list validated.
                 # add all the errors we have collected to the errors list
-                for i in xrange(len(errorstack)):
+                for i in range(len(errorstack)):
                     self._error( "schema %d"%i, errorstack[i] )
 
             return valid
