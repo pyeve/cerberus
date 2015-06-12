@@ -851,63 +851,63 @@ class TestValidator(TestBase):
             self.assertIsNone(v.validated(document))
 
     def test_list_of_schemas(self):
-      # test that a list of schemas can be specified.
-      schema   = { 'parts' : { 'type' : 'list'
-                             , 'schema' :
-                               { 'type' : [ 'dict', 'string' ]
-                               , 'schema' :
-                                 [
-                                   { 'model number'   : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer', 'required' : True}  }
-                                  ,{ 'serial number'  : {'type' : 'string', 'required' : True}, 'count' : {'type' : 'integer'}   }
-                                 ]
-                               }
-                            }
-                 }
-      v = Validator(schema)
+        # test that a list of schemas can be specified.
+        schema = {'parts': {
+                  'type': 'list',
+                  'schema': {
+                      'type': ['dict', 'string'],
+                      'schema': [
+                          {'model number': {
+                           'type': 'string', 'required': True},
+                           'count': {'type': 'integer', 'required': True}},
+                          {'serial number': {
+                           'type': 'string', 'required': True},
+                           'count': {'type': 'integer'}}
+                          ]}}}
+        v = Validator(schema)
 
+        document = {'parts': [
+                    {'model number': 'MX-009', 'count': 100},
+                    {'serial number': '898-001'},
+                    'misc'
+                    ]}
 
-      document = { 'parts' : [
-                              { 'model number'  : 'MX-009', 'count' : 100 }
-                             ,{ 'serial number' : '898-001' }
-                             ,  'misc'
-                             ]
-                 }
+        # document is valid. each entry in 'parts' matches a type or schema
+        self.assertTrue(v.validate(document))
 
-      # document is valid. each entry in 'parts' matches a type or schema
-      self.assertTrue( v.validate( document ) )
+        document['parts'].append({'product name': "Monitors", 'count': 18})
+        # document is invalid. 'product name' does not match any valid schemas
+        try:
+            self.assertTrue(v.validate(document))
+        except AssertionError as e:  # noqa
+            pass
+        else:
+            raise AssertionError("validation didn't fail")
 
+        document['parts'].pop()
+        # document is valid again
+        self.assertTrue(v.validate(document))
 
-      document['parts'].append( {'product name' : "Monitors", 'count' : 18 } )
-      # document is invalid. 'product name' does not match any valid schemas
-      try:
-        self.assertTrue( v.validate( document ) )
-      except AssertionError as e:  # noqa
-          pass
-      else:
-          raise AssertionError("validation didn't fail")
-
-
-
-      document['parts'].pop()
-      # document is valid again
-      self.assertTrue( v.validate( document ) )
-
-
-
-      document['parts'].append( {'product name' : "Monitors", 'count' : 18 } )
-      document['parts'].append( 10 )
-      # and invalid. numbers are not allowed.
-      try:
-        self.assertTrue( v.validate( document ) )
-      except AssertionError as e:  # noqa
-          # should be multiple errors that occured, each schemas errors should be in the errors dict.
-          # check that they are.
-          self.assertEqual( v.errors['parts'][3]['schema 0']['model number'], "required field" )
-          self.assertEqual( v.errors['parts'][3]['schema 1']['serial number'], "required field" )
-          self.assertEqual( v.errors['parts'][4]                             , "must be of dict or string type" )
-          pass
-      else:
-          raise AssertionError("validation didn't fail")
+        document['parts'].append({'product name': "Monitors", 'count': 18})
+        document['parts'].append(10)
+        # and invalid. numbers are not allowed.
+        try:
+            self.assertTrue(v.validate(document))
+        except AssertionError as e:  # noqa
+            # should be multiple errors that occured, each schemas errors
+            # should be in the errors dict.  check that they are.
+            self.assertEqual(
+                v.errors['parts'][3]['schema 0']['model number'],
+                "required field")
+            self.assertEqual(
+                v.errors['parts'][3]['schema 1']['serial number'],
+                "required field")
+            self.assertEqual(
+                v.errors['parts'][4],
+                "must be of dict or string type")
+            pass
+        else:
+            raise AssertionError("validation didn't fail")
 
 
 # TODO remove on next major release
