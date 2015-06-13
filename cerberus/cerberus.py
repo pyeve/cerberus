@@ -130,16 +130,25 @@ class Validator(object):
     special_rules = "required", "nullable", "type", "dependencies", \
                     "readonly", "allow_unknown", "schema", "coerce"
 
-    def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False, **kwargs):
-        self.schema = schema
-        self.transparent_schema_rules = transparent_schema_rules
-        self.ignore_none_values = ignore_none_values
-        self.allow_unknown = allow_unknown
-        self._additional_kwargs = kwargs
+    def __init__(self, *args, **kwargs):
+        signature = ('schema', 'transparent_schema_rules',
+                     'ignore_none_values', 'allow_unknown')
+        for i, p in enumerate(signature[:len(args)]):
+            if p in kwargs:
+                raise TypeError("__init__ got multiple values for argument "
+                                "'%s'" % p)
+            else:
+                kwargs[p] = args[i]
 
-        if schema:
-            self.validate_schema(schema)
+        self.__kwargs = kwargs
+        self.schema = kwargs.get('schema')
+        self.transparent_schema_rules = kwargs.get('transparent_schema_rules',
+                                                   False)
+        self.ignore_none_values = kwargs.get('ignore_none_values', False)
+        self.allow_unknown = kwargs.get('allow_unknown', False)
+
+        if self.schema:
+            self.validate_schema(self.schema)
         self._errors = {}
 
     def __call__(self, *args, **kwargs):
@@ -223,7 +232,7 @@ class Validator(object):
             # fallback on a shallow copy
             self.document = copy.copy(target)
 
-        for field, value in document.items():
+        for field, value in document.items():  # FIXME fails with self.document.items()
             if self.ignore_none_values and value is None:
                 continue
 
@@ -261,12 +270,11 @@ class Validator(object):
                         continue
 
                 if 'schema' in definition:
-                    self._validate_schema(definition['schema'],
-                                          field,
-                                          value,
-                                          definition.get('allow_unknown'))
+                    self._validate_schema(definition['schema'], field, value,
+                                          definition.get('allow_unknown',
+                                                         self.allow_unknown))
 
-                definition_rules = [rule for rule in definition.keys()
+                definition_rules = [rule for rule in definition
                                     if rule not in self.special_rules]
                 for rule in definition_rules:
                     validatorname = "_validate_" + rule.replace(" ", "_")
@@ -291,7 +299,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields(self.document)
+            self._validate_required_fields(self.document)  # DEBUG
 
         return len(self._errors) == 0
 
@@ -524,24 +532,23 @@ class Validator(object):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
 
-    def _validate_schema(self, schema, field, value, nested_allow_unknown):
+    def _validate_schema(self, schema, field, value, allow_unknown):
         if isinstance(value, Sequence) and not isinstance(value, _str_type):
             list_errors = {}
             for i in range(len(value)):
                 validator = self.__get_child_validator(
-                    schema={i: schema}, allow_unknown=self.allow_unknown)
-                validator.validate({i: value[i]}, context=self.document)
+                    schema={i: schema}, allow_unknown=allow_unknown)
+                #validator.validate({i: value[i]}, context=self.document)
+                validator.validate({i: value[i]})
                 list_errors.update(validator.errors)
             if len(list_errors):
                 self._error(field, list_errors)
         elif isinstance(value, Mapping):
             if 'list' in self.schema[field]['type']:
                 return
-            validator = copy.copy(self)
-            validator.schema = schema
-            if not validator.allow_unknown:
-                validator.allow_unknown = nested_allow_unknown
-            validator.validate(value, context=self.document,
+            validator = self.__get_child_validator(schema=schema,
+                                                   allow_unknown=allow_unknown)
+            validator.validate(self.document[field], context=self.document,
                                update=self.update)
             if len(validator.errors):
                 self._error(field, validator.errors)
@@ -644,7 +651,11 @@ class Validator(object):
         validator(field, value, self._error)
 
     def __get_child_validator(self, **kwargs):
-        """ creates a new instance of Validator-(sub-)class """
-        cumulated_kwargs = self._additional_kwargs.copy()
+        """ creates a new instance of Validator-(sub-)class, all initial
+        parameters of the parent are passed to the initialization, unless
+        a parameter is given as an explicit *keyword*-parameter.
+
+        :rtype: an instance of self.__class__"""
+        cumulated_kwargs = self.__kwargs.copy()
         cumulated_kwargs.update(kwargs)
         return self.__class__(**cumulated_kwargs)

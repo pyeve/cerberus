@@ -853,7 +853,14 @@ class TestValidator(TestBase):
     def test_issue_107(self):
         schema = {'info': {'type': 'dict',
                   'schema': {'name': {'type': 'string', 'required': True}}}}
-        self.assertSuccess({'info': {'name': 'my name'}}, schema)
+        document = {'info': {'name': 'my name'}}
+        self.assertSuccess(document, schema)  # does not fail
+
+        validator = Validator(schema)
+        self.assertSuccess(document, schema, validator)  # does not fail
+
+        if not validator.validate(document):
+            raise AssertionError("Document did not validate")  # fails
 
 
 # TODO remove on next major release
