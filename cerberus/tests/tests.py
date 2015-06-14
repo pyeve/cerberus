@@ -850,6 +850,158 @@ class TestValidator(TestBase):
         else:
             self.assertIsNone(v.validated(document))
 
+    def test_anyof(self):
+        # prop1 must be either a number between 0 and 10
+        schema = {'prop1': {'min': 0, 'max': 10}}
+        doc = {'prop1': 5}
+
+        self.assertSuccess(doc, schema)
+
+        # prop1 must be either a number between 0 and 10 or 100 and 110
+        schema = {'prop1':
+                  {'anyof':
+                   [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
+        doc = {'prop1': 105}
+
+        self.assertSuccess(doc, schema)
+
+        # prop1 must be either a number between 0 and 10 or 100 and 110
+        schema = {'prop1':
+                  {'anyof':
+                   [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
+        doc = {'prop1': 50}
+
+        self.assertValidationError(doc, schema)
+
+        # prop1 must be an integer that is either be
+        # greater than or equal to 0, or greater than or equal to 10
+        schema = {'prop1': {'type': 'integer',
+                            'anyof': [{'min': 0}, {'min': 10}]}}
+        doc = {'prop1': 10}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': 5}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': -1}
+        self.assertFail(doc, schema)
+        doc = {'prop1': 5.5}
+        self.assertFail(doc, schema)
+        doc = {'prop1': '5.5'}
+        self.assertFail(doc, schema)
+
+    def test_allof(self):
+        # prop1 has to be a float between 0 and 10
+        schema = {'prop1': {'allof': [
+                 {'type': 'float'}, {'min': 0}, {'max': 10}]}}
+        doc = {'prop1': -1}
+        self.assertFail(doc, schema)
+        doc = {'prop1': 5}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': 11}
+        self.assertFail(doc, schema)
+
+        # prop1 has to be a float and an integer
+        schema = {'prop1': {'allof': [{'type': 'float'}, {'type': 'integer'}]}}
+        doc = {'prop1': 11}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': 11.5}
+        self.assertFail(doc, schema)
+        doc = {'prop1': '11'}
+        self.assertFail(doc, schema)
+
+    def test_anyof_allof(self):
+
+        # prop1 can be any number outside of [0-10]
+        schema = {'prop1': {'allof': [{'anyof': [{'type': 'float'},
+                                                 {'type': 'integer'}]},
+                                      {'anyof': [{'min': 10},
+                                                 {'max': 0}]}
+                                      ]}}
+
+        doc = {'prop1': 11}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': -1}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': 5}
+        self.assertFail(doc, schema)
+
+        doc = {'prop1': 11.5}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': -1.5}
+        self.assertSuccess(doc, schema)
+        doc = {'prop1': 5.5}
+        self.assertFail(doc, schema)
+
+        doc = {'prop1': '5.5'}
+        self.assertFail(doc, schema)
+
+    def test_anyof_allof_schema_validate(self):
+        # make sure schema with 'anyof' and 'allof' constraints are checked
+        # correctly
+        schema = {'doc': {'type': 'dict',
+                          'anyof': [
+                              {'schema': [{'param': {'type': 'number'}}]}]}}
+        self.assertSchemaError({'doc': 'this is my document'}, schema)
+
+        schema = {'doc': {'type': 'dict',
+                          'allof': [
+                              {'schema': [{'param': {'type': 'number'}}]}]}}
+        self.assertSchemaError({'doc': 'this is my document'}, schema)
+
+    def test_anyof_schema(self):
+        # test that a list of schemas can be specified.
+        schema = {'parts': {
+                  'type': 'list',
+                  'schema': {
+                      'type': ['dict', 'string'],
+                      'anyof': [
+                          {'schema':
+                            {'model number': {
+                             'type': 'string'},
+                             'count': {'type': 'integer'}}},
+                          {'schema':
+                              {'serial number': {
+                               'type': 'string'},
+                               'count': {'type': 'integer'}}}
+                          ]}}}
+        document = {'parts': [
+                    {'model number': 'MX-009', 'count': 100},
+                    {'serial number': '898-001'},
+                    'misc'
+                    ]}
+
+        # document is valid. each entry in 'parts' matches a type or schema
+        self.assertSuccess(document, schema)
+
+        document['parts'].append({'product name': "Monitors", 'count': 18})
+        # document is invalid. 'product name' does not match any valid schemas
+        self.assertValidationError(document, schema)
+
+        document['parts'].pop()
+        # document is valid again
+        self.assertSuccess(document, schema)
+
+        document['parts'].append({'product name': "Monitors", 'count': 18})
+        document['parts'].append(10)
+        # and invalid. numbers are not allowed.
+        try:
+            v = Validator(schema)
+            self.assertTrue(v.validate(document, update=True))
+        except AssertionError as e:  # noqa
+            # should be multiple errors that occured, each schemas errors
+            # should be in the errors dict.  check that they are.
+            self.assertEqual(
+                v.errors['parts'][3]['candidate 0']['product name'],
+                "unknown field")
+            self.assertEqual(
+                v.errors['parts'][3]['candidate 1']['product name'],
+                "unknown field")
+            self.assertEqual(
+                v.errors['parts'][4],
+                "must be of dict or string type")
+            pass
+        else:
+            raise AssertionError("validation didn't fail")
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):

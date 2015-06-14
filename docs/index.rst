@@ -712,6 +712,60 @@ Dependencies on sub-document fields are also supported: ::
 
 .. versionadded:: 0.7
 
+anyof
+'''''
+Used to specify a list of rule collections. If the document validates against any one of the rule collections in the list, it is considered valid.
+
+    >>> schema = {"parts": {
+    ...             "type": "list", 
+    ...             "schema": {
+    ...               "type": "dict", 
+    ...               "anyof": [
+    ...                 {
+    ...                   "schema": {
+    ...                     "count": {"type": "integer"}, 
+    ...                     "model number": {"type": "string"}
+    ...                   }
+    ...                 }, 
+    ...                 {
+    ...                   "schema": {
+    ...                     "count": {"type": "integer"}, 
+    ...                     "serial number": {"type": "string"}
+    ...                   }}]}}}
+    >>> document = {"parts": [
+    ...               {
+    ...                 "count": 100, 
+    ...                 "model number": "MX-009"
+    ...               }, 
+    ...               {
+    ...                 "serial number": "898-001"
+    ...               }]}
+    >>> v.validate(document, schema)
+    True
+    >>> document = {"parts": [
+    ...               {
+    ...                 "count": 100, 
+    ...                 "model number": "MX-009"
+    ...               }, 
+    ...               {
+    ...                 "serial number": "898-001"
+    ...               },
+    ...               {
+    ...                 "vin": "98274-0992-K112"
+    ...               }]}
+    >>> v.validate(document, schema)
+    False
+    >>> print v.errors
+    {'parts': {2: {'candidate 0': {'vin number': 'unknown field'}, 'candidate 1': {'vin number': 'unknown field'}}}}
+
+.. versionadded:: 0.9
+
+allof
+'''''
+Same as ``anyof`` except that all rule collections in the list must validate.
+
+.. versionadded:: 0.9
+
 FAQ
 ---
 
