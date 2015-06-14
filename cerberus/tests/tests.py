@@ -861,7 +861,7 @@ class TestValidator(TestBase):
                            'type': 'string'},
                            'count': {'type': 'integer'}},
                           {'serial number': {
-                           'type': 'string',},
+                           'type': 'string'},
                            'count': {'type': 'integer'}}
                           ]}}}
         v = Validator(schema)
@@ -878,7 +878,7 @@ class TestValidator(TestBase):
         document['parts'].append({'product name': "Monitors", 'count': 18})
         # document is invalid. 'product name' does not match any valid schemas
         try:
-            self.assertTrue(v.validate(document,update=True))
+            self.assertTrue(v.validate(document, update=True))
         except AssertionError as e:  # noqa
             pass
         else:
@@ -886,13 +886,13 @@ class TestValidator(TestBase):
 
         document['parts'].pop()
         # document is valid again
-        self.assertTrue(v.validate(document,update=True))
+        self.assertTrue(v.validate(document, update=True))
 
         document['parts'].append({'product name': "Monitors", 'count': 18})
         document['parts'].append(10)
         # and invalid. numbers are not allowed.
         try:
-            self.assertTrue(v.validate(document,update=True))
+            self.assertTrue(v.validate(document, update=True))
         except AssertionError as e:  # noqa
             # should be multiple errors that occured, each schemas errors
             # should be in the errors dict.  check that they are.
