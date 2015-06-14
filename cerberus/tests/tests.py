@@ -880,7 +880,6 @@ class TestValidator(TestBase):
         try:
             self.assertTrue(v.validate(document,update=True))
         except AssertionError as e:  # noqa
-            print v.errors
             pass
         else:
             raise AssertionError("validation didn't fail")
