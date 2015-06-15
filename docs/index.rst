@@ -532,12 +532,15 @@ a ``list`` type: ::
 items (list)
 ''''''''''''
 When a list, ``items`` defines a list of values allowed in a ``list`` type of
-fixed length: ::
+fixed length in the given order: ::
 
     >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
     >>> document = {'list_of_values': ['hello', 100]}
     >>> v.validate(document, schema)
     True
+    >>> document = {'list_of_values': [100, 'hello']}
+    >>> v.validate(document, schema)
+    False
 
 See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
 
