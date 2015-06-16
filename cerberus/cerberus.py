@@ -256,7 +256,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields(self.document)
+            self._validate_required_fields(self.current)
 
         return len(self._errors) == 0
 
