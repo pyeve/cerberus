@@ -1002,6 +1002,14 @@ class TestValidator(TestBase):
         else:
             raise AssertionError("validation didn't fail")
 
+    def test_remove_unknown(self):
+        schema = {
+            'name': {'type': 'string'}
+        }
+        v = Validator(schema, allow_unknown=False, remove_unknown=True)
+        doc = {'name': '1', 'other': '2'}
+        v.validate(doc)
+        self.assertEqual(v.document, {'name': '1'})
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
