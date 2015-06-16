@@ -131,11 +131,13 @@ class Validator(object):
                     "readonly", "allow_unknown", "schema", "coerce"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False, **kwargs):
+                 ignore_none_values=False, allow_unknown=False,
+                 remove_unknown=False, **kwargs):
         self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self.remove_unknown = remove_unknown
         self._additional_kwargs = kwargs
 
         if schema:
@@ -244,6 +246,8 @@ class Validator(object):
             if definition is not None:
                 self._validate_definition(definition, field, value)
             else:
+                if not self.allow_unknown and self.remove_unknown:
+                    del self.current[field]
                 if self.allow_unknown:
                     if isinstance(self.allow_unknown, Mapping):
                         # validate that unknown fields matches the schema
