@@ -128,7 +128,8 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
     special_rules = "required", "nullable", "type", "dependencies", \
-                    "readonly", "allow_unknown", "schema", "coerce"
+                    "readonly", "allow_unknown", "schema", "coerce", \
+                    "rename"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False,
@@ -314,6 +315,9 @@ class Validator(object):
             validator = getattr(self, validatorname, None)
             if validator:
                 validator(definition[rule], field, value)
+
+        if 'rename' in definition:
+            self._validate_rename(definition['rename'], field, value)
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
@@ -717,6 +721,13 @@ class Validator(object):
         self._errors = tmperrors
         if not valid:
             self._error(field, errorstack)
+
+    def _validate_rename(self, rename, field, value):
+        if isinstance(rename, _str_type):
+            self.current[rename] = value
+            del self.current[field]
+        else:
+            self._error(field, errors.ERROR_RENAME.format(field))
 
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """

@@ -1011,6 +1011,71 @@ class TestValidator(TestBase):
         v.validate(doc)
         self.assertEqual(v.document, {'name': '1'})
 
+    def test_rename(self):
+        schema = {
+            'name': {'rename': 'changed_name'}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), '1')
+
+    def test_deep_rename(self):
+        schema = {
+            'name': {
+                'type': 'dict',
+                'rename': 'changed_name',
+                'schema': {
+                    'foo': {
+                        'type': 'string',
+                        'rename': 'bar'
+                    }
+                }
+            }
+        }
+        doc   = {'name': {'foo': '1'}}
+        after = {'changed_name': {'bar': '1'}}
+        v = Validator(schema)
+        v.validate(doc)
+        self.assertEqual(v.document, after)
+
+    def test_rename_combine(self):
+        schema = {
+            'name': {'rename': 'changed_name', 'coerce': int}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), 1)
+
+    def test_deep_rename_combine(self):
+        schema = {
+            'name': {
+                'type': 'dict',
+                'rename': 'changed_name',
+                'schema': {
+                    'foo': {
+                        'type': 'integer',
+                        'coerce': int,
+                        'rename': 'bar'
+                    }
+                }
+            }
+        }
+        v = Validator(schema)
+        doc = {'name': {'foo': '1'}}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), {'bar': 1})
+
+    def test_rename_not_destructive(self):
+        schema = {
+            'name': {'rename': 'changed_name'}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertNotEqual(id(v.document), id(doc))
+
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
     def test_keyschema(self):
