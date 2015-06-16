@@ -1033,7 +1033,7 @@ class TestValidator(TestBase):
                 }
             }
         }
-        doc   = {'name': {'foo': '1'}}
+        doc = {'name': {'foo': '1'}}
         after = {'changed_name': {'bar': '1'}}
         v = Validator(schema)
         v.validate(doc)
@@ -1075,6 +1075,7 @@ class TestValidator(TestBase):
         doc = {'name': '1'}
         v.validate(doc)
         self.assertNotEqual(id(v.document), id(doc))
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):

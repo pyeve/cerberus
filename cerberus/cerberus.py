@@ -229,7 +229,7 @@ class Validator(object):
                 self.current = self.document
         else:
             self.document = context
-            self.current  = document
+            self.current = document
 
         # create a copy since the document might change during its iteration
         try:
