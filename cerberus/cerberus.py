@@ -215,15 +215,28 @@ class Validator(object):
                 errors.ERROR_DOCUMENT_FORMAT.format(document))
 
         # make root document available for validators (Cerberus #42, Eve #295)
-        target = context if context is not None else document
+        if not context:
+            try:
+                # might fail when dealing with complex document values
+                self.document = copy.deepcopy(document)
+            except:
+                # fallback on a shallow copy
+                self.document = copy.copy(document)
+            finally:
+                self.current = self.document
+        else:
+            self.document = context
+            self.current  = document
+
+        # create a copy since the document might change during its iteration
         try:
             # might fail when dealing with complex document values
-            self.document = copy.deepcopy(target)
+            current = copy.deepcopy(document)
         except:
             # fallback on a shallow copy
-            self.document = copy.copy(target)
+            current = copy.copy(document)
 
-        for field, value in document.items():
+        for field, value in current.items():
             if self.ignore_none_values and value is None:
                 continue
 
