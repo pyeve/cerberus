@@ -8,6 +8,9 @@ Version 0.9
 
 Not released yet
 
+- 'anyof' rule accepts a list of definitions and checks that one definition
+  validates (C.D. Clark III).
+- 'allof' rule validates if if all definitions validate (C.D. Clark III).
 - Use 'str.format' in error messages so if someone wants to override them does
   not get an excpetion if arguments are not passed. Closes #105 (Brett).
 - Fix: useages of 'document' to 'self.document' in '_validate' (Frank
