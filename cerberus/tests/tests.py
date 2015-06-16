@@ -1140,7 +1140,7 @@ class TestValidator(TestBase):
                 }
             }
         }
-        doc   = {'name': {'foo': '1'}}
+        doc = {'name': {'foo': '1'}}
         after = {'changed_name': {'bar': '1'}}
         v = Validator(schema)
         v.validate(doc)
