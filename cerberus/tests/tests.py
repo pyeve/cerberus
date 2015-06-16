@@ -1020,6 +1020,17 @@ class TestValidator(TestBase):
         v.validate(doc)
         self.assertEqual(v.document.get('changed_name'), '1')
 
+    def test_rename_field_not_hashable(self):
+        schema = {
+            'name': {'rename': ['should be hashable']}
+        }
+        try:
+            Validator(schema)
+        except SchemaError as e:
+            self.assertEqual(str(e), errors.ERROR_RENAME.format('rename'))
+        else:
+            self.fail('SchemaError not raised')
+
     def test_deep_rename(self):
         schema = {
             'name': {
