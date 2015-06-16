@@ -140,6 +140,22 @@ unknown fields will be validated against it: ::
 .. versionchanged:: 0.8
    ``allow_unknown`` can also be set to a validation schema.
 
+Removing the unknown
+~~~~~~~~~~~~~~~~~~~~
+In addition to setting ``allow_unknown`` to ``False`` it is possible to set ``remove_unknown`` to ``True`` which will 
+remove unknown fields from the document. The document will then validate and will not return any errors ::
+
+    >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
+    >>> v = Validator(schema)
+    >>> v.allow_unknown = False
+    >>> v.remove_unknown = True
+    >>> v.validate({'name': 'john', 'sex': 'M'})
+    True
+    >>> v.errors
+    {}
+    >>> v.document
+    {'name': 'john'}
+
 Custom validators
 ~~~~~~~~~~~~~~~~~
 Cerberus supports custom validation in two styles:
@@ -780,6 +796,20 @@ oneof
 Same as ``anyof`` except that only one rule collections in the list can validate.
 
 .. versionadded:: 0.9
+
+rename
+''''''
+
+This rule allows for renaming a field, which for example could be useful if public facing field names are 
+different from your internal field names ::
+
+    >>> schema = {'foo': {'rename': 'bar'}
+    >>> v = Validator(schema)
+    >>> document = {'foo': 'foo'}
+    >>> v.validate(document)
+    True
+    >>> v.document
+    {'bar': 'foo'}
 
 FAQ
 ---
