@@ -908,6 +908,89 @@ class TestValidator(TestBase):
         doc = {'prop1': '11'}
         self.assertFail(doc, schema)
 
+    def test_oneof(self):
+        # prop1 can only only be:
+        # - greater than 10
+        # - greater than 0
+        # - equal to -5, 5, or 15
+
+        schema = {'prop1': {'type': 'integer', 'oneof': [
+                 {'min': 0},
+                 {'min': 10},
+                 {'allowed': [-5, 5, 15]}]}}
+
+        # document is not valid
+        # prop1 not greater than 0, 10 or equal to -5
+        doc = {'prop1': -1}
+        self.assertFail(doc, schema)
+
+        # document is valid
+        # prop1 is less then 0, but is -5
+        doc = {'prop1': -5}
+        self.assertSuccess(doc, schema)
+
+        # document is valid
+        # prop1 greater than 0
+        doc = {'prop1': 1}
+        self.assertSuccess(doc, schema)
+
+        # document is not valid
+        # prop1 is greater than 0
+        # and equal to 5
+        doc = {'prop1': 5}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        # prop1 is greater than 0
+        # and greater than 10
+        doc = {'prop1': 11}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        # prop1 is greater than 0
+        # and greater than 10
+        # and equal to 15
+        doc = {'prop1': 15}
+        self.assertFail(doc, schema)
+
+    def test_noneof(self):
+        # prop1 can not be:
+        # - greater than 10
+        # - greater than 0
+        # - equal to -5, 5, or 15
+
+        schema = {'prop1': {'type': 'integer', 'noneof': [
+                 {'min': 0},
+                 {'min': 10},
+                 {'allowed': [-5, 5, 15]}]}}
+
+        # document is valid
+        doc = {'prop1': -1}
+        self.assertSuccess(doc, schema)
+
+        # document is not valid
+        # prop1 is equal to -5
+        doc = {'prop1': -5}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        # prop1 greater than 0
+        doc = {'prop1': 1}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        doc = {'prop1': 5}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        doc = {'prop1': 11}
+        self.assertFail(doc, schema)
+
+        # document is not valid
+        # and equal to 15
+        doc = {'prop1': 15}
+        self.assertFail(doc, schema)
+
     def test_anyof_allof(self):
 
         # prop1 can be any number outside of [0-10]
@@ -990,10 +1073,10 @@ class TestValidator(TestBase):
             # should be multiple errors that occured, each schemas errors
             # should be in the errors dict.  check that they are.
             self.assertEqual(
-                v.errors['parts'][3]['candidate 0']['product name'],
+                v.errors['parts'][3]['definition 0']['product name'],
                 "unknown field")
             self.assertEqual(
-                v.errors['parts'][3]['candidate 1']['product name'],
+                v.errors['parts'][3]['definition 1']['product name'],
                 "unknown field")
             self.assertEqual(
                 v.errors['parts'][4],
