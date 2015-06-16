@@ -228,15 +228,10 @@ class Validator(object):
             self.document = context
             self.current  = document
 
-        # create a copy since the document might change during its iteration
-        try:
-            # might fail when dealing with complex document values
-            current = copy.deepcopy(document)
-        except:
-            # fallback on a shallow copy
-            current = copy.copy(document)
+        # copy keys since the document might change during its iteration
+        for field in [f for f in document.keys()]:
+            value = self.current[field]
 
-        for field, value in current.items():
             if self.ignore_none_values and value is None:
                 continue
 
