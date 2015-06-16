@@ -12,7 +12,7 @@ import sys
 import re
 import copy
 from datetime import datetime
-from collections import Iterable, Mapping, Sequence
+from collections import Iterable, Mapping, Sequence, Hashable
 from . import errors
 
 if sys.version_info[0] == 3:
@@ -393,6 +393,10 @@ class Validator(object):
                     else:
                         raise SchemaError(
                             errors.ERROR_SCHEMA_TYPE.format(field))
+                elif constraint == 'rename':
+                    if not isinstance(value, Hashable):
+                        raise SchemaError(
+                            errors.ERROR_RENAME.format(constraint))
                 elif constraint in self.special_rules:
                     pass
                 elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
@@ -732,11 +736,8 @@ class Validator(object):
         self._validate_logical('oneof', definitions, field, value)
 
     def _validate_rename(self, rename, field, value):
-        if isinstance(rename, _str_type):
-            self.current[rename] = value
-            del self.current[field]
-        else:
-            self._error(field, errors.ERROR_RENAME.format(field))
+        self.current[rename] = value
+        del self.current[field]
 
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """
