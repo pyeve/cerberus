@@ -143,7 +143,7 @@ unknown fields will be validated against it: ::
 Removing the unknown
 ~~~~~~~~~~~~~~~~~~~~
 In addition to setting ``allow_unknown`` to ``False`` it is possible to set ``remove_unknown`` to ``True`` which will 
-remove unknown fields from the document. The document will then validate and will not return any errors ::
+remove unknown fields from the document. The document will then validate and will not return any errors: ::
 
     >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
     >>> v = Validator(schema)
@@ -801,7 +801,7 @@ rename
 ''''''
 
 This rule allows for renaming a field, which for example could be useful if public facing field names are 
-different from your internal field names ::
+different from your internal field names. ::
 
     >>> schema = {'foo': {'rename': 'bar'}
     >>> v = Validator(schema)
