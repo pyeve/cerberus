@@ -144,9 +144,19 @@ class Validator(object):
         if schema:
             self.validate_schema(schema)
         self._errors = {}
+        self._current = None
 
     def __call__(self, *args, **kwargs):
         return self.validate(*args, **kwargs)
+
+    @property
+    def current(self):
+        """Get the current document being validated.
+
+        When validating, the current (sub)document will be available
+        via this property.
+        """
+        return self._current
 
     @property
     def errors(self):
@@ -226,14 +236,14 @@ class Validator(object):
                 # fallback on a shallow copy
                 self.document = copy.copy(document)
             finally:
-                self.current = self.document
+                self._current = self.document
         else:
             self.document = context
-            self.current = document
+            self._current = document
 
         # copy keys since the document might change during its iteration
         for field in [f for f in document.keys()]:
-            value = self.current[field]
+            value = self._current[field]
 
             if self.ignore_none_values and value is None:
                 continue
@@ -243,7 +253,7 @@ class Validator(object):
                 self._validate_definition(definition, field, value)
             else:
                 if not self.allow_unknown and self.remove_unknown:
-                    del self.current[field]
+                    del self._current[field]
                 if self.allow_unknown:
                     if isinstance(self.allow_unknown, Mapping):
                         # validate that unknown fields matches the schema
@@ -261,7 +271,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields(self.current)
+            self._validate_required_fields(self._current)
 
         return len(self._errors) == 0
 
@@ -731,8 +741,8 @@ class Validator(object):
         self._validate_logical('oneof', definitions, field, value)
 
     def _validate_rename(self, rename, field, value):
-        self.current[rename] = value
-        del self.current[field]
+        self._current[rename] = value
+        del self._current[field]
 
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """
