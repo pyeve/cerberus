@@ -769,6 +769,18 @@ Same as ``anyof`` except that all rule collections in the list must validate.
 
 .. versionadded:: 0.9
 
+noneof
+'''''
+Same as ``anyof`` except that it requires no rule collections in the list to validate.
+
+.. versionadded:: 0.9
+
+oneof
+'''''
+Same as ``anyof`` except that only one rule collections in the list can validate.
+
+.. versionadded:: 0.9
+
 FAQ
 ---
 

@@ -374,7 +374,7 @@ class Validator(object):
                             errors.ERROR_SCHEMA_TYPE.format(field))
                 elif constraint in self.special_rules:
                     pass
-                elif constraint in ('anyof', 'allof'):
+                elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
                     if(isinstance(value, Sequence) and
                        not isinstance(value, _str_type)):
                         # make sure each definition in an
@@ -660,46 +660,55 @@ class Validator(object):
         # call customized validator function
         validator(field, value, self._error)
 
-    def _validate_anyof(self, anyof, field, value):
-        # validates if any of the definitions validate
-        if isinstance(anyof, Mapping):
-            anyof = [anyof]
+    def _validate_logical(self, operator, definitions, field, value):
+        # validates value against each definition in definitions
+        if isinstance(definitions, Mapping):
+            definitions = [definitions]
 
-        valid = False
-        tmperrors = self._errors
+        # count the number of definitions that validate
+        valid = 0
         errorstack = {}
-        for i in range(len(anyof)):
-            definition = anyof[i]
-            self._errors = {}
-            self._validate_definition(definition, field, value)
-            errorstack["candidate %d" % i] = self._errors.get(field, {})
-            if not self._errors:
-                valid = True
+        for i in range(len(definitions)):
+            definition = definitions[i]
+            # create a schema instance with the rules in definition
+            s = copy.copy(self.schema[field])
+            del s[operator]
+            s.update(definition)
+            # get a child validator to do our work
+            v = self.__get_child_validator(schema={field: s})
+            if v.validate({field: value}):
+                valid += 1
+            errorstack["definition %d" % i] = \
+                v.errors.get(field, 'validated')
 
-        self._errors = tmperrors
-        if not valid:
-            self._error(field, errorstack)
+        if operator == 'anyof' and valid < 1:
+            e = {'anyof': 'no definitions validated'}
+            e.update(errorstack)
+            self._error(field, e)
+        if operator == 'allof' and valid < len(definitions):
+            e = {'allof': 'one or more definitions did not validate'}
+            e.update(errorstack)
+            self._error(field, e)
+        if operator == 'noneof' and valid > 0:
+            e = {'noneof': 'one or more definitions validated'}
+            e.update(errorstack)
+            self._error(field, e)
+        if operator == 'oneof' and valid != 1:
+            e = {'oneof': 'more than one rule (or no rules) validated'}
+            e.update(errorstack)
+            self._error(field, e)
 
-    def _validate_allof(self, allof, field, value):
-        # only valid if all definitions validate
-        if isinstance(allof, Mapping):
-            allof = [allof]
+    def _validate_anyof(self, definitions, field, value):
+        self._validate_logical('anyof', definitions, field, value)
 
-        valid = True
-        tmperrors = self._errors
-        errorstack = {}
-        for i in range(len(allof)):
-            definition = allof[i]
-            self._errors = {}
-            self._validate_definition(definition, field, value)
-            errorstack["requirement %d" % i] = self._errors.get(field,
-                                                                "validated")
-            if self._errors:
-                valid = False
+    def _validate_allof(self, definitions, field, value):
+        self._validate_logical('allof', definitions, field, value)
 
-        self._errors = tmperrors
-        if not valid:
-            self._error(field, errorstack)
+    def _validate_noneof(self, definitions, field, value):
+        self._validate_logical('noneof', definitions, field, value)
+
+    def _validate_oneof(self, definitions, field, value):
+        self._validate_logical('oneof', definitions, field, value)
 
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """
