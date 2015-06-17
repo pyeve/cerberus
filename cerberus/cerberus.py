@@ -744,6 +744,10 @@ class Validator(object):
         self._current[rename] = value
         del self._current[field]
 
+    def _validate_rename(self, rename, field, value):
+        self._current[rename] = value
+        del self._current[field]
+
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """
         cumulated_kwargs = self._additional_kwargs.copy()
