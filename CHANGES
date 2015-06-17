@@ -8,6 +8,10 @@ Version 0.9
 
 Not released yet
 
+- 'oneof' rule which provides a list of definitions in which only one should
+  validate (C.D. Clark III).
+-  'noneof' rule which provides a list of definitions that should all not
+   validate (C.D. Clark III).
 - 'anyof' rule accepts a list of definitions and checks that one definition
   validates (C.D. Clark III).
 - 'allof' rule validates if if all definitions validate (C.D. Clark III).
