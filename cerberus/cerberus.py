@@ -667,18 +667,19 @@ class Validator(object):
 
         # count the number of definitions that validate
         valid = 0
-        tmperrors = self._errors
         errorstack = {}
         for i in range(len(definitions)):
             definition = definitions[i]
-            self._errors = {}
-            self._validate_definition(definition, field, value)
-            errorstack["definition %d" % i] = \
-                self._errors.get(field, 'validated')
-            if not self._errors:
+            # create a schema instance with the rules in definition
+            s = copy.copy(self.schema[field])
+            del s[operator]
+            s.update(definition)
+            # get a child validator to do our work
+            v = self.__get_child_validator(schema={field: s})
+            if v.validate({field: value}):
                 valid += 1
-
-        self._errors = tmperrors
+            errorstack["definition %d" % i] = \
+                v.errors.get(field, 'validated')
 
         if operator == 'anyof' and valid < 1:
             e = {'anyof': 'no definitions validated'}

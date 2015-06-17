@@ -1085,6 +1085,30 @@ class TestValidator(TestBase):
         else:
             raise AssertionError("validation didn't fail")
 
+    def test_anyof_2(self):
+        # these two schema should be the same
+        schema1 = {'prop': {'anyof': [{'type': 'dict',
+                                       'schema': {
+                                           'val': {'type': 'integer'}}},
+                                      {'type': 'dict',
+                                       'schema': {
+                                           'val': {'type': 'string'}}}]}}
+        schema2 = {'prop': {'type': 'dict', 'anyof': [
+                           {'schema': {'val': {'type': 'integer'}}},
+                           {'schema': {'val': {'type': 'string'}}}]}}
+
+        doc = {'prop': {'val': 0}}
+        self.assertSuccess(doc, schema1)
+        self.assertSuccess(doc, schema2)
+
+        doc = {'prop': {'val': '0'}}
+        self.assertSuccess(doc, schema1)
+        self.assertSuccess(doc, schema2)
+
+        doc = {'prop': {'val': 1.1}}
+        self.assertFail(doc, schema1)
+        self.assertFail(doc, schema2)
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
