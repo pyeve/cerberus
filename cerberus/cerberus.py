@@ -141,9 +141,19 @@ class Validator(object):
         if schema:
             self.validate_schema(schema)
         self._errors = {}
+        self._current = None
 
     def __call__(self, *args, **kwargs):
         return self.validate(*args, **kwargs)
+
+    @property
+    def current(self):
+        """Get the current document being validated.
+
+        When validating, the current (sub)document will be available
+        via this property.
+        """
+        return self._current
 
     @property
     def errors(self):
@@ -215,15 +225,23 @@ class Validator(object):
                 errors.ERROR_DOCUMENT_FORMAT.format(document))
 
         # make root document available for validators (Cerberus #42, Eve #295)
-        target = context if context is not None else document
-        try:
-            # might fail when dealing with complex document values
-            self.document = copy.deepcopy(target)
-        except:
-            # fallback on a shallow copy
-            self.document = copy.copy(target)
+        if not context:
+            try:
+                # might fail when dealing with complex document values
+                self.document = copy.deepcopy(document)
+            except:
+                # fallback on a shallow copy
+                self.document = copy.copy(document)
+            finally:
+                self._current = self.document
+        else:
+            self.document = context
+            self._current = document
 
-        for field, value in document.items():
+        # copy keys since the document might change during its iteration
+        for field in [f for f in document.keys()]:
+            value = self._current[field]
+
             if self.ignore_none_values and value is None:
                 continue
 
@@ -248,7 +266,7 @@ class Validator(object):
                     self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
         if not self.update:
-            self._validate_required_fields(self.document)
+            self._validate_required_fields(self._current)
 
         return len(self._errors) == 0
 
