@@ -12,7 +12,7 @@ import sys
 import re
 import copy
 from datetime import datetime
-from collections import Iterable, Mapping, Sequence
+from collections import Iterable, Mapping, Sequence, Hashable
 from . import errors
 
 if sys.version_info[0] == 3:
@@ -128,14 +128,17 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
     special_rules = "required", "nullable", "type", "dependencies", \
-                    "readonly", "allow_unknown", "schema", "coerce"
+                    "readonly", "allow_unknown", "schema", "coerce", \
+                    "rename"
 
     def __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False, **kwargs):
+                 ignore_none_values=False, allow_unknown=False,
+                 remove_unknown=False, **kwargs):
         self.schema = schema
         self.transparent_schema_rules = transparent_schema_rules
         self.ignore_none_values = ignore_none_values
         self.allow_unknown = allow_unknown
+        self.remove_unknown = remove_unknown
         self._additional_kwargs = kwargs
 
         if schema:
@@ -249,6 +252,8 @@ class Validator(object):
             if definition is not None:
                 self._validate_definition(definition, field, value)
             else:
+                if not self.allow_unknown and self.remove_unknown:
+                    del self._current[field]
                 if self.allow_unknown:
                     if isinstance(self.allow_unknown, Mapping):
                         # validate that unknown fields matches the schema
@@ -315,6 +320,9 @@ class Validator(object):
             validator = getattr(self, validatorname, None)
             if validator:
                 validator(definition[rule], field, value)
+
+        if 'rename' in definition:
+            self._validate_rename(definition['rename'], field, value)
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
@@ -390,6 +398,10 @@ class Validator(object):
                     else:
                         raise SchemaError(
                             errors.ERROR_SCHEMA_TYPE.format(field))
+                elif constraint == 'rename':
+                    if not isinstance(value, Hashable):
+                        raise SchemaError(
+                            errors.ERROR_RENAME.format(constraint))
                 elif constraint in self.special_rules:
                     pass
                 elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
@@ -727,6 +739,10 @@ class Validator(object):
 
     def _validate_oneof(self, definitions, field, value):
         self._validate_logical('oneof', definitions, field, value)
+
+    def _validate_rename(self, rename, field, value):
+        self._current[rename] = value
+        del self._current[field]
 
     def __get_child_validator(self, **kwargs):
         """ creates a new instance of Validator-(sub-)class """

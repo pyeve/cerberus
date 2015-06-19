@@ -1109,6 +1109,91 @@ class TestValidator(TestBase):
         self.assertFail(doc, schema1)
         self.assertFail(doc, schema2)
 
+    def test_remove_unknown(self):
+        schema = {
+            'name': {'type': 'string'}
+        }
+        v = Validator(schema, allow_unknown=False, remove_unknown=True)
+        doc = {'name': '1', 'other': '2'}
+        v.validate(doc)
+        self.assertEqual(v.document, {'name': '1'})
+
+    def test_rename(self):
+        schema = {
+            'name': {'rename': 'changed_name'}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), '1')
+
+    def test_rename_field_not_hashable(self):
+        schema = {
+            'name': {'rename': ['should be hashable']}
+        }
+        try:
+            Validator(schema)
+        except SchemaError as e:
+            self.assertEqual(str(e), errors.ERROR_RENAME.format('rename'))
+        else:
+            self.fail('SchemaError not raised')
+
+    def test_deep_rename(self):
+        schema = {
+            'name': {
+                'type': 'dict',
+                'rename': 'changed_name',
+                'schema': {
+                    'foo': {
+                        'type': 'string',
+                        'rename': 'bar'
+                    }
+                }
+            }
+        }
+        doc = {'name': {'foo': '1'}}
+        after = {'changed_name': {'bar': '1'}}
+        v = Validator(schema)
+        v.validate(doc)
+        self.assertEqual(v.document, after)
+
+    def test_rename_combine(self):
+        schema = {
+            'name': {'rename': 'changed_name', 'coerce': int}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), 1)
+
+    def test_deep_rename_combine(self):
+        schema = {
+            'name': {
+                'type': 'dict',
+                'rename': 'changed_name',
+                'schema': {
+                    'foo': {
+                        'type': 'integer',
+                        'coerce': int,
+                        'rename': 'bar'
+                    }
+                }
+            }
+        }
+        v = Validator(schema)
+        doc = {'name': {'foo': '1'}}
+        v.validate(doc)
+        self.assertEqual(v.document.get('changed_name'), {'bar': 1})
+
+    def test_rename_not_destructive(self):
+        schema = {
+            'name': {'rename': 'changed_name'}
+        }
+        v = Validator(schema)
+        doc = {'name': '1'}
+        v.validate(doc)
+        self.assertNotEqual(id(v.document), id(doc))
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
