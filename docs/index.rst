@@ -717,67 +717,60 @@ Dependencies on sub-document fields are also supported: ::
 
 anyof
 '''''
-Used to specify a list of rule collections. If the document validates against any one of the rule collections in the list, it is considered valid.
+This rule allows you to list multiple sets of rules to validate against. The field will be considered valid if it validates against one set in the list.
+For example, to verify that a property is a number between 0 and 10 or 100 and 110, you could do the following: ::
 
-    >>> schema = {"parts": {
-    ...             "type": "list", 
-    ...             "schema": {
-    ...               "type": "dict", 
-    ...               "anyof": [
-    ...                 {
-    ...                   "schema": {
-    ...                     "count": {"type": "integer"}, 
-    ...                     "model number": {"type": "string"}
-    ...                   }
-    ...                 }, 
-    ...                 {
-    ...                   "schema": {
-    ...                     "count": {"type": "integer"}, 
-    ...                     "serial number": {"type": "string"}
-    ...                   }}]}}}
-    >>> document = {"parts": [
-    ...               {
-    ...                 "count": 100, 
-    ...                 "model number": "MX-009"
-    ...               }, 
-    ...               {
-    ...                 "serial number": "898-001"
-    ...               }]}
+    >>> schema = {'prop1':
+    ...           {'type': 'number',
+    ...            'anyof':
+    ...            [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
+    >>> doc = {'prop1': 5}
     >>> v.validate(document, schema)
     True
-    >>> document = {"parts": [
-    ...               {
-    ...                 "count": 100, 
-    ...                 "model number": "MX-009"
-    ...               }, 
-    ...               {
-    ...                 "serial number": "898-001"
-    ...               },
-    ...               {
-    ...                 "vin": "98274-0992-K112"
-    ...               }]}
+    >>> doc = {'prop1': 105}
+    >>> v.validate(document, schema)
+    True
+    >>> doc = {'prop1': 55}
     >>> v.validate(document, schema)
     False
     >>> print v.errors
-    {'parts': {2: {'candidate 0': {'vin number': 'unknown field'}, 'candidate 1': {'vin number': 'unknown field'}}}}
+    {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
 
 .. versionadded:: 0.9
 
+The `anyof` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas, ::
+
+    >>> schema1 = {'prop1': {'type': 'number', 'min':   0, 'max':  10}}
+    >>> schema2 = {'prop1': {'type': 'number', 'min': 100, 'max': 110}}
+    >>> doc = {'prop1': 5}
+    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
+    >>> valid
+    True
+    >>> doc = {'prop1': 105}
+    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
+    >>> valid
+    True
+    True
+    >>> doc = {'prop1': 55}
+    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
+    >>> valid
+    False
+
 allof
 '''''
-Same as ``anyof`` except that all rule collections in the list must validate.
+Same as ``anyof``, except that all rule collections in the list must validate.
 
 .. versionadded:: 0.9
 
 noneof
-'''''
-Same as ``anyof`` except that it requires no rule collections in the list to validate.
+''''''
+Same as ``anyof``, except that it requires no rule collections in the list to validate.
 
 .. versionadded:: 0.9
 
 oneof
 '''''
-Same as ``anyof`` except that only one rule collections in the list can validate.
+Same as ``anyof``, except that only one rule collections in the list can validate.
 
 .. versionadded:: 0.9
 
