@@ -1109,6 +1109,17 @@ class TestValidator(TestBase):
         self.assertFail(doc, schema1)
         self.assertFail(doc, schema2)
 
+    def test_issue_107(self):
+        schema = {'info': {'type': 'dict',
+                  'schema': {'name': {'type': 'string', 'required': True}}}}
+        document = {'info': {'name': 'my name'}}
+        self.assertSuccess(document, schema)
+
+        validator = Validator(schema)
+        self.assertSuccess(document, schema, validator)
+
+        self.assertTrue(validator.validate(document))
+
 
 # TODO remove on next major release
 class BackwardCompatibility(TestBase):
