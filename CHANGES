@@ -8,6 +8,8 @@ Version 0.9
 
 Not released yet
 
+- Docs: added section that points out that YAML, JSON, etc. can be used to
+  define schemas (C.D. Clark III).
 - 'oneof' rule which provides a list of definitions in which only one should
   validate (C.D. Clark III).
 -  'noneof' rule which provides a list of definitions that should all not
