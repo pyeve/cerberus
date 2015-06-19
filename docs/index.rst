@@ -69,6 +69,29 @@ the first validation issue. The whole document will always be processed, and
 You will still get :class:`~cerberus.SchemaError` and
 :class:`~cerberus.ValidationError` exceptions.
 
+Vanilla Python
+~~~~~~~~~~~~~~
+Cerberus Schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined validation rules are invoked in the schema by name, as a string.
+A useful side effect of this design is that schemas can be defined in a number of ways, for example with YAML. ::
+
+    >>> import yaml
+    >>> schema_text = '''
+    ...name:
+    ...  type: string
+    ...age':
+    ...  type: integer
+    ...  min: 10
+    ...'''
+    >>> schema = yaml.load(schema_text)
+    >>> document = {'name': 1337, 'age': 5}
+    >>> v.validate(document, schema)
+    False
+    >>> v.errors
+    {'age': 'min value is 10', 'name': 'must be of string type'}
+
+You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as there is a decoder thant can produce a nested `dict`, you
+can use it to define a schema.
+
 Allowing the unknown
 ~~~~~~~~~~~~~~~~~~~~
 By default only keys defined in the schema are allowed: ::
