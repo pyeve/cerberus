@@ -1,4 +1,6 @@
+sudo: false
 language: python
+cache: pip
 python: 2.7
 env:
   - TOX_ENV=py26
