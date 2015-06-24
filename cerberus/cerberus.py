@@ -58,16 +58,32 @@ class Validator(object):
                           field error' un validation.
 
     .. versionadded:: 0.9
-       when 'items' is applied to a list, field name is used as key for
-       'validator.errors', and offending field indexes are used as keys for
-       field errors ({'a_list_of_strings': {1: 'not a string'}})
-       'type' can be a list of valid types.
-       'keyschema' is renamed to 'valueschema'. Closes #92.
-       'coerce' rule
+       'anyof', 'noneof', 'allof', 'anyof' validation rules.
+       PyPy support.
+       'coerce' rule.
        'propertyschema' validation rule.
-       additional kwargs that are passed to the __init__-method of an
-       instance of Validator-(sub-)class are passed to child-validators.
-       :func:`validated` added
+       'validator.validated' takes a document as argument and returns a
+       Validated document or 'None' if validation failed.
+
+    .. versionchanged:: 0.9
+       Use 'str.format' in error messages so if someone wants to override them
+           does not get an excpetion if arguments are not passed.
+       'keyschema' is renamed to 'valueschema'. Closes #92.
+       'type' can be a list of valid types.
+       Usages of 'document' to 'self.document' in '_validate'.
+       When 'items' is applied to a list, field name is used as key for
+           'validator.errors', and offending field indexes are used as keys for
+       Field errors ({'a_list_of_strings': {1: 'not a string'}})
+       Additional kwargs that are passed to the __init__-method of an
+       Instance of Validator-(sub-)class are passed to child-validators.
+       Ensure that additional **kwargs of a subclass persist through validation
+       Improve failure message when testing against multiple types.
+       Ignore 'keyschema' when not a mapping.
+       Ignore 'schema' when not a sequence.
+       'allow_unknown' can also be set for nested dicts. Closes #75.
+       Raise SchemaError when an unallowed 'type' is used in conjunction with
+           'schema' rule.
+
 
     .. versionchanged:: 0.8.1
        'dependencies' for sub-document fields. Closes #64.
