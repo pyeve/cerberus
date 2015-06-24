@@ -180,6 +180,9 @@ class Validator(object):
         :param schema: optional validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
                        class instantiation.
+        :param context: the context in which the document should be validated.
+                        Defaults to ``None``.
+
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
 
@@ -197,6 +200,8 @@ class Validator(object):
                        class instantiation.
         :param update: If ``True`` validation of required fields won't be
                        performed.
+        :param context: the document in which context validation should be
+                        performed. Defaults to ``None``.
 
         :return: True if validation succeeds, False otherwise. Check the
                  :func:`errors` property for a list of validation errors.
