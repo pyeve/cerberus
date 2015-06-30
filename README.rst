@@ -3,7 +3,8 @@ Cerberus
 .. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master
         :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
 
-Cerberus is an ISC Licensed validation tool for Python dictionaries.
+Cerberus is an lightweight, extensible schema and data validation tool for
+Python.
 
 .. code-block:: pycon
 

@@ -2,7 +2,8 @@
 
 from setuptools import setup, find_packages
 
-DESCRIPTION = ("Extensible validation for Python dictionaries.")
+DESCRIPTION = ("Lightweight, extensible schema and data validation tool for "
+               "Python dictionaries.")
 LONG_DESCRIPTION = open('README.rst').read()
 VERSION = __import__('cerberus').__version__
 
@@ -20,6 +21,7 @@ setup(
     include_package_data=True,
     test_suite="cerberus.tests",
     install_requires=[],
+    keywords=['validation', 'schema', 'dictionaries'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

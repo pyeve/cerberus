@@ -1,7 +1,8 @@
-Welcome to Cerberus
-===================
+Cerberus - Python Validation For Humans™
+========================================
 
-Cerberus is an ISC Licensed validation tool for Python dictionaries.
+Cerberus is a lightweight, extensible schema and data validation tool for 
+Python dictionaries.
 
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be easily extensible, allowing for easy custom validation. It
