@@ -3,8 +3,7 @@ Cerberus
 .. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master
         :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
 
-Cerberus is an lightweight, extensible schema and data validation tool for
-Python.
+Cerberus is a lightweight and extensible data validation library for Python.
 
 .. code-block:: pycon
 
@@ -21,7 +20,7 @@ Python 2.7, Python 3.3, Python 3.4, PyPy and PyPy3.
 
 Documentation
 -------------
-Complete documentation is available at http://cerberus.readthedocs.org
+Complete documentation is available at http://python-cerberus.org
 
 Installation
 ------------
