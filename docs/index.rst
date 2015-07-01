@@ -39,12 +39,12 @@ Table of Contents
     Using <usage>
     Extending <customize>
     Contributing <contribute>
-    authors
-    license
-    changelog
     API <api>
     FAQ <faq>
+    changelog
+    authors
     contact
+    license
 
 Copyright Notice
 ----------------
