@@ -1,5 +1,5 @@
 How to Contribute
-#################
+=================
 
 Contributions are welcome! Not familiar with the codebase yet? No problem!
 There are many ways to contribute to open source projects: reporting bugs,
@@ -8,7 +8,7 @@ new features and patches.
 
 Getting Started
 ---------------
-#. Make sure you have a GitHub_ account.
+#. Make sure you have a GitHub account.
 #. Open a `new issue`_, assuming one does not already exist.
 #. Clearly describe the issue including steps to reproduce when it is a bug.
 
@@ -54,7 +54,6 @@ you might want to check this excellent `Effective Guide to Pull Requests`_
 .. _AUTHORS: https://github.com/nicolaiarocci/cerberus/blob/master/AUTHORS
 .. _`open issues`: https://github.com/nicolaiarocci/cerberus/issues
 .. _`new issue`: https://github.com/nicolaiarocci/cerberus/issues/new
-.. _GitHub: https://github.com/
 .. _Fork: https://help.github.com/articles/fork-a-repo
 .. _`proper format`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
