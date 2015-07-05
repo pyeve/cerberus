@@ -125,3 +125,25 @@ Then, you can validate an odd value like this: ::
 
 .. versionadded:: 0.8
 
+Relevant `Validator`-properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Validator.__get_child_validator`
+.................................
+
+If you need another instance of your ``Validator``-subclass, the
+``__get_child_validator``-method returns another instance that is initiated
+with the same arguments as ``self`` was. You can specify overriding keyword-
+arguments.
+
+.. versionadded:: 0.9
+
+`Validator.root_document`
+.........................
+
+A child-validator - as used when validating a ``schema`` - can access the first
+generation validator's document that is being processed via its
+``root_document``-property.
+It's untested what happens when you change that. It may make ``boom``.
+
+.. versionadded:: 0.10

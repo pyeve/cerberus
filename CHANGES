@@ -11,6 +11,12 @@ Not released yet.
 - New: '*of'-rules can be extended by concentating another rule (Frank
   Sachsenheim).
 
+- Change: The processed root-document of is now available as 'root_document'-
+  property of the (child-)Validator (Frank Sachsenheim).
+- Change: Removed 'context'-argument from 'validate'-method as this is set
+  upon the creation of a child-validator (Frank Sachsenheim).
+
+
 Version 0.9.1
 -------------
 
@@ -42,7 +48,7 @@ Codename: 'Mastrolindo'.
 - New: Added 'propertyschema' validation rule (Frank Sachsenheim).
 
 - Change: Use 'str.format' in error messages so if someone wants to override
-  them does not get an excpetion if arguments are not passed. Closes #105
+  them does not get an exception if arguments are not passed. Closes #105
   (Brett).
 - Change: 'keyschema' renamed to 'valueschema', print a deprecation warning
   (Frank Sachsenheim).
