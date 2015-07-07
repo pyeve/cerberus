@@ -8,6 +8,12 @@ Version 0.9.1
 
 Not released.
 
+- Fix: 'required' is always evaluated, independent of eventual missing
+  dependencies. This changes the previous behaviour whereas a required field
+  with dependencies would only be reported as missing if all dependencies were
+  met. A missing required field will always be reported. Also see the
+  discussion in https://github.com/nicolaiarocci/eve/pull/665.
+
 Version 0.9
 -----------
 

@@ -641,12 +641,11 @@ class TestValidator(TestBase):
         # False: dependencies are validated and field is required
         self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
 
-        # True: All dependencies are optional
-        # so do not check the field if dependencies do not exist
-        self.assertTrue(v.validate({}))
+        # Flase: All dependencies are optional but field is still required
+        self.assertFalse(v.validate({}))
 
         # True: dependency missing
-        self.assertTrue(v.validate({'foo': 'bar'}))
+        self.assertFalse(v.validate({'foo': 'bar'}))
 
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
@@ -708,12 +707,11 @@ class TestValidator(TestBase):
         # False: dependencies are validated and field is required
         self.assertFalse(v.validate({'foo': 'foo', 'bar': 'bar'}))
 
-        # True: All dependencies are optional
-        # so do not check the field if dependencies do not exist
-        self.assertTrue(v.validate({}))
+        # False: All dependencies are optional, but field is still required
+        self.assertFalse(v.validate({}))
 
-        # True: dependency missing
-        self.assertTrue(v.validate({'foo': 'bar'}))
+        # False: dependency missing
+        self.assertFalse(v.validate({'foo': 'bar'}))
 
         self.assertTrue(v.validate({'test_field': 'foobar',
                                     'foo': 'foo', 'bar': 'bar'}))

@@ -57,6 +57,9 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged:: 0.9.1
+       'required' will always be validated, regardless of any dependencies.
+
     .. versionadded:: 0.9
        'anyof', 'noneof', 'allof', 'anyof' validation rules.
        PyPy support.
@@ -469,12 +472,7 @@ class Validator(object):
                                       not self.ignore_none_values)
 
         for field in missing:
-            dependencies = self.schema[field].get('dependencies')
-            dependencies_validated = self._validate_dependencies(
-                document, dependencies, field, break_on_error=True)
-
-            if dependencies_validated:
-                self._error(field, errors.ERROR_REQUIRED_FIELD)
+            self._error(field, errors.ERROR_REQUIRED_FIELD)
 
     def _validate_readonly(self, read_only, field, value):
         if read_only:
