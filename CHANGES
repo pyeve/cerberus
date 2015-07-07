@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.9.1
 -------------
 
-Not released.
+Released on July 7 2015
 
 - Fix: 'required' is always evaluated, independent of eventual missing
   dependencies. This changes the previous behaviour whereas a required field
