@@ -3,6 +3,13 @@ Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version x.x
+-----------
+
+- New: '*of'-rules can be extended by concentating another rule (Frank
+  Sachsenheim).
+
+
 Version 0.9
 -----------
 
@@ -62,7 +69,7 @@ Released on Mar 16 2015.
 - Fix: two tests being ignored because of name typo.
 - Fix: update mode does not ignore required fields in subdocuments. Closes #72.
 - Fix: allow_unknown does not respect custom rules. Closes #66.
-- Fix typo in docstrings (Riccardo).
+- Fix: typo in docstrings (Riccardo).
 
 Version 0.8
 -----------
