@@ -5,7 +5,7 @@
     :copyright: 2012-2015 by Nicola Iarocci.
     :license: ISC, see LICENSE for more details.
 
-    Full documentation is available at http://cerberus.readthedocs.org/
+    Full documentation is available at http://python-cerberus.org
 """
 
 import sys
@@ -167,6 +167,7 @@ class Validator(object):
         self.allow_unknown = kwargs.get('allow_unknown', False)
 
         if self.schema:
+            self.schema = expand_definition_schema(self.schema)
             self.validate_schema(self.schema)
         self._errors = {}
         self._current = None
@@ -246,6 +247,7 @@ class Validator(object):
         self.update = update
 
         if schema is not None:
+            schema = expand_definition_schema(schema)
             self.validate_schema(schema)
             self.schema = schema
         elif self.schema is None:
@@ -368,29 +370,16 @@ class Validator(object):
     def validate_schema(self, schema):
         """ Validates a schema against supported rules.
 
-        :param schema: the schema to be validated as a legal cerberus schema
+        :param schema: The schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
+
+        :return: The validated schema.
 
         .. versionadded:: 0.7.1
         """
 
         if not isinstance(schema, Mapping):
             raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
-
-        # TODO remove on next major release
-        def update_to_valueschema(schema, warning_printed=False):
-            if 'keyschema' in schema:
-                schema['valueschema'] = schema['keyschema']
-                del schema['keyschema']
-                if not warning_printed:
-                    print('WARNING cerberus: `keyschema` is deprecated, '
-                          'use `valueschema` instead')
-                    warning_printed = True
-            for key, value in schema.items():
-                if isinstance(value, Mapping):
-                    schema[key] = update_to_valueschema(value, warning_printed)
-            return schema
-        schema = update_to_valueschema(schema)
 
         for field, constraints in schema.items():
             if not isinstance(constraints, Mapping):
@@ -450,6 +439,8 @@ class Validator(object):
                     if not self.transparent_schema_rules:
                             raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
                                 constraint, field))
+
+        return schema
 
     def _validate_coerce(self, coerce, field, value):
         try:
@@ -765,3 +756,84 @@ class Validator(object):
         child_config = self.__config.copy()
         child_config.update(kwargs)
         return self.__class__(**child_config)
+
+
+def expand_definition_schema(schema):
+    """ Expand agglutinated rules in a definition-schema.
+
+    :param schema: The schema-defintion to expand.
+
+    :return: The expanded schema-defintion.
+
+    .. versionadded:: FIXME
+    """
+
+    # TODO remove on next major release
+    def update_to_valueschema(constraints, warning_printed=False):
+        if not isinstance(constraints, Mapping):
+            return constraints
+        if 'keyschema' in constraints:
+            constraints['valueschema'] = constraints['keyschema']
+            del constraints['keyschema']
+            if not warning_printed:
+                print('WARNING cerberus: `keyschema` is deprecated, '
+                      'use `valueschema` instead')
+                warning_printed = True
+        for key, value in constraints.items():
+            constraints[key] = update_to_valueschema(value, warning_printed)
+        return constraints
+
+    def is_of_rule(rule):
+        for operator in ('allof', 'anyof', 'noneof', 'oneof'):
+            if rule.startswith(operator + '_'):
+                return True
+        return False
+
+    def has_mapping_schema(field):
+        if isinstance(field, Mapping):
+            if 'schema' in field:
+                if isinstance(field['schema'], Mapping):
+                    if isinstance(tuple(field['schema'].values())[0],
+                                  Mapping):
+                        return True
+        return False
+
+    for field in schema:
+        # TODO remove on next major release
+        try:
+            schema[field] = update_to_valueschema(schema[field])
+        except TypeError:
+            return schema  # bad schema will fail on validation
+
+        try:
+            of_rules = [x for x in schema[field] if is_of_rule(x)]
+        except TypeError:
+            return schema  # bad schema will fail on validation
+
+        for of_rule in of_rules:
+            operator, rule = of_rule.split('_')
+            schema[field].update({operator: []})
+            for value in schema[field][of_rule]:
+                schema[field][operator].append({rule: value})
+            del schema[field][of_rule]
+
+        if has_mapping_schema(schema[field]):
+                schema[field]['schema'] = \
+                    expand_definition_schema(schema[field]['schema'])
+
+        if 'valueschema' in schema[field]:
+            schema[field]['valueschema'] = \
+                expand_definition_schema(
+                    {'x': schema[field]['valueschema']})['x']
+
+        for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
+            # TODO remove instance-check at next major-release
+            if rule in schema[field] and isinstance(schema[field][rule],
+                                                    Sequence):
+                new_rules_definition = []
+                for item in schema[field][rule]:
+                    new_rules_definition\
+                        .append(expand_definition_schema({'x': item})['x'])
+                schema[field][rule] = new_rules_definition
+
+    return schema
