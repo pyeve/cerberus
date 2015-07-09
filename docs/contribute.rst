@@ -49,6 +49,13 @@ some specific tests. For example, if a test suite fails in Python 3.4:
     # From the project folder
     $ tox -e py34
 
+If you have a running Docker_-daemon running you can run tests from a container
+that has the necessary interpreters installed and pass arguments to ``tox``:
+
+.. code-block:: console
+
+    $ ./run-docker-tests -x
+
 Using Pytest
 ~~~~~~~~~~~~
 You also choose to run the whole test suite using pytest_:
@@ -76,5 +83,6 @@ Source code is available at `GitHub
 <https://github.com/nicolaiarocci/cerberus>`_.
 
 .. _`continuous integration server`: https://travis-ci.org/nicolaiarocci/cerberus/
-.. _tox: http://tox.readthedocs.org/en/latest/
+.. _Docker: https://www.docker.com
 .. _pytest: http://pytest.org
+.. _tox: http://tox.readthedocs.org/en/latest/

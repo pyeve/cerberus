@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd "$(dirname ${0})"
+
+docker build -t cerberus-tests . && \
+docker run --rm --entrypoint="tox" cerberus-tests "${@}"
+
+cd -
