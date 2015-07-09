@@ -537,7 +537,7 @@ class Validator(object):
                     self._error(
                         field,
                         errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                            (dep_name, dep_values))
+                            dep_name, dep_values)
                     )
                     break
 
@@ -545,7 +545,7 @@ class Validator(object):
                 self._error(
                     field,
                     errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                        (dep_name, dep_values)))
+                        dep_name, dep_values))
 
     def __validate_dependencies_sequence(self, dependencies, field):
         for dependency in dependencies:

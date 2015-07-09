@@ -1,0 +1,7 @@
+.*
+*.orig
+*.pyc
+*.egg-info
+build
+dist
+run-docker-tests
