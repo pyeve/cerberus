@@ -399,7 +399,7 @@ class Validator(object):
                 if constraint == 'type':
                     values = value if isinstance(value, list) else [value]
                     for value in values:
-                        if not hasattr(self, '_validate_type_' + value):
+                        if not hasattr(self, '_validate_type_'.format(value)):
                             raise SchemaError(
                                 errors.ERROR_UNKNOWN_TYPE.format(value))
                     if 'dict' in values and 'list' in values:
