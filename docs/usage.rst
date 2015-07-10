@@ -28,7 +28,7 @@ Alternatively, you can pass both the dictionary and the schema to the
     True
 
 Which can be handy if your schema is changing through the life of the
-instance. 
+instance.
 
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
@@ -472,9 +472,34 @@ Dependencies on sub-document fields are also supported: ::
 
 .. versionadded:: 0.7
 
+\*of-rules
+~~~~~~~~~~
+
+These rules allow you to list multiple sets of rules to validate against. The field will be considered valid if it validates against the set in the list according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
+
+.. versionadded:: 0.9
+
+
 anyof
-~~~~~
-This rule allows you to list multiple sets of rules to validate against. The field will be considered valid if it validates against one set in the list.
+.....
+
+Validates if *any* of the provided constraints validates the field.
+
+allof
+.....
+
+Validates if *all* of the provided constraints validates the field.
+
+noneof
+......
+
+Validates if *none* of the provided constraints validates the field.
+
+oneof
+.....
+
+Validates if *exactly one* of the provided constraints applies.
+
 For example, to verify that a property is a number between 0 and 10 or 100 and 110, you could do the following: ::
 
     >>> schema = {'prop1':
@@ -493,9 +518,7 @@ For example, to verify that a property is a number between 0 and 10 or 100 and 1
     >>> print v.errors
     {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
 
-.. versionadded:: 0.9
-
-The `anyof` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas, ::
+The ``anyof`` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas, ::
 
     >>> schema1 = {'prop1': {'type': 'number', 'min':   0, 'max':  10}}
     >>> schema2 = {'prop1': {'type': 'number', 'min': 100, 'max': 110}}
@@ -513,23 +536,27 @@ The `anyof` rule works by creating a new instance of a schema for each item in t
     >>> valid
     False
 
-allof
-~~~~~
-Same as ``anyof``, except that all rule collections in the list must validate.
+\*of-rules typesaver
+....................
 
-.. versionadded:: 0.9
+You can concentate any of-rule with an underscore and another rule with a list of rule-values to save typing: ::
 
-noneof
-~~~~~~
-Same as ``anyof``, except that it requires no rule collections in the list to validate.
+    {'foo': {'anyof_type': ['string', integer]}}
+    # is equivalent to
+    {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
 
-.. versionadded:: 0.9
+Thus you can use this to validate a document against several schemas without implementing your own logic: ::
 
-oneof
-~~~~~
-Same as ``anyof``, except that only one rule collections in the list can validate.
+    >>> schemas = [{'department': {'required': True, 'regex': '^IT$'}, 'phone': {'nullable': True}},
+                   {'department': {'required': True}, 'phone': {'required': True}}]
+    >>> emloyee_vldtr = Validator({'employee': {'oneof_schema': schemas}}, allow_unknown=True)
+    >>> invalid_employees_phones = []
+    >>> for employee in employees:
+    ...     if not employee_vldtr.validate(employee):
+    ...     invalid_employees_phones.append(employee)
 
-.. versionadded:: 0.9
+.. versionadded: 0.10
+
 
 Allowing the Unknown
 --------------------
@@ -630,7 +657,7 @@ validated. ::
 
 .. versionadded:: 0.9
 
-`Validated` Method
+`validated` method
 ------------------
 There's a wrapper-method ``validated`` that returns the validated document. It
 can be useful for flows like this: ::

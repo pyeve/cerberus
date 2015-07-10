@@ -1107,6 +1107,28 @@ class TestValidator(TestBase):
         self.assertFail(doc, schema1)
         self.assertFail(doc, schema2)
 
+    def test_anyof_type(self):
+        schema = {'anyof_type': {'anyof_type': ['string', 'integer']}}
+        self.assertSuccess({'anyof_type': 'bar'}, schema)
+        self.assertSuccess({'anyof_type': 23}, schema)
+
+    def test_oneof_schema(self):
+        schema = {'oneof_schema': {'type': 'dict',
+                                   'oneof_schema':
+                                       [{'digits': {'type': 'integer',
+                                                    'min': 0, 'max': 99}},
+                                        {'text': {'type': 'string',
+                                                  'regex': '^[0-9]{2}$'}}]}}
+        self.assertSuccess({'oneof_schema': {'digits': 19}}, schema)
+        self.assertSuccess({'oneof_schema': {'text': '84'}}, schema)
+        self.assertFail({'oneof_schema': {'digits': 19, 'text': '84'}}, schema)
+
+    def test_nested_oneof_type(self):
+        schema = {'nested_oneof_type':
+                  {'valueschema': {'oneof_type': ['string', 'integer']}}}
+        self.assertSuccess({'nested_oneof_type': {'foo': 'a'}}, schema)
+        self.assertSuccess({'nested_oneof_type': {'bar': 3}}, schema)
+
     def test_issue_107(self):
         schema = {'info': {'type': 'dict',
                   'schema': {'name': {'type': 'string', 'required': True}}}}
