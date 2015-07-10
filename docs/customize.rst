@@ -125,6 +125,12 @@ Then, you can validate an odd value like this: ::
 
 .. versionadded:: 0.8
 
+Limitations
+~~~~~~~~~~~
+
+You must not call your custom rule ``validator`` and it may be a bad idea to
+overwrite particular contributed rules.
+
 Relevant `Validator`-properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
