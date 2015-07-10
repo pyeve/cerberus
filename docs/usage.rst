@@ -555,7 +555,7 @@ Thus you can use this to validate a document against several schemas without imp
     ...     if not employee_vldtr.validate(employee):
     ...     invalid_employees_phones.append(employee)
 
-.. versionadded: FIXME
+.. versionadded: 0.10
 
 
 Allowing the Unknown

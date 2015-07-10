@@ -765,7 +765,7 @@ def expand_definition_schema(schema):
 
     :return: The expanded schema-defintion.
 
-    .. versionadded:: FIXME
+    .. versionadded:: 0.10
     """
 
     # TODO remove on next major release
