@@ -19,11 +19,15 @@ Class-based Custom Validators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Suppose that in our use case some values can only be expressed as odd integers,
 therefore we decide to add support for a new ``isodd`` rule to our validation
-schema: ::
+schema:
 
-    >>> schema = {'oddity': {'isodd': True, 'type': 'integer'}, 'another': {'isodd': True}}
+.. testcode::
 
-This is how we would go to implement that: ::
+    schema = {'oddity': {'isodd': True, 'type': 'integer'}}
+
+This is how we would go to implement that:
+
+.. testcode::
 
     from cerberus import Validator
 
@@ -35,15 +39,16 @@ This is how we would go to implement that: ::
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
 ``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
 The custom rule ``isodd`` is now available in our schema and, what really
-matters, we can use it to validate all odd values: ::
+matters, we can use it to validate all odd values:
+
+.. doctest::
 
     >>> v = MyValidator(schema)
-    >>> v.validate({'oddity': 10, 'another': 12})
+    >>> v.validate({'oddity': 10})
     False
     >>> v.errors
-    {'oddity': 'Must be an odd number', 'another': 'Must be an odd number'}
-
-    >>> v.validate({'oddity': 9, 'another': 11})
+    {'oddity': 'Must be an odd number'}
+    >>> v.validate({'oddity': 9})
     True
 
 .. versionadded:: 0.7.1
@@ -52,7 +57,9 @@ matters, we can use it to validate all odd values: ::
     document.
 
 To make use of additional contextual information in a sub-class of :class:`~cerberus.Validator`,
-use a pattern like this: ::
+use a pattern like this:
+
+.. testcode::
 
     class MyValidator(Validator):
         def __init__(self, *args, **kwargs):
@@ -62,7 +69,6 @@ use a pattern like this: ::
 
         def _validate_type_foo(self, field, value):
             make_use_of(self.additional_context)
-            …
 
 .. versionadded:: 0.9
 
@@ -80,7 +86,9 @@ format.
 You extend the supported set of data types by adding
 a ``_validate_type_<typename>`` method to your own :class:`~cerberus.Validator`
 subclass. This snippet, directly from Eve source, shows how the ``objectid``
-has been implemented: ::
+has been implemented:
+
+.. testcode::
 
      def _validate_type_objectid(self, field, value):
          """ Enables validation for `objectid` schema attribute.
@@ -105,13 +113,17 @@ your own functions with the following prototype: ::
 
 As a contrast, if the odd value is a special case, you may want to make the
 above rule ``isodd`` into ``Function-based`` style, which is a more lightweight
-alternative: ::
+alternative:
+
+.. testcode::
 
     def validate_oddity(field, value, error):
         if not bool(value & 1):
             error(field, "Must be an odd number")
 
-Then, you can validate an odd value like this: ::
+Then, you can validate an odd value like this:
+
+.. doctest::
 
     >>> schema = {'oddity': {'validator': validate_oddity}}
     >>> v = Validator(schema)

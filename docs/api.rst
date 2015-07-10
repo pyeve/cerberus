@@ -18,5 +18,3 @@ Exceptions
 
 .. autoclass:: cerberus.ValidationError
   :members:
-
-

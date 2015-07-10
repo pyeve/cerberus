@@ -3,8 +3,7 @@ import sys
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
-from unittest import TestCase
-from . import TestBase
+from . import TestBase, TestCase
 from ..cerberus import Validator, errors, SchemaError
 
 
@@ -747,6 +746,15 @@ class TestValidator(TestBase):
         self.assertFalse(v.validate({'test_field': 'foobar',
                                      'a_dict': {'bar': 'bar'}}))
 
+    def test_dependencies_errors(self):
+        v = Validator({'field1': {'required': False},
+                       'field2': {'required': True,
+                                  'dependencies': {'field1': ['one', 'two']}}})
+        v.validate({'field1': 'three', 'field2': 7})
+        self.assertDictEqual(v.errors,
+                             {'field2': "field 'field1' is required with one "
+                                        "of these values: ['one', 'two']"})
+
     def test_options_passed_to_nested_validators(self):
         schema = {'sub_dict': {'type': 'dict',
                                'schema': {'foo': {'type': 'string'}}}}
@@ -1145,6 +1153,12 @@ class TestValidator(TestBase):
         self.assertSuccess(document, schema, validator)
 
         self.assertTrue(validator.validate(document))
+
+    def test_dont_type_validate_nulled_values(self):
+        v = self.validator
+        v.validate({'an_integer': None})
+        self.assertDictEqual(v.errors,
+                             {'an_integer': 'null value not allowed'})
 
 
 # TODO remove on next major release

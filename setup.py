@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+import sys
 
 DESCRIPTION = ("Lightweight, extensible schema and data validation tool for "
                "Python dictionaries.")
@@ -19,6 +20,7 @@ setup(
     platforms=["any"],
     packages=find_packages(),
     include_package_data=True,
+    tests_require=['unittest2'] if sys.version_info < (2, 7) else [],
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=['validation', 'schema', 'dictionaries'],
@@ -35,5 +37,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy'
     ],
 )

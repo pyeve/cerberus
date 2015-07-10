@@ -49,12 +49,7 @@ some specific tests. For example, if a test suite fails in Python 3.4:
     # From the project folder
     $ tox -e py34
 
-If you have a running Docker_-daemon running you can run tests from a container
-that has the necessary interpreters installed and pass arguments to ``tox``:
-
-.. code-block:: console
-
-    $ ./run-docker-tests -x
+Have a look at ``/tox.ini`` for the available test environments and their workings.
 
 Using Pytest
 ~~~~~~~~~~~~
@@ -65,17 +60,33 @@ You also choose to run the whole test suite using pytest_:
     # Run the whole test suite
     $ py.test
 
+Using Docker
+~~~~~~~~~~~~
+
+If you have a running Docker_-daemon running you can run tests from a container
+that has the necessary interpreters and packages installed and pass arguments
+to ``tox``:
+
+.. code-block:: console
+
+    # from the project's root directory
+    $ ./run-docker-tests -e pypy3 -e doctest
+
+You can run the script without any arguments to test the project exactly as
+`Continuous Integration`_ does without having to setup anything.
+If there's a directoy ``.tox`` in the project-folder it will be used to store
+and access cached virtual environments and test-logs.
+
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~
-Each time code is pushed to the ``master``  branch
-the whole test-suite is executed on Travis-CI. This is also the case for
-pull-requests. When a pull request is submitted and the CI run fails two things
-happen: a 'the build is broken' email is sent to the submitter; the request is
-rejected.  The contributor can then fix the code, add one or more commits as
-needed, and push again.
-
-The CI will also run flake8 so make sure that your code complies to PEP8 before
-submitting a pull request, or be prepared to be mail-spammed by CI.
+Each time code is pushed to the ``master``  branch the whole test-suite is
+executed on Travis-CI_.
+This is also the case for pull-requests. A box at the bottom of its
+conversation-view will inform about the tests' status.
+The contributor can then fix the code, add commits, squash_ the commits and
+push again.
+The CI will also run flake8_ so make sure that your code complies to PEP8 and
+test links and sample-code in the documentation.
 
 Source Code
 -----------
@@ -84,5 +95,8 @@ Source code is available at `GitHub
 
 .. _`continuous integration server`: https://travis-ci.org/nicolaiarocci/cerberus/
 .. _Docker: https://www.docker.com
+.. _flake8: https://flake8.readthedocs.org
 .. _pytest: http://pytest.org
-.. _tox: http://tox.readthedocs.org/en/latest/
+.. _squash: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
+.. _tox: http://tox.readthedocs.org
+.. _Travis-CI: https://travis-ci.org
