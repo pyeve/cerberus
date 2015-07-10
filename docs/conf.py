@@ -265,3 +265,16 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+# -- Options for doclinks extension --------------------------------------------
+
+linkcheck_ignore = ['https://groups.google.com/forum/#!forum/.*']
+linkcheck_anchors = True
+
+# -- Options for doctest extension ---------------------------------------------
+
+doctest_global_setup = """
+from cerberus import Validator
+v = Validator()
+"""

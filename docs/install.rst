@@ -52,4 +52,3 @@ To just get the development version without git, do this instead:
     Cleaning up...
 
 And you're done!
-
