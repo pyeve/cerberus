@@ -273,7 +273,7 @@ class Validator(object):
                         for v in value:
                             # get a copy of the schema where the logical
                             # operator is replaced with their value
-                            s = copy.copy(constraints)
+                            s = constraints.copy()
                             del s[constraint]
                             s.update(v)
                             self.validate_definition_schema({field: s})
@@ -383,7 +383,7 @@ class Validator(object):
             self.document = copy.deepcopy(document)
         except:
             # fallback on a shallow copy
-            self.document = copy.copy(document)
+            self.document = document.copy()
         if normalize:
             self.document = self._normalize_mapping(self.document,
                                                     self.schema)
@@ -447,10 +447,11 @@ class Validator(object):
     def __validate_definition(self, definition, field, value):
         """ Validate a field's value against its defined rules. """
         if value is None:
-            if definition.get("nullable", False) is True:
+            if definition.get("nullable", False):
                 return
             else:
                 self._error(field, errors.ERROR_NOT_NULLABLE)
+                return
 
         if 'readonly' in definition and definition['readonly']:
             self._error(field, errors.ERROR_READONLY_FIELD)
@@ -501,54 +502,44 @@ class Validator(object):
             if value not in allowed_values:
                 self._error(field, errors.ERROR_UNALLOWED_VALUE.format(value))
 
-    def _validate_dependencies(self, document, dependencies, field,
-                               break_on_error=False):
+    def _validate_dependencies(self, document, dependencies, field):
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
         if isinstance(dependencies, Sequence):
             for dependency in dependencies:
                 parts = dependency.split('.')
-                subdoc = copy.copy(document)
+                context = document
                 for part in parts:
-                    if part not in subdoc:
-                        if not break_on_error:
-                            self._error(field,
-                                        errors.ERROR_DEPENDENCIES_FIELD
-                                        .format(dependency))
-                        else:
-                            return False
+                    if part not in context:
+                        self._error(field,
+                                    errors.ERROR_DEPENDENCIES_FIELD
+                                    .format(dependency))
                     else:
-                        subdoc = subdoc[part]
+                        context = context[part]
 
         elif isinstance(dependencies, Mapping):
             for dep_name, dep_values in dependencies.items():
                 if isinstance(dep_values, _str_type):
                     dep_values = [dep_values]
                 parts = dep_name.split('.')
-                subdoc = copy.copy(document)
+                context = document
                 for part in parts:
-                    if part not in subdoc:
-                        if not break_on_error:
-                            self._error(
-                                field,
-                                errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                                    (dep_name, dep_values))
-                            )
-                            break
-                        else:
-                            return False
-                    else:
-                        subdoc = subdoc[part]
-                if isinstance(subdoc, _str_type) and subdoc not in dep_values:
-                    if not break_on_error:
+                    if part not in context:
                         self._error(
                             field,
                             errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
                                 (dep_name, dep_values))
                         )
+                        break
                     else:
-                        return False
+                        context = context[part]
+                if isinstance(context, _str_type) and context not in dep_values:  # noqa
+                    self._error(
+                        field,
+                        errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
+                            (dep_name, dep_values))
+                    )
 
         return True
 
@@ -592,7 +583,7 @@ class Validator(object):
         errorstack = {}
         for i, definition in enumerate(definitions):
             # create a schema instance with the rules in definition
-            s = copy.copy(self.schema[field])
+            s = self.schema[field].copy()
             del s[operator]
             s.update(definition)
             # get a child validator to do our work
@@ -659,15 +650,12 @@ class Validator(object):
             for error in validator.errors:
                 self._error(field, error)
 
-    def _validate_regex(self, match, field, value):
-        """
-        .. versionadded:: 0.7
-        """
+    def _validate_regex(self, pattern, field, value):
         if not isinstance(value, _str_type):
             return
-        pattern = re.compile(match)
-        if not pattern.match(value):
-            self._error(field, errors.ERROR_REGEX.format(match))
+        re_obj = re.compile(pattern)
+        if not re_obj.match(value):
+            self._error(field, errors.ERROR_REGEX.format(pattern))
 
     def _validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
@@ -802,7 +790,7 @@ def expand_definition_schema(schema):
 
     def is_of_rule(rule):
         for operator in ('allof', 'anyof', 'noneof', 'oneof'):
-            if rule.startswith(operator + '_'):
+            if isinstance(rule, _str_type) and rule.startswith(operator + '_'):
                 return True
         return False
 
