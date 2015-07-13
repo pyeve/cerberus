@@ -1,12 +1,12 @@
 Welcome to Cerberus
 ===================
 
-Cerberus is a lightweight and extensible data validation library for 
+Cerberus is a lightweight and extensible data validation library for
 Python.
 
     ``CERBERUS``, n. The watch-dog of Hades, whose duty it was to guard the
     entrance; everybody, sooner or later, had to go there, and nobody wanted to
-    carry off the entrance. 
+    carry off the entrance.
     - *Ambrose Bierce, The Devil's Dictionary*
 
 Cerberus provides type checking and other base functionality out of the box and
@@ -36,7 +36,7 @@ Table of Contents
 .. toctree::
 
     Installing <install>
-    Using <usage>
+    Usage <usage>
     Extending <customize>
     Contributing <contribute>
     API <api>

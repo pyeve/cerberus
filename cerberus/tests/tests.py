@@ -762,18 +762,20 @@ class TestValidator(TestBase):
         """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
-                if('sub' not in self.context or
-                        len(self.context['sub']) != 2):
+                if('sub' not in self.root_document or
+                        len(self.root_document['sub']) != 2):
                     self._error(field, 'self.context is not the root doc!')
 
         schema = {
             'sub': {
                 'type': 'list',
+                'root_doc': True,
                 'schema': {
                     'type': 'dict',
                     'schema': {
                         'foo': {
                             'type': 'string',
+                            'root_doc': True
                         }
                     }
                 }
