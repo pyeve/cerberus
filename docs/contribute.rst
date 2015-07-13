@@ -1,6 +1,6 @@
 .. include:: ../CONTRIBUTING.rst
 
-Running the Tests 
+Running the Tests
 -----------------
 Cerberus runs under Python 2.6, 2.7, Python 3.3, Python 3.4 and PyPy. Therefore tests
 will be run in those four platforms in our `continuous integration server`_.
@@ -10,7 +10,7 @@ with:
 
 .. code-block:: console
 
-   $ python setup.py test 
+   $ python setup.py test
 
 Testing with other Python versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,16 +47,16 @@ some specific tests. For example, if a test suite fails in Python 3.4:
 .. code-block:: console
 
     # From the project folder
-    $ tox -e py34 
+    $ tox -e py34
 
 Using Pytest
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 You also choose to run the whole test suite using pytest_:
 
 .. code-block:: console
-    
+
     # Run the whole test suite
-    $ py.test                
+    $ py.test
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~

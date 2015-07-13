@@ -762,16 +762,16 @@ class TestValidator(TestBase):
         """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
-                if('sub' not in self.document or
-                        len(self.document['sub']) != 2):
-                    self._error(field, 'self.document is not the root doc!')
+                if('sub' not in self.root_document or
+                        len(self.root_document['sub']) != 2):
+                    self._error(field, 'self.context is not the root doc!')
 
         schema = {
             'sub': {
                 'type': 'list',
+                'root_doc': True,
                 'schema': {
                     'type': 'dict',
-                    'root_doc': True,
                     'schema': {
                         'foo': {
                             'type': 'string',
@@ -810,6 +810,13 @@ class TestValidator(TestBase):
         v.validate({'amount': '1'})
         self.assertEqual(v.document['amount'], 1)
 
+    def test_coerce_in_subschema(self):
+        schema = {'thing': {'type': 'dict',
+                            'schema': {'amount': {'coerce': int}}}}
+        v = Validator(schema)
+        self.assertEqual(v.validated({'thing': {'amount': '2'}})
+                                     ['thing']['amount'], 2)  # noqa
+
     def test_coerce_not_destructive(self):
         schema = {
             'amount': {'coerce': int}
@@ -836,6 +843,11 @@ class TestValidator(TestBase):
         self.assertFalse(v.validate({'name': 1234}))
         self.assertError('name',
                          errors.ERROR_COERCION_FAILED.format('name'), v)
+
+    def test_normalized(self):
+        schema = {'amount': {'coerce': int}}
+        v = Validator(schema)
+        self.assertEqual(v.normalized({'amount': '2'})['amount'], 2)
 
     def test_validated(self):
         schema = {'property': {'type': 'string'}}
@@ -1064,24 +1076,18 @@ class TestValidator(TestBase):
         document['parts'].append({'product name': "Monitors", 'count': 18})
         document['parts'].append(10)
         # and invalid. numbers are not allowed.
-        try:
-            v = Validator(schema)
-            self.assertTrue(v.validate(document, update=True))
-        except AssertionError as e:  # noqa
-            # should be multiple errors that occured, each schemas errors
-            # should be in the errors dict.  check that they are.
-            self.assertEqual(
-                v.errors['parts'][3]['definition 0']['product name'],
-                "unknown field")
-            self.assertEqual(
-                v.errors['parts'][3]['definition 1']['product name'],
-                "unknown field")
-            self.assertEqual(
-                v.errors['parts'][4],
-                "must be of dict or string type")
-            pass
-        else:
-            raise AssertionError("validation didn't fail")
+
+        v = Validator(schema)
+        v.validate(document, update=True)
+        self.assertEqual(
+            v.errors['parts'][3]['definition 0']['product name'],
+            "unknown field")
+        self.assertEqual(
+            v.errors['parts'][3]['definition 1']['product name'],
+            "unknown field")
+        self.assertEqual(
+            v.errors['parts'][4],
+            "must be of dict or string type")
 
     def test_anyof_2(self):
         # these two schema should be the same
@@ -1176,9 +1182,11 @@ class TestDockerCompose(TestBase):
         self.validator = Validator()
 
     def test_environment(self):
-        schema = {'environment': {'type': ['dict', 'list'],
-                  'valueschema': {'type': 'string', 'nullable': True},
-                                  'schema': {'type': 'string'}}}
+        schema = {'environment': {'oneof': [{'type': 'dict',
+                                             'valueschema': {'type': 'string',
+                                                             'nullable': True}},  # noqa
+                                            {'type': 'list',
+                                             'schema': {'type': 'string'}}]}}
 
         document = {'environment': {'VARIABLE': 'FOO'}}
         self.assertSuccess(document, schema)
@@ -1191,13 +1199,20 @@ class TestDockerCompose(TestBase):
         ptrn_hostname = '[a-z0-9-]+'
         ptrn_ip = '(([0-9]{1,3})\.){3}[0-9]{1,3}'
         ptrn_extra_host = '^(' + ptrn_hostname + '|' + ptrn_domain + '):' + ptrn_ip + '$'  # noqa
-        schema = {'extra_hosts': {'type': ['string', 'list', 'dict'],  # DRY?!?
-                                  'regex': ptrn_extra_host,  # string
-                                  'schema': {'type': ['string', 'dict'], 'regex': ptrn_extra_host,  # string in list  # noqa
-                                             'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # dict in list  # noqa
-                                             'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}},  # dict in list  # noqa
-                                  'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # dict  # noqa
-                                  'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}}  # dict  # noqa
+        schema = {'extra_hosts': {'oneof': [{'type': 'string',
+                                             'regex': ptrn_extra_host},
+
+                                             {'type': 'list', 'schema': {'type': 'string', 'regex': ptrn_extra_host}},  # noqa
+
+                                             {'type': 'list',
+                                              'schema': {'type': 'dict',
+                                                         'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # noqa
+                                                         'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}},  # noqa
+
+                                             {'type': 'dict',
+                                              'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # noqa
+                                              'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}  # noqa
+                                            ]}}
 
         document = {'extra_hosts': ["www.domain.net:127.0.0.1"]}
         self.assertSuccess(document, schema)

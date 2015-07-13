@@ -4,14 +4,14 @@ This part of the documentation covers the installation of Cerberus. The first
 step to using any software package is getting it properly installed.
 
 Stable Version
----------------
+--------------
 Cerberus is on `PyPI <http://pypi.python.org/pypi/Cerberus>`_ so all you need
 to do is: ::
 
     pip install cerberus
 
 Development Version
---------------------
+-------------------
 Cerberus is actively developed on GitHub, where the code is `always available
 <https://github.com/nicolaiarocci/cerberus>`_. If you want to work with the
 development version, there are two ways: you can either let `pip` pull
