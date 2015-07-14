@@ -89,7 +89,7 @@ has been implemented: ::
          :param value: field value.
          """
          if not re.match('[a-f0-9]{24}', value):
-             self._error(field, ERROR_BAD_TYPE % 'ObjectId')
+             self._error(field, ERROR_BAD_TYPE.format('ObjectId'))
 
 .. versionadded:: 0.0.2
 
