@@ -5,7 +5,7 @@ step to using any software package is getting it properly installed.
 
 Stable Version
 --------------
-Cerberus is on `PyPI <http://pypi.python.org/pypi/Cerberus>`_ so all you need
+Cerberus is on `PyPI <https://pypi.python.org/pypi/Cerberus>`_ so all you need
 to do is: ::
 
     pip install cerberus

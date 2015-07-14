@@ -56,7 +56,7 @@ you might want to check this excellent `Effective Guide to Pull Requests`_
 .. _`new issue`: https://github.com/nicolaiarocci/cerberus/issues/new
 .. _Fork: https://help.github.com/articles/fork-a-repo
 .. _`proper format`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-.. _PEP8: http://www.python.org/dev/peps/pep-0008/
+.. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _help: https://help.github.com/
 .. _`Effective Guide to Pull Requests`: http://codeinthehole.com/writing/pull-requests-and-other-good-practices-for-teams-using-github/
 .. _`fork and edit`: https://github.com/blog/844-forking-with-the-edit-button
