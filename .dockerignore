@@ -1,0 +1,22 @@
+.*
+*.egg-info
+*.orig
+*.pyc
+__pycache__
+build
+dist
+run-docker-tests
+
+docs/_build
+
+# Go language doesn't support **-globbing
+
+*/*.egg-info
+*/*.orig
+*/*.pyc
+*/__pycache__
+
+*/*.egg-info
+*/*/*.orig
+*/*/*.pyc
+*/*/__pycache__

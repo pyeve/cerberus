@@ -6,7 +6,9 @@ Cerberus Usage
 Basic Usage
 -----------
 You define a validation schema and pass it to an instance of the
-:class:`~cerberus.Validator` class: ::
+:class:`~cerberus.Validator` class:
+
+.. doctest::
 
     >>> schema = {'name': {'type': 'string'}}
     >>> v = Validator(schema)
@@ -14,14 +16,22 @@ You define a validation schema and pass it to an instance of the
 Then you simply invoke the :func:`~cerberus.Validator.validate` to validate
 a dictionary against the schema. If validation succeeds, ``True`` is returned:
 
-::
+.. testsetup::
+
+    schema = {'name': {'type': 'string'}}
+    v = Validator(schema)
+    document = {'name': 'john doe'}
+
+.. doctest::
 
     >>> document = {'name': 'john doe'}
     >>> v.validate(document)
     True
 
 Alternatively, you can pass both the dictionary and the schema to the
-:func:`~cerberus.Validator.validate` method: ::
+:func:`~cerberus.Validator.validate` method:
+
+.. doctest::
 
     >>> v = Validator()
     >>> v.validate(document, schema)
@@ -33,14 +43,16 @@ instance.
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
 ``False`` will be returned if validation failed.  You can then access the
-:func:`~cerberus.Validator.errors` method to obtain a list of issues.  ::
+:func:`~cerberus.Validator.errors` method to obtain a list of issues.
+
+.. doctest::
 
     >>> schema = {'name': {'type': 'string'}, 'age': {'type': 'integer', 'min': 10}}
-    >>> document = {'name': 1337, 'age': 5}
+    >>> document = {'name': 'Little Joe', 'age': 5}
     >>> v.validate(document, schema)
     False
     >>> v.errors
-    {'age': 'min value is 10', 'name': 'must be of string type'}
+    {'age': 'min value is 10'}
 
 You will still get :class:`~cerberus.SchemaError` and
 :class:`~cerberus.ValidationError` exceptions.
@@ -49,7 +61,7 @@ You will still get :class:`~cerberus.SchemaError` and
     The Validator class is callable, allowing for the following shorthand
     syntax:
 
-::
+.. doctest::
 
     >>> document = {'name': 'john doe'}
     >>> v(document)
@@ -60,9 +72,11 @@ Validation Schema
 -----------------
 A validation schema is a dictionary. Schema keys are the keys allowed in
 the target dictionary. Schema values express the rules that must be  matched by
-the corresponding target values. ::
+the corresponding target values.
 
-    >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
+.. testcode::
+
+    schema = {'name': {'type': 'string', 'maxlength': 10}}
 
 In the example above we define a target dictionary with only one key, ``name``,
 which is expected to be a string not longer than 10 characters. Something like
@@ -91,15 +105,19 @@ Data type allowed for the key value. Can be one of the following:
     * ``list`` (formally ``collections.sequence``, excluding strings)
     * ``set``
 
-A list of types can be used to allow different values: ::
+A list of types can be used to allow different values:
 
-    >>> v = Validator({'quotes': {'type': ['string', 'list']}})
+.. doctest::
+
+    >>> v.schema = {'quotes': {'type': ['string', 'list']}}
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
     True
 
-    >>> v = Validator({'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}})
+.. doctest::
+
+    >>> v.schema = {'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}}
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': [1, 'Heureka!']})
@@ -149,15 +167,14 @@ If ``True`` the key/value pair is mandatory. Validation will fail when it is
 missing, unless :func:`~cerberus.Validator.validate` is called with
 ``update=True``:
 
-::
+.. doctest::
 
-    >>> schema = {'name': {'required': True, 'type': 'string'}, 'age': {'type': 'integer'}}
-    >>> v = Validator(schema)
+    >>> v.schema = {'name': {'required': True, 'type': 'string'}, 'age': {'type': 'integer'}}
     >>> document = {'age': 10}
     >>> v.validate(document)
     False
     >>> v.errors
-    {'name': 'must be of string type'}
+    {'name': 'required field'}
 
     >>> v.validate(document, update=True)
     True
@@ -182,10 +199,11 @@ nullable
 ~~~~~~~~
 If ``True`` the field value can be set to ``None``. It is essentially the
 functionality of the ``ignore_none_values`` parameter of the :ref:`validator`,
-but allowing for more fine grained control down to the field level. ::
+but allowing for more fine grained control down to the field level.
 
-    >>> schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_integer': {'type': 'integer'}}
-    >>> v = Validator(schema)
+.. doctest::
+
+    >>> v.schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_integer': {'type': 'integer'}}
 
     >>> v.validate({'a_nullable_integer': 3})
     True
@@ -197,7 +215,7 @@ but allowing for more fine grained control down to the field level. ::
     >>> v.validate({'an_integer': None})
     False
     >>> v.errors
-    {'an_integer': 'must be of integer type'}
+    {'an_integer': 'null value not allowed'}
 
 .. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
@@ -217,10 +235,11 @@ types.
 allowed
 ~~~~~~~
 Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
-if target values are not included in the allowed list.::
+if target values are not included in the allowed list.
 
-    >>> schema = {'role': {'type': 'list', 'allowed': ['agent', 'client', 'supplier']}}
-    >>> v = Validator(schema)
+.. doctest::
+
+    >>> v.schema = {'role': {'type': 'list', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v.validate({'role': ['agent', 'supplier']})
     True
 
@@ -229,8 +248,7 @@ if target values are not included in the allowed list.::
     >>> v.errors
     {'role': "unallowed values ['intern']"}
 
-    >>> schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
-    >>> v = Validator(schema)
+    >>> v.schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v.validate({'role': 'supplier'})
     True
 
@@ -239,15 +257,14 @@ if target values are not included in the allowed list.::
     >>> v.errors
     {'role': 'unallowed value intern'}
 
-    >>> schema = {'a_restricted_integer': {'type': 'integer', 'allowed': [-1, 0, 1]}}
-    >>> v = Validator(schema)
+    >>> v.schema = {'a_restricted_integer': {'type': 'integer', 'allowed': [-1, 0, 1]}}
     >>> v.validate({'a_restricted_integer': -1})
     True
 
     >>> v.validate({'a_restricted_integer': 2})
     False
     >>> v.errors
-    {'a_restricted_unteger': 'unallowed value 2'}
+    {'a_restricted_integer': 'unallowed value 2'}
 
 .. versionchanged:: 0.5.1
    Added support for the ``int`` type.
@@ -255,7 +272,9 @@ if target values are not included in the allowed list.::
 empty
 ~~~~~
 Only applies to string fields. If ``False`` validation will fail if the value
-is empty. Defaults to ``True``. ::
+is empty. Defaults to ``True``.
+
+.. doctest::
 
     >>> schema = {'name': {'type': 'string', 'empty': False}}
     >>> document = {'name': ''}
@@ -275,7 +294,9 @@ items (dict)
    Use :ref:`schema` instead.
 
 When a dictionary, ``items`` defines the validation schema for items in
-a ``list`` type: ::
+a ``list`` type:
+
+.. doctest::
 
     >>> schema = {'rows': {'type': 'list', 'items': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
@@ -289,7 +310,9 @@ a ``list`` type: ::
 items (list)
 ~~~~~~~~~~~~
 When a list, ``items`` defines a list of values allowed in a ``list`` type of
-fixed length in the given order: ::
+fixed length in the given order:
+
+.. doctest::
 
     >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
     >>> document = {'list_of_values': ['hello', 100]}
@@ -305,7 +328,9 @@ See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
 
 schema (dict)
 ~~~~~~~~~~~~~
-Validation rules for ``dict`` fields. ::
+Validation rules for *Mappings*-fields.
+
+.. doctest::
 
     >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
@@ -318,7 +343,9 @@ Validation rules for ``dict`` fields. ::
 
 schema (list)
 ~~~~~~~~~~~~~
-You can also use this rule to validate arbitrary length ``list`` items. ::
+You can also use this rule to validate arbitrary length *Sequence*-items.
+
+.. doctest::
 
     >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
     >>> document = {'a_list': [3, 4, 5]}
@@ -326,7 +353,9 @@ You can also use this rule to validate arbitrary length ``list`` items. ::
     True
 
 The `schema` rule on ``list`` types is also the prefered method for defining
-and validating a list of dictionaries. ::
+and validating a list of dictionaries.
+
+.. doctest::
 
     >>> schema = {'rows': {'type': 'list', 'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
@@ -341,9 +370,11 @@ and validating a list of dictionaries. ::
 valueschema
 ~~~~~~~~~~~
 Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
-keys, the values for all of which must validate with given schema: ::
+keys, the values for all of which must validate with given schema:
 
-    >>> schema = {'numbers': {'type': 'dict', 'valueschema': {'type': 'integer', min: 10}}}
+.. doctest::
+
+    >>> schema = {'numbers': {'type': 'dict', 'valueschema': {'type': 'integer', 'min': 10}}}
     >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
     >>> v.validate(document, schema)
     True
@@ -363,9 +394,11 @@ propertyschema
 ~~~~~~~~~~~~~~
 
 This is the counterpart to ``valueschema`` that validates the `keys` of a ``dict``. For historical reasons
-it is `not` named ``keyschema``. ::
+it is `not` named ``keyschema``.
 
-    >>> schema = 'a_dict': {'type': 'dict', 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}}
+.. doctest::
+
+    >>> schema = {'a_dict': {'type': 'dict', 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}}}
     >>> document = {'a_dict': {'key': 'value'}}
     >>> v.validate(document, schema)
     True
@@ -378,7 +411,9 @@ it is `not` named ``keyschema``. ::
 
 regex
 ~~~~~
-Validation will fail if field value does not match the provided regex rule. Only applies to string fiels. ::
+Validation will fail if field value does not match the provided regex rule. Only applies to string fiels.
+
+.. doctest::
 
     >>> schema = {'email': {'type': 'string', 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'}}
     >>> document = {'email': 'john@example.com'}
@@ -390,7 +425,7 @@ Validation will fail if field value does not match the provided regex rule. Only
     False
 
     >>> v.errors
-    {'email': 'value does not match regex "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"}
+    {'email': "value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"}
 
 For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
 
@@ -400,7 +435,9 @@ dependencies
 ~~~~~~~~~~~~
 This rule allows for either a list or dict of dependencies. When a list is
 provided, all listed fields must be present in order for the target field to be
-validated. ::
+validated.
+
+.. doctest::
 
     >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': ['field1']}}
     >>> document = {'field1': 7}
@@ -412,27 +449,31 @@ validated. ::
     False
 
     >>> v.errors
-    {'field2': 'field "field1" is required'}
+    {'field2': "field 'field1' is required"}
 
 When a dictionary is provided, then not only all dependencies must be present,
-but also any of their allowed values must be matched. ::
+but also any of their allowed values must be matched.
+
+.. doctest::
 
     >>> schema = {'field1': {'required': False}, 'field2': {'required': True, 'dependencies': {'field1': ['one', 'two']}}}
+
     >>> document = {'field1': 'one', 'field2': 7}
     >>> v.validate(document, schema)
     True
 
     >>> document = {'field1': 'three', 'field2': 7}
+    >>> v.validate(document, schema)
     False
-
     >>> v.errors
-    {'field2': "field 'field1' is required with values: ['one', 'two']"}
-
+    {'field2': "field 'field1' is required with one of these values: ['one', 'two']"}
 
     >>> # same as using a dependencies list
     >>> document = {'field2': 7}
     >>> v.validate(document, schema)
-    {'field2': "field 'field1' is required"}
+    False
+    >>> v.errors
+    {'field2': "field 'field1' is required with one of these values: ['one', 'two']"}
 
     >>> # one can also pass a single dependency value
     >>> schema = {'field1': {'required': False}, 'field2': {'dependencies': {'field1': 'one'}}}
@@ -441,12 +482,15 @@ but also any of their allowed values must be matched. ::
     True
 
     >>> document = {'field1': 'two', 'field2': 7}
+    >>> v.validate(document, schema)
     False
 
     >>> v.errors
-    {'field2': "field 'field1' is required with values: one"}
+    {'field2': "field 'field1' is required with one of these values: ['one']"}
 
-Dependencies on sub-document fields are also supported: ::
+Dependencies on sub-document fields are also supported:
+
+.. doctest::
 
     >>> schema = {
     ...   'test_field': {'dependencies': ['a_dict.foo', 'a_dict.bar']},
@@ -472,87 +516,134 @@ Dependencies on sub-document fields are also supported: ::
 
 .. versionadded:: 0.7
 
+\*of-rules
+~~~~~~~~~~
+
+These rules allow you to list multiple sets of rules to validate against. The field will be considered valid if it validates against the set in the list according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
+
+.. versionadded:: 0.9
+
+
 anyof
-~~~~~
-This rule allows you to list multiple sets of rules to validate against. The field will be considered valid if it validates against one set in the list.
-For example, to verify that a property is a number between 0 and 10 or 100 and 110, you could do the following: ::
+.....
+
+Validates if *any* of the provided constraints validates the field.
+
+allof
+.....
+
+Validates if *all* of the provided constraints validates the field.
+
+noneof
+......
+
+Validates if *none* of the provided constraints validates the field.
+
+oneof
+.....
+
+Validates if *exactly one* of the provided constraints applies.
+
+For example, to verify that a property is a number between 0 and 10 or 100 and 110, you could do the following:
+
+.. doctest::
 
     >>> schema = {'prop1':
     ...           {'type': 'number',
     ...            'anyof':
     ...            [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
-    >>> doc = {'prop1': 5}
+
+    >>> document = {'prop1': 5}
     >>> v.validate(document, schema)
     True
-    >>> doc = {'prop1': 105}
+
+    >>> document = {'prop1': 105}
     >>> v.validate(document, schema)
     True
-    >>> doc = {'prop1': 55}
+
+    >>> document = {'prop1': 55}
     >>> v.validate(document, schema)
     False
-    >>> print v.errors
+    >>> v.errors   # doctest: +SKIP
     {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
 
-.. versionadded:: 0.9
+The ``anyof`` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas:
 
-The `anyof` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas, ::
+.. doctest::
 
     >>> schema1 = {'prop1': {'type': 'number', 'min':   0, 'max':  10}}
     >>> schema2 = {'prop1': {'type': 'number', 'min': 100, 'max': 110}}
-    >>> doc = {'prop1': 5}
-    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
-    >>> valid
+
+    >>> document = {'prop1': 5}
+    >>> v.validate(document, schema1) or v.validate(document, schema2)
     True
-    >>> doc = {'prop1': 105}
-    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
-    >>> valid
+
+    >>> document = {'prop1': 105}
+    >>> v.validate(document, schema1) or v.validate(document, schema2)
     True
-    True
-    >>> doc = {'prop1': 55}
-    >>> valid = v.validate(document, schema1) or v.validate(document, schema2)
-    >>> valid
+
+    >>> document = {'prop1': 55}
+    >>> v.validate(document, schema1) or v.validate(document, schema2)
     False
 
-allof
-~~~~~
-Same as ``anyof``, except that all rule collections in the list must validate.
+\*of-rules typesaver
+....................
 
-.. versionadded:: 0.9
+You can concatenate any of-rule with an underscore and another rule with a list of rule-values to save typing:
 
-noneof
-~~~~~~
-Same as ``anyof``, except that it requires no rule collections in the list to validate.
+.. testcode::
 
-.. versionadded:: 0.9
+    {'foo': {'anyof_type': ['string', 'integer']}}
+    # is equivalent to
+    {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
 
-oneof
-~~~~~
-Same as ``anyof``, except that only one rule collections in the list can validate.
+Thus you can use this to validate a document against several schemas without implementing your own logic:
 
-.. versionadded:: 0.9
+.. testsetup::
+
+    employees = ()
+
+.. doctest::
+
+    >>> schemas = [{'department': {'required': True, 'regex': '^IT$'}, 'phone': {'nullable': True}},
+    ...            {'department': {'required': True}, 'phone': {'required': True}}]
+    >>> emloyee_vldtr = Validator({'employee': {'oneof_schema': schemas, 'type': 'dict'}}, allow_unknown=True)
+    >>> invalid_employees_phones = []
+    >>> for employee in employees:
+    ...     if not employee_vldtr.validate(employee):
+    ...         invalid_employees_phones.append(employee)
+
+.. versionadded: 0.10
+
 
 Allowing the Unknown
 --------------------
-By default only keys defined in the schema are allowed: ::
+By default only keys defined in the schema are allowed:
+
+.. doctest::
 
     >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
-    >>> v.validate({'name': 'john', 'sex': 'M'})
+    >>> v.validate({'name': 'john', 'sex': 'M'}, schema)
     False
     >>> v.errors
     {'sex': 'unknown field'}
 
 However, you can allow unknown key/value pairs by either setting
-``allow_unknown`` to ``True``: ::
+``allow_unknown`` to ``True``:
 
-    >>> v = Validator(schema={})
+.. doctest::
+
+    >>> v.schema = {}
     >>> v.allow_unknown = True
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
 Or you can set ``allow_unknown`` to a validation schema, in which case
-unknown fields will be validated against it: ::
+unknown fields will be validated against it:
 
-    >>> v = Validator(schema={})
+.. doctest::
+
+    >>> v.schema = {}
     >>> v.allow_unknown = {'type': 'string'}
     >>> v.validate({'an_unknown_field': 'john'})
     True
@@ -561,26 +652,29 @@ unknown fields will be validated against it: ::
     >>> v.errors
     {'an_unknown_field': 'must be of string type'}
 
-``allow_unknown`` can also be set at initialization: ::
+``allow_unknown`` can also be set at initialization:
 
-    >>> v = Validator(schema=schema, allow_unknown=True)
+.. doctest::
+
+    >>> v.schema = {}
+    >>> v.allow_unknown = True
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
-``allow_unknown`` can also be set for nested dictionaries ::
+``allow_unknown`` can also be set as rule to configure a validator for a nested mapping that is checked against the ``schema``-rule:
 
-    >>> # by default allow_unknown is False for the whole document.
+.. doctest::
+
     >>> v = Validator()
     >>> v.allow_unknown
     False
 
-    >>> # we can switch it on (or set it to a validation schema) for individual subdocuments
     >>> schema = {
     ...   'name': {'type': 'string'},
     ...   'a_dict': {
     ...     'type': 'dict',
-    ...     'allow_unknown': True,
-    ...     'schema': {
+    ...     'allow_unknown': True,  # this overrides the behaviour for
+    ...     'schema': {             # the validation of this definition
     ...       'address': {'type': 'string'}
     ...     }
     ...   }
@@ -609,20 +703,22 @@ Type Coercion
 Type coercion allows you to apply a callable to a value before any other
 validators run.  The return value of the callable replaces the new value in
 the document.  This can be used to convert values or sanitize data before it is
-validated. ::
+validated.
 
-    >>> v = Validator({'amount': {'type': 'integer'}})
+.. doctest::
+
+    >>> v.schema = {'amount': {'type': 'integer'}}
     >>> v.validate({'amount': '1'})
     False
 
-    >>> v = Validator({'amount': {'type': 'integer', 'coerce': int}})
+    >>> v.schema = {'amount': {'type': 'integer', 'coerce': int}}
     >>> v.validate({'amount': '1'})
     True
     >>> v.document
     {'amount': 1}
 
     >>> to_bool = lambda v: v.lower() in ['true', '1']
-    >>> v = Validator({'flag': {'type': 'boolean', 'coerce': to_bool}})
+    >>> v.schema = {'flag': {'type': 'boolean', 'coerce': to_bool}}
     >>> v.validate({'flag': 'true'})
     True
     >>> v.document
@@ -630,13 +726,19 @@ validated. ::
 
 .. versionadded:: 0.9
 
-`validated` Method
+`validated` method
 ------------------
 There's a wrapper-method ``validated`` that returns the validated document. It
-can be useful for flows like this: ::
+can be useful for flows like this:
 
-    >>> v = Validator(schema)
-    >>> valid_documents = [x for x in [v.validated(y) for y in documents] if x is not None]
+.. testsetup::
+
+    documents = ()
+
+.. testcode::
+
+    v = Validator(schema)
+    valid_documents = [x for x in [v.validated(y) for y in documents] if x is not None]
 
 If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
 exception will be caught and the validation with fail.  All other exception
@@ -646,35 +748,43 @@ pass through.
 
 `normalized` Method
 -------------------
-Similary, the ``normalized``-method returns a normalized copy of a document without validating it: ::
+Similary, the ``normalized``-method returns a normalized copy of a document without validating it:
 
-    >>> v = Validator()
-    >>> norm_doc = v.normalized(doc, schema)
+.. doctest::
 
-.. versionadded:: FIXME
+    >>> schema = {'amount': {'coerce': int}}
+    >>> document = {'model': 'consumerism', 'amount': '1'}
+    >>> normalized_document = v.normalized(document, schema)
+    >>> type(normalized_document['amount'])
+    <type 'int'>
+
+.. versionadded:: 0.10
 
 Vanilla Python
 --------------
 Cerberus schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined validation rules are invoked in the schema by name, as a string.
-A useful side effect of this design is that schemas can be defined in a number of ways, for example with YAML. ::
+A useful side effect of this design is that schemas can be defined in a number of ways, for example with PyYAML_.
+
+.. doctest::
 
     >>> import yaml
     >>> schema_text = '''
-    ...name:
-    ...  type: string
-    ...age':
-    ...  type: integer
-    ...  min: 10
-    ...'''
+    ... name:
+    ...   type: string
+    ... age:
+    ...   type: integer
+    ...   min: 10
+    ... '''
     >>> schema = yaml.load(schema_text)
-    >>> document = {'name': 1337, 'age': 5}
+    >>> document = {'name': 'Little Joe', 'age': 5}
     >>> v.validate(document, schema)
     False
     >>> v.errors
-    {'age': 'min value is 10', 'name': 'must be of string type'}
+    {'age': 'min value is 10'}
 
 You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as there is a decoder thant can produce a nested `dict`, you
 can use it to define a schema.
 
 
+.. _PyYAML: http://pyyaml.org
 .. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax

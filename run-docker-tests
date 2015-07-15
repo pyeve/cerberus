@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cd "$(dirname ${0})"
+
+sed -i -e 's,^ENV TOX_USER_ID=.*\$,ENV TOX_USER_ID='"${UID}"',g' Dockerfile
+
+docker build -t cerberus-tox . && \
+if [ -d ".tox" ]; then
+    docker run --rm --entrypoint="tox" -v "$(pwd)/.tox:/src/.tox" cerberus-tox "${@}"
+else
+    docker run --rm --entrypoint="tox" cerberus-tox "${@}"
+fi
+
+cd -

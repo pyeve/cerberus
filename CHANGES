@@ -8,6 +8,7 @@ Version 0.10
 
 Not released yet.
 
+- New: Add testing with Docker (Frank Sachsenheim)
 - New: '*of'-rules can be extended by concentating another rule (Frank
   Sachsenheim).
 

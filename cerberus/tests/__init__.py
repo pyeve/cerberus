@@ -1,8 +1,16 @@
-import unittest
 from ..cerberus import Validator, SchemaError, ValidationError, errors
 
+import sys
+if sys.version_info >= (2, 7):
+    import unittest  # noqa
+else:
+    import unittest2 as unittest  # noqa
 
-class TestBase(unittest.TestCase):
+
+TestCase = unittest.TestCase
+
+
+class TestBase(TestCase):
 
     required_string_extension = {
         'a_required_string': {'type': 'string',

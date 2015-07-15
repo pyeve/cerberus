@@ -175,7 +175,7 @@ class Validator(object):
         self.__config = kwargs
         self.allow_unknown = kwargs.get('allow_unknown', False)
         self.ignore_none_values = kwargs.get('ignore_none_values', False)
-        self.schema = kwargs.get('schema')
+        self._schema = kwargs.get('schema')
         self.transparent_schema_rules = kwargs.get('transparent_schema_rules',
                                                    False)
 
@@ -231,6 +231,16 @@ class Validator(object):
         :return: A list of processing errors.
         """
         return self._errors
+
+    @property
+    def schema(self):
+        return self._schema
+
+    @schema.setter
+    def schema(self, schema):
+
+        schema = expand_definition_schema(schema)
+        self._schema = self.validate_definition_schema(schema)
 
     # Schema validation
 
@@ -537,7 +547,7 @@ class Validator(object):
                     self._error(
                         field,
                         errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                            (dep_name, dep_values))
+                            dep_name, dep_values)
                     )
                     break
 
@@ -545,7 +555,7 @@ class Validator(object):
                 self._error(
                     field,
                     errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                        (dep_name, dep_values)))
+                        dep_name, dep_values))
 
     def __validate_dependencies_sequence(self, dependencies, field):
         for dependency in dependencies:
