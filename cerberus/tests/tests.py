@@ -4,11 +4,11 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from . import TestBase, TestCase
-from ..cerberus import Validator, errors, SchemaError
+from ..cerberus import errors, SchemaError, Validator
 
 
 class TestTestBase(TestBase):
-    def run_test_to_fail(self, test, *args):
+    def _test_that_test_fails(self, test, *args):
         try:
             test(*args)
         except AssertionError as e:  # noqa
@@ -17,10 +17,10 @@ class TestTestBase(TestBase):
             raise AssertionError("test didn't fail")
 
     def test_fail(self):
-        self.run_test_to_fail(self.assertFail, {'an_integer': 60})
+        self._test_that_test_fails(self.assertFail, {'an_integer': 60})
 
     def test_success(self):
-        self.run_test_to_fail(self.assertSuccess, {'an_integer': 110})
+        self._test_that_test_fails(self.assertSuccess, {'an_integer': 110})
 
 
 class TestValidator(TestBase):
@@ -105,8 +105,8 @@ class TestValidator(TestBase):
         self.assertSuccess(self.document, schema)
 
     def test_required_field(self):
-        self.assertFail({'an_integer': 1},
-                        self.schema.update(self.required_string_extension))
+        self.schema.update(self.required_string_extension)
+        self.assertFail({'an_integer': 1}, self.schema)
         self.assertError('a_required_string', errors.ERROR_REQUIRED_FIELD)
 
     def test_nullable_field(self):
@@ -1159,6 +1159,28 @@ class TestValidator(TestBase):
         v.validate({'an_integer': None})
         self.assertDictEqual(v.errors,
                              {'an_integer': 'null value not allowed'})
+
+
+class DefinitionSchema(TestCase):
+    def test_validated_schema_cache(self):
+        v = Validator({'foozifix': {'coerce': int}})
+        cache_size = len(v.schema.valid_schemas)
+
+        v = Validator({'foozifix': {'type': 'integer'}})
+        cache_size += 1
+        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+
+        v = Validator({'foozifix': {'coerce': int}})
+        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+
+        max_cache_size = 200
+        self.assertLess(cache_size, max_cache_size,
+                        "There's an unexpected high amount of cached valid "
+                        "definition schemas. Unless you added further tests, "
+                        "there are good chances that something is wrong. "
+                        "If you added tests with new schemas, you can try to "
+                        "adjust the variable `max_cache_size` according to "
+                        "the added schemas.")
 
 
 # TODO remove on next major release

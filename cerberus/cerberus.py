@@ -8,12 +8,13 @@
     Full documentation is available at http://python-cerberus.org
 """
 
-import sys
-import re
+from collections import Callable, Iterable, Mapping, Sequence
 import copy
 from datetime import datetime
-from collections import Iterable, Mapping, Sequence
 from . import errors
+import json
+import re
+import sys
 
 if sys.version_info[0] == 3:
     _str_type = str
@@ -163,6 +164,13 @@ class Validator(object):
         __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False)
         """
+
+        self.document = None
+        self._errors = {}
+        self.root_document = None
+        self.update = False
+
+        """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'transparent_schema_rules',
                      'ignore_none_values', 'allow_unknown')
         for i, p in enumerate(signature[:len(args)]):
@@ -171,22 +179,15 @@ class Validator(object):
                                 "'%s'" % p)
             else:
                 kwargs[p] = args[i]
-
         self.__config = kwargs
-        self.allow_unknown = kwargs.get('allow_unknown', False)
-        self.ignore_none_values = kwargs.get('ignore_none_values', False)
-        self._schema = kwargs.get('schema')
-        self.transparent_schema_rules = kwargs.get('transparent_schema_rules',
-                                                   False)
 
-        self._errors = {}
-        self.root_document = None
-        self.document = None
-        self.update = False
-        if self.schema:
-            self.schema = expand_definition_schema(self.schema)
-            self.validate_definition_schema(self.schema)
-        self._errors = {}
+        self.validation_rules = self.__introspect_validation_rules()
+        self._schema = DefinitionSchema(self, kwargs.get('schema', ()))
+
+    def __introspect_validation_rules(self):
+        rules = ['_'.join(x.split('_')[2:]) for x in dir(self)
+                 if x.startswith('_validate')]
+        return tuple(rules)
 
     def __call__(self, *args, **kwargs):
         return self.validate(*args, **kwargs)
@@ -223,6 +224,14 @@ class Validator(object):
     # Properties
 
     @property
+    def allow_unknown(self):
+        return self.__config.get('allow_unknown', False)
+
+    @allow_unknown.setter
+    def allow_unknown(self, value):
+        self.__config['allow_unknown'] = value
+
+    @property
     def errors(self):
         """
         The errors that were collected during the last processing of a
@@ -233,105 +242,35 @@ class Validator(object):
         return self._errors
 
     @property
+    def ignore_none_values(self):
+        return self.__config.get('ignore_none_values', False)
+
+    @ignore_none_values.setter
+    def ignore_none_values(self, value):
+        self.__config['ignore_none_values'] = value
+
+    @property
     def schema(self):
         return self._schema
 
     @schema.setter
     def schema(self, schema):
+        self._schema = DefinitionSchema(self, schema)
 
-        schema = expand_definition_schema(schema)
-        self._schema = self.validate_definition_schema(schema)
+    @property
+    def transparent_schema_rules(self):
+        return self.__config.get('transparent_schema_rules', False)
 
-    # Schema validation
-
-    def validate_definition_schema(self, schema):
-        """ Validates a schema that defines rules against supported rules.
-
-        :param schema: The schema to be validated as a legal cerberus schema
-                       according to the rules of this Validator object.
-
-        :return: The validated schema.
-
-        .. versionadded:: 0.7.1
-        """
-
-        if not isinstance(schema, Mapping):
-            raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
-
-        for field, constraints in schema.items():
-            if not isinstance(constraints, Mapping):
-                raise SchemaError(errors.ERROR_DEFINITION_FORMAT.format(field))
-            for constraint, value in constraints.items():
-                if constraint in ('nullable', 'readonly', 'required'):
-                    if not isinstance(value, bool):
-                        raise SchemaError(
-                            '{}: {}: {}'.format(
-                                field, constraint,
-                                errors.ERROR_BAD_TYPE.format('boolean')))
-                elif constraint == 'type':
-                    self.__validate_type_definition(value)
-                elif constraint == 'schema':
-                    self.__valdidate_schema_definition(value)
-                elif constraint == 'allow_unknown':
-                    self.__validate_allow_unknown_definition(value)
-                elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
-                    self.__validate_definition_set(constraint, constraints,
-                                                   field)
-                elif constraint == 'items':
-                    if isinstance(value, Mapping):
-                        # TODO remove on next major release
-                        # list of dicts, deprecated
-                        self.validate_definition_schema(value)
-                    else:
-                        for item_schema in value:
-                            self.validate_definition_schema({'schema':
-                                                             item_schema})
-                elif constraint == 'dependencies':
-                    pass  # TODO implement
-                elif constraint == 'coerce':
-                    pass  # TODO implement
-                elif not hasattr(self, '_validate_' + constraint):
-                    if not self.transparent_schema_rules:
-                            raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
-                                constraint, field))
-
-        return schema
-
-    def __validate_allow_unknown_definition(self, value):
-        if isinstance(value, bool):
-            pass
-        elif isinstance(value, Mapping):
-            pass  # TODO implement
-        else:
-            raise SchemaError(errors)
-
-    def __validate_definition_set(self, constraint, constraints,
-                                  field):
-        # TODO write a bad schema test for of-rules
-        c = constraints.copy()
-        del c[constraint]
-        self.validate_definition_schema({field: c})
-
-    def __valdidate_schema_definition(self, value):
-        try:  # if mapping
-            self.validate_definition_schema(value)
-        except SchemaError:  # if sequence
-            self.validate_definition_schema({'schema': value})
-
-    def __validate_type_definition(self, type_defs):
-        type_defs = type_defs if isinstance(type_defs, list) else [type_defs]
-        for type_def in type_defs:
-            if not hasattr(self, '_validate_type_' + type_def):
-                raise SchemaError(
-                    errors.ERROR_UNKNOWN_TYPE.format(type_def))
+    @transparent_schema_rules.setter
+    def transparent_schema_rules(self, value):
+        self.__config['transparent_schema_rules'] = value
 
     # Document processing
 
     def __init_processing(self, document, schema=None):
         self._errors = {}
         if schema is not None:
-            schema = expand_definition_schema(schema)
-            self.schema = self.validate_definition_schema(schema)
+            self.schema = DefinitionSchema(self, schema)
         elif self.schema is None:
             raise SchemaError(errors.ERROR_SCHEMA_MISSING)
         if document is None:
@@ -818,6 +757,121 @@ class Validator(object):
                                    normalize=False)
                 if len(validator.errors):
                     self._error(field, validator.errors)
+
+
+class DefinitionSchema(dict):
+    """ A dict-subclass for caching of validated schemas.
+
+        .. versionadded:: 0.10
+    """
+
+    class Encoder(json.JSONEncoder):
+        def default(self, o):
+            if isinstance(o, Callable):
+                return repr(o)
+            return json.JSONEncoder.default(self, o)
+
+    valid_schemas = set()
+
+    def __init__(self, validator, schema=()):
+        """
+        :param validator: An instance of Validator-(sub-)class that uses this
+                          schema.
+        :param schema: A definition-schema as ``dict``. Defaults to an empty
+                      one.
+        """
+        schema = expand_definition_schema(schema)
+
+        try:
+            super(DefinitionSchema, self).__init__(schema)
+        except ValueError:
+            raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
+
+        self.validator = validator
+        self.validation_rules = validator.validation_rules
+
+        _hash = hash(repr(type(validator)) +
+                     json.dumps(schema, cls=self.Encoder, sort_keys=True))
+        if _hash not in self.valid_schemas:
+            self.validate()
+            self.valid_schemas.add(_hash)
+
+    def validate(self):
+        """ Validates a schema that defines rules against supported rules.
+
+        :param schema: The schema to be validated as a legal cerberus schema
+                       according to the rules of this Validator object.
+
+        :return: The validated schema.
+
+        .. versionadded:: 0.7.1
+        """
+        for field, constraints in self.items():
+            if not isinstance(constraints, Mapping):
+                raise SchemaError(errors.ERROR_DEFINITION_FORMAT.format(field))
+            for constraint, value in constraints.items():
+                if constraint in ('nullable', 'readonly', 'required'):
+                    if not isinstance(value, bool):
+                        raise SchemaError(
+                            '{}: {}: {}'.format(
+                                field, constraint,
+                                errors.ERROR_BAD_TYPE.format('boolean')))
+                elif constraint == 'type':
+                    self.__validate_type_definition(value)
+                elif constraint == 'schema':
+                    self.__validate_schema_definition(value)
+                elif constraint == 'allow_unknown':
+                    self.__validate_allow_unknown_definition(value)
+                elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
+                    self.__validate_definition_set(constraint, constraints,
+                                                   field)
+                elif constraint == 'items':
+                    if isinstance(value, Mapping):
+                        # TODO remove on next major release
+                        # list of dicts, deprecated
+                        DefinitionSchema(self.validator, value).validate()
+                    else:
+                        for item_schema in value:
+                            DefinitionSchema(self.validator,
+                                             {'schema': item_schema})\
+                                .validate()
+                elif constraint == 'dependencies':
+                    pass  # TODO implement
+                elif constraint in ('coerce', 'validator'):
+                    if not isinstance(value, Callable):
+                        raise SchemaError(errors.ERROR_SCHEMA_COERCE)
+                elif constraint not in self.validation_rules:
+                    if not self.validator.transparent_schema_rules:
+                            raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
+                                constraint, field))
+
+    def __validate_allow_unknown_definition(self, value):
+        if isinstance(value, bool):
+            pass
+        elif isinstance(value, Mapping):
+            pass  # TODO implement
+        else:
+            raise SchemaError(errors)
+
+    def __validate_definition_set(self, constraint, constraints,
+                                  field):
+        # TODO write a bad schema test for of-rules
+        c = constraints.copy()
+        del c[constraint]
+        DefinitionSchema(self.validator, {field: c})
+
+    def __validate_schema_definition(self, value):
+        try:  # if mapping
+            DefinitionSchema(self.validator, value).validate()
+        except SchemaError:  # if sequence
+            DefinitionSchema(self.validator, {'schema': value}).validate()
+
+    def __validate_type_definition(self, type_defs):
+        type_defs = type_defs if isinstance(type_defs, list) else [type_defs]
+        for type_def in type_defs:
+            if not 'type_' + type_def in self.validation_rules:
+                raise SchemaError(
+                    errors.ERROR_UNKNOWN_TYPE.format(type_def))
 
 
 def expand_definition_schema(schema):

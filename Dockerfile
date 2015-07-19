@@ -3,12 +3,7 @@ FROM funkyfuture/nest-of-serpents
 ENTRYPOINT tox
 WORKDIR /src
 
-RUN apt-get -q update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -qy \
-        make \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/* \
- && pyp install flake8 pytest tox PyYAML Sphinx \
+RUN pyp install flake8 pytest tox PyYAML Sphinx \
  && mkdir /home/tox \
  && mv /root/.cache /home/tox/
 
