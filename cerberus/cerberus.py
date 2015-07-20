@@ -490,7 +490,7 @@ class Validator(object):
                     )
                     break
 
-            if isinstance(context, _str_type) and context not in dep_values:  # noqa
+            if context not in dep_values:  # noqa
                 self._error(
                     field,
                     errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
