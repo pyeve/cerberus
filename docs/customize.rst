@@ -65,7 +65,7 @@ use a pattern like this:
         def __init__(self, *args, **kwargs):
             if 'additional_context' in kwargs:
                 self.additional_context = kwargs['additional_context']
-            super(InheritedValidator, self).__init__(*args, **kwargs)
+            super(MyValidator, self).__init__(*args, **kwargs)
 
         def _validate_type_foo(self, field, value):
             make_use_of(self.additional_context)
