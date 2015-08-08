@@ -16,5 +16,5 @@ Exceptions
 .. autoclass:: cerberus.SchemaError
   :members:
 
-.. autoclass:: cerberus.ValidationError
+.. autoclass:: cerberus.DocumentError
   :members:

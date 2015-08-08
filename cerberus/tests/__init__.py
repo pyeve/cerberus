@@ -1,4 +1,4 @@
-from ..cerberus import Validator, SchemaError, ValidationError, errors
+from ..cerberus import Validator, SchemaError, DocumentError, errors
 
 import sys
 if sys.version_info >= (2, 7):
@@ -136,7 +136,7 @@ class TestBase(TestCase):
 
     def assertValidationError(self, document, schema=None, validator=None,
                               msg=None):
-        self.assertException(ValidationError, document, schema, validator, msg)
+        self.assertException(DocumentError, document, schema, validator, msg)
 
     def assertException(self, known_exception, document, schema=None,
                         validator=None, msg=None):

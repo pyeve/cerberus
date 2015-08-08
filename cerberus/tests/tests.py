@@ -35,24 +35,24 @@ class TestValidator(TestBase):
         try:
             Validator(schema)
         except SchemaError as e:
-            self.assertEqual(str(e), errors.ERROR_SCHEMA_FORMAT.format(schema))
+            self.assertEqual(str(e), errors.ERROR_SCHEMA_TYPE.format(schema))
         else:
             self.fail('SchemaError not raised')
 
         v = Validator()
         self.assertSchemaError(self.document, schema, v,
-                               errors.ERROR_SCHEMA_FORMAT.format(schema))
+                               errors.ERROR_SCHEMA_TYPE.format(schema))
 
     def test_bad_schema_type_field(self):
         field = 'foo'
         schema = {field: {'schema': {'bar': {'type': 'string'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_SCHEMA_TYPE.format(field))
+                               errors.ERROR_SCHEMA_TYPE_TYPE.format(field))
 
         schema = {field: {'type': 'integer',
                           'schema': {'bar': {'type': 'string'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_SCHEMA_TYPE.format(field))
+                               errors.ERROR_SCHEMA_TYPE_TYPE.format(field))
 
     def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
         try:
@@ -85,7 +85,8 @@ class TestValidator(TestBase):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_DEFINITION_FORMAT.format(field))
+                               errors.ERROR_SCHEMA_CONSTRAINT_TYPE
+                               .format(field))
 
     def test_unknown_field(self):
         field = 'surname'

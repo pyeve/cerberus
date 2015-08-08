@@ -8,7 +8,7 @@
     Full documentation is available at http://python-cerberus.org
 """
 
-from collections import Callable, Iterable, Mapping, Sequence
+from collections import Callable, Iterable, Mapping, MutableMapping, Sequence
 import copy
 from datetime import datetime
 from . import errors
@@ -24,13 +24,12 @@ else:
     _int_types = (int, long)  # noqa
 
 
-class ValidationError(ValueError):
-    """ Raised when the target dictionary is missing or has the wrong format
-    """
+class DocumentError(Exception):
+    """ Raised when the target document is missing or has the wrong format """
     pass
 
 
-class SchemaError(ValueError):
+class SchemaError(Exception):
     """ Raised when the validation schema is missing, has the wrong format or
     contains errors.
     """
@@ -274,9 +273,9 @@ class Validator(object):
         elif self.schema is None:
             raise SchemaError(errors.ERROR_SCHEMA_MISSING)
         if document is None:
-            raise ValidationError(errors.ERROR_DOCUMENT_MISSING)
+            raise DocumentError(errors.ERROR_DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
-            raise ValidationError(
+            raise DocumentError(
                 errors.ERROR_DOCUMENT_FORMAT.format(document))
         self.root_document = self.root_document or document
 
@@ -759,7 +758,7 @@ class Validator(object):
                     self._error(field, validator.errors)
 
 
-class DefinitionSchema(dict):
+class DefinitionSchema(MutableMapping):
     """ A dict-subclass for caching of validated schemas.
 
         .. versionadded:: 0.10
@@ -781,22 +780,62 @@ class DefinitionSchema(dict):
                       one.
         """
         schema = expand_definition_schema(schema)
-
-        try:
-            super(DefinitionSchema, self).__init__(schema)
-        except ValueError:
-            raise SchemaError(errors.ERROR_SCHEMA_FORMAT.format(schema))
-
         self.validator = validator
         self.validation_rules = validator.validation_rules
+        self.schema = dict()
+        self.update(schema)
 
-        _hash = hash(repr(type(validator)) +
+    def __delitem__(self, key):
+        _new_schema = self.schema.copy()
+        try:
+            del _new_schema[key]
+            self.__validate_on_update(_new_schema)
+        except ValueError:
+            raise SchemaError("Schema has no field '%s' defined" % key)
+        except:
+            raise
+        else:
+            del self.schema[key]
+
+    def __getitem__(self, item):
+        return self.schema[item]
+
+    def __iter__(self):
+        return iter(self.schema)
+
+    def __len__(self):
+        return len(self.schema)
+
+    def __setitem__(self, key, value):
+        _new_schema = self.schema.copy()
+        try:
+            _new_schema.update({key: value})
+            self.__validate_on_update(_new_schema)
+        except:
+            raise
+        else:
+            self.schema = _new_schema
+
+    def update(self, schema):
+        try:
+            _new_schema = self.schema.copy()
+            _new_schema.update(schema)
+            self.__validate_on_update(_new_schema)
+        except ValueError:
+            raise SchemaError(errors.ERROR_SCHEMA_TYPE.format(schema))
+        except:
+            raise
+        else:
+            self.schema = _new_schema
+
+    def __validate_on_update(self, schema):
+        _hash = hash(repr(type(self.validator)) +
                      json.dumps(schema, cls=self.Encoder, sort_keys=True))
         if _hash not in self.valid_schemas:
-            self.validate()
+            self.validate(schema)
             self.valid_schemas.add(_hash)
 
-    def validate(self):
+    def validate(self, schema=None):
         """ Validates a schema that defines rules against supported rules.
 
         :param schema: The schema to be validated as a legal cerberus schema
@@ -806,9 +845,14 @@ class DefinitionSchema(dict):
 
         .. versionadded:: 0.7.1
         """
-        for field, constraints in self.items():
+
+        if schema is None:
+            schema = self.schema
+
+        for field, constraints in schema.items():
             if not isinstance(constraints, Mapping):
-                raise SchemaError(errors.ERROR_DEFINITION_FORMAT.format(field))
+                raise SchemaError(errors.ERROR_SCHEMA_CONSTRAINT_TYPE
+                                  .format(field))
             for constraint, value in constraints.items():
                 if constraint in ('nullable', 'readonly', 'required'):
                     if not isinstance(value, bool):

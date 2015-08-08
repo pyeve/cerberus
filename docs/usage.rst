@@ -55,7 +55,7 @@ the first validation issue. The whole document will always be processed, and
     {'age': 'min value is 10'}
 
 You will still get :class:`~cerberus.SchemaError` and
-:class:`~cerberus.ValidationError` exceptions.
+:class:`~cerberus.DocumentError` exceptions.
 
 .. versionchanged:: 0.4.1
     The Validator class is callable, allowing for the following shorthand
