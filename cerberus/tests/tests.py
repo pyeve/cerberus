@@ -28,31 +28,34 @@ class TestValidator(TestBase):
     def test_empty_schema(self):
         v = Validator()
         self.assertSchemaError(self.document, None, v,
-                               errors.ERROR_SCHEMA_MISSING)
+                               errors.SCHEMA_ERROR_MISSING)
 
     def test_bad_schema_type(self):
         schema = "this string should really be dict"
         try:
             Validator(schema)
         except SchemaError as e:
-            self.assertEqual(str(e), errors.ERROR_SCHEMA_TYPE.format(schema))
+            self.assertEqual(str(e),
+                             errors.SCHEMA_ERROR_DEFINITION_FORMAT
+                             .format(schema))
         else:
             self.fail('SchemaError not raised')
 
         v = Validator()
         self.assertSchemaError(self.document, schema, v,
-                               errors.ERROR_SCHEMA_TYPE.format(schema))
+                               errors.SCHEMA_ERROR_DEFINITION_FORMAT
+                               .format(schema))
 
     def test_bad_schema_type_field(self):
         field = 'foo'
         schema = {field: {'schema': {'bar': {'type': 'string'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_SCHEMA_TYPE_TYPE.format(field))
+                               errors.SCHEMA_ERROR_TYPE.format(field))
 
         schema = {field: {'type': 'integer',
                           'schema': {'bar': {'type': 'string'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_SCHEMA_TYPE_TYPE.format(field))
+                               errors.SCHEMA_ERROR_TYPE.format(field))
 
     def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
         try:
@@ -64,7 +67,7 @@ class TestValidator(TestBase):
 
     def test_invalid_schema(self):
         schema = {'foo': {'unknown': 'rule'}}
-        err_msg = ' '.join(errors.ERROR_UNKNOWN_RULE.split()[:2])
+        err_msg = ' '.join(errors.SCHEMA_ERROR_UNKNOWN_RULE.split()[:2])
         self._check_schema_content_error(err_msg, Validator, schema)
         v = Validator()
         self._check_schema_content_error(
@@ -85,7 +88,7 @@ class TestValidator(TestBase):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_SCHEMA_CONSTRAINT_TYPE
+                               errors.SCHEMA_ERROR_CONSTRAINT_TYPE
                                .format(field))
 
     def test_unknown_field(self):
@@ -98,7 +101,7 @@ class TestValidator(TestBase):
         schema = {field: {'unknown_rule': True, 'type': 'string'}}
         self.assertSchemaError(
             self.document, schema, None,
-            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field))
+            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field))
 
     def test_empty_field_definition(self):
         field = 'name'
@@ -481,11 +484,11 @@ class TestValidator(TestBase):
         v.transparent_schema_rules = False
         self.assertSchemaError(
             document, schema, v,
-            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
         )
         self.assertSchemaError(
             document, schema, None,
-            errors.ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
         )
 
     def test_allow_empty_strings(self):
