@@ -860,18 +860,17 @@ class DefinitionSchema(MutableMapping):
                 elif constraint == 'allow_unknown':
                     self.__validate_allow_unknown_definition(field, value)
                 elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
-                    self.__validate_definition_set(constraint, constraints,
-                                                   field)
+                    self.__validate_definition_set(field, constraints,
+                                                   constraint, value)
                 elif constraint == 'items':
                     if isinstance(value, Mapping):
                         # TODO remove on next major release
                         # list of dicts, deprecated
-                        DefinitionSchema(self.validator, value).validate()
+                        DefinitionSchema(self.validator, value)
                     else:
                         for item_schema in value:
                             DefinitionSchema(self.validator,
-                                             {'schema': item_schema})\
-                                .validate()
+                                             {'schema': item_schema})
                 elif constraint == 'dependencies':
                     self.__validate_dependencies_definition(field, value)
                 elif constraint in ('coerce', 'validator'):
@@ -888,17 +887,22 @@ class DefinitionSchema(MutableMapping):
         if isinstance(value, bool):
             pass
         elif isinstance(value, Mapping):
-            DefinitionSchema(self.validator, {'unknown': value})
+            DefinitionSchema(self.validator, {field: value})
         else:
             raise SchemaError(errors.SCHEMA_ERROR_BAD_ALLOW_UNKNOWN
                               .format(field))
 
-    def __validate_definition_set(self, constraint, constraints,
-                                  field):
-        # TODO write a bad schema test for of-rules
-        c = constraints.copy()
-        del c[constraint]
-        DefinitionSchema(self.validator, {field: c})
+    def __validate_definition_set(self, field, constraints, constraint, value):
+        if not isinstance(value, Sequence) and \
+                not isinstance(value, _str_type):
+            raise SchemaError(errors.SCHEMA_ERROR_BAD_DEFINITION_SET
+                              .format(constraint, field))
+
+        for of_constraint in value:
+            c = constraints.copy()
+            del c[constraint]
+            c.update(of_constraint)
+            DefinitionSchema(self.validator, {field: c})
 
     def __validate_dependencies_definition(self, field, value):
         if not isinstance(value, (Mapping, Sequence)) and \

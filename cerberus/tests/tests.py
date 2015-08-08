@@ -1176,7 +1176,7 @@ class TestValidator(TestBase):
                                                   "['one', 'two']"})
 
 
-class DefinitionSchema(TestCase):
+class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):
         v = Validator({'foozifix': {'coerce': int}})
         cache_size = len(v.schema.valid_schemas)
@@ -1196,6 +1196,10 @@ class DefinitionSchema(TestCase):
                         "If you added tests with new schemas, you can try to "
                         "adjust the variable `max_cache_size` according to "
                         "the added schemas.")
+
+    def bad_of_rules(self):
+        schema = {'foo': {'anyof': {'type': 'string'}}}
+        self.assertSchemaError({}, schema)
 
 
 # TODO remove on next major release

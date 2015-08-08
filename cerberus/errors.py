@@ -27,6 +27,8 @@ ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 SCHEMA_ERROR_BAD_ALLOW_UNKNOWN = \
     "allow_unknown-definition for {0} must be a bool or a dict"
+SCHEMA_ERROR_BAD_DEFINITION_SET = \
+    "definitions of {0} for {1} must be a sequence of constraints"
 SCHEMA_ERROR_BAD_DEPENDENCY = \
     "dependency-definition for {0} must be a dict or a list"
 SCHEMA_ERROR_CONSTRAINT_TYPE = "the constraint for '{0}' must be a dict"
