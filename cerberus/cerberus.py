@@ -872,10 +872,12 @@ class DefinitionSchema(MutableMapping):
                                              {'schema': item_schema})\
                                 .validate()
                 elif constraint == 'dependencies':
-                    pass  # TODO implement
+                    self.__validate_dependencies_definition(field, value)
                 elif constraint in ('coerce', 'validator'):
                     if not isinstance(value, Callable):
-                        raise SchemaError(errors.ERROR_SCHEMA_COERCE)
+                        raise SchemaError(
+                            errors.ERROR_SCHEMA_DEFINITION_CALLABLE
+                            .format(field))
                 elif constraint not in self.validation_rules:
                     if not self.validator.transparent_schema_rules:
                             raise SchemaError(errors.ERROR_UNKNOWN_RULE.format(
@@ -895,6 +897,15 @@ class DefinitionSchema(MutableMapping):
         c = constraints.copy()
         del c[constraint]
         DefinitionSchema(self.validator, {field: c})
+
+    def __validate_dependencies_definition(self, field, value):
+        if not isinstance(value, (Mapping, Sequence)) and \
+                not isinstance(value, _str_type):
+            raise SchemaError(errors.ERROR_SCHEMA_BAD_DEPENDENCY)
+        for dependency in value:
+            if not isinstance(dependency, _str_type):
+                raise SchemaError(errors.ERROR_SCHEMA_INVALID_DEPENDENCY
+                                  .format(dependency, field))
 
     def __validate_schema_definition(self, value):
         try:  # if mapping
