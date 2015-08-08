@@ -419,7 +419,6 @@ class Validator(object):
         """ Validate a field's value against its defined rules. """
 
         def validate_rule(rule):
-            # TODO test & document or remove char-replacement
             validatorname = "_validate_" + rule.replace(" ", "_")
             validator = getattr(self, validatorname, None)
             if validator:
