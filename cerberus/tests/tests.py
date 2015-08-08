@@ -1161,6 +1161,17 @@ class TestValidator(TestBase):
         self.assertDictEqual(v.errors,
                              {'an_integer': 'null value not allowed'})
 
+    def test_dependencies_error(self):
+        v = self.validator
+        schema = {'field1': {'required': False},
+                  'field2': {'required': True,
+                             'dependencies': {'field1': ['one', 'two']}}}
+        v.validate({'field2': 7}, schema)
+        print(v.errors)
+        self.assertDictEqual(v.errors, {'field2': "field 'field1' is required "
+                                                  "with one of these values: "
+                                                  "['one', 'two']"})
+
 
 class DefinitionSchema(TestCase):
     def test_validated_schema_cache(self):

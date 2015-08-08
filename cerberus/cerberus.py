@@ -471,8 +471,8 @@ class Validator(object):
             return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
+        validated_deps = 0
         for dep_name, dep_values in dependencies.items():
-
             if isinstance(dep_values, _str_type):
                 dep_values = [dep_values]
             context = self.document.copy()
@@ -481,19 +481,12 @@ class Validator(object):
             for part in parts:
                 if part in context:
                     context = context[part]
-                else:
-                    self._error(
-                        field,
-                        errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                            dep_name, dep_values)
-                    )
-                    break
+                    if context in dep_values:  # noqa
+                        validated_deps += 1
 
-            if context not in dep_values:  # noqa
-                self._error(
-                    field,
-                    errors.ERROR_DEPENDENCIES_FIELD_VALUE.format(
-                        dep_name, dep_values))
+        if validated_deps != len(dependencies):
+            self._error(field, errors.ERROR_DEPENDENCIES_FIELD_VALUE
+                        .format(dep_name, dep_values))
 
     def __validate_dependencies_sequence(self, dependencies, field):
         for dependency in dependencies:
