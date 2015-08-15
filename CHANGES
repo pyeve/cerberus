@@ -17,6 +17,8 @@ Not released yet.
   'validation_rules'-property (Frank Sachsenheim).
 - New: 'rename'-rule renames a field to a given string during normalization
   (Frank Sachsenheim).
+- New: 'rename_handler'-rule that takes an callable that renames unknown
+  fields (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).

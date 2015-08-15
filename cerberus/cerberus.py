@@ -66,6 +66,7 @@ class Validator(object):
        '*of'-rules can be extended by another rule
        'validation_rules'-property
        'rename'-rule renames a field to a given string
+       'rename_handler'-rule for unknown fields
 
     .. versionchanged:: 0.10
 
@@ -308,32 +309,53 @@ class Validator(object):
         # TODO allow methods for coerce and rename_handler like validate_type
         mapping = self._rename_fields(mapping, schema)
         # TODO implement purging of unknown fields
-        mapping = self._coerce_fields(mapping, schema)
-        mapping = self._normalize_subdocument(mapping, schema)
+        mapping = self._coerce_values(mapping, schema)
+        mapping = self._normalize_subdocuments(mapping, schema)
         return mapping
 
-    def _coerce_fields(self, mapping, schema):
+    def _coerce_values(self, mapping, schema):
+        def coerce_value(coercer):
+            try:
+                mapping[field] = coercer(mapping[field])
+            except (TypeError, ValueError):
+                self._error(field,
+                            errors.ERROR_COERCION_FAILED.format(field))
+
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
-                try:
-                    mapping[field] = schema[field]['coerce'](mapping[field])
-                except (TypeError, ValueError):
-                    self._error(field,
-                                errors.ERROR_COERCION_FAILED.format(field))
+                coerce_value(schema[field]['coerce'])
+            elif isinstance(self.allow_unknown, Mapping) and \
+                    'coerce' in self.allow_unknown:
+                coerce_value(self.allow_unknown['coerce'])
+
         return mapping
 
-    def _normalize_subdocument(self, mapping, schema):
+    def _normalize_subdocuments(self, mapping, schema):
         for field in mapping:
-            if isinstance(mapping[field], Mapping) and 'schema' in schema[field]:  # noqa
-                validator = self.__get_child_validator(schema=schema[field]
-                                                                    ['schema'])
+            if isinstance(mapping[field], Mapping) and \
+                    'schema' in schema[field]:
+                allow_unknown = schema[field].get('allow_unknown') or \
+                    self.allow_unknown
+                validator = self.\
+                    __get_child_validator(schema=schema[field]['schema'],
+                                          allow_unknown=allow_unknown)
                 mapping[field] = validator.normalized(mapping[field])
         return mapping
 
     def _rename_fields(self, mapping, schema):
-        for field in mapping:
-            if field in schema and 'rename' in schema[field]:
-                mapping[schema[field]['rename']] = mapping[field]
+        for field in tuple(mapping):
+            if field in schema:
+                if 'rename' in schema[field]:
+                    mapping[schema[field]['rename']] = mapping[field]
+                    del mapping[field]
+                elif 'rename_handler' in schema[field]:
+                    new_name = schema[field]['rename_handler'](field)
+                    mapping[new_name] = mapping[field]
+                    del mapping[field]
+            elif isinstance(self.allow_unknown, Mapping) and \
+                    'rename_handler' in self.allow_unknown:
+                new_name = self.allow_unknown['rename_handler'](field)
+                mapping[new_name] = mapping[field]
                 del mapping[field]
         return mapping
 
@@ -816,6 +838,9 @@ class DefinitionSchema(MutableMapping):
     def __len__(self):
         return len(self.schema)
 
+    def __repr__(self):
+        return self.schema
+
     def __setitem__(self, key, value):
         _new_schema = self.schema.copy()
         try:
@@ -892,7 +917,7 @@ class DefinitionSchema(MutableMapping):
                                              {'schema': item_schema})
                 elif constraint == 'dependencies':
                     self.__validate_dependencies_definition(field, value)
-                elif constraint in ('coerce', 'validator'):
+                elif constraint in ('coerce', 'rename_handler', 'validator'):
                     if not isinstance(value, Callable):
                         raise SchemaError(
                             errors.SCHEMA_ERROR_CALLABLE_TYPE
@@ -985,8 +1010,9 @@ def expand_definition_schema(schema):
         if isinstance(field, Mapping):
             if 'schema' in field:
                 if isinstance(field['schema'], Mapping):
-                    if isinstance(tuple(field['schema'].values())[0],
-                                  Mapping):
+                    if not field['schema'] or \
+                            isinstance(tuple(field['schema'].values())[0],
+                                       Mapping):
                         return True
         return False
 

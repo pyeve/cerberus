@@ -713,6 +713,16 @@ You can define a field to be renamed before any further processing.
     >>> v.normalized({'foo': 0})
     {'bar': 0}
 
+To let a callable rename a field or arbitrary fields, you can define a handler
+for renaming:
+
+.. doctest::
+
+    >>> v = Validator({}, allow_unknown={'rename_handler': int})
+    >>> v.normalized({'0': 'foo'})
+    {0: 'foo'}
+
+
 Value Coercion
 ~~~~~~~~~~~~~~
 Coercion allows you to apply a callable to a value before the document is validated.

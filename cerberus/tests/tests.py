@@ -1122,7 +1122,6 @@ class TestValidation(TestBase):
                   'field2': {'required': True,
                              'dependencies': {'field1': ['one', 'two']}}}
         v.validate({'field2': 7}, schema)
-        print(v.errors)
         self.assertDictEqual(v.errors, {'field2': "field 'field1' is required "
                                                   "with one of these values: "
                                                   "['one', 'two']"})
@@ -1171,6 +1170,12 @@ class TestNormalization(TestBase):
         self.assertError('name',
                          errors.ERROR_COERCION_FAILED.format('name'), v)
 
+    def test_coerce_unknown(self):
+        schema = {'foo': {'schema': {}, 'allow_unknown': {'coerce': int}}}
+        v = Validator(schema)
+        document = {'foo': {'bar': '0'}}
+        self.assertEqual(v.normalized(document), {'foo': {'bar': 0}})
+
     def test_normalized(self):
         schema = {'amount': {'coerce': int}}
         v = Validator(schema)
@@ -1181,6 +1186,12 @@ class TestNormalization(TestBase):
         v = Validator({'foo': {'rename': 'bar'}})
         self.assertEqual(v.normalized(document), {'bar': 0})
         self.assertNotIn('foo', v.normalized(document))
+
+    def test_rename_handler(self):
+        document = {'0': 'foo'}
+        v = Validator({}, allow_unknown={'rename_handler': int})
+        self.assertEqual(v.normalized(document), {0: 'foo'})
+        self.assertNotIn('0', v.normalized(document))
 
 
 class DefinitionSchema(TestBase):
