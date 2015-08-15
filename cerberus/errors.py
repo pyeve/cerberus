@@ -39,6 +39,8 @@ SCHEMA_ERROR_DEPENDENCY_TYPE = \
 SCHEMA_ERROR_DEPENDENCY_VALIDITY = \
     "'{0}' is no valid dependency for field '{1}'"
 SCHEMA_ERROR_MISSING = "validation schema missing"
+SCHEMA_ERROR_PURGE_UNKNOWN_TYPE = \
+    "purge_unknown-definition for field '{0}' must be a bool"
 SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
 SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
 SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"

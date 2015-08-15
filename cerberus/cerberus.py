@@ -67,6 +67,7 @@ class Validator(object):
        'validation_rules'-property
        'rename'-rule renames a field to a given string
        'rename_handler'-rule for unknown fields
+       'purge_unknown'-property and conditional purging of unknown fields added
 
     .. versionchanged:: 0.10
 
@@ -166,7 +167,8 @@ class Validator(object):
         """ The arguments will be treated as with this signature:
 
         __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False)
+                 ignore_none_values=False, allow_unknown=False,
+                 purge_unknown=False)
         """
 
         self.document = None
@@ -176,7 +178,7 @@ class Validator(object):
 
         """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown')
+                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -254,6 +256,14 @@ class Validator(object):
         self.__config['ignore_none_values'] = value
 
     @property
+    def purge_unknown(self):
+        return self.__config.get('purge_unknown', False)
+
+    @purge_unknown.setter
+    def purge_unknown(self, value):
+        self.__config['purge_unknown'] = value
+
+    @property
     def schema(self):
         return self._schema
 
@@ -308,7 +318,8 @@ class Validator(object):
     def _normalize_mapping(self, mapping, schema):
         # TODO allow methods for coerce and rename_handler like validate_type
         mapping = self._rename_fields(mapping, schema)
-        # TODO implement purging of unknown fields
+        if self.purge_unknown:
+            mapping = self._purge_unknown_fields(mapping, schema)
         mapping = self._coerce_values(mapping, schema)
         mapping = self._normalize_subdocuments(mapping, schema)
         return mapping
@@ -334,12 +345,22 @@ class Validator(object):
         for field in mapping:
             if isinstance(mapping[field], Mapping) and \
                     'schema' in schema[field]:
-                allow_unknown = schema[field].get('allow_unknown') or \
-                    self.allow_unknown
+                allow_unknown = schema[field].get('allow_unknown',
+                                                  self.allow_unknown)
+                purge_unknown = schema[field].get('purge_unknown',
+                                                  self.purge_unknown)
                 validator = self.\
                     __get_child_validator(schema=schema[field]['schema'],
-                                          allow_unknown=allow_unknown)
+                                          allow_unknown=allow_unknown,
+                                          purge_unknown=purge_unknown)
                 mapping[field] = validator.normalized(mapping[field])
+        return mapping
+
+    @staticmethod
+    def _purge_unknown_fields(mapping, schema):
+        for field in tuple(mapping):
+            if field not in schema:
+                del mapping[field]
         return mapping
 
     def _rename_fields(self, mapping, schema):
@@ -839,7 +860,7 @@ class DefinitionSchema(MutableMapping):
         return len(self.schema)
 
     def __repr__(self):
-        return self.schema
+        return str(self)
 
     def __setitem__(self, key, value):
         _new_schema = self.schema.copy()
@@ -850,6 +871,9 @@ class DefinitionSchema(MutableMapping):
             raise
         else:
             self.schema = _new_schema
+
+    def __str__(self):
+        return str(self.schema)
 
     def update(self, schema):
         try:
@@ -903,6 +927,11 @@ class DefinitionSchema(MutableMapping):
                     self.__validate_schema_definition(value)
                 elif constraint == 'allow_unknown':
                     self.__validate_allow_unknown_definition(field, value)
+                elif constraint == 'purge_unknown':
+                    if not isinstance(value, bool):
+                        raise SchemaError(errors
+                                          .SCHEMA_ERROR_PURGE_UNKNOWN_TYPE
+                                          .format(field))
                 elif constraint in ('anyof', 'allof', 'noneof', 'oneof'):
                     self.__validate_definition_set(field, constraints,
                                                    constraint, value)

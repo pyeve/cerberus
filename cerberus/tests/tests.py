@@ -1174,7 +1174,7 @@ class TestNormalization(TestBase):
         schema = {'foo': {'schema': {}, 'allow_unknown': {'coerce': int}}}
         v = Validator(schema)
         document = {'foo': {'bar': '0'}}
-        self.assertEqual(v.normalized(document), {'foo': {'bar': 0}})
+        self.assertDictEqual(v.normalized(document), {'foo': {'bar': 0}})
 
     def test_normalized(self):
         schema = {'amount': {'coerce': int}}
@@ -1184,14 +1184,22 @@ class TestNormalization(TestBase):
     def test_rename(self):
         document = {'foo': 0}
         v = Validator({'foo': {'rename': 'bar'}})
-        self.assertEqual(v.normalized(document), {'bar': 0})
-        self.assertNotIn('foo', v.normalized(document))
+        self.assertDictEqual(v.normalized(document), {'bar': 0})
 
     def test_rename_handler(self):
         document = {'0': 'foo'}
         v = Validator({}, allow_unknown={'rename_handler': int})
-        self.assertEqual(v.normalized(document), {0: 'foo'})
-        self.assertNotIn('0', v.normalized(document))
+        self.assertDictEqual(v.normalized(document), {0: 'foo'})
+
+    def test_purge_unknown(self):
+        v = Validator({'foo': {'type': 'string'}}, purge_unknown=True)
+        self.assertDictEqual(v.normalized({'bar': 'foo'}), {})
+        v.purge_unknown = False
+        self.assertDictEqual(v.normalized({'bar': 'foo'}), {'bar': 'foo'})
+        v.schema = {'foo': {'type': 'dict',
+                            'schema': {'foo': {'type': 'string'}},
+                            'purge_unknown': True}}
+        self.assertDictEqual(v.normalized({'foo': {'bar': ''}}), {'foo': {}})
 
 
 class DefinitionSchema(TestBase):
@@ -1218,6 +1226,10 @@ class DefinitionSchema(TestBase):
     def bad_of_rules(self):
         schema = {'foo': {'anyof': {'type': 'string'}}}
         self.assertSchemaError({}, schema)
+
+    def test_repr(self):
+        v = Validator({'foo': {'type': 'string'}})
+        self.assertEqual(repr(v.schema), "{'foo': {'type': 'string'}}")
 
 
 # TODO remove on next major release

@@ -722,6 +722,19 @@ for renaming:
     >>> v.normalized({'0': 'foo'})
     {0: 'foo'}
 
+Purging Unknown Fields
+~~~~~~~~~~~~~~~~~~~~~~
+
+After renaming, unknown fields will be purged if the ``purge_unknown``-property of
+a ``Validator``-instance is ``True``.
+You can set the property per keyword-argument upon initialization or as rule for
+subdocuments like ``allow_unknown``. The default is ``False``.
+
+.. doctest::
+
+    >>> v = Validator({'foo': {'type': 'string'}}, purge_unknown=True)
+    >>> v.normalized({'bar': 'foo'})
+    {}
 
 Value Coercion
 ~~~~~~~~~~~~~~
