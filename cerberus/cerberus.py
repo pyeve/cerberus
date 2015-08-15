@@ -8,7 +8,8 @@
     Full documentation is available at http://python-cerberus.org
 """
 
-from collections import Callable, Iterable, Mapping, MutableMapping, Sequence
+from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, \
+    Sequence
 import copy
 from datetime import datetime
 from . import errors
@@ -62,6 +63,9 @@ class Validator(object):
 
     .. versionadded:: 0.10
        'normalized'-method
+       '*of'-rules can be extended by another rule
+       'validation_rules'-property
+       'rename'-rule renames a field to a given string
 
     .. versionchanged:: 0.10
 
@@ -301,9 +305,14 @@ class Validator(object):
             return result
 
     def _normalize_mapping(self, mapping, schema):
-        # TODO implement renaming of fields
+        # TODO allow methods for coerce and rename_handler like validate_type
+        mapping = self._rename_fields(mapping, schema)
         # TODO implement purging of unknown fields
+        mapping = self._coerce_fields(mapping, schema)
+        mapping = self._normalize_subdocument(mapping, schema)
+        return mapping
 
+    def _coerce_fields(self, mapping, schema):
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
                 try:
@@ -311,12 +320,21 @@ class Validator(object):
                 except (TypeError, ValueError):
                     self._error(field,
                                 errors.ERROR_COERCION_FAILED.format(field))
+        return mapping
 
+    def _normalize_subdocument(self, mapping, schema):
+        for field in mapping:
             if isinstance(mapping[field], Mapping) and 'schema' in schema[field]:  # noqa
                 validator = self.__get_child_validator(schema=schema[field]
-                                                       ['schema'])
+                                                                    ['schema'])
                 mapping[field] = validator.normalized(mapping[field])
+        return mapping
 
+    def _rename_fields(self, mapping, schema):
+        for field in mapping:
+            if field in schema and 'rename' in schema[field]:
+                mapping[schema[field]['rename']] = mapping[field]
+                del mapping[field]
         return mapping
 
     # # Validating
@@ -814,7 +832,7 @@ class DefinitionSchema(MutableMapping):
             _new_schema.update(schema)
             self.__validate_on_update(_new_schema)
         except ValueError:
-            raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_FORMAT
+            raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE
                               .format(schema))
         except:
             raise
@@ -847,6 +865,7 @@ class DefinitionSchema(MutableMapping):
                 raise SchemaError(errors.SCHEMA_ERROR_CONSTRAINT_TYPE
                                   .format(field))
             for constraint, value in constraints.items():
+                # TODO reduce this boilerplate
                 if constraint in ('nullable', 'readonly', 'required'):
                     if not isinstance(value, bool):
                         raise SchemaError(
@@ -876,8 +895,12 @@ class DefinitionSchema(MutableMapping):
                 elif constraint in ('coerce', 'validator'):
                     if not isinstance(value, Callable):
                         raise SchemaError(
-                            errors.SCHEMA_ERROR_DEFINITION_CALLABLE
+                            errors.SCHEMA_ERROR_CALLABLE_TYPE
                             .format(field))
+                elif constraint == 'rename':
+                    if not isinstance(value, Hashable):
+                        raise SchemaError(errors.SCHEMA_ERROR_RENAME_TYPE
+                                          .format(field))
                 elif constraint not in self.validation_rules:
                     if not self.validator.transparent_schema_rules:
                             raise SchemaError(errors.SCHEMA_ERROR_UNKNOWN_RULE
@@ -889,13 +912,13 @@ class DefinitionSchema(MutableMapping):
         elif isinstance(value, Mapping):
             DefinitionSchema(self.validator, {field: value})
         else:
-            raise SchemaError(errors.SCHEMA_ERROR_BAD_ALLOW_UNKNOWN
+            raise SchemaError(errors.SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE
                               .format(field))
 
     def __validate_definition_set(self, field, constraints, constraint, value):
         if not isinstance(value, Sequence) and \
                 not isinstance(value, _str_type):
-            raise SchemaError(errors.SCHEMA_ERROR_BAD_DEFINITION_SET
+            raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_SET_TYPE
                               .format(constraint, field))
 
         for of_constraint in value:
@@ -907,10 +930,10 @@ class DefinitionSchema(MutableMapping):
     def __validate_dependencies_definition(self, field, value):
         if not isinstance(value, (Mapping, Sequence)) and \
                 not isinstance(value, _str_type):
-            raise SchemaError(errors.SCHEMA_ERROR_BAD_DEPENDENCY)
+            raise SchemaError(errors.SCHEMA_ERROR_DEPENDENCY_TYPE)
         for dependency in value:
             if not isinstance(dependency, _str_type):
-                raise SchemaError(errors.SCHEMA_ERROR_INVALID_DEPENDENCY
+                raise SchemaError(errors.SCHEMA_ERROR_DEPENDENCY_VALIDITY
                                   .format(dependency, field))
 
     def __validate_schema_definition(self, value):

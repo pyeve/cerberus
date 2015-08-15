@@ -15,6 +15,8 @@ Not released yet.
   of schemas is reduced (Frank Sachsenheim).
 - New: Implemented rules of a Validator-instance are accessible as
   'validation_rules'-property (Frank Sachsenheim).
+- New: 'rename'-rule renames a field to a given string during normalization
+  (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).

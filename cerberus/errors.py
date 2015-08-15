@@ -25,18 +25,20 @@ ERROR_UNALLOWED_VALUES = "unallowed values {0}"
 ERROR_UNKNOWN_FIELD = "unknown field"
 ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
-SCHEMA_ERROR_BAD_ALLOW_UNKNOWN = \
-    "allow_unknown-definition for {0} must be a bool or a dict"
-SCHEMA_ERROR_BAD_DEFINITION_SET = \
-    "definitions of {0} for {1} must be a sequence of constraints"
-SCHEMA_ERROR_BAD_DEPENDENCY = \
-    "dependency-definition for {0} must be a dict or a list"
-SCHEMA_ERROR_CONSTRAINT_TYPE = "the constraint for '{0}' must be a dict"
-SCHEMA_ERROR_DEFINITION_CALLABLE = \
-    "coerce- and validator-definitions must be a callable"
-SCHEMA_ERROR_DEFINITION_FORMAT = \
-    "schema definition for field '{0}', must be a dict"
-SCHEMA_ERROR_INVALID_DEPENDENCY = "{0} is no valid dependency for {1}"
+SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE = \
+    "allow_unknown-definition for field '{0}' must be a bool or a dict"
+SCHEMA_ERROR_CALLABLE_TYPE = \
+    "coerce- and validator-definitions for field '{0}' must be a callable"
+SCHEMA_ERROR_CONSTRAINT_TYPE = "the constraint for field '{0}' must be a dict"
+SCHEMA_ERROR_DEFINITION_SET_TYPE = \
+    "definitions of '{0}' for field '{1}' must be a sequence of constraints"
+SCHEMA_ERROR_DEFINITION_TYPE = \
+    "schema definition for field '{0}' must be a dict"
+SCHEMA_ERROR_DEPENDENCY_TYPE = \
+    "dependency-definition for field '{0}' must be a dict or a list"
+SCHEMA_ERROR_DEPENDENCY_VALIDITY = \
+    "'{0}' is no valid dependency for field '{1}'"
 SCHEMA_ERROR_MISSING = "validation schema missing"
-SCHEMA_ERROR_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
+SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
+SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
 SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"

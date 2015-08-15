@@ -86,6 +86,7 @@ very long string'}`` or ``{'name': 99}`` would not.
 By definition all keys are optional unless the `required`_ rule is set for
 a key.
 
+
 Validation Rules
 ----------------
 The following rules are currently supported:
@@ -698,12 +699,25 @@ unknown fields will be validated against it:
 
 .. _type-coercion:
 
-Type Coercion
--------------
-Type coercion allows you to apply a callable to a value before any other
-validators run.  The return value of the callable replaces the new value in
-the document.  This can be used to convert values or sanitize data before it is
-validated.
+
+Normalizaion Rules
+------------------
+
+Renaming of fields
+~~~~~~~~~~~~~~~~~~
+You can define a field to be renamed before any further processing.
+
+.. doctest::
+
+    >>> v = Validator({'foo': {'rename': 'bar'}})
+    >>> v.normalized({'foo': 0})
+    {'bar': 0}
+
+Value Coercion
+~~~~~~~~~~~~~~
+Coercion allows you to apply a callable to a value before the document is validated.
+The return value of the callable replaces the new value in the document. This can be
+used to convert values or sanitize data before it is validated.
 
 .. doctest::
 
@@ -726,10 +740,16 @@ validated.
 
 .. versionadded:: 0.9
 
+Fetching processed documents
+----------------------------
+
+Beside the ``document``-property a ``Validator``-instance has shorthand methods to
+process a document and fetch its processed result.
+
 `validated` method
-------------------
-There's a wrapper-method ``validated`` that returns the validated document. It
-can be useful for flows like this:
+~~~~~~~~~~~~~~~~~~
+There's a wrapper-method ``validated`` that returns the validated document. If the
+document didn't validate `None` is returned. It can be useful for flows like this:
 
 .. testsetup::
 
@@ -747,7 +767,7 @@ pass through.
 .. versionadded:: 0.9
 
 `normalized` Method
--------------------
+~~~~~~~~~~~~~~~~~~~
 Similary, the ``normalized``-method returns a normalized copy of a document without validating it:
 
 .. doctest::
@@ -760,10 +780,13 @@ Similary, the ``normalized``-method returns a normalized copy of a document with
 
 .. versionadded:: 0.10
 
-Vanilla Python
---------------
-Cerberus schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined validation rules are invoked in the schema by name, as a string.
-A useful side effect of this design is that schemas can be defined in a number of ways, for example with PyYAML_.
+
+Schema Definition Formats
+-------------------------
+
+Cerberus schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined
+validation rules are invoked in the schema by name, as a string. A useful side effect of this design is
+that schemas can be defined in a number of ways, for example with PyYAML_.
 
 .. doctest::
 
