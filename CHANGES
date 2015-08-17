@@ -26,8 +26,11 @@ Not released yet.
   property of the (child-)Validator (Frank Sachsenheim).
 - Change: Removed 'context'-argument from 'validate'-method as this is set
   upon the creation of a child-validator (Frank Sachsenheim).
+- Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
+- Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 
 - Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
+- Fix: Unknown fields are normalized (Frank Sachsenheim).
 
 Version 0.9.1
 -------------

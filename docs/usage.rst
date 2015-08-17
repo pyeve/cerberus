@@ -703,7 +703,7 @@ unknown fields will be validated against it:
 Normalizaion Rules
 ------------------
 
-Renaming of fields
+Renaming Of Fields
 ~~~~~~~~~~~~~~~~~~
 You can define a field to be renamed before any further processing.
 
@@ -763,16 +763,16 @@ used to convert values or sanitize data before it is validated.
 
 .. versionadded:: 0.9
 
-Fetching processed documents
+Fetching Processed Documents
 ----------------------------
 
 Beside the ``document``-property a ``Validator``-instance has shorthand methods to
 process a document and fetch its processed result.
 
-`validated` method
+`validated` Method
 ~~~~~~~~~~~~~~~~~~
 There's a wrapper-method ``validated`` that returns the validated document. If the
-document didn't validate `None` is returned. It can be useful for flows like this:
+document didn't validate ``None`` is returned. It can be useful for flows like this:
 
 .. testsetup::
 
@@ -807,7 +807,7 @@ Similary, the ``normalized``-method returns a normalized copy of a document with
 Schema Definition Formats
 -------------------------
 
-Cerberus schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined
+Cerberus schemas are built with vanilla Python types: ``dict``, ``list``, ``string``, etc. Even user-defined
 validation rules are invoked in the schema by name, as a string. A useful side effect of this design is
 that schemas can be defined in a number of ways, for example with PyYAML_.
 
@@ -828,8 +828,8 @@ that schemas can be defined in a number of ways, for example with PyYAML_.
     >>> v.errors
     {'age': 'min value is 10'}
 
-You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as there is a decoder thant can produce a nested `dict`, you
-can use it to define a schema.
+You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as
+there is a decoder thant can produce a nested ``dict``, you can use it to define a schema.
 
 
 .. _PyYAML: http://pyyaml.org
