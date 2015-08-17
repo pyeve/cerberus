@@ -21,6 +21,8 @@ Not released yet.
   fields (Frank Sachsenheim).
 - New: 'Validator.purge_unknown'-property and conditional purging of unknown fields
   (Frank Sachsenheim).
+- New: 'Validator.trail'-property can be used to determine the relation of the
+  currently validating document to the 'root_document' (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).

@@ -68,10 +68,12 @@ class Validator(object):
        'rename'-rule renames a field to a given string
        'rename_handler'-rule for unknown fields
        'purge_unknown'-property and conditional purging of unknown fields added
+       'trail'-property of Validator that relates the 'document' to
+           'root_document'
 
     .. versionchanged:: 0.10
 
-       some refactoring
+       refactoring
 
     .. versionchanged:: 0.9.1
        'required' will always be validated, regardless of any dependencies.
@@ -82,7 +84,7 @@ class Validator(object):
        'coerce' rule.
        'propertyschema' validation rule.
        'validator.validated' takes a document as argument and returns a
-       Validated document or 'None' if validation failed.
+           validated document or 'None' if validation failed.
 
     .. versionchanged:: 0.9
        Use 'str.format' in error messages so if someone wants to override them
@@ -94,8 +96,9 @@ class Validator(object):
            'validator.errors', and offending field indexes are used as keys for
        Field errors ({'a_list_of_strings': {1: 'not a string'}})
        Additional kwargs that are passed to the __init__-method of an
-       Instance of Validator-(sub-)class are passed to child-validators.
-       Ensure that additional **kwargs of a subclass persist through validation
+           instance of Validator-(sub-)class are passed to child-validators.
+       Ensure that additional **kwargs of a subclass persist through
+           validation.
        Improve failure message when testing against multiple types.
        Ignore 'keyschema' when not a mapping.
        Ignore 'schema' when not a sequence.
@@ -108,7 +111,7 @@ class Validator(object):
        'dependencies' for sub-document fields. Closes #64.
        'readonly' should be validated before any other validation. Closes #63.
        'allow_unknown' does not apply to sub-dictionaries in a list.
-       Closes #67.
+           Closes #67.
        update mode does not ignore required fields in subdocuments. Closes #72.
        'allow_unknown' does not respect custom rules. Closes #66.
 
@@ -122,7 +125,7 @@ class Validator(object):
 
     .. versionchanged:: 0.7.1
        Validator options like 'allow_unknown' and 'ignore_none_values' are now
-       taken into consideration when validating sub-dictionaries.
+           taken into consideration when validating sub-dictionaries.
        Make self.document always the root level document.
        Up-front validation for schemas.
 
@@ -138,13 +141,13 @@ class Validator(object):
 
     .. versionchanged:: 0.5.0
        ``validator.errors`` returns a dict where keys are document fields and
-       values are validation errors.
+           values are validation errors.
 
     .. versionchanged:: 0.4.0
        :func:`validate_update` is deprecated. Use :func:`validate` with
-       ``update=True`` instead.
+           ``update=True`` instead.
        Type validation is always performed first (only exception being
-       ``nullable``). On failure, it blocks other rules on the same field.
+           ``nullable``). On failure, it blocks other rules on the same field.
        Closes #18.
 
     .. versionadded:: 0.2.0
@@ -174,6 +177,7 @@ class Validator(object):
         self.document = None
         self._errors = {}
         self.root_document = None
+        self.trail = ()
         self.update = False
 
         """ Assign args to kwargs and store configuration. """
@@ -214,7 +218,7 @@ class Validator(object):
 
         self._errors[field] = field_errors
 
-    def __get_child_validator(self, **kwargs):
+    def __get_child_validator(self, field=None, **kwargs):
         """ Creates a new instance of Validator-(sub-)class. All initial
         parameters of the parent are passed to the initialization, unless
         a parameter is given as an explicit *keyword*-parameter.
@@ -225,6 +229,10 @@ class Validator(object):
         child_config.update(kwargs)
         child_validator = self.__class__(**child_config)
         child_validator.root_document = self.root_document or self.document
+        if field is None:
+            child_validator.trail = self.trail
+        else:
+            child_validator.trail = self.trail + (field, )
         return child_validator
 
     # Properties
@@ -350,7 +358,8 @@ class Validator(object):
                 purge_unknown = schema[field].get('purge_unknown',
                                                   self.purge_unknown)
                 validator = self.\
-                    __get_child_validator(schema=schema[field]['schema'],
+                    __get_child_validator(field,
+                                          schema=schema[field]['schema'],
                                           allow_unknown=allow_unknown,
                                           purge_unknown=purge_unknown)
                 mapping[field] = validator.normalized(mapping[field])
@@ -468,8 +477,9 @@ class Validator(object):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
                 unknown_validator = \
-                    self.__get_child_validator(
-                        schema={field: self.allow_unknown})
+                    self.__get_child_validator(field,
+                                               schema={field:
+                                                       self.allow_unknown})
                 if not unknown_validator.validate({field: value},
                                                   normalize=False):
                     self._error(field, unknown_validator.errors[field])
@@ -717,9 +727,7 @@ class Validator(object):
             self.__validate_schema_mapping(field, schema, value, allow_unknown)
 
     def __validate_schema_mapping(self, field, schema, value, allow_unknown):
-        if 'list' in self.schema[field]['type']:
-                return
-        validator = self.__get_child_validator(schema=schema,
+        validator = self.__get_child_validator(field, schema=schema,
                                                allow_unknown=allow_unknown)
         if not validator.validate(value, update=self.update,
                                   normalize=False):

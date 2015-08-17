@@ -1126,6 +1126,19 @@ class TestValidation(TestBase):
                                                   "with one of these values: "
                                                   "['one', 'two']"})
 
+    def test_trail(self):
+        class TrailTester(Validator):
+            def _validate_trail(self, constraint_value, field, value):
+                test_doc = self.root_document
+                for crumb in self.trail:
+                    test_doc = test_doc[crumb]
+                assert test_doc == self.document
+
+        v = TrailTester()
+        schema = {'foo': {'schema': {'bar': {'trail': True}}}}
+        document = {'foo': {'bar': {}}}
+        self.assertSuccess(document, schema, v)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
