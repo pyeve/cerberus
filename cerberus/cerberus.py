@@ -818,6 +818,15 @@ class Validator(object):
                 if len(validator.errors):
                     self._error(field, validator.errors)
 
+    def _validate_excludes(self, exclude, field, value):
+        if isinstance(exclude, list):
+            for key in exclude:
+                if key in self.document:
+                    self._error(field, errors.ERROR_EXCLUDES_FIELD.format(exclude, field))
+        else:
+            if exclude in self.document:
+                self._error(field, errors.ERROR_EXCLUDES_FIELD.format(exclude, field))
+
 
 class DefinitionSchema(MutableMapping):
     """ A dict-subclass for caching of validated schemas.

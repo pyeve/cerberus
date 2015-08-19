@@ -1139,6 +1139,65 @@ class TestValidation(TestBase):
         document = {'foo': {'bar': {}}}
         self.assertSuccess(document, schema, v)
 
+    def test_excludes(self):
+        schema = {'this_field': {'type': 'dict',
+                                 'excludes': 'that_field'},
+                  'that_field': {'type': 'dict'}}
+        document1 = {'this_field': {}}
+        document2 = {'that_field': {}}
+        document3 = {'that_field': {}, 'this_field': {}}
+        self.assertSuccess(document1, schema)
+        self.assertSuccess(document2, schema)
+        self.assertSuccess({}, schema)
+        self.assertFail(document3, schema)
+
+    def test_mutual_excludes(self):
+        schema = {'this_field': {'type': 'dict',
+                                 'excludes': 'that_field'},
+                  'that_field': {'type': 'dict',
+                                 'excludes': 'this_field'}}
+        document1 = {'this_field': {}}
+        document2 = {'that_field': {}}
+        document3 = {'that_field': {}, 'this_field': {}}
+        self.assertSuccess(document1, schema)
+        self.assertSuccess(document2, schema)
+        self.assertSuccess({}, schema)
+        self.assertFail(document3, schema)
+
+    def test_required_excludes(self):
+        schema = {'this_field': {'type': 'dict',
+                                 'excludes': 'that_field',
+                                 'required': True},
+                  'that_field': {'type': 'dict',
+                                 'excludes': 'this_field',
+                                 'required': True}}
+        document1 = {'this_field': {}}
+        document2 = {'that_field': {}}
+        document3 = {'that_field': {}, 'this_field': {}}
+        self.assertSuccess(document1, schema)
+        self.assertSuccess(document2, schema)
+        self.assertFail({}, schema)
+        self.assertFail(document3, schema)
+
+    def test_multiples_exclusions(self):
+        schema = {'this_field': {'type': 'dict',
+                                 'excludes': ['that_field', 'bazo_field']},
+                  'that_field': {'type': 'dict',
+                                 'excludes': 'this_field'},
+                  'bazo_field': {'type': 'dict'}}
+        document1 = {'this_field': {}}
+        document2 = {'that_field': {}}
+        document3 = {'this_field': {}, 'that_field': {}}
+        document4 = {'this_field': {}, 'bazo_field': {}}
+        document5 = {'that_field': {}, 'this_field': {}, 'bazo_field': {}}
+        document6 = {'that_field': {}, 'bazo_field': {}}
+        self.assertSuccess(document1, schema)
+        self.assertSuccess(document2, schema)
+        self.assertFail(document3, schema)
+        self.assertFail(document4, schema)
+        self.assertFail(document5, schema)
+        self.assertSuccess(document6, schema)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
