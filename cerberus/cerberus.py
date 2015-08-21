@@ -824,9 +824,11 @@ class Validator(object):
 
         if [True for key in excludes if key in self.document]:
             # Wrap each field in `excludes` list between quotes
-            exclusion_str = ', '.join("'{0}'".format(word) for word in excludes)
+            exclusion_str = ', '.join("'{0}'"
+                                      .format(word) for word in excludes)
             self._error(field,
-                        errors.ERROR_EXCLUDES_FIELD.format(exclusion_str, field))
+                        errors.ERROR_EXCLUDES_FIELD.format(exclusion_str,
+                                                           field))
 
 
 class DefinitionSchema(MutableMapping):
