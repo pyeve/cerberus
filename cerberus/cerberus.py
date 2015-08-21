@@ -819,7 +819,7 @@ class Validator(object):
                     self._error(field, validator.errors)
 
     def _validate_excludes(self, excludes, field, value):
-        if isinstance(excludes, _str_type):
+        if isinstance(excludes, Hashable):
             excludes = [excludes]
 
         if [True for key in excludes if key in self.document]:
