@@ -975,6 +975,8 @@ class DefinitionSchema(MutableMapping):
                     if not isinstance(value, Hashable):
                         raise SchemaError(errors.SCHEMA_ERROR_RENAME_TYPE
                                           .format(field))
+                elif constraint == 'excludes':
+                    self.__validate_excludes_definition(value)
                 elif constraint not in self.validation_rules:
                     if not self.validator.transparent_schema_rules:
                             raise SchemaError(errors.SCHEMA_ERROR_UNKNOWN_RULE
@@ -1022,6 +1024,14 @@ class DefinitionSchema(MutableMapping):
             if not 'type_' + type_def in self.validation_rules:
                 raise SchemaError(
                     errors.ERROR_UNKNOWN_TYPE.format(type_def))
+
+    def __validate_excludes_definition(self, excludes):
+        if isinstance(excludes, Hashable):
+            excludes = [excludes]
+        for key in excludes:
+            if not isinstance(key, _str_type):
+                raise SchemaError(
+                    errors.ERROR_EXCLUDES_HASHABLE.format(key))
 
 
 def expand_definition_schema(schema):
