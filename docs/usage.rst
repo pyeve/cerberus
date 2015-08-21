@@ -630,13 +630,13 @@ You can declare fields to excludes others:
     ...           'that_field': {'type': 'dict',
     ...                          'excludes': 'this_field'}}
     >>> v.validate({'this_field': {}, 'that_field': {}}, schema)
-    ... False
+    False
     >>> v.validate({'this_field': {}}, schema)
-    ... True
+    True
     >>> v.validate({'that_field': {}}, schema)
-    ... True
+    True
     >>> v.validate({}, schema)
-    ... True
+    True
 
 
 You can require both field to build an exclusive `or`:
@@ -651,13 +651,13 @@ You can require both field to build an exclusive `or`:
     ...                          'excludes': 'this_field',
     ...                          'required': True},
     >>> v.validate({'this_field': {}, 'that_field': {}}, schema)
-    ... False
+    False
     >>> v.validate({'this_field': {}}, schema)
-    ... True
+    True
     >>> v.validate({'that_field': {}}, schema)
-    ... True
+    True
     >>> v.validate({}, schema)
-    ... False
+    False
 
 
 You can also pass multiples fields to exclude in a list :
@@ -670,7 +670,7 @@ You can also pass multiples fields to exclude in a list :
    ...                          'excludes': 'this_field'},
    ...           'bazo_field': {'type': 'dict'}}
    >>> v.validate({'this_field': {}, 'bazo_field': {}}, schema)
-   ... False
+   False
 
 
 Allowing the Unknown
