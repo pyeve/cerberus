@@ -818,16 +818,13 @@ class Validator(object):
                 if len(validator.errors):
                     self._error(field, validator.errors)
 
-    def _validate_excludes(self, exclude, field, value):
-        targets = []
-        if isinstance(exclude, list):
-            targets = exclude
-        else:
-            targets = [exclude]
+    def _validate_excludes(self, excludes, field, value):
+        if isinstance(excludes, _str_type):
+            excludes = [excludes]
 
-        if [True for key in targets if key in self.document]:
+        if [True for key in excludes if key in self.document]:
             self._error(field,
-                        errors.ERROR_EXCLUDES_FIELD.format(exclude, field))
+                        errors.ERROR_EXCLUDES_FIELD.format(excludes, field))
 
 
 class DefinitionSchema(MutableMapping):
