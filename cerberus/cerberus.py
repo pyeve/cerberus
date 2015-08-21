@@ -1031,7 +1031,7 @@ class DefinitionSchema(MutableMapping):
         for key in excludes:
             if not isinstance(key, _str_type):
                 raise SchemaError(
-                    errors.ERROR_EXCLUDES_HASHABLE.format(key))
+                    errors.SCHEMA_ERROR_EXCLUDES_HASHABLE.format(key))
 
 
 def expand_definition_schema(schema):
