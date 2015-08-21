@@ -1198,6 +1198,21 @@ class TestValidation(TestBase):
         self.assertFail(document5, schema)
         self.assertSuccess(document6, schema)
 
+    def test_bad_excludes_fields(self):
+        schema = {'this_field': {'type': 'dict',
+                                 'excludes': ['that_field', 'bazo_field'],
+                                 'required': True},
+                  'that_field': {'type': 'dict',
+                                 'excludes': 'this_field',
+                                 'required': True}}
+        self.assertValidationError({'that_field': {},
+                                    'this_field': {}}, schema)
+        self.assertDictEqual(self.validator.errors,
+                             {'that_field': errors.ERROR_EXCLUDES_FIELD.format(
+                                 "'this_field'", "that_field"),
+                              'this_field': errors.ERROR_EXCLUDES_FIELD.format(
+                                  "'that_field', 'bazo_field'", "this_field")})
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
