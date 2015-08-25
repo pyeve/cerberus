@@ -55,7 +55,7 @@ the first validation issue. The whole document will always be processed, and
     {'age': 'min value is 10'}
 
 You will still get :class:`~cerberus.SchemaError` and
-:class:`~cerberus.ValidationError` exceptions.
+:class:`~cerberus.DocumentError` exceptions.
 
 .. versionchanged:: 0.4.1
     The Validator class is callable, allowing for the following shorthand
@@ -85,6 +85,7 @@ very long string'}`` or ``{'name': 99}`` would not.
 
 By definition all keys are optional unless the `required`_ rule is set for
 a key.
+
 
 Validation Rules
 ----------------
@@ -698,12 +699,48 @@ unknown fields will be validated against it:
 
 .. _type-coercion:
 
-Type Coercion
--------------
-Type coercion allows you to apply a callable to a value before any other
-validators run.  The return value of the callable replaces the new value in
-the document.  This can be used to convert values or sanitize data before it is
-validated.
+
+Normalizaion Rules
+------------------
+
+Renaming Of Fields
+~~~~~~~~~~~~~~~~~~
+You can define a field to be renamed before any further processing.
+
+.. doctest::
+
+    >>> v = Validator({'foo': {'rename': 'bar'}})
+    >>> v.normalized({'foo': 0})
+    {'bar': 0}
+
+To let a callable rename a field or arbitrary fields, you can define a handler
+for renaming:
+
+.. doctest::
+
+    >>> v = Validator({}, allow_unknown={'rename_handler': int})
+    >>> v.normalized({'0': 'foo'})
+    {0: 'foo'}
+
+Purging Unknown Fields
+~~~~~~~~~~~~~~~~~~~~~~
+
+After renaming, unknown fields will be purged if the ``purge_unknown``-property of
+a ``Validator``-instance is ``True``.
+You can set the property per keyword-argument upon initialization or as rule for
+subdocuments like ``allow_unknown``. The default is ``False``.
+
+.. doctest::
+
+    >>> v = Validator({'foo': {'type': 'string'}}, purge_unknown=True)
+    >>> v.normalized({'bar': 'foo'})
+    {}
+
+Value Coercion
+~~~~~~~~~~~~~~
+Coercion allows you to apply a callable to a value before the document is validated.
+The return value of the callable replaces the new value in the document. This can be
+used to convert values or sanitize data before it is validated.
 
 .. doctest::
 
@@ -726,10 +763,16 @@ validated.
 
 .. versionadded:: 0.9
 
-`validated` method
-------------------
-There's a wrapper-method ``validated`` that returns the validated document. It
-can be useful for flows like this:
+Fetching Processed Documents
+----------------------------
+
+Beside the ``document``-property a ``Validator``-instance has shorthand methods to
+process a document and fetch its processed result.
+
+`validated` Method
+~~~~~~~~~~~~~~~~~~
+There's a wrapper-method ``validated`` that returns the validated document. If the
+document didn't validate ``None`` is returned. It can be useful for flows like this:
 
 .. testsetup::
 
@@ -747,7 +790,7 @@ pass through.
 .. versionadded:: 0.9
 
 `normalized` Method
--------------------
+~~~~~~~~~~~~~~~~~~~
 Similary, the ``normalized``-method returns a normalized copy of a document without validating it:
 
 .. doctest::
@@ -760,10 +803,13 @@ Similary, the ``normalized``-method returns a normalized copy of a document with
 
 .. versionadded:: 0.10
 
-Vanilla Python
---------------
-Cerberus schemas are built with vanilla Python types: `dict`, `list`, `string`, etc. Even user-defined validation rules are invoked in the schema by name, as a string.
-A useful side effect of this design is that schemas can be defined in a number of ways, for example with PyYAML_.
+
+Schema Definition Formats
+-------------------------
+
+Cerberus schemas are built with vanilla Python types: ``dict``, ``list``, ``string``, etc. Even user-defined
+validation rules are invoked in the schema by name, as a string. A useful side effect of this design is
+that schemas can be defined in a number of ways, for example with PyYAML_.
 
 .. doctest::
 
@@ -782,8 +828,8 @@ A useful side effect of this design is that schemas can be defined in a number o
     >>> v.errors
     {'age': 'min value is 10'}
 
-You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as there is a decoder thant can produce a nested `dict`, you
-can use it to define a schema.
+You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as
+there is a decoder thant can produce a nested ``dict``, you can use it to define a schema.
 
 
 .. _PyYAML: http://pyyaml.org

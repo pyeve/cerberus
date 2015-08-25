@@ -15,13 +15,24 @@ Not released yet.
   of schemas is reduced (Frank Sachsenheim).
 - New: Implemented rules of a Validator-instance are accessible as
   'validation_rules'-property (Frank Sachsenheim).
+- New: 'rename'-rule renames a field to a given string during normalization
+  (Frank Sachsenheim).
+- New: 'rename_handler'-rule that takes an callable that renames unknown
+  fields (Frank Sachsenheim).
+- New: 'Validator.purge_unknown'-property and conditional purging of unknown fields
+  (Frank Sachsenheim).
+- New: 'Validator.trail'-property can be used to determine the relation of the
+  currently validating document to the 'root_document' (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).
 - Change: Removed 'context'-argument from 'validate'-method as this is set
   upon the creation of a child-validator (Frank Sachsenheim).
+- Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
+- Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 
 - Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
+- Fix: Unknown fields are normalized (Frank Sachsenheim).
 
 Version 0.9.1
 -------------

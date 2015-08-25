@@ -51,6 +51,9 @@ matters, we can use it to validate all odd values:
     >>> v.validate({'oddity': 9})
     True
 
+In a schema schema you can use space characters instead of underscores, e.g.
+``{'oddity': {'is odd': 42'}}`` is an alias for ``{'oddity': {'is_odd': 42'}}``.
+
 .. versionadded:: 0.7.1
     Custom validators also have access to a special ``self.document`` variable
     that allows validation of a field to happen in context of the rest of the
