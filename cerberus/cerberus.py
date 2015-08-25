@@ -416,6 +416,7 @@ class Validator(object):
         self.update = update
         self.__init_processing(document, schema)
         self.__prepare_document(document, normalize)
+        self._required_excluded = set()
 
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
@@ -707,12 +708,22 @@ class Validator(object):
         """
         required = set(field for field, definition in self.schema.items()
                        if definition.get('required') is True)
+        required -= self._required_excluded
         missing = required - set(field for field in document
                                  if document.get(field) is not None or
                                  not self.ignore_none_values)
 
         for field in missing:
             self._error(field, errors.ERROR_REQUIRED_FIELD)
+
+        # At least on field from self._required_excluded should be
+        # present in document
+        if len(self._required_excluded) > 0:
+            fields = set(field for field in document
+                         if document.get(field) is not None)
+            if self._required_excluded.isdisjoint(fields):
+                for field in self._required_excluded - fields:
+                    self._error(field, errors.ERROR_REQUIRED_FIELD)
 
     def _validate_schema(self, definition, field, value):
         schema = definition.get('schema')
@@ -821,6 +832,16 @@ class Validator(object):
     def _validate_excludes(self, excludes, field, value):
         if isinstance(excludes, Hashable):
             excludes = [excludes]
+
+        # Save required field to be checked latter
+        if 'required' in self.schema[field] and self.schema[field]['required']:
+            self._required_excluded.add(field)
+        for exclude in excludes:
+            if (exclude in self.schema
+               and 'required' in self.schema[exclude]
+               and self.schema[exclude]['required']):
+
+                self._required_excluded.add(exclude)
 
         if [True for key in excludes if key in self.document]:
             # Wrap each field in `excludes` list between quotes
