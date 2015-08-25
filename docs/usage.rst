@@ -649,7 +649,7 @@ You can require both field to build an exclusive `or`:
     ...                          'required': True},
     ...           'that_field': {'type': 'dict',
     ...                          'excludes': 'this_field',
-    ...                          'required': True},
+    ...                          'required': True}}
     >>> v.validate({'this_field': {}, 'that_field': {}}, schema)
     False
     >>> v.validate({'this_field': {}}, schema)
