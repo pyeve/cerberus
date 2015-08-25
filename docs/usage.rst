@@ -700,8 +700,8 @@ unknown fields will be validated against it:
 .. _type-coercion:
 
 
-Normalizaion Rules
-------------------
+Normalization Rules
+-------------------
 
 Renaming Of Fields
 ~~~~~~~~~~~~~~~~~~
