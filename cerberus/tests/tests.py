@@ -1174,8 +1174,8 @@ class TestValidation(TestBase):
         document1 = {'this_field': {}}
         document2 = {'that_field': {}}
         document3 = {'that_field': {}, 'this_field': {}}
-        self.assertSuccess(document1, schema)
-        self.assertSuccess(document2, schema)
+        self.assertSuccess(document1, schema, update=False)
+        self.assertSuccess(document2, schema, update=False)
         self.assertFail({}, schema)
         self.assertFail(document3, schema)
 
