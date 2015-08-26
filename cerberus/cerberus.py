@@ -488,6 +488,9 @@ class Validator(object):
         else:
             self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
+    # Remember to keep the validations method below this line
+    # sorted alphabetically
+
     def __validate_definition(self, definition, field):
         """ Validate a field's value against its defined rules. """
 
@@ -577,6 +580,28 @@ class Validator(object):
     def _validate_empty(self, empty, field, value):
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(field, errors.ERROR_EMPTY_NOT_ALLOWED)
+
+    def _validate_excludes(self, excludes, field, value):
+        if isinstance(excludes, Hashable):
+            excludes = [excludes]
+
+        # Save required field to be checked latter
+        if 'required' in self.schema[field] and self.schema[field]['required']:
+            self._unrequired_by_excludes.add(field)
+        for exclude in excludes:
+            if (exclude in self.schema
+               and 'required' in self.schema[exclude]
+               and self.schema[exclude]['required']):
+
+                self._unrequired_by_excludes.add(exclude)
+
+        if [True for key in excludes if key in self.document]:
+            # Wrap each field in `excludes` list between quotes
+            exclusion_str = ', '.join("'{0}'"
+                                      .format(word) for word in excludes)
+            self._error(field,
+                        errors.ERROR_EXCLUDES_FIELD.format(exclusion_str,
+                                                           field))
 
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
@@ -830,28 +855,6 @@ class Validator(object):
                 if len(validator.errors):
                     self._error(field, validator.errors)
 
-    def _validate_excludes(self, excludes, field, value):
-        if isinstance(excludes, Hashable):
-            excludes = [excludes]
-
-        # Save required field to be checked latter
-        if 'required' in self.schema[field] and self.schema[field]['required']:
-            self._unrequired_by_excludes.add(field)
-        for exclude in excludes:
-            if (exclude in self.schema
-               and 'required' in self.schema[exclude]
-               and self.schema[exclude]['required']):
-
-                self._unrequired_by_excludes.add(exclude)
-
-        if [True for key in excludes if key in self.document]:
-            # Wrap each field in `excludes` list between quotes
-            exclusion_str = ', '.join("'{0}'"
-                                      .format(word) for word in excludes)
-            self._error(field,
-                        errors.ERROR_EXCLUDES_FIELD.format(exclusion_str,
-                                                           field))
-
 
 class DefinitionSchema(MutableMapping):
     """ A dict-subclass for caching of validated schemas.
@@ -1034,6 +1037,14 @@ class DefinitionSchema(MutableMapping):
                 raise SchemaError(errors.SCHEMA_ERROR_DEPENDENCY_VALIDITY
                                   .format(dependency, field))
 
+    def __validate_excludes_definition(self, excludes):
+        if isinstance(excludes, Hashable):
+            excludes = [excludes]
+        for key in excludes:
+            if not isinstance(key, _str_type):
+                raise SchemaError(
+                    errors.SCHEMA_ERROR_EXCLUDES_HASHABLE.format(key))
+
     def __validate_schema_definition(self, value):
         try:  # if mapping
             DefinitionSchema(self.validator, value)
@@ -1046,14 +1057,6 @@ class DefinitionSchema(MutableMapping):
             if not 'type_' + type_def in self.validation_rules:
                 raise SchemaError(
                     errors.ERROR_UNKNOWN_TYPE.format(type_def))
-
-    def __validate_excludes_definition(self, excludes):
-        if isinstance(excludes, Hashable):
-            excludes = [excludes]
-        for key in excludes:
-            if not isinstance(key, _str_type):
-                raise SchemaError(
-                    errors.SCHEMA_ERROR_EXCLUDES_HASHABLE.format(key))
 
 
 def expand_definition_schema(schema):
