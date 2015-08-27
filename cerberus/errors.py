@@ -24,7 +24,7 @@ ERROR_UNALLOWED_VALUE = "unallowed value {0}"
 ERROR_UNALLOWED_VALUES = "unallowed values {0}"
 ERROR_UNKNOWN_FIELD = "unknown field"
 ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
-
+ERROR_EXCLUDES_FIELD = "{0} must not be present with '{1}'"
 SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE = \
     "allow_unknown-definition for field '{0}' must be a bool or a dict"
 SCHEMA_ERROR_CALLABLE_TYPE = \
@@ -44,3 +44,4 @@ SCHEMA_ERROR_PURGE_UNKNOWN_TYPE = \
 SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
 SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
 SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"
+SCHEMA_ERROR_EXCLUDES_HASHABLE = "{0} is not hashable ; cannot be excluded"

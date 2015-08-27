@@ -617,6 +617,62 @@ Thus you can use this to validate a document against several schemas without imp
 .. versionadded: 0.10
 
 
+excludes
+~~~~~~~~
+
+You can declare fields to excludes others:
+
+.. doctest::
+
+    >>> v = Validator()
+    >>> schema = {'this_field': {'type': 'dict',
+    ...                          'excludes': 'that_field'},
+    ...           'that_field': {'type': 'dict',
+    ...                          'excludes': 'this_field'}}
+    >>> v.validate({'this_field': {}, 'that_field': {}}, schema)
+    False
+    >>> v.validate({'this_field': {}}, schema)
+    True
+    >>> v.validate({'that_field': {}}, schema)
+    True
+    >>> v.validate({}, schema)
+    True
+
+
+You can require both field to build an exclusive `or`:
+
+.. doctest::
+
+    >>> v = Validator()
+    >>> schema = {'this_field': {'type': 'dict',
+    ...                          'excludes': 'that_field',
+    ...                          'required': True},
+    ...           'that_field': {'type': 'dict',
+    ...                          'excludes': 'this_field',
+    ...                          'required': True}}
+    >>> v.validate({'this_field': {}, 'that_field': {}}, schema)
+    False
+    >>> v.validate({'this_field': {}}, schema)
+    True
+    >>> v.validate({'that_field': {}}, schema)
+    True
+    >>> v.validate({}, schema)
+    False
+
+
+You can also pass multiples fields to exclude in a list :
+
+.. doctest::
+
+   >>> schema = {'this_field': {'type': 'dict',
+   ...                          'excludes': ['that_field', 'bazo_field']},
+   ...           'that_field': {'type': 'dict',
+   ...                          'excludes': 'this_field'},
+   ...           'bazo_field': {'type': 'dict'}}
+   >>> v.validate({'this_field': {}, 'bazo_field': {}}, schema)
+   False
+
+
 Allowing the Unknown
 --------------------
 By default only keys defined in the schema are allowed:

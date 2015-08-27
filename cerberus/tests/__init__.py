@@ -154,10 +154,11 @@ class TestBase(TestCase):
             validator = self.validator
         self.assertFalse(validator.validate(document, schema))
 
-    def assertSuccess(self, document, schema=None, validator=None):
+    def assertSuccess(self, document, schema=None, validator=None,
+                      update=True):
         if validator is None:
             validator = self.validator
-        self.assertTrue(validator.validate(document, schema, update=True),
+        self.assertTrue(validator.validate(document, schema, update),
                         validator.errors)
 
     def assertError(self, field, error, validator=None):
