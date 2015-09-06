@@ -548,7 +548,7 @@ class Validator(object):
     def __validate_dependencies_mapping(self, dependencies, field):
         validated_deps = 0
         for dep_name, dep_values in dependencies.items():
-            if isinstance(dep_values, _str_type):
+            if isinstance(dep_values, (_str_type, bool)):
                 dep_values = [dep_values]
             context = self.document.copy()
             parts = dep_name.split('.')

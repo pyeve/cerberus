@@ -1126,6 +1126,34 @@ class TestValidation(TestBase):
                                                   "with one of these values: "
                                                   "['one', 'two']"})
 
+    def test_dependencies_on_boolean_field_with_one_value(self):
+        # Bug #138
+        # https://github.com/nicolaiarocci/cerberus/issues/138
+        v = Validator({'deleted': {'type': 'boolean'},
+                       'text': {'dependencies': {'deleted': False}}})
+        try:
+            self.assertTrue(v.validate({'text': 'foo', 'deleted': False}))
+            self.assertFalse(v.validate({'text': 'foo', 'deleted': True}))
+            self.assertFalse(v.validate({'text': 'foo'}))
+        except TypeError as e:
+            if str(e) == "argument of type 'bool' is not iterable":
+                self.fail(' '.join([
+                    "Bug #138 still exists, couldn't use boolean",
+                    "in dependency without putting it in a list.\n",
+                    "'some_field': True vs 'some_field: [True]"]))
+            else:
+                raise
+
+    def test_dependencies_on_boolean_field_with_value_in_list(self):
+        # Bug #138
+        # https://github.com/nicolaiarocci/cerberus/issues/138
+        v = Validator({'deleted': {'type': 'boolean'},
+                       'text': {'dependencies': {'deleted': [False]}}})
+
+        self.assertTrue(v.validate({'text': 'foo', 'deleted': False}))
+        self.assertFalse(v.validate({'text': 'foo', 'deleted': True}))
+        self.assertFalse(v.validate({'text': 'foo'}))
+
     def test_trail(self):
         class TrailTester(Validator):
             def _validate_trail(self, constraint_value, field, value):
