@@ -31,9 +31,11 @@ Not released yet.
   upon the creation of a child-validator (Frank Sachsenheim).
 - Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
 - Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
+- Change: Use a logger for deprecation-warnings if available (Frank Sachsenheim).
 
 - Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
 - Fix: Unknown fields are normalized (Frank Sachsenheim).
+- Fix: Add missing deprecation-warnings (Frank Sachsenheim).
 
 Version 0.9.1
 -------------
