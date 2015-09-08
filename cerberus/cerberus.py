@@ -10,6 +10,7 @@
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, \
     Sequence
+import copy
 from datetime import datetime
 import json
 import re
@@ -204,9 +205,6 @@ class Validator(object):
         rules = ['_'.join(x.split('_')[2:]) for x in dir(self)
                  if x.startswith('_validate')]
         return tuple(rules)
-
-    def __call__(self, *args, **kwargs):
-        return self.validate(*args, **kwargs)
 
     def _error(self, field, _error):
         field_errors = self._errors.get(field, [])
@@ -440,6 +438,8 @@ class Validator(object):
 
         return not bool(self._errors)
 
+    __call__ = validate
+
     def validated(self, *args, **kwargs):
         """ Wrapper around :func:`validate` that returns the normalized and
         validated document or ``None`` if validation failed.
@@ -472,6 +472,12 @@ class Validator(object):
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
+        try:
+            # might fail when dealing with complex document values
+            self.document = copy.deepcopy(document)
+        except:
+            # fallback on a shallow copy
+            self.document = document.copy()
         if normalize:
             self.document = self._normalize_mapping(document.copy(),
                                                     self.schema)
@@ -484,13 +490,10 @@ class Validator(object):
             if isinstance(self.allow_unknown, Mapping):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
-                unknown_validator = \
-                    self.__get_child_validator(field,
-                                               schema={field:
-                                                       self.allow_unknown})
-                if not unknown_validator.validate({field: value},
-                                                  normalize=False):
-                    self._error(field, unknown_validator.errors[field])
+                validator = self.__get_child_validator(
+                    field, schema={field: self.allow_unknown})
+                if not validator({field: value}, normalize=False):
+                    self._error(field, validator.errors[field])
         else:
             self._error(field, errors.ERROR_UNKNOWN_FIELD)
 
@@ -629,7 +632,7 @@ class Validator(object):
     def _validate_items_schema(self, items, field, value):
         validator = self.__get_child_validator(schema=items)
         for item in value:
-            validator.validate(item, normalize=False)
+            validator(item, normalize=False)
             for field, error in validator.errors.items():
                 self._error(field, error)
 
@@ -647,11 +650,11 @@ class Validator(object):
             del s[operator]
             s.update(definition)
 
-            v = self.__get_child_validator(schema={field: s})
-            if v.validate({field: value}, normalize=False):
+            validator = self.__get_child_validator(schema={field: s})
+            if validator({field: value}, normalize=False):
                 valid_counter += 1
             errorstack["definition %d" % i] = \
-                v.errors.get(field, 'validated')
+                validator.errors.get(field, 'validated')
 
         if operator == 'anyof' and valid_counter < 1:
             e = {'anyof': 'no definitions validated'}
@@ -714,7 +717,7 @@ class Validator(object):
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
                 schema={field: {'schema': schema}})
-            validator.validate({field: list(value.keys())}, normalize=False)
+            validator({field: list(value.keys())}, normalize=False)
             for error in validator.errors:
                 self._error(field, error)
 
@@ -772,8 +775,7 @@ class Validator(object):
     def __validate_schema_mapping(self, field, schema, value, allow_unknown):
         validator = self.__get_child_validator(field, schema=schema,
                                                allow_unknown=allow_unknown)
-        if not validator.validate(value, update=self.update,
-                                  normalize=False):
+        if not validator(value, update=self.update, normalize=False):
             self._error(field, validator.errors)
 
     def __validate_schema_sequence(self, field, schema, value):
@@ -781,7 +783,7 @@ class Validator(object):
         for i in range(len(value)):
             validator = self.__get_child_validator(
                 schema={i: schema}, allow_unknown=self.allow_unknown)
-            validator.validate({i: value[i]}, normalize=False)
+            validator({i: value[i]}, normalize=False)
             list_errors.update(validator.errors)
         if len(list_errors):
             self._error(field, list_errors)
@@ -856,8 +858,7 @@ class Validator(object):
         if isinstance(value, Mapping):
             for key, document in value.items():
                 validator = self.__get_child_validator()
-                validator.validate({key: document}, {key: schema},
-                                   normalize=False)
+                validator({key: document}, {key: schema}, normalize=False)
                 if len(validator.errors):
                     self._error(field, validator.errors)
 

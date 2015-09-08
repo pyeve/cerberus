@@ -4,7 +4,7 @@ from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
-from . import TestBase, TestCase
+from . import TestBase
 from ..cerberus import errors, SchemaError, Validator
 
 
@@ -61,7 +61,7 @@ class TestValidation(TestBase):
         try:
             func(*args, **kwargs)
         except SchemaError as e:
-            self.assertTrue(err_msg in str(e))
+            self.assertIn(err_msg, str(e))
         else:
             self.fail('SchemaError not raised')
 
@@ -140,7 +140,7 @@ class TestValidation(TestBase):
         v.validate({'a_readonly_number': 2})
         # it would be a list if there's more than one error; we get a dict
         # instead.
-        self.assertTrue('read-only' in v.errors['a_readonly_number'])
+        self.assertIn('read-only', v.errors['a_readonly_number'])
 
     def test_unknown_data_type(self):
         field = 'name'
@@ -221,13 +221,12 @@ class TestValidation(TestBase):
         value = {schema_field: 34}
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(field in v.errors)
-        self.assertTrue(schema_field in v.errors[field])
-        self.assertTrue(errors.ERROR_BAD_TYPE.format('string') in
-                        v.errors[field][schema_field])
-        self.assertTrue('city' in v.errors[field])
-        self.assertTrue(errors.ERROR_REQUIRED_FIELD in
-                        v.errors[field]['city'])
+        self.assertIn(field, v.errors)
+        self.assertIn(schema_field, v.errors[field])
+        self.assertIn(errors.ERROR_BAD_TYPE.format('string'),
+                      v.errors[field][schema_field])
+        self.assertIn('city', v.errors[field])
+        self.assertIn(errors.ERROR_REQUIRED_FIELD, v.errors[field]['city'])
 
     def test_bad_valueschema(self):
         field = 'a_dict_with_valueschema'
@@ -235,19 +234,19 @@ class TestValidation(TestBase):
         value = {schema_field: 'not an integer'}
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(field in v.errors)
-        self.assertTrue(schema_field in v.errors[field])
-        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
-                        v.errors[field][schema_field])
+        self.assertIn(field, v.errors)
+        self.assertIn(schema_field, v.errors[field])
+        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
+                      v.errors[field][schema_field])
 
     def test_bad_list_of_values(self):
         field = 'a_list_of_values'
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(field in v.errors)
-        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
-                        v.errors[field][1])
+        self.assertIn(field, v.errors)
+        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
+                      v.errors[field][1])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
@@ -275,11 +274,11 @@ class TestValidation(TestBase):
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
         v = self.validator
-        self.assertTrue(field in v.errors)
-        self.assertTrue(0 in v.errors[field])
-        self.assertTrue('price' in v.errors[field][0])
-        self.assertTrue(errors.ERROR_BAD_TYPE.format('integer') in
-                        v.errors[field][0]['price'])
+        self.assertIn(field, v.errors)
+        self.assertIn(0, v.errors[field])
+        self.assertIn('price', v.errors[field][0])
+        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
+                      v.errors[field][0]['price'])
 
         value = ["not a dict"]
         self.assertValidationError(
@@ -310,9 +309,8 @@ class TestValidation(TestBase):
         self.assertSuccess({'a_restricted_integer': -1})
 
     def test_validate_update(self):
-        self.assertTrue(self.validator.validate({'an_integer': 100,
-                                                 'a_dict': {'address': 'adr'}},
-                                                update=True))
+        self.assertSuccess({'an_integer': 100, 'a_dict': {'address': 'adr'}},
+                           update=True)
 
     def test_string(self):
         self.assertSuccess({'a_string': 'john doe'})
@@ -352,8 +350,7 @@ class TestValidation(TestBase):
     def test_regex(self):
         field = 'a_regex_email'
         self.assertSuccess({field: 'valid.email@gmail.com'})
-        self.assertFalse(self.validator.validate({field: 'invalid'},
-                                                 self.schema, update=True))
+        self.assertFail({field: 'invalid'}, self.schema, update=True)
         self.assertError(field, 'does not match regex')
 
     def test_a_list_of_dicts_deprecated(self):
@@ -442,8 +439,9 @@ class TestValidation(TestBase):
 
         schema = {'test_field': {'type': 'objectid'}}
         v = MyValidator(schema)
-        self.assertTrue(v.validate({'test_field': '50ad188438345b1049c88a28'}))
-        self.assertFalse(v.validate({'test_field': 'hello'}))
+        self.assertSuccess({'test_field': '50ad188438345b1049c88a28'},
+                           validator=v)
+        self.assertFail({'test_field': 'hello'}, validator=v)
         self.assertError('test_field', 'Not an ObjectId', validator=v)
 
     def test_custom_datatype_rule(self):
@@ -458,9 +456,9 @@ class TestValidation(TestBase):
 
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)
-        self.assertFalse(v.validate({'test_field': '0'}))
+        self.assertFail({'test_field': '0'}, validator=v)
         self.assertError('test_field', 'Not a number', validator=v)
-        self.assertFalse(v.validate({'test_field': 0}))
+        self.assertFail({'test_field': 0}, validator=v)
         self.assertError('test_field', 'Below the min', validator=v)
 
     def test_custom_validator(self):
@@ -471,8 +469,8 @@ class TestValidation(TestBase):
 
         schema = {'test_field': {'isodd': True}}
         v = MyValidator(schema)
-        self.assertTrue(v.validate({'test_field': 7}))
-        self.assertFalse(v.validate({'test_field': 6}))
+        self.assertSuccess({'test_field': 7}, validator=v)
+        self.assertFail({'test_field': 6}, validator=v)
         self.assertError('test_field', 'Not an odd number', validator=v)
 
     def test_transparent_schema_rules(self):
@@ -605,12 +603,10 @@ class TestValidation(TestBase):
         self.assertFalse(v({'test_field': 1}))
 
     def test_dependencies_field(self):
-        schema = {'test_field': {'dependencies': 'foo'}, 'foo': {'type':
-                                                                 'string'}}
-        v = Validator(schema)
-
-        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
-        self.assertFalse(v.validate({'test_field': 'foobar'}))
+        schema = {'test_field': {'dependencies': 'foo'},
+                  'foo': {'type': 'string'}}
+        self.assertSuccess({'test_field': 'foobar', 'foo': 'bar'}, schema)
+        self.assertFail({'test_field': 'foobar'}, schema)
 
     def test_dependencies_list(self):
         schema = {
@@ -618,11 +614,9 @@ class TestValidation(TestBase):
             'foo': {'type': 'string'},
             'bar': {'type': 'string'}
         }
-        v = Validator(schema)
-
-        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'bar',
-                                    'bar': 'foo'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
+        self.assertSuccess({'test_field': 'foobar', 'foo': 'bar', 'bar': 'foo'},  # noqa
+                           schema)
+        self.assertFail({'test_field': 'foobar', 'foo': 'bar'}, schema)
 
     def test_dependencies_list_with_required_field(self):
         schema = {
@@ -630,29 +624,21 @@ class TestValidation(TestBase):
             'foo': {'type': 'string'},
             'bar': {'type': 'string'}
         }
-        v = Validator(schema)
-
         # False: all dependencies missing
-        self.assertFalse(v.validate({'test_field': 'foobar'}))
-
+        self.assertFail({'test_field': 'foobar'}, schema)
         # False: one of dependencies missing
-        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
-
+        self.assertFail({'test_field': 'foobar', 'foo': 'bar'}, schema)
         # False: one of dependencies missing
-        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'foo'}))
-
+        self.assertFail({'test_field': 'foobar', 'bar': 'foo'}, schema)
         # False: dependencies are validated and field is required
-        self.assertFalse(v.validate({'foo': 'bar', 'bar': 'foo'}))
-
+        self.assertFail({'foo': 'bar', 'bar': 'foo'}, schema)
         # Flase: All dependencies are optional but field is still required
-        self.assertFalse(v.validate({}))
-
+        self.assertFail({}, schema)
         # True: dependency missing
-        self.assertFalse(v.validate({'foo': 'bar'}))
-
+        self.assertFail({'foo': 'bar'}, schema)
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
-        self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+        self.assertSuccess({'foo': 'bar', 'bar': 'foo'}, schema)
 
     def test_dependencies_list_with_subodcuments_fields(self):
         schema = {
@@ -665,13 +651,11 @@ class TestValidation(TestBase):
                 }
             }
         }
-        v = Validator(schema)
-
-        self.assertTrue(v.validate({'test_field': 'foobar',
-                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'a_dict': {}}))
-        self.assertFalse(v.validate({'test_field': 'foobar',
-                                     'a_dict': {'foo': 'foo'}}))
+        self.assertSuccess({'test_field': 'foobar',
+                            'a_dict': {'foo': 'foo', 'bar': 'bar'}}, schema)
+        self.assertFail({'test_field': 'foobar', 'a_dict': {}}, schema)
+        self.assertFail({'test_field': 'foobar',
+                         'a_dict': {'foo': 'foo'}}, schema)
 
     def test_dependencies_dict(self):
         schema = {
@@ -679,15 +663,13 @@ class TestValidation(TestBase):
             'foo': {'type': 'string'},
             'bar': {'type': 'string'}
         }
-        v = Validator(schema)
-
-        self.assertTrue(v.validate({'test_field': 'foobar', 'foo': 'foo',
-                                    'bar': 'bar'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'foo'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'bar'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'bar'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'foo'}))
-        self.assertFalse(v.validate({'test_field': 'foobar'}))
+        self.assertSuccess({'test_field': 'foobar', 'foo': 'foo', 'bar': 'bar'},  # noqa
+                           schema)
+        self.assertFail({'test_field': 'foobar', 'foo': 'foo'}, schema)
+        self.assertFail({'test_field': 'foobar', 'foo': 'bar'}, schema)
+        self.assertFail({'test_field': 'foobar', 'bar': 'bar'}, schema)
+        self.assertFail({'test_field': 'foobar', 'bar': 'foo'}, schema)
+        self.assertFail({'test_field': 'foobar'}, schema)
 
     def test_dependencies_dict_with_required_field(self):
         schema = {
@@ -698,30 +680,24 @@ class TestValidation(TestBase):
             'foo': {'type': 'string'},
             'bar': {'type': 'string'}
         }
-        v = Validator(schema)
-
         # False: all dependencies missing
-        self.assertFalse(v.validate({'test_field': 'foobar'}))
-
+        self.assertFail({'test_field': 'foobar'}, schema)
         # False: one of dependencies missing
-        self.assertFalse(v.validate({'test_field': 'foobar', 'foo': 'foo'}))
-        self.assertFalse(v.validate({'test_field': 'foobar', 'bar': 'bar'}))
-
+        self.assertFail({'test_field': 'foobar', 'foo': 'foo'}, schema)
+        self.assertFail({'test_field': 'foobar', 'bar': 'bar'}, schema)
         # False: dependencies are validated and field is required
-        self.assertFalse(v.validate({'foo': 'foo', 'bar': 'bar'}))
-
+        self.assertFail({'foo': 'foo', 'bar': 'bar'}, schema)
         # False: All dependencies are optional, but field is still required
-        self.assertFalse(v.validate({}))
-
+        self.assertFail({}, schema)
         # False: dependency missing
-        self.assertFalse(v.validate({'foo': 'bar'}))
+        self.assertFail({'foo': 'bar'}, schema)
 
-        self.assertTrue(v.validate({'test_field': 'foobar',
-                                    'foo': 'foo', 'bar': 'bar'}))
+        self.assertSuccess({'test_field': 'foobar', 'foo': 'foo', 'bar': 'bar'},  # noqa
+                           schema)
 
         # True: dependencies are validated but field is not required
         schema['test_field']['required'] = False
-        self.assertTrue(v.validate({'foo': 'bar', 'bar': 'foo'}))
+        self.assertSuccess({'foo': 'bar', 'bar': 'foo'}, schema)
 
     def test_dependencies_dict_with_subodcuments_fields(self):
         schema = {
@@ -735,20 +711,17 @@ class TestValidation(TestBase):
                 }
             }
         }
-        v = Validator(schema)
-
-        self.assertTrue(v.validate({'test_field': 'foobar',
-                                    'a_dict': {'foo': 'foo', 'bar': 'bar'}}))
-        self.assertTrue(v.validate({'test_field': 'foobar',
-                                    'a_dict': {'foo': 'bar', 'bar': 'bar'}}))
-        self.assertFalse(v.validate({'test_field': 'foobar',
-                                     'a_dict': {}}))
-        self.assertFalse(v.validate({'test_field': 'foobar',
-                                     'a_dict': {'foo': 'foo', 'bar': 'foo'}}))
-        self.assertFalse(v.validate({'test_field': 'foobar',
-                                     'a_dict': {'bar': 'foo'}}))
-        self.assertFalse(v.validate({'test_field': 'foobar',
-                                     'a_dict': {'bar': 'bar'}}))
+        self.assertSuccess({'test_field': 'foobar',
+                            'a_dict': {'foo': 'foo', 'bar': 'bar'}}, schema)
+        self.assertSuccess({'test_field': 'foobar',
+                            'a_dict': {'foo': 'bar', 'bar': 'bar'}}, schema)
+        self.assertFail({'test_field': 'foobar', 'a_dict': {}}, schema)
+        self.assertFail({'test_field': 'foobar',
+                         'a_dict': {'foo': 'foo', 'bar': 'foo'}}, schema)
+        self.assertFail({'test_field': 'foobar', 'a_dict': {'bar': 'foo'}},
+                        schema)
+        self.assertFail({'test_field': 'foobar', 'a_dict': {'bar': 'bar'}},
+                        schema)
 
     def test_dependencies_errors(self):
         v = Validator({'field1': {'required': False},
@@ -763,8 +736,8 @@ class TestValidation(TestBase):
         schema = {'sub_dict': {'type': 'dict',
                                'schema': {'foo': {'type': 'string'}}}}
         v = Validator(schema, allow_unknown=True)
-        self.assertTrue(v.validate({'sub_dict': {'foo': 'bar',
-                                                 'unknown': True}}))
+        self.assertSuccess({'sub_dict': {'foo': 'bar', 'unknown': True}},
+                           validator=v)
 
     def test_self_document_always_root(self):
         """ Make sure self.document is always the root document.
@@ -793,10 +766,8 @@ class TestValidation(TestBase):
                 }
             }
         }
-        v = MyValidator(schema)
-
-        obj = {'sub': [{'foo': 'bar'}, {'foo': 'baz'}]}
-        self.assertTrue(v.validate(obj))
+        self.assertSuccess({'sub': [{'foo': 'bar'}, {'foo': 'baz'}]},
+                           validator=MyValidator(schema))
 
     def test_validator_rule(self):
         def validate_name(field, value, error):
@@ -1106,10 +1077,10 @@ class TestValidation(TestBase):
         document = {'info': {'name': 'my name'}}
         self.assertSuccess(document, schema)
 
-        validator = Validator(schema)
-        self.assertSuccess(document, schema, validator)
-
-        self.assertTrue(validator.validate(document))
+        v = Validator(schema)
+        self.assertSuccess(document, schema, v)
+        # it once was observed that this behaves other than the previous line
+        self.assertTrue(v.validate(document))
 
     def test_dont_type_validate_nulled_values(self):
         v = self.validator
@@ -1128,14 +1099,13 @@ class TestValidation(TestBase):
                                                   "['one', 'two']"})
 
     def test_dependencies_on_boolean_field_with_one_value(self):
-        # Bug #138
         # https://github.com/nicolaiarocci/cerberus/issues/138
-        v = Validator({'deleted': {'type': 'boolean'},
-                       'text': {'dependencies': {'deleted': False}}})
+        schema = {'deleted': {'type': 'boolean'},
+                  'text': {'dependencies': {'deleted': False}}}
         try:
-            self.assertTrue(v.validate({'text': 'foo', 'deleted': False}))
-            self.assertFalse(v.validate({'text': 'foo', 'deleted': True}))
-            self.assertFalse(v.validate({'text': 'foo'}))
+            self.assertSuccess({'text': 'foo', 'deleted': False}, schema)
+            self.assertFail({'text': 'foo', 'deleted': True}, schema)
+            self.assertFail({'text': 'foo'}, schema)
         except TypeError as e:
             if str(e) == "argument of type 'bool' is not iterable":
                 self.fail(' '.join([
@@ -1146,18 +1116,17 @@ class TestValidation(TestBase):
                 raise
 
     def test_dependencies_on_boolean_field_with_value_in_list(self):
-        # Bug #138
         # https://github.com/nicolaiarocci/cerberus/issues/138
-        v = Validator({'deleted': {'type': 'boolean'},
-                       'text': {'dependencies': {'deleted': [False]}}})
+        schema = {'deleted': {'type': 'boolean'},
+                  'text': {'dependencies': {'deleted': [False]}}}
 
-        self.assertTrue(v.validate({'text': 'foo', 'deleted': False}))
-        self.assertFalse(v.validate({'text': 'foo', 'deleted': True}))
-        self.assertFalse(v.validate({'text': 'foo'}))
+        self.assertSuccess({'text': 'foo', 'deleted': False}, schema)
+        self.assertFail({'text': 'foo', 'deleted': True}, schema)
+        self.assertFail({'text': 'foo'}, schema)
 
     def test_trail(self):
         class TrailTester(Validator):
-            def _validate_trail(self, constraint_value, field, value):
+            def _validate_trail(self, constraint, field, value):
                 test_doc = self.root_document
                 for crumb in self.trail:
                     test_doc = test_doc[crumb]
@@ -1280,7 +1249,7 @@ class TestNormalization(TestBase):
             'amount': {'coerce': int}
         }
         v = Validator(schema)
-        self.assertFalse(v.validate({'amount': 'not_a_number'}))
+        self.assertFail({'amount': 'not_a_number'}, validator=v)
         self.assertError('amount',
                          errors.ERROR_COERCION_FAILED.format('amount'), v)
 
@@ -1289,7 +1258,7 @@ class TestNormalization(TestBase):
             'name': {'coerce': str.lower}
         }
         v = Validator(schema)
-        self.assertFalse(v.validate({'name': 1234}))
+        self.assertFail({'name': 1234}, validator=v)
         self.assertError('name',
                          errors.ERROR_COERCION_FAILED.format('name'), v)
 
@@ -1387,7 +1356,7 @@ class BackwardCompatibility(TestBase):
         self.assertSuccess(document, schema, v)
 
 
-class TestInheritance(TestCase):
+class TestInheritance(TestBase):
     def test_contextual_data_preservation(self):
 
         class InheritedValidator(Validator):
@@ -1403,7 +1372,7 @@ class TestInheritance(TestCase):
         v = InheritedValidator({'test': {'type': 'list',
                                          'schema': {'type': 'test'}}},
                                working_dir='/tmp')
-        self.assertTrue(v.validate({'test': ['foo']}))
+        self.assertSuccess({'test': ['foo']}, validator=v)
 
 
 class TestDockerCompose(TestBase):
