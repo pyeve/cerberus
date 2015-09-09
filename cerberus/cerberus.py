@@ -12,10 +12,12 @@ from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, \
     Sequence
 import copy
 from datetime import datetime
-from . import errors
 import json
 import re
 import sys
+
+from . import errors
+from .utils import warn_deprecated
 
 if sys.version_info[0] == 3:
     _str_type = str
@@ -459,6 +461,9 @@ class Validator(object):
         .. deprecated:: 0.4.0
            Use :func:`validate` with ``update=True`` instead.
         """
+        warn_deprecated('validate_update',
+                        'Validator.validate_update is deprecated. '
+                        'Use Validator.validate(update=True) instead.')
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
@@ -985,6 +990,10 @@ class DefinitionSchema(MutableMapping):
                     if isinstance(value, Mapping):
                         # TODO remove on next major release
                         # list of dicts, deprecated
+                        warn_deprecated('items_dict',
+                                        "The 'items'-rule with a mapping as "
+                                        "constraint is deprecated. Use the "
+                                        "'schema'-rule instead.")
                         DefinitionSchema(self.validator, value)
                     else:
                         for item_schema in value:
@@ -1077,10 +1086,8 @@ def expand_definition_schema(schema):
         if 'keyschema' in constraints:
             constraints['valueschema'] = constraints['keyschema']
             del constraints['keyschema']
-            if not warning_printed:
-                print('WARNING cerberus: `keyschema` is deprecated, '
-                      'use `valueschema` instead')
-                warning_printed = True
+            warn_deprecated('keyschema', "The 'keyschema'-rule is deprecated. "
+                                         "Use 'valueschema' instead.")
         for key, value in constraints.items():
             constraints[key] = update_to_valueschema(value, warning_printed)
         return constraints
