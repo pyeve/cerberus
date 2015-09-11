@@ -619,12 +619,11 @@ class Validator(object):
         if len(items) != len(values):
             self._error(field, errors.ERROR_ITEMS_LIST.format(len(items)))
         else:
-            for i, item_definition in enumerate(items):
-                validator =\
-                    self.__get_child_validator(schema={i: item_definition})
-                if not validator.validate({i: values[i]}, normalize=False):
-                    self.errors.setdefault(field, {})
-                    self.errors[field].update(validator.errors)
+            schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
+            validator = self.__get_child_validator(schema=schema)
+            if not validator(dict((i, item) for i, item in enumerate(values))):
+                self.errors.setdefault(field, {})
+                self.errors[field].update(validator.errors)
 
     def _validate_items_schema(self, items, field, value):
         validator = self.__get_child_validator(schema=items)
