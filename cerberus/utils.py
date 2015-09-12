@@ -1,19 +1,6 @@
-from __future__ import print_function
 import logging
 
-
-class PrintLogger:
-    @staticmethod
-    def warn(message):
-        print('WARNING cerberus: ' + message)
-
-
-try:
-    log = logging.getLogger('cerberus')
-except:
-    log = PrintLogger
-
-
+log = logging.getLogger('cerberus')
 depr_warnings_printed = {}
 
 
