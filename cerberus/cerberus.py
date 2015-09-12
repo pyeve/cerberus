@@ -1079,7 +1079,7 @@ def expand_definition_schema(schema):
     """
 
     # TODO remove on next major release
-    def update_to_valueschema(constraints, warning_printed=False):
+    def update_to_valueschema(constraints):
         if not isinstance(constraints, Mapping):
             return constraints
         if 'keyschema' in constraints:
@@ -1088,7 +1088,7 @@ def expand_definition_schema(schema):
             warn_deprecated('keyschema', "The 'keyschema'-rule is deprecated. "
                                          "Use 'valueschema' instead.")
         for key, value in constraints.items():
-            constraints[key] = update_to_valueschema(value, warning_printed)
+            constraints[key] = update_to_valueschema(value)
         return constraints
 
     def is_of_rule(rule):
