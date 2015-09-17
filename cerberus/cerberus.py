@@ -57,6 +57,11 @@ class Validator(object):
                           pass. Defaults to ``False``, returning an 'unknown
                           field error' un validation.
 
+    .. versionchanged:: 0.9.2
+       only perform shallow copies in order to avoid issues with Python 2.6
+       way to handle deepcopy on BytesIO (and in general, complex objects).
+       Closes #147.
+
     .. versionchanged:: 0.9.1
        'required' will always be validated, regardless of any dependencies.
 
@@ -259,14 +264,8 @@ class Validator(object):
 
         # make root document available for validators (Cerberus #42, Eve #295)
         if not context:
-            try:
-                # might fail when dealing with complex document values
-                self.document = copy.deepcopy(document)
-            except:
-                # fallback on a shallow copy
-                self.document = copy.copy(document)
-            finally:
-                self._current = self.document
+            self.document = copy.copy(document)
+            self._current = self.document
         else:
             self.document = context
             self._current = document
