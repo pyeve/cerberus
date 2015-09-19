@@ -35,6 +35,7 @@ Not released yet.
 - New: Known, validated definition schemas are cached, thus validation run-time
   of schemas is reduced (Frank Sachsenheim).
 - New: Add testing with Docker (Frank Sachsenheim).
+- New: Support CPython 3.5 (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).
