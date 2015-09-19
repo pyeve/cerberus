@@ -324,6 +324,7 @@ class Validator(object):
         :return: A normalized copy of the provided mapping or ``None`` if an
                  error occurred during normalization.
         """
+        document = document.copy()
         self.__init_processing(document, schema)
         result = self._normalize_mapping(document, schema or self.schema)
         if self.errors:
@@ -471,10 +472,11 @@ class Validator(object):
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
-        self.document = document.copy()
         if normalize:
-            self.document = self._normalize_mapping(self.document,
+            self.document = self._normalize_mapping(document.copy(),
                                                     self.schema)
+        else:
+            self.document = document.copy()
 
     def __process_unknown_fields(self, field):
         if self.allow_unknown:
