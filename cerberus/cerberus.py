@@ -10,7 +10,6 @@
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, \
     Sequence
-import copy
 from datetime import datetime
 import json
 import re
@@ -76,6 +75,11 @@ class Validator(object):
     .. versionchanged:: 0.10
 
        refactoring
+
+    .. versionchanged:: 0.9.2
+       only perform shallow copies in order to avoid issues with Python 2.6
+       way to handle deepcopy on BytesIO (and in general, complex objects).
+       Closes #147.
 
     .. versionchanged:: 0.9.1
        'required' will always be validated, regardless of any dependencies.
@@ -320,6 +324,7 @@ class Validator(object):
         :return: A normalized copy of the provided mapping or ``None`` if an
                  error occurred during normalization.
         """
+        document = document.copy()
         self.__init_processing(document, schema)
         result = self._normalize_mapping(document, schema or self.schema)
         if self.errors:
@@ -467,15 +472,11 @@ class Validator(object):
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
-        try:
-            # might fail when dealing with complex document values
-            self.document = copy.deepcopy(document)
-        except:
-            # fallback on a shallow copy
-            self.document = document.copy()
         if normalize:
-            self.document = self._normalize_mapping(self.document,
+            self.document = self._normalize_mapping(document.copy(),
                                                     self.schema)
+        else:
+            self.document = document.copy()
 
     def __process_unknown_fields(self, field):
         if self.allow_unknown:

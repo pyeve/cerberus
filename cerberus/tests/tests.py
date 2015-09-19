@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
+from tempfile import NamedTemporaryFile
 from . import TestBase, TestCase
 from ..cerberus import errors, SchemaError, Validator
 
@@ -1272,7 +1273,7 @@ class TestNormalization(TestBase):
         v = Validator(schema)
         doc = {'amount': '1'}
         v.validate(doc)
-        self.assertNotEqual(id(v.document), id(doc))
+        self.assertIsNot(v.document, doc)
 
     def test_coerce_catches_ValueError(self):
         schema = {
@@ -1322,6 +1323,28 @@ class TestNormalization(TestBase):
                             'schema': {'foo': {'type': 'string'}},
                             'purge_unknown': True}}
         self.assertDictEqual(v.normalized({'foo': {'bar': ''}}), {'foo': {}})
+
+    def test_issue_147_complex(self):
+        schema = {'revision': {'coerce': int}}
+        document = {'revision': '5', 'file': NamedTemporaryFile(mode='w+')}
+        document['file'].write(r'foobar')
+        document['file'].seek(0)
+        normalized = Validator(schema, allow_unknown=True).normalized(document)
+        self.assertEqual(normalized['revision'], 5)
+        self.assertEqual(normalized['file'].read(), 'foobar')
+        document['file'].close()
+        normalized['file'].close()
+
+    def test_issue_147_nested_dict(self):
+        schema = {'thing': {'type': 'dict',
+                            'schema': {'amount': {'coerce': int}}}}
+        ref_obj = '2'
+        document = {'thing': {'amount': ref_obj}}
+        normalized = Validator(schema).normalized(document)
+        self.assertIsNot(document, normalized)
+        self.assertEqual(normalized['thing']['amount'], 2)
+        self.assertEqual(ref_obj, '2')
+        self.assertIs(document['thing']['amount'], ref_obj)
 
 
 class DefinitionSchema(TestBase):
