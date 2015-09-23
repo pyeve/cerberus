@@ -6,7 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 0.9.2
 -------------
 
-Not released yet.
+Released on Semptember 23, 2015
 
 - Fix: don't rely on deepcopy since it can't properly handle complex objects in
   Python 2.6.
