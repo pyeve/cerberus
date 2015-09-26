@@ -1,0 +1,4 @@
+# requirements to build documentation
+Sphinx
+sphinx_bootstrap_theme==0.4.7
+sphinxcontrib-issuetracker
