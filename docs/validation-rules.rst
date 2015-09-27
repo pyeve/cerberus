@@ -1,180 +1,14 @@
 Validation Rules
 ================
 
-<<<<<<< HEAD
-.. _type:
+allow_unknown
+-------------
+This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
+when validating a mapping in order to set the
+:attr:`~cerberus.Validator.allow_unknown` property of the validator for the
+subdocument.
+For a full alaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
-type
-----
-Data type allowed for the key value. Can be one of the following names:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Type Name
-     - Python 2 Type
-     - Python 3 Type
-   * - ``boolean``
-     - :class:`py2:bool`
-     - :class:`py3:bool`
-   * - ``datetime``
-     - :class:`py2:datetime.datetime`
-     - :class:`py3:datetime.datetime`
-   * - ``dict``
-     - :class:`py2:collections.Mapping`
-     - :class:`py3:collections.abc.Mapping`
-   * - ``float``
-     - :class:`py2:float`
-     - :class:`py3:float`
-   * - ``integer``
-     - :class:`py2:int`, :class:`py2:long`
-     - :class:`py3:int`
-   * - ``list``
-     - :class:`py2:collections.Sequence`, excl. ``string``
-     - :class:`py3:collections.abc.Sequence`, excl. ``string``
-   * - ``number``
-     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`
-     - :class:`py3:float`, :class:`py3:int`
-   * - ``set``
-     - :class:`py2:set`
-     - :class:`py3:set`
-   * - ``string``
-     - :func:`py2:basestring`
-     - :class:`py3:str`
-
-You can extend this list and support :ref:`custom types <new-types>`.
-
-A list of types can be used to allow different values:
-
-.. doctest::
-
-    >>> v.schema = {'quotes': {'type': ['string', 'list']}}
-    >>> v.validate({'quotes': 'Hello world!'})
-    True
-    >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
-    True
-
-.. doctest::
-
-    >>> v.schema = {'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}}
-    >>> v.validate({'quotes': 'Hello world!'})
-    True
-    >>> v.validate({'quotes': [1, 'Heureka!']})
-    False
-    >>> v.errors
-    {'quotes': {0: 'must be of string type'}}
-
-
-.. note::
-
-    Please note that type validation is performed before most others which
-    exist for the same field (only `nullable`_ and `readonly`_ are considered
-    beforehand). In the occurrence of a type failure subsequent validation
-    rules on the field will be skipped and validation will continue on other
-    fields. This allows to safely assume that field type is correct when other
-    (standard or custom) rules are invoked.
-
-.. versionchanged:: 0.9
-   If a list of types is given, the key value must match *any* of them.
-
-.. versionchanged:: 0.7.1
-   ``dict`` and ``list`` typechecking are now performed with the more generic
-   ``Mapping`` and ``Sequence`` types from the builtin ``collections`` module.
-   This means that instances of custom types designed to the same interface as
-   the builtin ``dict`` and ``list`` types can be validated with Cerberus. We
-   exclude strings when type checking for ``list``/``Sequence`` because it
-   in the validation situation it is almost certain the string was not the
-   intended data type for a sequence.
-
-.. versionchanged:: 0.7
-   Added the ``set`` data type.
-
-.. versionchanged:: 0.6
-   Added the ``number`` data type.
-
-.. versionchanged:: 0.4.0
-   Type validation is always executed first, and blocks other field validation
-   rules on failure.
-
-.. versionchanged:: 0.3.0
-   Added the ``float`` data type.
-
-.. _required:
-
-required
---------
-If ``True`` the key/value pair is mandatory. Validation will fail when it is
-missing, unless :meth:`~cerberus.Validator.validate` is called with
-``update=True``:
-
-.. doctest::
-
-    >>> v.schema = {'name': {'required': True, 'type': 'string'}, 'age': {'type': 'integer'}}
-    >>> document = {'age': 10}
-    >>> v.validate(document)
-    False
-    >>> v.errors
-    {'name': 'required field'}
-
-    >>> v.validate(document, update=True)
-    True
-
-.. note::
-
-   String fields with empty values will still be validated, even when
-   ``required`` is set to ``True``. If you don't want to accept empty values,
-   see the empty_ rule. Also, if dependencies_ are declared for the field, its
-   ``required`` rule will only be validated if all dependencies are
-   included with the document.
-
-.. versionchanged:: 0.8
-   Check field dependencies.
-
-readonly
---------
-If ``True`` the value is readonly. Validation will fail if this field is present
-in the target dictionary.
-
-nullable
---------
-If ``True`` the field value can be set to ``None``. It is essentially the
-functionality of the :attr:`~cerberus.Validator.ignore_none_values` property
-of a :class:`~cerberus.Validator` instance, but allowing for more fine grained
-control down to the field level.
-
-.. doctest::
-
-    >>> v.schema = {'a_nullable_integer': {'nullable': True, 'type': 'integer'}, 'an_integer': {'type': 'integer'}}
-
-    >>> v.validate({'a_nullable_integer': 3})
-    True
-    >>> v.validate({'a_nullable_integer': None})
-    True
-
-    >>> v.validate({'an_integer': 3})
-    True
-    >>> v.validate({'an_integer': None})
-    False
-    >>> v.errors
-    {'an_integer': 'null value not allowed'}
-
-.. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
-.. versionadded:: 0.3.0
-
-minlength, maxlength
---------------------
-Minimum and maximum length allowed for ``string`` and ``list`` types.
-
-min, max
---------
-Minimum and maximum value allowed for ``integer``, ``float`` and ``number``
-types.
-
-.. versionchanged:: 0.7
-   Added support for ``float`` and ``number`` types.
-
-=======
->>>>>>> 9405b5b... alphabetical sorting of rules in docs
 allowed
 -------
 Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
@@ -709,7 +543,6 @@ A list of types can be used to allow different values:
     False
     >>> v.errors
     {'quotes': {0: 'must be of string type'}}
-
 
 .. note::
 

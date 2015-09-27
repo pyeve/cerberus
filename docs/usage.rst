@@ -87,6 +87,8 @@ a key.
 See :doc:`validation-rules` and :doc:`normalization-rules` for an extensive
 documentation of all supported rules.
 
+.. _allowing-the-unknown:
+
 Allowing the Unknown
 --------------------
 By default only keys defined in the schema are allowed:
