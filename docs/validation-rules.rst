@@ -1,6 +1,14 @@
 Validation Rules
 ================
 
+allow_unknown
+-------------
+This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
+when validating a mapping in order to set the
+:attr:`~cerberus.Validator.allow_unknown` property of the validator for the
+subdocument.
+For a full alaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
+
 allowed
 -------
 Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
