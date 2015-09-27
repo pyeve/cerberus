@@ -43,7 +43,7 @@ instance.
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
 ``False`` will be returned if validation failed.  You can then access the
-:func:`~cerberus.Validator.errors` method to obtain a list of issues.
+:py:attr:`~cerberus.Validator.errors` property to obtain a list of issues.
 
 .. doctest::
 
@@ -130,12 +130,12 @@ You can extend this list and support custom types, see :ref:`new-types`.
 
 .. note::
 
-    Please note that type validation is performed before any other validation
-    rule which might exist on the same field (only exception being the
-    ``nullable`` rule). In the occurrence of a type failure subsequent
-    validation rules on the field will be skipped and validation will continue
-    on other fields. This allows to safely assume that field type is correct
-    when other (standard or custom) rules are invoked.
+    Please note that type validation is performed before most others which
+    exist for the same field (only `nullable`_ and `readonly`_ are considered
+    beforehand). In the occurrence of a type failure subsequent validation
+    rules on the field will be skipped and validation will continue on other
+    fields. This allows to safely assume that field type is correct when other
+    (standard or custom) rules are invoked.
 
 .. versionchanged:: 0.9
    If a list of types is given, the key value must match *any* of them.
@@ -287,26 +287,10 @@ is empty. Defaults to ``True``.
 
 .. versionadded:: 0.0.3
 
-.. _items_dict:
-
 items (dict)
 ~~~~~~~~~~~~
 .. deprecated:: 0.0.3
-   Use :ref:`schema` instead.
-
-When a dictionary, ``items`` defines the validation schema for items in
-a ``list`` type:
-
-.. doctest::
-
-    >>> schema = {'rows': {'type': 'list', 'items': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}
-    >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
-    >>> v.validate(document, schema)
-    True
-
-.. note::
-
-    The :ref:`items_dict` rule is deprecated, and will be removed in a future release.
+   Use `schema (dict)`_ instead.
 
 items (list)
 ~~~~~~~~~~~~
@@ -323,28 +307,32 @@ fixed length in the given order:
     >>> v.validate(document, schema)
     False
 
-See :ref:`schema` rule below for dealing with arbitrary length ``list`` types.
-
-.. _schema:
+See `schema (list)`_ rule below for dealing with arbitrary length ``list`` types.
 
 schema (dict)
 ~~~~~~~~~~~~~
-Validation rules for *Mappings*-fields.
+If a field for which a ``schema``-rule is defined has a *mapping* as value,
+that mapping will be validated against the schema that is provided as
+constraint.
 
 .. doctest::
 
-    >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'}, 'city': {'type': 'string', 'required': True}}}}
+    >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'},
+    ...                                                 'city': {'type': 'string', 'required': True}}}}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
     >>> v.validate(document, schema)
     True
 
 .. note::
 
-    If all keys should share the same validation rules you probably want to use :ref:`valueschema` instead.
+    To validate *arbitrary keys* of a mapping, see `propertyschema`_, resp.
+    `valueschema`_ for *arbitrary values* of a mapping.
 
 schema (list)
 ~~~~~~~~~~~~~
-You can also use this rule to validate arbitrary length *Sequence*-items.
+If ``schema``-validation encounters an arbritrary sized *sequence* as value,
+all items of the sequence will be validated against the rules provided in
+``schema``'s constraint.
 
 .. doctest::
 
@@ -353,20 +341,20 @@ You can also use this rule to validate arbitrary length *Sequence*-items.
     >>> v.validate(document, schema)
     True
 
-The `schema` rule on ``list`` types is also the prefered method for defining
+The `schema` rule on ``list`` types is also the preferred method for defining
 and validating a list of dictionaries.
 
 .. doctest::
 
-    >>> schema = {'rows': {'type': 'list', 'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'}, 'price': {'type': 'integer'}}}}}
+    >>> schema = {'rows': {'type': 'list',
+    ...                    'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'},
+    ...                                                          'price': {'type': 'integer'}}}}}
     >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
     >>> v.validate(document, schema)
     True
 
 .. versionchanged:: 0.0.3
    Schema rule for ``list`` types of arbitrary length
-
-.. _valueschema:
 
 valueschema
 ~~~~~~~~~~~
@@ -394,8 +382,8 @@ keys, the values for all of which must validate with given schema:
 propertyschema
 ~~~~~~~~~~~~~~
 
-This is the counterpart to ``valueschema`` that validates the `keys` of a ``dict``. For historical reasons
-it is `not` named ``keyschema``.
+This is the counterpart to ``valueschema`` that validates the `keys` of a
+``dict``. For historical reasons it is `not` named ``keyschema``.
 
 .. doctest::
 
@@ -412,7 +400,8 @@ it is `not` named ``keyschema``.
 
 regex
 ~~~~~
-Validation will fail if field value does not match the provided regex rule. Only applies to string fiels.
+Validation will fail if field value does not match the provided regex rule.
+Only applies to string fiels.
 
 .. doctest::
 
@@ -428,7 +417,7 @@ Validation will fail if field value does not match the provided regex rule. Only
     >>> v.errors
     {'email': "value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"}
 
-For details on regex rules, see `Regular Expressions Syntax`_ on Python official site.
+For details on regex rules, see `Regular Expressions Syntax`_ in Python's documentation.
 
 .. versionadded:: 0.7
 
@@ -457,7 +446,8 @@ but also any of their allowed values must be matched.
 
 .. doctest::
 
-    >>> schema = {'field1': {'required': False}, 'field2': {'required': True, 'dependencies': {'field1': ['one', 'two']}}}
+    >>> schema = {'field1': {'required': False},
+    ...           'field2': {'required': True, 'dependencies': {'field1': ['one', 'two']}}}
 
     >>> document = {'field1': 'one', 'field2': 7}
     >>> v.validate(document, schema)
@@ -520,7 +510,9 @@ Dependencies on sub-document fields are also supported:
 \*of-rules
 ~~~~~~~~~~
 
-These rules allow you to list multiple sets of rules to validate against. The field will be considered valid if it validates against the set in the list according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
+These rules allow you to list multiple sets of rules to validate against. The
+field will be considered valid if it validates against the set in the list
+according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 
 .. versionadded:: 0.9
 
@@ -545,7 +537,8 @@ oneof
 
 Validates if *exactly one* of the provided constraints applies.
 
-For example, to verify that a property is a number between 0 and 10 or 100 and 110, you could do the following:
+For example, to verify that a property is a number between 0 and 10 or 100 and
+110, you could do the following:
 
 .. doctest::
 
@@ -568,7 +561,8 @@ For example, to verify that a property is a number between 0 and 10 or 100 and 1
     >>> v.errors   # doctest: +SKIP
     {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
 
-The ``anyof`` rule works by creating a new instance of a schema for each item in the list. The above schema is equivalent to creating two separate schemas:
+The ``anyof`` rule works by creating a new instance of a schema for each item
+in the list. The above schema is equivalent to creating two separate schemas:
 
 .. doctest::
 
@@ -590,7 +584,8 @@ The ``anyof`` rule works by creating a new instance of a schema for each item in
 \*of-rules typesaver
 ....................
 
-You can concatenate any of-rule with an underscore and another rule with a list of rule-values to save typing:
+You can concatenate any of-rule with an underscore and another rule with a
+list of rule-values to save typing:
 
 .. testcode::
 
@@ -598,7 +593,8 @@ You can concatenate any of-rule with an underscore and another rule with a list 
     # is equivalent to
     {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
 
-Thus you can use this to validate a document against several schemas without implementing your own logic:
+Thus you can use this to validate a document against several schemas without
+implementing your own logic:
 
 .. testsetup::
 
@@ -718,7 +714,8 @@ unknown fields will be validated against it:
     >>> v.validate({'name': 'john', 'sex': 'M'})
     True
 
-``allow_unknown`` can also be set as rule to configure a validator for a nested mapping that is checked against the ``schema``-rule:
+``allow_unknown`` can also be set as rule to configure a validator for a nested
+mapping that is checked against the ``schema``-rule:
 
 .. doctest::
 
@@ -822,13 +819,14 @@ used to convert values or sanitize data before it is validated.
 Fetching Processed Documents
 ----------------------------
 
-Beside the ``document``-property a ``Validator``-instance has shorthand methods to
-process a document and fetch its processed result.
+Beside the ``document``-property a ``Validator``-instance has shorthand methods
+to process a document and fetch its processed result.
 
 `validated` Method
 ~~~~~~~~~~~~~~~~~~
-There's a wrapper-method ``validated`` that returns the validated document. If the
-document didn't validate ``None`` is returned. It can be useful for flows like this:
+There's a wrapper-method ``validated`` that returns the validated document. If
+the document didn't validate ``None`` is returned. It can be useful for flows
+like this:
 
 .. testsetup::
 
@@ -847,7 +845,8 @@ pass through.
 
 `normalized` Method
 ~~~~~~~~~~~~~~~~~~~
-Similary, the ``normalized``-method returns a normalized copy of a document without validating it:
+Similary, the ``normalized``-method returns a normalized copy of a document
+without validating it:
 
 .. doctest::
 
@@ -863,9 +862,10 @@ Similary, the ``normalized``-method returns a normalized copy of a document with
 Schema Definition Formats
 -------------------------
 
-Cerberus schemas are built with vanilla Python types: ``dict``, ``list``, ``string``, etc. Even user-defined
-validation rules are invoked in the schema by name, as a string. A useful side effect of this design is
-that schemas can be defined in a number of ways, for example with PyYAML_.
+Cerberus schemas are built with vanilla Python types: ``dict``, ``list``,
+``string``, etc. Even user-defined validation rules are invoked in the schema
+by name, as a string. A useful side effect of this design is that schemas can
+be defined in a number of ways, for example with PyYAML_.
 
 .. doctest::
 
@@ -884,9 +884,10 @@ that schemas can be defined in a number of ways, for example with PyYAML_.
     >>> v.errors
     {'age': 'min value is 10'}
 
-You don't have to use YAML of course, you can use your favorate serializer. JSON for example. As long as
-there is a decoder thant can produce a nested ``dict``, you can use it to define a schema.
+You don't have to use YAML of course, you can use your favorate serializer.
+JSON for example. As long as there is a decoder thant can produce a nested
+``dict``, you can use it to define a schema.
 
 
 .. _PyYAML: http://pyyaml.org
-.. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
+.. _`Regular Expressions Syntax`: https://docs.python.org/library/re.html#regular-expression-syntax

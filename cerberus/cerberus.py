@@ -713,7 +713,7 @@ class Validator(object):
     def _validate_propertyschema(self, schema, field, value):
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
-                schema={field: {'type': 'list', 'schema': schema}})
+                schema={field: {'schema': schema}})
             validator.validate({field: list(value.keys())}, normalize=False)
             for error in validator.errors:
                 self._error(field, error)
