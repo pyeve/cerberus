@@ -95,16 +95,43 @@ The following rules are currently supported:
 
 type
 ~~~~
-Data type allowed for the key value. Can be one of the following:
-    * ``string``
-    * ``integer``
-    * ``float``
-    * ``number`` (integer or float)
-    * ``boolean``
-    * ``datetime``
-    * ``dict`` (formally ``collections.mapping``)
-    * ``list`` (formally ``collections.sequence``, excluding strings)
-    * ``set``
+Data type allowed for the key value. Can be one of the following names:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Type Name
+     - Python 2 Type
+     - Python 3 Type
+   * - ``boolean``
+     - :class:`bool`
+     - :class:`bool`
+   * - ``datetime``
+     - :class:`datetime.datetime`
+     - :class:`datetime.datetime`
+   * - ``dict``
+     - :class:`collections.Mapping`
+     - :class:`collections.Mapping`
+   * - ``float``
+     - :class:`float`
+     - :class:`float`
+   * - ``integer``
+     - :class:`int`, :class:`long`
+     - :class:`int`
+   * - ``list``
+     - :class:`collections.Sequence`, excl. strings
+     - :class:`collections.Sequence`, excl. strings
+   * - ``number``
+     - :class:`float`, :class:`int`, :class:`long`
+     - :class:`float`, :class:`int`
+   * - ``set``
+     - :class:`set`
+     - :class:`set`
+   * - ``string``
+     - :class:`basestring`
+     - :class:`str`
+
+You can extend this list and support :ref:`custom types <new-types>`.
 
 A list of types can be used to allow different values:
 
@@ -837,7 +864,7 @@ like this:
     v = Validator(schema)
     valid_documents = [x for x in [v.validated(y) for y in documents] if x is not None]
 
-If a coercion callable raises a ``TypeError`` or ``ValueError`` then the
+If a coercion callable raises a :exc:`TypeError` or :exc:`ValueError` then the
 exception will be caught and the validation with fail.  All other exception
 pass through.
 

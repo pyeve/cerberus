@@ -268,8 +268,10 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
 
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+# -- Options for intersphinx extension -----------------------------------------
+
+intersphinx_mapping = {'py2': ('http://docs.python.org/', None),
+                       'py3': ('http://docs.python.org/3', None)}
 
 
 # -- Options for doclinks extension --------------------------------------------
