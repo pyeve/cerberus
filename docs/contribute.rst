@@ -69,13 +69,33 @@ to ``tox``:
 
 .. code-block:: console
 
-    # from the project's root directory
+    # in the project's root directory
     $ ./run-docker-tests -e pypy3 -e doctest
 
 You can run the script without any arguments to test the project exactly as
 `Continuous Integration`_ does without having to setup anything.
 If there's a directoy ``.tox`` in the project-folder it will be used to store
 and access cached virtual environments and test-logs.
+
+Building the HTML-documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To preview the rendered HTML-documentation you must intially install the
+documentation framework and a theme:
+
+.. code-block:: console
+
+    # in the project's root directory
+    $ pip install -r requirements-docs.txt
+
+The HTML build is triggered with:
+
+.. code-block:: console
+
+    # in 'docs'-folder
+    $ make html
+
+The result can be accessed by opening ``docs/_build/html/index.html``.
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~
