@@ -429,11 +429,11 @@ class Validator(object):
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
                 continue
-            definition = self.schema.get(field)
-            if definition is not None:
-                self.__validate_definition(definition, field)
+            definitions = self.schema.get(field)
+            if definitions is not None:
+                self.__validate_definitions(definitions, field)
             else:
-                self.__process_unknown_fields(field)
+                self.__validate_unknown_fields(field)
 
         if not self.update:
             self._validate_required_fields(self.document)
@@ -478,7 +478,7 @@ class Validator(object):
         else:
             self.document = document.copy()
 
-    def __process_unknown_fields(self, field):
+    def __validate_unknown_fields(self, field):
         if self.allow_unknown:
             value = self.document[field]
             if isinstance(self.allow_unknown, Mapping):
@@ -497,27 +497,27 @@ class Validator(object):
     # Remember to keep the validations method below this line
     # sorted alphabetically
 
-    def __validate_definition(self, definition, field):
+    def __validate_definitions(self, definitions, field):
         """ Validate a field's value against its defined rules. """
 
         def validate_rule(rule):
             validatorname = "_validate_" + rule.replace(" ", "_")
             validator = getattr(self, validatorname, None)
             if validator:
-                return validator(definition[rule], field, value)
+                return validator(definitions[rule], field, value)
 
         value = self.document[field]
 
         """ _validate_-methods must return True to abort validation. """
-        if (self._validate_nullable(definition, field, value) or
-                self._validate_readonly(definition, field, value) or
-                self._validate_type(definition, field, value) or
-                self._validate_dependencies(definition, field, value) or
-                self._validate_schema(definition, field, value)):
+        if (self._validate_nullable(definitions, field, value) or
+                self._validate_readonly(definitions, field, value) or
+                self._validate_type(definitions, field, value) or
+                self._validate_dependencies(definitions, field, value) or
+                self._validate_schema(definitions, field, value)):
             return
 
         skip_rules = ('dependencies', 'coerce', 'schema', 'type')
-        for rule in [x for x in definition if x not in skip_rules]:
+        for rule in [x for x in definitions if x not in skip_rules]:
             validate_rule(rule)
 
     def _validate_allowed(self, allowed_values, field, value):
@@ -525,11 +525,11 @@ class Validator(object):
             if value not in allowed_values:
                 self._error(field, errors.ERROR_UNALLOWED_VALUE.format(value))
         elif isinstance(value, Sequence) and not isinstance(value, _str_type):
-            disallowed = set(value) - set(allowed_values)
-            if disallowed:
+            unallowed = set(value) - set(allowed_values)
+            if unallowed:
                 self._error(
                     field,
-                    errors.ERROR_UNALLOWED_VALUES.format(list(disallowed))
+                    errors.ERROR_UNALLOWED_VALUES.format(list(unallowed))
                 )
         elif isinstance(value, int):
             if value not in allowed_values:
@@ -762,12 +762,12 @@ class Validator(object):
         if schema is None:
             return
 
-        allow_unknown = definition.get('allow_unknown', self.allow_unknown)
-
         if isinstance(value, Sequence) and not isinstance(value, _str_type):
             self.__validate_schema_sequence(field, schema, value)
         elif isinstance(value, Mapping):
-            self.__validate_schema_mapping(field, schema, value, allow_unknown)
+            self.__validate_schema_mapping(field, schema, value,
+                                           definition.get('allow_unknown',
+                                                          self.allow_unknown))
 
     def __validate_schema_mapping(self, field, schema, value, allow_unknown):
         validator = self.__get_child_validator(field, schema=schema,
