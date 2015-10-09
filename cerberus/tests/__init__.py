@@ -7,10 +7,7 @@ else:
     import unittest2 as unittest  # noqa
 
 
-TestCase = unittest.TestCase
-
-
-class TestBase(TestCase):
+class TestBase(unittest.TestCase):
 
     required_string_extension = {
         'a_required_string': {'type': 'string',
@@ -143,22 +140,22 @@ class TestBase(TestCase):
         if validator is None:
             validator = self.validator
         try:
-            validator.validate(document, schema)
+            validator(document, schema)
         except known_exception as e:
             self.assertTrue(msg == str(e)) if msg else self.assertTrue(True)
         except Exception as e:  # noqa
             self.fail("%s not raised." % known_exception)
 
-    def assertFail(self, document, schema=None, validator=None):
+    def assertFail(self, document, schema=None, validator=None, update=False):
         if validator is None:
             validator = self.validator
-        self.assertFalse(validator.validate(document, schema))
+        self.assertFalse(validator(document, schema, update))
 
     def assertSuccess(self, document, schema=None, validator=None,
-                      update=True):
+                      update=False):
         if validator is None:
             validator = self.validator
-        self.assertTrue(validator.validate(document, schema, update),
+        self.assertTrue(validator(document, schema, update),
                         validator.errors)
 
     def assertError(self, field, error, validator=None):
