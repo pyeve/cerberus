@@ -17,16 +17,16 @@ I often tweet about new features and releases of Cerberus. Follow `@nicolaiarocc
 Mailing List
 ------------
 The `mailing list`_ is intended to be a low traffic resource for users,
-developers and contributors of both the Cerberus and Eve projects. 
+developers and contributors of both the Cerberus and Eve projects.
 
-Bugs/ticket tracker
--------------------
+Issues tracker
+--------------
 To file new bugs or search existing ones, you may visit `Issues`_ page. This
-does require a (free, easy to set up) Github account.
+does require a (free and easy to set up) GitHub account.
 
-GitHub
-------
-Of course the best way to track the development of Cerberus is through the 
+GitHub repository
+-----------------
+Of course the best way to track the development of Cerberus is through the
 `GitHub repo <https://github.com/nicolaiarocci/cerberus>`_.
 
 .. _`mailing list`: https://groups.google.com/forum/#!forum/python-eve
