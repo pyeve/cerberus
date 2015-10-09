@@ -890,4 +890,4 @@ JSON for example. As long as there is a decoder thant can produce a nested
 
 
 .. _PyYAML: http://pyyaml.org
-.. _`Regular Expressions Syntax`: https://docs.python.org/library/re.html#regular-expression-syntax
+.. _`Regular Expressions Syntax`: https://docs.python.org/2/library/re.html#regular-expression-syntax
