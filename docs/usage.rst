@@ -104,32 +104,32 @@ Data type allowed for the key value. Can be one of the following names:
      - Python 2 Type
      - Python 3 Type
    * - ``boolean``
-     - :class:`bool`
-     - :class:`bool`
+     - :class:`py2:bool`
+     - :class:`py3:bool`
    * - ``datetime``
-     - :class:`datetime.datetime`
-     - :class:`datetime.datetime`
+     - :class:`py2:datetime.datetime`
+     - :class:`py3:datetime.datetime`
    * - ``dict``
-     - :class:`collections.Mapping`
-     - :class:`collections.Mapping`
+     - :class:`py2:collections.Mapping`
+     - :class:`py3:collections.abc.Mapping`
    * - ``float``
-     - :class:`float`
-     - :class:`float`
+     - :class:`py2:float`
+     - :class:`py3:float`
    * - ``integer``
-     - :class:`int`, :class:`long`
-     - :class:`int`
+     - :class:`py2:int`, :class:`py2:long`
+     - :class:`py3:int`
    * - ``list``
-     - :class:`collections.Sequence`, excl. strings
-     - :class:`collections.Sequence`, excl. strings
+     - :class:`py2:collections.Sequence`, excl. ``string``
+     - :class:`py3:collections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`float`, :class:`int`, :class:`long`
-     - :class:`float`, :class:`int`
+     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`
+     - :class:`py3:float`, :class:`py3:int`
    * - ``set``
-     - :class:`set`
-     - :class:`set`
+     - :class:`py2:set`
+     - :class:`py3:set`
    * - ``string``
-     - :class:`basestring`
-     - :class:`str`
+     - :func:`py2:basestring`
+     - :class:`py3:str`
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -153,7 +153,6 @@ A list of types can be used to allow different values:
     >>> v.errors
     {'quotes': {0: 'must be of string type'}}
 
-You can extend this list and support custom types, see :ref:`new-types`.
 
 .. note::
 
