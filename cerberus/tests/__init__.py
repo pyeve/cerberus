@@ -128,7 +128,9 @@ class TestBase(unittest.TestCase):
         self.validator = Validator(self.schema)
 
     def assertSchemaError(self, document, schema=None, validator=None,
-                          msg=None):
+                          msg=None, value=None):
+        if msg is not None:
+            msg = msg.format(value)
         self.assertException(SchemaError, document, schema, validator, msg)
 
     def assertValidationError(self, document, schema=None, validator=None,
@@ -158,18 +160,78 @@ class TestBase(unittest.TestCase):
         self.assertTrue(validator(document, schema, update),
                         validator.errors)
 
-    def assertError(self, field, error, validator=None):
-        if validator is None:
-            validator = self.validator
-        self.assertTrue(error in validator.errors.get(field, {}))
+    def assertError(self, d_path, s_path, error, constraint, info=(),
+                    v_errors=None):
+        if v_errors is None:
+            v_errors = self.validator._errors
+        assert isinstance(v_errors, list)
+        if not isinstance(d_path, tuple):
+            d_path = (d_path, )
+        if not isinstance(info, tuple):
+            info = (info, )
 
-    def assertNoError(self, field, error, validator=None):
-        if validator is None:
-            validator = self.validator
-        errs = validator.errors.get(field, {})
-        self.assertFalse(error in errs)
+        in_v_errors = False
+        for i, v_error in enumerate(v_errors):
+            assert isinstance(v_error, errors.ValidationError)
+            try:
+                self.assertEqual(v_error.document_path, d_path)
+                self.assertEqual(v_error.schema_path, s_path)
+                self.assertEqual(v_error.code, error[0])
+                self.assertEqual(v_error.rule, error[1])
+                self.assertEqual(v_error.constraint, constraint)
+                # TODO test value?
+                if not v_error.is_group_error:
+                    self.assertEqual(v_error.info, info)
+            except AssertionError:
+                pass
+            except:
+                raise
+            else:
+                in_v_errors = True
+                index = i
+                break
+        if not in_v_errors:
+            raise AssertionError("""
+            Error with properties:
+              document_path={doc_path}
+              schema_path={schema_path}
+              code={code}
+              constraint={constraint}
+              info={info}
+            not found in errors:
+            {errors}
+            """.format(doc_path=d_path, schema_path=s_path, code=hex(error[0]),
+                       info=info,
+                       constraint=constraint, errors=v_errors))
+
+        return index
+
+    def assertErrors(self, _errors, v_errors=None):
+        assert isinstance(_errors, list)
+        for error in _errors:
+            assert isinstance(error, tuple)
+            self.assertError(*error, v_errors=v_errors)
+
+    def assertNoError(self, *args, **kwargs):
+        try:
+            self.assertError(*args, **kwargs)
+        except AssertionError:
+            pass
+        except:
+            raise
+        else:
+            raise AssertionError('An unexpected error occurred.')
+
+    def assertChildErrors(self, *args, **kwargs):
+        v_errors = kwargs.get('v_errors', self.validator._errors)
+        child_errors = kwargs.get('child_errors', [])
+        assert isinstance(child_errors, list)
+
+        parent = self.assertError(*args, v_errors=v_errors)
+
+        _errors = v_errors[parent].child_errors
+        self.assertErrors(child_errors, v_errors=_errors)
 
     def assertBadType(self, field, data_type, value):
-        doc = {field: value}
-        self.assertFail(doc)
-        self.assertError(field, errors.ERROR_BAD_TYPE.format(data_type))
+        self.assertFail({field: value})
+        self.assertError(field, (field, 'type'), errors.BAD_TYPE, data_type)
