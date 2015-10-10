@@ -187,7 +187,9 @@ class Validator(object):
         self.document = None
         self._errors = {}
         self.root_document = None
-        self.trail = ()
+        self.root_schema = None
+        self.document_path = ()
+        self.schema_path = ()
         self.update = False
 
         """ Assign args to kwargs and store configuration. """
@@ -225,7 +227,8 @@ class Validator(object):
 
         self._errors[field] = field_errors
 
-    def __get_child_validator(self, field=None, **kwargs):
+    def __get_child_validator(self, document_crumb=None, schema_crumb=None,
+                              **kwargs):
         """ Creates a new instance of Validator-(sub-)class. All initial
         parameters of the parent are passed to the initialization, unless
         a parameter is given as an explicit *keyword*-parameter.
@@ -235,11 +238,24 @@ class Validator(object):
         child_config = self.__config.copy()
         child_config.update(kwargs)
         child_validator = self.__class__(**child_config)
+
         child_validator.root_document = self.root_document or self.document
-        if field is None:
-            child_validator.trail = self.trail
+        child_validator.root_schema = self.root_schema or self.schema
+
+        if document_crumb is None:
+            child_validator.document_path = self.document_path
         else:
-            child_validator.trail = self.trail + (field, )
+            if not isinstance(document_crumb, tuple):
+                document_crumb = (document_crumb, )
+            child_validator.document_path = self.document_path + document_crumb
+
+        if schema_crumb is None:
+            child_validator.schema_path = self.schema_path
+        else:
+            if not isinstance(schema_crumb, tuple):
+                schema_crumb = (schema_crumb, )
+            child_validator.schema_path = self.schema_path + schema_crumb
+
         return child_validator
 
     # Properties
@@ -357,6 +373,7 @@ class Validator(object):
                     'coerce' in self.allow_unknown:
                 coerce_value(self.allow_unknown['coerce'])
 
+    # TODO add document-/schema-crumbs if necessary
     def _normalize_containers(self, mapping, schema):
         for field in mapping:
             if isinstance(mapping[field], Mapping):
@@ -537,7 +554,8 @@ class Validator(object):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
                 validator = self.__get_child_validator(
-                    field, schema={field: self.allow_unknown})
+                    schema_crumb='allow_unknown',
+                    schema={field: self.allow_unknown})
                 if not validator({field: value}, normalize=False):
                     self._error(field, validator.errors[field])
         else:
@@ -659,22 +677,28 @@ class Validator(object):
                         errors.ERROR_EXCLUDES_FIELD.format(exclusion_str,
                                                            field))
 
+    # TODO remove on next major release
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
             self._validate_items_schema(items, field, value)
         elif isinstance(items, Sequence) and not isinstance(items, _str_type):
             self._validate_items_list(items, field, value)
 
+    # TODO rename to _validate_items on next major release
     def _validate_items_list(self, items, field, values):
         if len(items) != len(values):
             self._error(field, errors.ERROR_ITEMS_LIST.format(len(items)))
         else:
             schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
-            validator = self.__get_child_validator(schema=schema)
-            if not validator(dict((i, item) for i, item in enumerate(values))):
+            validator = self.__get_child_validator(document_crumb=field,
+                                                   schema_crumb=(field, 'items'),  # noqa
+                                                   schema=schema)
+            if not validator(dict((i, item) for i, item in enumerate(values)),
+                             normalize=False):
                 self.errors.setdefault(field, {})
                 self.errors[field].update(validator.errors)
 
+    # TODO remove on next major release
     def _validate_items_schema(self, items, field, value):
         validator = self.__get_child_validator(schema=items)
         for item in value:
@@ -696,7 +720,9 @@ class Validator(object):
             del s[operator]
             s.update(definition)
 
-            validator = self.__get_child_validator(schema={field: s})
+            validator = self.__get_child_validator(
+                schema_crumb=(field, operator, i),
+                schema={field: s})
             if validator({field: value}, normalize=False):
                 valid_counter += 1
             errorstack["definition %d" % i] = \
@@ -762,8 +788,11 @@ class Validator(object):
     def _validate_propertyschema(self, schema, field, value):
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
+                schema_crumb=(field, 'propertyschema'),
                 schema={field: {'schema': schema}})
             validator({field: list(value.keys())}, normalize=False)
+
+            # TODO remove last 'schema' from error.schema_path
             for error in validator.errors:
                 self._error(field, error)
 
@@ -819,7 +848,9 @@ class Validator(object):
                                                           self.allow_unknown))
 
     def __validate_schema_mapping(self, field, schema, value, allow_unknown):
-        validator = self.__get_child_validator(field, schema=schema,
+        validator = self.__get_child_validator(document_crumb=field,
+                                               schema_crumb=(field, 'schema'),
+                                               schema=schema,
                                                allow_unknown=allow_unknown)
         if not validator(value, update=self.update, normalize=False):
             self._error(field, validator.errors)
@@ -828,6 +859,7 @@ class Validator(object):
         list_errors = {}
         for i in range(len(value)):
             validator = self.__get_child_validator(
+                document_crumb=field, schema_crumb=(field, 'schema'),
                 schema={i: schema}, allow_unknown=self.allow_unknown)
             validator({i: value[i]}, normalize=False)
             list_errors.update(validator.errors)
@@ -902,9 +934,13 @@ class Validator(object):
 
     def _validate_valueschema(self, schema, field, value):
         if isinstance(value, Mapping):
+            # TODO do not iterate
             for key, document in value.items():
-                validator = self.__get_child_validator()
-                validator({key: document}, {key: schema}, normalize=False)
+                validator = self.__get_child_validator(
+                    document_crumb=field,
+                    schema_crumb=(field, 'valueschema'),
+                    schema={key: schema})
+                validator({key: document}, normalize=False)
                 if len(validator.errors):
                     self._error(field, validator.errors)
 

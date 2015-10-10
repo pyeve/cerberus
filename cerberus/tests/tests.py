@@ -1128,7 +1128,7 @@ class TestValidation(TestBase):
         class TrailTester(Validator):
             def _validate_trail(self, constraint, field, value):
                 test_doc = self.root_document
-                for crumb in self.trail:
+                for crumb in self.document_path:
                     test_doc = test_doc[crumb]
                 assert test_doc == self.document
 
