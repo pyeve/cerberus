@@ -250,7 +250,7 @@ but allowing for more fine grained control down to the field level.
 
 minlength, maxlength
 ~~~~~~~~~~~~~~~~~~~~
-Minimum and maximum length allowed for ``string`` and ``list`` types.
+Minimum and maximum length allowed for ``string``, ``list`` and ``dict`` types.
 
 min, max
 ~~~~~~~~

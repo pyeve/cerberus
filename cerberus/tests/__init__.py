@@ -113,6 +113,11 @@ class TestBase(unittest.TestCase):
                 'type': 'dict',
                 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}
             },
+            'a_dict_with_restricted_length': {
+                'type': 'dict',
+                'minlength': 2,
+                'maxlength': 10
+            },
             'a_list_length': {
                 'type': 'list',
                 'schema': {'type': 'integer'},
