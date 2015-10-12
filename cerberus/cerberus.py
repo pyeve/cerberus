@@ -696,12 +696,12 @@ class Validator(object):
                 self._error(field, errors.ERROR_MIN_VALUE.format(min_value))
 
     def _validate_maxlength(self, max_length, field, value):
-        if isinstance(value, Sequence):
+        if isinstance(value, (Sequence, Mapping)):
             if len(value) > max_length:
                 self._error(field, errors.ERROR_MAX_LENGTH.format(max_length))
 
     def _validate_minlength(self, min_length, field, value):
-        if isinstance(value, Sequence):
+        if isinstance(value, (Sequence, Mapping)):
             if len(value) < min_length:
                 self._error(field, errors.ERROR_MIN_LENGTH.format(min_length))
 

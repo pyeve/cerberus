@@ -1,7 +1,7 @@
 import re
 import sys
 from datetime import datetime
-from random import choice
+from random import choice, sample
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
 from . import TestBase
@@ -184,6 +184,22 @@ class TestValidation(TestBase):
         field = 'a_string'
         min_length = self.schema[field]['minlength']
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
+        self.assertFail({field: value})
+        self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
+
+    def test_bad_max_length_dict(self):
+        field = 'a_dict_with_restricted_length'
+        max_length = self.schema[field]['maxlength']
+        keys = sample(ascii_lowercase, max_length + 1)
+        value = dict((key, choice(ascii_lowercase)) for key in keys)
+        self.assertFail({field: value})
+        self.assertError(field, errors.ERROR_MAX_LENGTH.format(max_length))
+
+    def test_bad_min_length_dict(self):
+        field = 'a_dict_with_restricted_length'
+        min_length = self.schema[field]['minlength']
+        keys = sample(ascii_lowercase, min_length - 1)
+        value = dict((key, choice(ascii_lowercase)) for key in keys)
         self.assertFail({field: value})
         self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
 
