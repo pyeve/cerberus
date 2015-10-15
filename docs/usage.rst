@@ -357,7 +357,7 @@ constraint.
 
 schema (list)
 ~~~~~~~~~~~~~
-If ``schema``-validation encounters an arbritrary sized *sequence* as value,
+If ``schema``-validation encounters an arbitrary sized *sequence* as value,
 all items of the sequence will be validated against the rules provided in
 ``schema``'s constraint.
 
@@ -428,7 +428,7 @@ This is the counterpart to ``valueschema`` that validates the `keys` of a
 regex
 ~~~~~
 Validation will fail if field value does not match the provided regex rule.
-Only applies to string fiels.
+Only applies to string fields.
 
 .. doctest::
 
@@ -911,8 +911,8 @@ be defined in a number of ways, for example with PyYAML_.
     >>> v.errors
     {'age': 'min value is 10'}
 
-You don't have to use YAML of course, you can use your favorate serializer.
-JSON for example. As long as there is a decoder thant can produce a nested
+You don't have to use YAML of course, you can use your favorite serializer.
+JSON for example. As long as there is a decoder that can produce a nested
 ``dict``, you can use it to define a schema.
 
 
