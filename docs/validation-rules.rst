@@ -46,6 +46,20 @@ if target values are not included in the allowed list.
 .. versionchanged:: 0.5.1
    Added support for the ``int`` type.
 
+allof
+-----
+
+Validates if *all* of the provided constraints validates the field. See `\*of-rules`_ for details.
+
+.. versionadded:: 0.9
+
+anyof
+-----
+
+Validates if *any* of the provided constraints validates the field. See `\*of-rules`_ for details.
+
+.. versionadded:: 0.9
+
 dependencies
 ------------
 This rule allows for either a list or dict of dependencies. When a list is
@@ -237,6 +251,13 @@ minlength, maxlength
 --------------------
 Minimum and maximum length allowed for ``string`` and ``list`` types.
 
+noneof
+------
+
+Validates if *none* of the provided constraints validates the field. See `\*of-rules`_ for details.
+
+.. versionadded:: 0.9
+
 nullable
 --------
 If ``True`` the field value can be set to ``None``. It is essentially the
@@ -272,8 +293,8 @@ field will be considered valid if it validates against the set in the list
 according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 
 ==========  ====================================================================
-``anyof``   Validates if *any* of the provided constraints validates the field.
 ``allof``   Validates if *all* of the provided constraints validates the field.
+``anyof``   Validates if *any* of the provided constraints validates the field.
 ``noneof``  Validates if *none* of the provided constraints validates the field.
 ``oneof``   Validates if *exactly one* of the provided constraints applies.
 ==========  ====================================================================
@@ -354,6 +375,13 @@ implementing your own logic:
     ...         invalid_employees_phones.append(employee)
 
 .. versionadded: 0.10
+
+oneof
+-----
+
+Validates if *exactly one* of the provided constraints applies. See `\*of-rules`_ for details.
+
+.. versionadded:: 0.9
 
 propertyschema
 --------------
