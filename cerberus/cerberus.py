@@ -8,10 +8,11 @@
     Full documentation is available at http://python-cerberus.org
 """
 
-from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, \
+from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
 import copy
 from datetime import datetime
+import logging
 import json
 import re
 import sys
@@ -25,6 +26,8 @@ if sys.version_info[0] == 3:
 else:
     _str_type = basestring  # noqa
     _int_types = (int, long)  # noqa
+
+log = logging.getLogger('cerberus')
 
 
 class DocumentError(Exception):
@@ -358,19 +361,53 @@ class Validator(object):
 
     def _normalize_subdocuments(self, mapping, schema):
         for field in mapping:
-            if isinstance(mapping[field], Mapping) and \
-                    'schema' in schema[field]:
-                allow_unknown = schema[field].get('allow_unknown',
-                                                  self.allow_unknown)
-                purge_unknown = schema[field].get('purge_unknown',
-                                                  self.purge_unknown)
-                validator = self.\
-                    __get_child_validator(field,
-                                          schema=schema[field]['schema'],
-                                          allow_unknown=allow_unknown,
-                                          purge_unknown=purge_unknown)
-                mapping[field] = validator.normalized(mapping[field])
+            if isinstance(mapping[field], Mapping):
+                if 'propertyschema' in schema[field]:
+                    self._normalize_mapping_per_propertyschema(
+                        field, mapping, schema[field]['propertyschema'])
+                if 'valueschema' in schema[field]:
+                    self._normalize_mapping_per_valueschema(
+                        field, mapping, schema[field]['valueschema'])
+                if set(schema[field]) & set(('allow_unknown', 'purge_unknown',
+                                             'schema')):
+                    self._normalize_mapping_per_schema(field, mapping, schema)
         return mapping
+
+    def _normalize_mapping_per_propertyschema(self, field, mapping,
+                                              property_rules):
+        child_schema = dict(((k, property_rules) for k in mapping[field]))
+        document = dict(((k, k) for k in mapping[field]))
+        validator = self.__get_child_validator(field,
+                                               schema=child_schema)
+        result = validator.normalized(document)
+        for k in result:
+            if result[k] in mapping[field]:
+                log.warn("Normalizing keys of {path}: {key} already exists, "
+                         "its value is replaced."
+                         .format(path='.'.join(self.trail + (field,)), key=k))
+                mapping[field][result[k]] = mapping[field][k]
+            else:
+                mapping[field][result[k]] = mapping[field][k]
+                del mapping[field][k]
+
+    def _normalize_mapping_per_valueschema(self, field, mapping, value_rules):
+        validator = self.__get_child_validator(field, schema=(),
+                                               allow_unknown=value_rules,
+                                               purge_unknown=False)
+        mapping[field] = validator.normalized(mapping[field])
+
+    def _normalize_mapping_per_schema(self, field, mapping, schema):
+        child_schema = schema[field].get('schema', dict())
+        allow_unknown = schema[field].get('allow_unknown',
+                                          self.allow_unknown)
+        purge_unknown = schema[field].get('purge_unknown',
+                                          self.purge_unknown)
+        validator = self. \
+            __get_child_validator(field,
+                                  schema=child_schema,
+                                  allow_unknown=allow_unknown,
+                                  purge_unknown=purge_unknown)
+        mapping[field] = validator.normalized(mapping[field])
 
     @staticmethod
     def _purge_unknown_fields(mapping, schema):
@@ -599,9 +636,9 @@ class Validator(object):
         if 'required' in self.schema[field] and self.schema[field]['required']:
             self._unrequired_by_excludes.add(field)
         for exclude in excludes:
-            if (exclude in self.schema
-               and 'required' in self.schema[exclude]
-               and self.schema[exclude]['required']):
+            if (exclude in self.schema and
+               'required' in self.schema[exclude] and
+                    self.schema[exclude]['required']):
 
                 self._unrequired_by_excludes.add(exclude)
 
