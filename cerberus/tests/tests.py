@@ -1331,6 +1331,16 @@ class TestNormalization(TestBase):
         self.assertSuccess({'thing': {'5': 'foo'}}, schema)
         self.assertDictEqual(self.validator.document, {'thing': {5: 'foo'}})
 
+    def test_coercion_of_sequence_items(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/161
+        schema = {'a_list': {'type': 'list', 'schema': {'type': 'float',
+                                                        'coerce': float}}}
+        self.assertSuccess({'a_list': [3, 4, 5]}, schema)
+        result = self.validator.document
+        self.assertListEqual(result['a_list'], [3.0, 4.0, 5.0])
+        for x in result['a_list']:
+            self.assertIsInstance(x, float)
+
 
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):

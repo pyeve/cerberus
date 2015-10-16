@@ -38,10 +38,13 @@ SCHEMA_ERROR_DEPENDENCY_TYPE = \
     "dependency-definition for field '{0}' must be a dict or a list"
 SCHEMA_ERROR_DEPENDENCY_VALIDITY = \
     "'{0}' is no valid dependency for field '{1}'"
+SCHEMA_ERROR_EXCLUDES_HASHABLE = "{0} is not hashable ; cannot be excluded"
 SCHEMA_ERROR_MISSING = "validation schema missing"
 SCHEMA_ERROR_PURGE_UNKNOWN_TYPE = \
     "purge_unknown-definition for field '{0}' must be a bool"
 SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
 SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
 SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"
-SCHEMA_ERROR_EXCLUDES_HASHABLE = "{0} is not hashable ; cannot be excluded"
+SCHEMA_ERROR_XSCHEMA_RENAME = \
+    "propertyschema & valueschema rules must not contain rename or " \
+    "rename_handler rule"
