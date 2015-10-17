@@ -1,22 +1,19 @@
 Extending Cerberus
 ==================
 
-Custom Validators
------------------
 Cerberus supports custom validation in two styles:
 
-    * :ref:`class_validator`
-    * :ref:`function_validator`
+    * `Class-based Custom Validators`_
+    * `Function-based Custom Validation`_
 
 As a general rule, when you are customizing validators in your application,
 ``Class-based`` style is more suitable for common validators, which are
 also more human-readable (since the rule name is defined by yourself), while
 ``Function-based`` style is more suitable for special and one-off ones.
 
-.. _class_validator:
 
 Class-based Custom Validators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 Suppose that in our use case some values can only be expressed as odd integers,
 therefore we decide to add support for a new ``isodd`` rule to our validation
 schema:
@@ -54,13 +51,9 @@ matters, we can use it to validate all odd values:
 In a schema schema you can use space characters instead of underscores, e.g.
 ``{'oddity': {'is odd': 42'}}`` is an alias for ``{'oddity': {'is_odd': 42'}}``.
 
-.. versionadded:: 0.7.1
-    Custom validators also have access to a special ``self.document`` variable
-    that allows validation of a field to happen in context of the rest of the
-    document.
 
-To make use of additional contextual information in a sub-class of :class:`~cerberus.Validator`,
-use a pattern like this:
+To make use of additional contextual information in a sub-class of
+:class:`~cerberus.Validator`, use a pattern like this:
 
 .. testcode::
 
@@ -80,7 +73,8 @@ use a pattern like this:
 Custom Data Types
 ~~~~~~~~~~~~~~~~~
 Cerberus supports and validates several standard data types (see :ref:`type`).
-When building :ref:`class_validator` you can add and validate your own data types.
+When building a `Class-based Custom Validators`_ you can add and validate your
+own data types.
 For example `Eve <http://python-eve.org>`_ (a tool for quickly building and
 deploying RESTful Web Services) supports a custom ``objectid`` type, which is
 used to validate that field values conform to the BSON/MongoDB ``ObjectId``
@@ -104,10 +98,9 @@ has been implemented:
 
 .. versionadded:: 0.0.2
 
-.. _function_validator:
 
 Function-based Custom Validation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 With a special rule ``validator``, you can customize validators by defining
 your own functions with the following prototype: ::
 
@@ -140,17 +133,41 @@ Then, you can validate an odd value like this:
 
 .. versionadded:: 0.8
 
-Limitations
-~~~~~~~~~~~
 
+Limitations
+-----------
 You must not call your custom rule ``validator`` and it may be a bad idea to
 overwrite particular contributed rules.
 
-Relevant `Validator`-properties
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Relevant `Validator`-attributes
+-------------------------------
+
+There are some attributes of a :class:`~cerberus.Validator` that you should be
+aware of when writing `Class-based Custom Validators`_.
+
+`Validator.document`
+~~~~~~~~~~~~~~~~~~~~
+
+A validator accesses the ``self.document`` property when fetching fields for
+validation. It also allows validation of a field to happen in context of the
+rest of the document.
+
+.. versionadded:: 0.7.1
+
+`Validator.schema`
+~~~~~~~~~~~~~~~~~~
+
+Alike, the ``self.schema`` property holds the used schema.
+
+.. note::
+
+    This attribute is not the same object that was passed to the validator at
+    some point. Also, its content may differ, though it still represents the
+    initial constraints. It offers the same interface like a :class:`dict`.
 
 `Validator.__get_child_validator`
-.................................
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you need another instance of your ``Validator``-subclass, the
 ``__get_child_validator``-method returns another instance that is initiated
@@ -160,7 +177,7 @@ arguments.
 .. versionadded:: 0.9
 
 `Validator.root_document`
-.........................
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A child-validator - as used when validating a ``schema`` - can access the first
 generation validator's document that is being processed via its

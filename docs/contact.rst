@@ -1,6 +1,9 @@
 Contact
 =======
-If you’ve scoured the :ref:`prose <usage>` and :ref:`API documentation <api>` and still can’t find an answer to your question, below are various support resources that should help. We do request that you do at least skim the documentation before posting tickets or mailing list questions, however!
+If you’ve scoured the :doc:`prose <usage>` and :doc:`API documentation <api>`
+and still can’t find an answer to your question, below are various support
+resources that should help. We do request that you do at least skim the
+documentation before posting tickets or mailing list questions, however!
 
 If you'd like to stay up to date on the community and development of Cerberus,
 there are several options:

@@ -1,5 +1,3 @@
-.. _api:
-
 API Documentation
 =================
 
@@ -13,6 +11,7 @@ Validator Class
 
 Exceptions
 ----------
+
 .. autoclass:: cerberus.SchemaError
   :members:
 

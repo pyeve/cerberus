@@ -270,7 +270,7 @@ texinfo_documents = [
 
 # -- Options for intersphinx extension -----------------------------------------
 
-intersphinx_mapping = {'py2': ('http://docs.python.org/', None),
+intersphinx_mapping = {'py2': ('http://docs.python.org/2', None),
                        'py3': ('http://docs.python.org/3', None)}
 
 

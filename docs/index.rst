@@ -22,7 +22,7 @@ You define a validation schema and pass it to an instance of the
     >>> schema = {'name': {'type': 'string'}}
     >>> v = Validator(schema)
 
-Then you simply invoke the :func:`~cerberus.Validator.validate` to validate
+Then you simply invoke the :meth:`~cerberus.Validator.validate` to validate
 a dictionary against the schema. If validation succeeds, ``True`` is returned:
 
 ::
@@ -35,8 +35,10 @@ Table of Contents
 -----------------
 .. toctree::
 
-    Installing <install>
+    Installation <install>
     Usage <usage>
+    Validation Rules <validation-rules>
+    Normalization Rules <normalization-rules>
     Extending <customize>
     Contributing <contribute>
     API <api>
@@ -52,4 +54,3 @@ Cerberus is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
 information.
-
