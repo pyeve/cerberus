@@ -51,13 +51,9 @@ matters, we can use it to validate all odd values:
 In a schema schema you can use space characters instead of underscores, e.g.
 ``{'oddity': {'is odd': 42'}}`` is an alias for ``{'oddity': {'is_odd': 42'}}``.
 
-.. versionadded:: 0.7.1
-    Custom validators also have access to a special ``self.document`` variable
-    that allows validation of a field to happen in context of the rest of the
-    document.
 
-To make use of additional contextual information in a sub-class of :class:`~cerberus.Validator`,
-use a pattern like this:
+To make use of additional contextual information in a sub-class of
+:class:`~cerberus.Validator`, use a pattern like this:
 
 .. testcode::
 
@@ -146,6 +142,29 @@ overwrite particular contributed rules.
 
 Relevant `Validator`-attributes
 -------------------------------
+
+There are some attributes of a :class:`~cerberus.Validator` that you should be
+aware of when writing `Class-based Custom Validators`_.
+
+`Validator.document`
+~~~~~~~~~~~~~~~~~~~~
+
+A validator accesses the ``self.document`` property when fetching fields for
+validation. It also allows validation of a field to happen in context of the
+rest of the document.
+
+.. versionadded:: 0.7.1
+
+`Validator.schema`
+~~~~~~~~~~~~~~~~~~
+
+Alike, the ``self.schema`` property holds the used schema.
+
+.. note::
+
+    This attribute is not the same object that was passed to the validator at
+    some point. Also, its content may differ, though it still represents the
+    initial constraints. It offers the same interface like a :class:`dict`.
 
 `Validator.__get_child_validator`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
