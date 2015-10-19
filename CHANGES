@@ -33,6 +33,10 @@ Not released yet.
 - Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 - Change: Use a logger for deprecation-warnings if available (Frank Sachsenheim).
 
+- Fix: normalization not working for valueschema and propertyschema. Closes
+  #155 (Frank Sachsenheim).
+- Fix: 'coerce' on List elements produces unexpect results Closes 161 (Frank
+  Sachsenheim).
 - Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
 - Fix: Unknown fields are normalized (Frank Sachsenheim).
 - Fix: Dependency on boolean field now works as expected. Addresses #138 (Roman
