@@ -1,14 +1,17 @@
 Cerberus Installation
 =====================
+
 This part of the documentation covers the installation of Cerberus. The first
 step to using any software package is getting it properly installed.
 
 Stable Version
 --------------
 Cerberus is on `PyPI <https://pypi.python.org/pypi/Cerberus>`_ so all you need
-to do is: ::
+to do is:
 
-    pip install cerberus
+.. code-block:: console
+
+    $ pip install cerberus
 
 Development Version
 -------------------

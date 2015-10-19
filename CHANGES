@@ -43,6 +43,9 @@ Not released yet.
   Redkovich)
 - Fix: Add missing deprecation-warnings (Frank Sachsenheim).
 
+- Docs: split Usage page into Usage; Validation Rules: Normalization Rules
+  (Frank Sachsenheim).
+
 Version 0.9.2
 -------------
 
