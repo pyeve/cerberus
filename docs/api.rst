@@ -1,19 +1,31 @@
 API Documentation
 =================
 
-.. _validator:
-
 Validator Class
 ---------------
 
 .. autoclass:: cerberus.Validator
   :members:
 
+ErrorHandlers
+-------------
+
+.. autoclass:: cerberus.errors.BaseErrorHandler
+  :members:
+  :private-members:
+  :special-members:
+
+.. autoclass:: cerberus.errors.BasicErrorHandler
+
+Python Error Representation
+---------------------------
+
+.. autoclass:: cerberus.errors.ValidationError
+  :members:
+
 Exceptions
 ----------
 
-.. autoclass:: cerberus.SchemaError
-  :members:
+.. autoexception:: cerberus.SchemaError
 
-.. autoclass:: cerberus.DocumentError
-  :members:
+.. autoexception:: cerberus.DocumentError

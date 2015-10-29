@@ -12,20 +12,14 @@ from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
 from copy import copy
 from datetime import datetime
-import logging
 import json
+import logging
 import re
-import sys
 
 from . import errors
+from .platform import _str_type, _int_types
 from .utils import warn_deprecated
 
-if sys.version_info[0] == 3:
-    _str_type = str
-    _int_types = (int,)
-else:
-    _str_type = basestring  # noqa
-    _int_types = (int, long)  # noqa
 
 log = logging.getLogger('cerberus')
 
@@ -64,6 +58,12 @@ class Validator(object):
                           If a ``dict`` with a definition-schema is given, any
                           undefined field will be validated against its rules.
                           Defaults to ``False``.
+    :param purge_unknown: If ``True`` unknown fields will be deleted from the
+                          document unless a validation is called with disabled
+                          normalization.
+    :param error_handler: The error handler that formats the result of
+                          ``errors``.
+                          Default: :class:`cerberus.errors.BasicErrorHandler`.
 
 
     .. versionadded:: 0.10
@@ -184,7 +184,6 @@ class Validator(object):
                  purge_unknown=False, error_handler=errors.BasicErrorHandler)
         """
 
-        # TODO document properties in customize.rst
         self.document = None
         self._errors = []
         self.root_document = None
@@ -214,28 +213,45 @@ class Validator(object):
         return tuple(rules)
 
     def _error(self, *args):
-        """ Adds one or multiple errors.
-        :param args: Either a list of ValidationError-instances or a sequence
-                     of arguments:
-                     - the invalid field
-                     - the error-code
+        """ Creates and adds one or multiple errors.
+        :param args: Either an iterable of ValidationError-instances, a field's
+                     name and an error message or a field's name, a reference
+                     to a defined error and supplemental information.
+
+                     Iterable of errors:
+                     Expects an iterable of :class:`errors.Validation error`
+                     instances.
+                     The errors will be added to the errors stash
+                     :attr:`_errors` of self.
+
+                     Field's name and error message:
+                     Expects two strings as arguments, the first is the field's
+                     name, the second the error message.
+                     A custom error will be created containing the message.
+                     There will however be fewer information contained in the
+                     error (no reference to the violated rule and its
+                     constraint).
+
+                     Field's name, error reference and suppl. information:
+                     Expects:
+                     - the invalid field's name as string
+                     - the error-reference, see :mod:`errors`
                      - arbitrary, supplemental information about the error
         """
         if len(args) == 1:
-            assert isinstance(args[0], list)
             self._errors.extend(args[0])
         elif len(args) == 2 and isinstance(args[1], _str_type):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
             field = args[0]
-            code = args[1][0]
-            rule = args[1][1]
+            code = args[1].code
+            rule = args[1].rule
             info = args[2:]
 
             document_path = self.document_path + (field, )
 
             schema_path = self.schema_path
-            if code != errors.UNKNOWN_FIELD[0]:
+            if code != errors.UNKNOWN_FIELD.code:
                 schema_path += (field, rule)
 
             if rule == 'nullable':
@@ -293,6 +309,12 @@ class Validator(object):
 
     @property
     def error_handler(self):
+        """
+        This attribute binds to an error-handler that is supposed to format the
+        return value of :attr:`errors`.
+        Defaults to :class:`errors.BasicErrorHandler`.
+        Must be a subclass of :class:`errors.BaseErrorHandler`.
+        """
         if isinstance(self.__config.get('error_handler'),
                       errors.BaseErrorHandler):
             return self.__config['error_handler']()
@@ -315,8 +337,8 @@ class Validator(object):
     @property
     def errors(self):
         """
-        Returns the errors of the last processing handled by the handler that
-        is bound to the validator's `error_handler`-property.
+        Returns the errors of the last processing formatted by the handler that
+        is bound to :attr:`error_handler` of self.
         """
         return self.error_handler(self._errors)
 
@@ -629,7 +651,7 @@ class Validator(object):
         elif isinstance(value, Sequence) and not isinstance(value, _str_type):
             unallowed = set(value) - set(allowed_values)
             if unallowed:
-                self._error(field, errors.UNALLOWED_VALUES, unallowed)
+                self._error(field, errors.UNALLOWED_VALUES, list(unallowed))
         elif isinstance(value, int):
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)

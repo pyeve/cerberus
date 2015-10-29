@@ -176,8 +176,8 @@ class TestBase(unittest.TestCase):
             try:
                 self.assertEqual(v_error.document_path, d_path)
                 self.assertEqual(v_error.schema_path, s_path)
-                self.assertEqual(v_error.code, error[0])
-                self.assertEqual(v_error.rule, error[1])
+                self.assertEqual(v_error.code, error.code)
+                self.assertEqual(v_error.rule, error.rule)
                 self.assertEqual(v_error.constraint, constraint)
                 # TODO test value?
                 if not v_error.is_group_error:
@@ -200,8 +200,8 @@ class TestBase(unittest.TestCase):
               info={info}
             not found in errors:
             {errors}
-            """.format(doc_path=d_path, schema_path=s_path, code=hex(error[0]),
-                       info=info,
+            """.format(doc_path=d_path, schema_path=s_path,
+                       code=hex(error.code), info=info,
                        constraint=constraint, errors=v_errors))
 
         return index

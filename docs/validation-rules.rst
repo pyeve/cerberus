@@ -96,14 +96,15 @@ but also any of their allowed values must be matched.
    >>> v.validate(document, schema)
    False
    >>> v.errors
-   {'field2': "field 'field1' is required with one of these values: ['one', 'two']"}
+   {'field2': "depends on these values: {'field1': ['one', 'two']}"}
 
    >>> # same as using a dependencies list
    >>> document = {'field2': 7}
    >>> v.validate(document, schema)
    False
    >>> v.errors
-   {'field2': "field 'field1' is required with one of these values: ['one', 'two']"}
+   {'field2': "depends on these values: {'field1': ['one', 'two']}"}
+
 
    >>> # one can also pass a single dependency value
    >>> schema = {'field1': {'required': False}, 'field2': {'dependencies': {'field1': 'one'}}}
@@ -116,7 +117,7 @@ but also any of their allowed values must be matched.
    False
 
    >>> v.errors
-   {'field2': "field 'field1' is required with one of these values: ['one']"}
+   {'field2': "depends on these values: {'field1': 'one'}"}
 
 Dependencies on sub-document fields are also supported:
 

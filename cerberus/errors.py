@@ -1,55 +1,70 @@
 """ This module contains the error-related constants and classes. """
 
+from collections import namedtuple
 from copy import copy
+from .utils import quote_string
+
+"""
+Error definition constants
+
+Each distinguishable error is defined as a two-value-tuple that holds
+a *unique* error id as integer and the rule as string that can cause it.
+The attributes are accessible as properties ``id`` and ``rule``.
+The names do not contain a common prefix as they are supposed to be referenced
+within the module namespace, e.g. errors.CUSTOM
+"""
+
+ErrorDefinition = namedtuple('cerberus_error', 'code, rule')
 
 # custom
-CUSTOM = 0x00, None
+CUSTOM = ErrorDefinition(0x00, None)
 
 # existence
-DOCUMENT_MISSING = 0x01, None  # issues/141
+DOCUMENT_MISSING = ErrorDefinition(0x01, None)  # issues/141
 DOCUMENT_MISSING = "document is missing"
-REQUIRED_FIELD = 0x02, 'required'
-UNKNOWN_FIELD = 0x03, None
-DEPENDENCIES_FIELD = 0x04, 'dependencies'
-DEPENDENCIES_FIELD_VALUE = 0x05, 'dependencies'
-EXCLUDES_FIELD = 0x06, 'excludes'
+REQUIRED_FIELD = ErrorDefinition(0x02, 'required')
+UNKNOWN_FIELD = ErrorDefinition(0x03, None)
+DEPENDENCIES_FIELD = ErrorDefinition(0x04, 'dependencies')
+DEPENDENCIES_FIELD_VALUE = ErrorDefinition(0x05, 'dependencies')
+EXCLUDES_FIELD = ErrorDefinition(0x06, 'excludes')
 
 # shape
-DOCUMENT_FORMAT = 0x21, None  # issues/141
+DOCUMENT_FORMAT = ErrorDefinition(0x21, None)  # issues/141
 DOCUMENT_FORMAT = "'{0}' is not a document, must be a dict"
-EMPTY_NOT_ALLOWED = 0x22, 'empty'
-NOT_NULLABLE = 0x23, 'nullable'
-UNKNOWN_TYPE = 0x24, 'type'  # REMOVE?
-BAD_TYPE = 0x25, 'type'
-ITEMS_LENGTH = 0x26, 'items'
-MIN_LENGTH = 0x27, 'minlength'
-MAX_LENGTH = 0x28, 'maxlength'
+EMPTY_NOT_ALLOWED = ErrorDefinition(0x22, 'empty')
+NOT_NULLABLE = ErrorDefinition(0x23, 'nullable')
+BAD_TYPE = ErrorDefinition(0x24, 'type')
+ITEMS_LENGTH = ErrorDefinition(0x25, 'items')
+MIN_LENGTH = ErrorDefinition(0x26, 'minlength')
+MAX_LENGTH = ErrorDefinition(0x27, 'maxlength')
 
 # color
-REGEX_MISMATCH = 0x41, 'regex'
-MIN_VALUE = 0x42, 'min'
-MAX_VALUE = 0x43, 'max'
-UNALLOWED_VALUE = 0x44, 'allowed'
-UNALLOWED_VALUES = 0x45, 'allowed'
+REGEX_MISMATCH = ErrorDefinition(0x41, 'regex')
+MIN_VALUE = ErrorDefinition(0x42, 'min')
+MAX_VALUE = ErrorDefinition(0x43, 'max')
+UNALLOWED_VALUE = ErrorDefinition(0x44, 'allowed')
+UNALLOWED_VALUES = ErrorDefinition(0x45, 'allowed')
 
 # other
-COERCION_FAILED = 0x61, 'coerce'
-READONLY_FIELD = 0x62, 'readonly'
+COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
+READONLY_FIELD = ErrorDefinition(0x62, 'readonly')
 
 # groups
-ERROR_GROUP = 0x80, None
-MAPPING_SCHEMA = 0x81, 'schema'
-SEQUENCE_SCHEMA = 0x82, 'schema'
-PROPERTYSCHEMA = 0x83, 'propertyschema'
-VALUESCHEMA = 0x84, 'valueschema'
-BAD_ITEMS = 0x8f, 'items'
+ERROR_GROUP = ErrorDefinition(0x80, None)
+MAPPING_SCHEMA = ErrorDefinition(0x81, 'schema')
+SEQUENCE_SCHEMA = ErrorDefinition(0x82, 'schema')
+PROPERTYSCHEMA = ErrorDefinition(0x83, 'propertyschema')
+VALUESCHEMA = ErrorDefinition(0x84, 'valueschema')
+BAD_ITEMS = ErrorDefinition(0x8f, 'items')
 
-LOGICAL = 0x90, None
-NONEOF = 0x91, 'noneof'
-ONEOF = 0x92, 'oneof'
-ANYOF = 0x93, 'anyof'
-ALLOF = 0x94, 'allof'
+LOGICAL = ErrorDefinition(0x90, None)
+NONEOF = ErrorDefinition(0x91, 'noneof')
+ONEOF = ErrorDefinition(0x92, 'oneof')
+ANYOF = ErrorDefinition(0x93, 'anyof')
+ALLOF = ErrorDefinition(0x94, 'allof')
 
+
+""" SchemaError messages """
 
 SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE = \
     "allow_unknown-definition for field '{0}' must be a bool or a dict"
@@ -75,7 +90,7 @@ SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 
 class ValidationError:
-    # TODO docstring
+    """ A simple class to store and query basic error information. """
     # TODO implement __lt__ for sorting?
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
@@ -88,7 +103,6 @@ class ValidationError:
         self.info = info
 
     def __repr__(self):
-        # FIXME display strings quoted
         return "{class_name} @ {memptr} ( " \
                "document_path={document_path}," \
                "schema_path={schema_path}," \
@@ -100,12 +114,15 @@ class ValidationError:
                        document_path=self.document_path,
                        schema_path=self.schema_path,
                        code=hex(self.code),
-                       constraint=self.constraint,
-                       value=self.value,
+                       constraint=quote_string(self.constraint),
+                       value=quote_string(self.value),
                        info=self.info)
 
     @property
     def child_errors(self):
+        """
+        A list that contain the individual errors of a bulk validation error.
+        """
         if self.is_group_error:
             return self.info[0]
         else:
@@ -113,15 +130,18 @@ class ValidationError:
 
     @property
     def is_group_error(self):
-        return bool(self.code & ERROR_GROUP[0])
+        """ ``True`` for errors of bulk validations. """
+        return bool(self.code & ERROR_GROUP.code)
 
     @property
     def is_logic_error(self):
-        return bool(self.code & LOGICAL[0] - ERROR_GROUP[0])
+        """ ``True`` for validation errors against different schemas. """
+        return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
 
 class BaseErrorHandler:
-    """ Subclasses can be identified as error-handlers with an
+    """ Base class for all error handlers.
+        Subclasses will be identified as error-handlers with an
         instance-test. """
     def __init__(self):
         """ Optionally initialize a new instance. """
@@ -132,30 +152,29 @@ class BaseErrorHandler:
         raise NotImplementedError
 
     def __iter__(self):
-        """ Be a superhero and implement a stream of errors. """
+        """ Be a superhero and implement an iterator over errors. """
         raise NotImplementedError
 
 
 # FIXME rename to LegacyErrorHandler?
 class BasicErrorHandler(BaseErrorHandler):
-    """ An error-handler that models cerberus' unhandled legacy. """
+    """ Models cerberus' legacy. Returns a dictionary. """
     messages = {0x00: "{0}",
 
                 0x01: "document is missing",
                 0x02: "required field",
                 0x03: "unknown field",
-                0x04: "field '{0}' is required by field '{field}",
-                0x05: "'{field}' depends on these values: {constraint}",
+                0x04: "field '{0}' is required",
+                0x05: "depends on these values: {constraint}",
                 0x06: "{0} must not be present with '{field}'",
 
                 0x21: "'{0}' is not a document, must be a dict",
                 0x22: "empty values not allowed",
                 0x23: "null value not allowed",
-                0x24: "unrecognized data-type '{0}'",  # REMOVE?
-                0x25: "must be of {constraint} type",
-                0x26: "length of list should be {0}, it is {1}",
-                0x27: "min length is {constraint}",
-                0x28: "max length is {constraint}",
+                0x24: "must be of {constraint} type",
+                0x25: "length of list should be {0}, it is {1}",
+                0x26: "min length is {constraint}",
+                0x27: "max length is {constraint}",
 
                 0x41: "value does not match regex '{constraint}'",
                 0x42: "min value is {constraint}",
@@ -179,11 +198,12 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x94: "one or more definitions don't validate"
                 }
 
-    def __init__(self, **kwargs):
-        self.tree = kwargs.get('tree', dict())
-        assert isinstance(self.tree, dict)
+    def __init__(self, tree=None):
+        self.tree = dict() if tree is None else tree
 
     def __call__(self, errors):
+        self.__init__()
+
         for error in errors:
             if error.code not in self.messages and \
                     not error.is_group_error:
@@ -205,6 +225,14 @@ class BasicErrorHandler(BaseErrorHandler):
                     field=field, value=error.value)
 
     def insert_error(self, path, node):
+        """ Adds an error or sub-tree to :attr:tree.
+
+        :param path: Path to the error.
+        :type path: Tuple of strings and integers.
+        :param node: An error message or a sub-tree.
+        :type node: String or dictionary.
+        """
+
         assert isinstance(path, (tuple, list))
         if len(path) == 1:
             field = path[0]
@@ -218,7 +246,6 @@ class BasicErrorHandler(BaseErrorHandler):
                 self.tree[field] = node
         elif len(path) >= 1:
             if path[0] in self.tree:
-                assert isinstance(self.tree[path[0]], dict)
                 new = BasicErrorHandler(tree=copy(self.tree[path[0]]))
                 new.insert_error(path[1:], node)
                 self.tree[path[0]].update(new.tree)
@@ -229,7 +256,7 @@ class BasicErrorHandler(BaseErrorHandler):
 
     def insert_group_error(self, error):
         if error.is_logic_error:
-            return self.insert_logic_error(error)
+            self.insert_logic_error(error)
 
         for error in error.child_errors:
             if error.is_group_error:
@@ -252,7 +279,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 self.insert_error(path, self.format_message(field, child_error))  # noqa
 
 
-# TODO docs
 # TODO add an ErrorTreeHandler (a dict with raw and verbose error-information)
 # TODO add a SerializeErrorHandler (xml, json, yaml)
 # TODO add a HumanErrorHandler supporting l10n
+# TODO add various error output showcases to the docs

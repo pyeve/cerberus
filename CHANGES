@@ -10,7 +10,7 @@ Not released yet.
 
 - New: 'excludes' rule (calve). Addresses #132.
 - New: Add testing with Docker (Frank Sachsenheim).
-- New: '*of'-rules can be extended by concentating another rule (Frank
+- New: '*of'-rules can be extended by concatenating another rule (Frank
   Sachsenheim).
 - New: Known, validated definition schemas are cached, thus validation run-time
   of schemas is reduced (Frank Sachsenheim).
@@ -22,8 +22,12 @@ Not released yet.
   fields (Frank Sachsenheim).
 - New: 'Validator.purge_unknown'-property and conditional purging of unknown fields
   (Frank Sachsenheim).
-- New: 'Validator.trail'-property can be used to determine the relation of the
-  currently validating document to the 'root_document' (Frank Sachsenheim).
+- New: 'Validator.root_schema' complements 'Validator.root_document' (Frank
+  Sachsenheim).
+- New: 'Validator.document_path' and 'Validator.document_path' properties can
+  be used to determine the relation of the currently validating document to the
+  'root_document' / 'root_schema' (Frank Sachsenheim).
+- New: Allows various error output with error handlers (Frank Sachsenheim).
 
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator (Frank Sachsenheim).
@@ -35,7 +39,7 @@ Not released yet.
 
 - Fix: normalization not working for valueschema and propertyschema. Closes
   #155 (Frank Sachsenheim).
-- Fix: 'coerce' on List elements produces unexpect results Closes 161 (Frank
+- Fix: 'coerce' on List elements produces unexpected results Closes 161 (Frank
   Sachsenheim).
 - Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
 - Fix: Unknown fields are normalized (Frank Sachsenheim).

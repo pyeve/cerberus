@@ -41,7 +41,8 @@ instance.
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
 ``False`` will be returned if validation failed.  You can then access the
-:py:attr:`~cerberus.Validator.errors` property to obtain a list of issues.
+:py:attr:`~cerberus.Validator.errors` property to obtain a list of issues. See
+:doc:`Errors & Error Handling <errors>` for different output options.
 
 .. doctest::
 

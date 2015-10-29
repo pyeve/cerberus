@@ -236,11 +236,11 @@ class TestValidation(TestBase):
         handler = errors.BasicErrorHandler
         self.assertIn(field, v.errors)
         self.assertIn(schema_field, v.errors[field])
-        self.assertIn(handler.messages[errors.BAD_TYPE[0]]
+        self.assertIn(handler.messages[errors.BAD_TYPE.code]
                       .format(constraint='string'),
                       v.errors[field][schema_field])
         self.assertIn('city', v.errors[field])
-        self.assertIn(handler.messages[errors.REQUIRED_FIELD[0]],
+        self.assertIn(handler.messages[errors.REQUIRED_FIELD.code],
                       v.errors[field]['city'])
 
     def test_bad_valueschema(self):
@@ -263,7 +263,7 @@ class TestValidation(TestBase):
                                child_errors=[
                                    ((field, 1), (field, 'items', 1, 'type'),
                                     errors.BAD_TYPE, 'integer')])
-        self.assertIn(errors.BasicErrorHandler.messages[errors.BAD_TYPE[0]].
+        self.assertIn(errors.BasicErrorHandler.messages[errors.BAD_TYPE.code].
                       format(constraint='integer'),
                       self.validator.errors[field][1])
 
@@ -307,7 +307,7 @@ class TestValidation(TestBase):
         self.assertIn(field, v.errors)
         self.assertIn(0, v.errors[field])
         self.assertIn('price', v.errors[field][0])
-        exp_msg = errors.BasicErrorHandler.messages[errors.BAD_TYPE[0]]\
+        exp_msg = errors.BasicErrorHandler.messages[errors.BAD_TYPE.code]\
             .format(constraint='integer')
         self.assertIn(exp_msg, v.errors[field][0]['price'])
 
@@ -322,7 +322,7 @@ class TestValidation(TestBase):
         value = ['agent', 'client', 'profit']
         self.assertFail({field: value})
         self.assertError(field, (field, 'allowed'), errors.UNALLOWED_VALUES,
-                         ['agent', 'client', 'vendor'], set(['profit']))
+                         ['agent', 'client', 'vendor'], ['profit'])
 
     def test_string_unallowed(self):
         field = 'a_restricted_string'
@@ -825,22 +825,21 @@ class TestValidation(TestBase):
                            validator=MyValidator(schema))
 
     def test_validator_rule(self):
-        # FIXME allow custom errors!
-        pass
-        # def validate_name(field, value, error):
-        #     if not value.islower():
-        #         error(field, 'must be lowercase')
-        #
-        # schema = {
-        #     'name': {'validator': validate_name},
-        #     'age': {'type': 'integer'}
-        # }
-        # v = Validator(schema)
-        #
-        # self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
-        # #self.assertError('name', 'must be lowercase', validator=v)
-        #
-        # self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
+        def validate_name(field, value, error):
+            if not value.islower():
+                error(field, 'must be lowercase')
+
+        schema = {
+            'name': {'validator': validate_name},
+            'age': {'type': 'integer'}
+        }
+        v = Validator(schema)
+
+        self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
+        self.assertError('name', ('name', None), errors.CUSTOM, None,
+                         ('must be lowercase',), v_errors=v._errors)
+        self.assertDictEqual(v.errors, {'name': 'must be lowercase'})
+        self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
 
     def test_validated(self):
         schema = {'property': {'type': 'string'}}
@@ -1183,7 +1182,7 @@ class TestValidation(TestBase):
                              'dependencies': {'field1': ['one', 'two']}}}
         v.validate({'field2': 7}, schema)
         exp_msg = errors.BasicErrorHandler\
-            .messages[errors.DEPENDENCIES_FIELD_VALUE[0]]\
+            .messages[errors.DEPENDENCIES_FIELD_VALUE.code]\
             .format(field='field2', constraint={'field1': ['one', 'two']})
         self.assertDictEqual(v.errors, {'field2': exp_msg})
 
@@ -1297,9 +1296,9 @@ class TestValidation(TestBase):
         handler = errors.BasicErrorHandler
         self.assertDictEqual(
             self.validator.errors,
-            {'that_field': handler.messages[errors.EXCLUDES_FIELD[0]].format(
+            {'that_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                 "'this_field'", field="that_field"),
-             'this_field': handler.messages[errors.EXCLUDES_FIELD[0]].format(
+             'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")})
 
     def test_excludes_hashable(self):
@@ -1470,7 +1469,7 @@ class ErrorHandling(TestBase):
         error = v._errors[0]
         self.assertEqual(error.document_path, ('foo',))
         self.assertEqual(error.schema_path, ('foo', 'type'))
-        self.assertEqual(error.code, 0x25)
+        self.assertEqual(error.code, 0x24)
         self.assertEqual(error.rule, 'type')
         self.assertEqual(error.constraint, 'string')
         self.assertEqual(error.value, 42)
@@ -1482,7 +1481,6 @@ class ErrorHandling(TestBase):
         v = Validator(schema={'foo': {'propertyschema': {'type': 'integer'}}})
         v.document = {'foo': {'0': 'bar'}}
         v._error('foo', errors.PROPERTYSCHEMA, ())
-        # TODO test suberrors
         error = v._errors[0]
         self.assertEqual(error.document_path, ('foo',))
         self.assertEqual(error.schema_path, ('foo', 'propertyschema'))
@@ -1500,7 +1498,6 @@ class ErrorHandling(TestBase):
         v = Validator(schema={'foo': {'oneof': valids}})
         v.document = {'foo': '0x100'}
         v._error('foo', errors.ONEOF, (), 0, 2)
-        # TODO test suberrors
         error = v._errors[0]
         self.assertEqual(error.document_path, ('foo',))
         self.assertEqual(error.schema_path, ('foo', 'oneof'))
@@ -1527,9 +1524,9 @@ class ErrorHandling(TestBase):
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(errors.ValidationError(
-            ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x25, 'type', 'string',
+            ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x24, 'type', 'string',
             True, ()))
-        ref.update({'zap': {'foo': handler.messages[0x25].format(
+        ref.update({'zap': {'foo': handler.messages[0x24].format(
             constraint='string')}})
         self.assertDictEqual(handler(_errors), ref)
 
