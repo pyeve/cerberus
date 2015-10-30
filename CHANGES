@@ -24,7 +24,7 @@ Not released yet.
   (Frank Sachsenheim).
 - New: 'Validator.root_schema' complements 'Validator.root_document' (Frank
   Sachsenheim).
-- New: 'Validator.document_path' and 'Validator.document_path' properties can
+- New: 'Validator.document_path' and 'Validator.schema_path' properties can
   be used to determine the relation of the currently validating document to the
   'root_document' / 'root_schema' (Frank Sachsenheim).
 - New: Allows various error output with error handlers (Frank Sachsenheim).
