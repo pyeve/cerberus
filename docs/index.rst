@@ -39,6 +39,7 @@ Table of Contents
     Usage <usage>
     Validation Rules <validation-rules>
     Normalization Rules <normalization-rules>
+    Errors & Error Handling <errors>
     Extending <customize>
     Contributing <contribute>
     API <api>

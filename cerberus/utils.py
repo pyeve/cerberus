@@ -1,6 +1,17 @@
 import logging
 
+from .platform import _str_type
+
 log = logging.getLogger('cerberus')
+
+
+def quote_string(value):
+    if isinstance(value, _str_type):
+        return '"%s"' % value
+    else:
+        return value
+
+
 depr_warnings_printed = {}
 
 

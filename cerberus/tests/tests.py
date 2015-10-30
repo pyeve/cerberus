@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 import sys
 from datetime import datetime
@@ -75,12 +77,12 @@ class TestValidation(TestBase):
 
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
-                                   errors.ERROR_DOCUMENT_MISSING)
+                                   errors.DOCUMENT_MISSING)
 
     def test_bad_document_type(self):
         document = "not a dict"
         self.assertValidationError(
-            document, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+            document, None, None, errors.DOCUMENT_FORMAT.format(
                 document)
         )
 
@@ -94,7 +96,8 @@ class TestValidation(TestBase):
     def test_unknown_field(self):
         field = 'surname'
         self.assertFail({field: 'doe'})
-        self.assertError(field, errors.ERROR_UNKNOWN_FIELD)
+        self.assertError(field, (), errors.UNKNOWN_FIELD, None)
+        self.assertDictEqual(self.validator.errors, {field: 'unknown field'})
 
     def test_unknown_rule(self):
         field = 'name'
@@ -109,9 +112,11 @@ class TestValidation(TestBase):
         self.assertSuccess(self.document, schema)
 
     def test_required_field(self):
+        field = 'a_required_string'
         self.schema.update(self.required_string_extension)
         self.assertFail({'an_integer': 1}, self.schema)
-        self.assertError('a_required_string', errors.ERROR_REQUIRED_FIELD)
+        self.assertError(field, (field, 'required'), errors.REQUIRED_FIELD,
+                         True)
 
     def test_nullable_field(self):
         self.assertSuccess({'a_nullable_integer': None})
@@ -124,7 +129,8 @@ class TestValidation(TestBase):
     def test_readonly_field(self):
         field = 'a_readonly_string'
         self.assertFail({field: 'update me if you can'})
-        self.assertError(field, errors.ERROR_READONLY_FIELD)
+        self.assertError(field, (field, 'readonly'), errors.READONLY_FIELD,
+                         True)
 
     def test_readonly_field_first_rule(self):
         # test that readonly rule is checked before any other rule, and blocks.
@@ -147,7 +153,7 @@ class TestValidation(TestBase):
         value = 'catch_me'
         schema = {field: {'type': value}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.ERROR_UNKNOWN_TYPE.format(value))
+                               errors.SCHEMA_ERROR_UNKNOWN_TYPE, value)
 
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
@@ -156,7 +162,7 @@ class TestValidation(TestBase):
         self.assertBadType('an_integer', 'integer', "i'm not an integer")
 
     def test_not_a_boolean(self):
-        self.assertBadType('a_boolean', 'boolean', "i'm not an boolean")
+        self.assertBadType('a_boolean', 'boolean', "i'm not a boolean")
 
     def test_not_a_datetime(self):
         self.assertBadType('a_datetime', 'datetime', "i'm not a datetime")
@@ -178,21 +184,23 @@ class TestValidation(TestBase):
         max_length = self.schema[field]['maxlength']
         value = "".join(choice(ascii_lowercase) for i in range(max_length + 1))
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MAX_LENGTH.format(max_length))
+        self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
+                         max_length)
 
     def test_bad_min_length(self):
         field = 'a_string'
         min_length = self.schema[field]['minlength']
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
+        self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
+                         min_length)
 
     def test_bad_max_value(self):
         def assert_bad_max_value(field, inc):
             max_value = self.schema[field]['max']
             value = max_value + inc
             self.assertFail({field: value})
-            self.assertError(field, errors.ERROR_MAX_VALUE.format(max_value))
+            self.assertError(field, (field, 'max'), errors.MAX_VALUE, max_value)
 
         field = 'an_integer'
         assert_bad_max_value(field, 1)
@@ -206,7 +214,7 @@ class TestValidation(TestBase):
             min_value = self.schema[field]['min']
             value = min_value - inc
             self.assertFail({field: value})
-            self.assertError(field, errors.ERROR_MIN_VALUE.format(min_value))
+            self.assertError(field, (field, 'min'), errors.MIN_VALUE, min_value)
 
         field = 'an_integer'
         assert_bad_min_value(field, 1)
@@ -220,37 +228,49 @@ class TestValidation(TestBase):
         schema_field = 'address'
         value = {schema_field: 34}
         self.assertFail({field: value})
+        self.assertError((field, schema_field),
+                         (field, 'schema', schema_field, 'type'),
+                         errors.BAD_TYPE, 'string')
+
         v = self.validator
+        handler = errors.BasicErrorHandler
         self.assertIn(field, v.errors)
         self.assertIn(schema_field, v.errors[field])
-        self.assertIn(errors.ERROR_BAD_TYPE.format('string'),
+        self.assertIn(handler.messages[errors.BAD_TYPE.code]
+                      .format(constraint='string'),
                       v.errors[field][schema_field])
         self.assertIn('city', v.errors[field])
-        self.assertIn(errors.ERROR_REQUIRED_FIELD, v.errors[field]['city'])
+        self.assertIn(handler.messages[errors.REQUIRED_FIELD.code],
+                      v.errors[field]['city'])
 
     def test_bad_valueschema(self):
         field = 'a_dict_with_valueschema'
         schema_field = 'a_string'
         value = {schema_field: 'not an integer'}
         self.assertFail({field: value})
-        v = self.validator
-        self.assertIn(field, v.errors)
-        self.assertIn(schema_field, v.errors[field])
-        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
-                      v.errors[field][schema_field])
+
+        exp_child_errors = [((field, schema_field), (field, 'valueschema',
+                             'type'), errors.BAD_TYPE, 'integer')]
+        self.assertChildErrors(field, (field, 'valueschema'), errors.VALUESCHEMA,  # noqa
+                               {'type': 'integer'}, child_errors=exp_child_errors)  # noqa
 
     def test_bad_list_of_values(self):
         field = 'a_list_of_values'
         value = ['a string', 'not an integer']
         self.assertFail({field: value})
-        v = self.validator
-        self.assertIn(field, v.errors)
-        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
-                      v.errors[field][1])
+        self.assertChildErrors(field, (field, 'items'), errors.BAD_ITEMS,
+                               [{'type': 'string'}, {'type': 'integer'}],
+                               child_errors=[
+                                   ((field, 1), (field, 'items', 1, 'type'),
+                                    errors.BAD_TYPE, 'integer')])
+        self.assertIn(errors.BasicErrorHandler.messages[errors.BAD_TYPE.code].
+                      format(constraint='integer'),
+                      self.validator.errors[field][1])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_ITEMS_LIST.format(2))
+        self.assertError(field, (field, 'items'), errors.ITEMS_LENGTH,
+                         [{'type': 'string'}, {'type': 'integer'}], (2, 3))
 
     def test_bad_list_of_integers(self):
         field = 'a_list_of_integers'
@@ -261,11 +281,12 @@ class TestValidation(TestBase):
         field = 'a_list_of_dicts_deprecated'
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
-        self.assertError('price', errors.ERROR_BAD_TYPE.format('integer'))
+        # this is not a proper expectation, it's a deprecated feature
+        self.assertError('price', ('price', 'type'), errors.BAD_TYPE, 'integer')
 
         value = ["not a dict"]
         self.assertValidationError(
-            {field: value}, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
                 value[0])
         )
 
@@ -273,16 +294,26 @@ class TestValidation(TestBase):
         field = 'a_list_of_dicts'
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
+        exp_child_errors = [((field, 0, 'price'),
+                            (field, 'schema', 'schema', 'price', 'type'),
+                            errors.BAD_TYPE, 'integer')]
+        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
+                               {'type': 'dict',
+                                'schema': {'sku': {'type': 'string'},
+                                           'price': {'type': 'integer'}}},
+                               child_errors=exp_child_errors)
+
         v = self.validator
         self.assertIn(field, v.errors)
         self.assertIn(0, v.errors[field])
         self.assertIn('price', v.errors[field][0])
-        self.assertIn(errors.ERROR_BAD_TYPE.format('integer'),
-                      v.errors[field][0]['price'])
+        exp_msg = errors.BasicErrorHandler.messages[errors.BAD_TYPE.code]\
+            .format(constraint='integer')
+        self.assertIn(exp_msg, v.errors[field][0]['price'])
 
         value = ["not a dict"]
         self.assertValidationError(
-            {field: value}, None, None, errors.ERROR_DOCUMENT_FORMAT.format(
+            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
                 value[0])
         )
 
@@ -290,20 +321,22 @@ class TestValidation(TestBase):
         field = 'an_array'
         value = ['agent', 'client', 'profit']
         self.assertFail({field: value})
-        self.assertError(
-            field, errors.ERROR_UNALLOWED_VALUES.format(['profit']))
+        self.assertError(field, (field, 'allowed'), errors.UNALLOWED_VALUES,
+                         ['agent', 'client', 'vendor'], ['profit'])
 
     def test_string_unallowed(self):
         field = 'a_restricted_string'
         value = 'profit'
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUE.format(value))
+        self.assertError(field, (field, 'allowed'), errors.UNALLOWED_VALUE,
+                         ['agent', 'client', 'vendor'], value)
 
     def test_integer_unallowed(self):
         field = 'a_restricted_integer'
         value = 2
         self.assertFail({field: value})
-        self.assertError(field, errors.ERROR_UNALLOWED_VALUE.format(value))
+        self.assertError(field, (field, 'allowed'), errors.UNALLOWED_VALUE,
+                         [-1, 0, 1], value)
 
     def test_integer_allowed(self):
         self.assertSuccess({'a_restricted_integer': -1})
@@ -342,16 +375,27 @@ class TestValidation(TestBase):
         self.assertSuccess({'a_set': set(['hello', 1])})
 
     def test_one_of_two_types(self):
-        self.assertSuccess({'one_or_more_strings': 'foo'})
-        self.assertSuccess({'one_or_more_strings': ['foo', 'bar']})
-        self.assertFail({'one_or_more_strings': 23})
-        self.assertFail({'one_or_more_strings': ['foo', 23]})
+        field = 'one_or_more_strings'
+        self.assertSuccess({field: 'foo'})
+        self.assertSuccess({field: ['foo', 'bar']})
+        self.assertFail({field: 23})
+        self.assertError((field,), (field, 'type'), errors.BAD_TYPE,
+                         ['string', 'list'])
+        self.assertFail({field: ['foo', 23]})
+        exp_child_errors = [((field, 1), (field, 'schema', 'type'),
+                             errors.BAD_TYPE, 'string')]
+        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
+                               {'type': 'string'},
+                               child_errors=exp_child_errors)
+        self.assertDictEqual(self.validator.errors,
+                             {field: {1: 'must be of string type'}})
 
     def test_regex(self):
         field = 'a_regex_email'
         self.assertSuccess({field: 'valid.email@gmail.com'})
         self.assertFail({field: 'invalid'}, self.schema, update=True)
-        self.assertError(field, 'does not match regex')
+        self.assertError(field, (field, 'regex'), errors.REGEX_MISMATCH,
+                         '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
     def test_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
@@ -380,14 +424,15 @@ class TestValidation(TestBase):
         self.assertSuccess({'a_list_of_integers': [99, 100]})
 
     def test_a_dict(self):
-        self.assertSuccess(
-            {
-                'a_dict': {
-                    'address': 'i live here',
-                    'city': 'in my own town'
-                }
-            }
-        )
+        self.assertSuccess({'a_dict': {'address': 'i live here',
+                                       'city': 'in my own town'}})
+        self.assertFail({'a_dict': {'address': 8545}})
+        self.assertErrors([
+            (('a_dict', 'address'), ('a_dict', 'schema', 'address', 'type'),
+             errors.BAD_TYPE, 'string'),
+            (('a_dict', 'city'), ('a_dict', 'schema', 'city', 'required'),
+             errors.REQUIRED_FIELD, True)
+            ])
 
     def test_a_dict_with_valueschema(self):
         self.assertSuccess(
@@ -422,14 +467,16 @@ class TestValidation(TestBase):
         max_length = self.schema[field]['maxlength']
 
         self.assertFail({field: [1] * (min_length - 1)})
-        self.assertError(field, errors.ERROR_MIN_LENGTH.format(min_length))
+        self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
+                         min_length)
 
         for i in range(min_length, max_length):
             value = [1] * i
             self.assertSuccess({field: value})
 
         self.assertFail({field: [1] * (max_length + 1)})
-        self.assertError(field, errors.ERROR_MAX_LENGTH.format(max_length))
+        self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
+                         max_length)
 
     def test_custom_datatype(self):
         class MyValidator(Validator):
@@ -442,7 +489,8 @@ class TestValidation(TestBase):
         self.assertSuccess({'test_field': '50ad188438345b1049c88a28'},
                            validator=v)
         self.assertFail({'test_field': 'hello'}, validator=v)
-        self.assertError('test_field', 'Not an ObjectId', validator=v)
+        self.assertError('test_field', ('test_field', 'type'), errors.BAD_TYPE,
+                         'objectid', v_errors=v._errors)
 
     def test_custom_datatype_rule(self):
         class MyValidator(Validator):
@@ -457,9 +505,12 @@ class TestValidation(TestBase):
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)
         self.assertFail({'test_field': '0'}, validator=v)
-        self.assertError('test_field', 'Not a number', validator=v)
+        self.assertError('test_field', ('test_field', 'type'), errors.BAD_TYPE,
+                         'number', v_errors=v._errors)
         self.assertFail({'test_field': 0}, validator=v)
-        self.assertError('test_field', 'Below the min', validator=v)
+        self.assertError('test_field', ('test_field', None,), errors.CUSTOM,
+                         None, ('Below the min',), v_errors=v._errors)
+        self.assertDictEqual(v.errors, {'test_field': 'Below the min'})
 
     def test_custom_validator(self):
         class MyValidator(Validator):
@@ -471,7 +522,9 @@ class TestValidation(TestBase):
         v = MyValidator(schema)
         self.assertSuccess({'test_field': 7}, validator=v)
         self.assertFail({'test_field': 6}, validator=v)
-        self.assertError('test_field', 'Not an odd number', validator=v)
+        self.assertError('test_field', ('test_field', None), errors.CUSTOM,
+                         None, ('Not an odd number',), v_errors=v._errors)
+        self.assertDictEqual(v.errors, {'test_field': 'Not an odd number'})
 
     def test_transparent_schema_rules(self):
         field = 'test'
@@ -496,7 +549,8 @@ class TestValidation(TestBase):
         self.assertSuccess(document, schema)
         schema[field]['empty'] = False
         self.assertFail(document, schema)
-        self.assertError(field, errors.ERROR_EMPTY_NOT_ALLOWED)
+        self.assertError(field, (field, 'empty'), errors.EMPTY_NOT_ALLOWED,
+                         False)
         schema[field]['empty'] = True
         self.assertSuccess(document, schema)
 
@@ -510,7 +564,8 @@ class TestValidation(TestBase):
         self.assertFail(schema=schema, document=document, validator=v)
         schema[field]['required'] = True
         self.assertFail(schema=schema, document=document, validator=v)
-        self.assertNoError(field, errors.ERROR_REQUIRED_FIELD, validator=v)
+        self.assertNoError(field, (field, 'required'), errors.REQUIRED_FIELD,
+                           True, v_errors=v._errors)
 
         # Test ignore None behaviour
         v = Validator(schema, ignore_none_values=True)
@@ -518,11 +573,10 @@ class TestValidation(TestBase):
         self.assertSuccess(schema=schema, document=document, validator=v)
         schema[field]['required'] = True
         self.assertFail(schema=schema, document=document, validator=v)
-        self.assertError(field, errors.ERROR_REQUIRED_FIELD, validator=v)
-        self.assertNoError(
-            field,
-            errors.ERROR_BAD_TYPE.format('string', validator=v)
-        )
+        self.assertError(field, (field, 'required'), errors.REQUIRED_FIELD,
+                         True, v_errors=v._errors)
+        self.assertNoError(field, (field, 'type'), errors.BAD_TYPE, 'string',
+                           v_errors=v._errors)
 
     def test_unknown_keys(self):
         schema = {}
@@ -728,9 +782,10 @@ class TestValidation(TestBase):
                        'field2': {'required': True,
                                   'dependencies': {'field1': ['one', 'two']}}})
         v.validate({'field1': 'three', 'field2': 7})
-        self.assertDictEqual(v.errors,
-                             {'field2': "field 'field1' is required with one "
-                                        "of these values: ['one', 'two']"})
+        self.assertError('field2', ('field2', 'dependencies'),
+                         errors.DEPENDENCIES_FIELD_VALUE,
+                         {'field1': ['one', 'two']}, ({'field1': 'three'}, ),
+                         v_errors=v._errors)
 
     def test_options_passed_to_nested_validators(self):
         schema = {'sub_dict': {'type': 'dict',
@@ -781,8 +836,9 @@ class TestValidation(TestBase):
         v = Validator(schema)
 
         self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
-        self.assertError('name', 'must be lowercase', validator=v)
-
+        self.assertError('name', ('name', None), errors.CUSTOM, None,
+                         ('must be lowercase',), v_errors=v._errors)
+        self.assertDictEqual(v.errors, {'name': 'must be lowercase'})
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
 
     def test_validated(self):
@@ -829,6 +885,13 @@ class TestValidation(TestBase):
         self.assertSuccess(doc, schema)
         doc = {'prop1': -1}
         self.assertFail(doc, schema)
+        exp_child_errors = [
+            (('prop1',), ('prop1', 'anyof', 0, 'min'), errors.MIN_VALUE, 0),
+            (('prop1',), ('prop1', 'anyof', 1, 'min'), errors.MIN_VALUE, 10)
+        ]
+        self.assertChildErrors(('prop1',), ('prop1', 'anyof'), errors.ANYOF,
+                               [{'min': 0}, {'min': 10}],
+                               child_errors=exp_child_errors)
         doc = {'prop1': 5.5}
         self.assertFail(doc, schema)
         doc = {'prop1': '5.5'}
@@ -978,25 +1041,16 @@ class TestValidation(TestBase):
 
     def test_anyof_schema(self):
         # test that a list of schemas can be specified.
-        schema = {'parts': {
-                  'type': 'list',
-                  'schema': {
-                      'type': ['dict', 'string'],
-                      'anyof': [
-                          {'schema':
-                            {'model number': {
-                             'type': 'string'},
-                             'count': {'type': 'integer'}}},
-                          {'schema':
-                              {'serial number': {
-                               'type': 'string'},
-                               'count': {'type': 'integer'}}}
-                          ]}}}
-        document = {'parts': [
-                    {'model number': 'MX-009', 'count': 100},
-                    {'serial number': '898-001'},
-                    'misc'
-                    ]}
+
+        valid_parts = [{'schema': {'model number': {'type': 'string'},
+                                   'count': {'type': 'integer'}}},
+                       {'schema': {'serial number': {'type': 'string'},
+                                   'count': {'type': 'integer'}}}]
+        valid_item = {'type': ['dict', 'string'], 'anyof': valid_parts}
+        schema = {'parts': {'type': 'list', 'schema': valid_item}}
+        document = {'parts': [{'model number': 'MX-009', 'count': 100},
+                              {'serial number': '898-001'},
+                              'misc']}
 
         # document is valid. each entry in 'parts' matches a type or schema
         self.assertSuccess(document, schema)
@@ -1012,18 +1066,41 @@ class TestValidation(TestBase):
         document['parts'].append({'product name': "Monitors", 'count': 18})
         document['parts'].append(10)
         # and invalid. numbers are not allowed.
+        self.assertFail(document, schema)
 
-        v = Validator(schema)
-        v.validate(document, update=True)
+        self.assertEqual(len(self.validator._errors), 1)
+        self.assertEqual(len(self.validator._errors[0].child_errors), 2)
+
+        exp_child_errors = [
+            (('parts', 3), ('parts', 'schema', 'anyof'), errors.ANYOF,
+             valid_parts),
+            (('parts', 4), ('parts', 'schema', 'type'), errors.BAD_TYPE,
+             ['dict', 'string'])
+        ]
+        self.assertChildErrors(
+            'parts', ('parts', 'schema'), errors.SEQUENCE_SCHEMA, valid_item,
+            child_errors=exp_child_errors
+        )
+
+        self.assertNoError(('parts', 4), ('parts', 'schema', 'anyof'),
+                           errors.ANYOF, valid_parts)
+
+        v_errors = self.validator.errors
+        self.assertIn('parts', v_errors)
+        self.assertIn(3, v_errors['parts'])
+        self.assertIn('anyof', v_errors['parts'][3])
+        self.assertEqual(v_errors['parts'][3]['anyof'],
+                         "no definitions validate")
+        self.assertIn('definition 0', v_errors['parts'][3])
         self.assertEqual(
-            v.errors['parts'][3]['definition 0']['product name'],
+            v_errors['parts'][3]['definition 0']['product name'],
             "unknown field")
         self.assertEqual(
-            v.errors['parts'][3]['definition 1']['product name'],
+            v_errors['parts'][3]['definition 1']['product name'],
             "unknown field")
         self.assertEqual(
-            v.errors['parts'][4],
-            "must be of dict or string type")
+            v_errors['parts'][4],
+            "must be of ['dict', 'string'] type")
 
     def test_anyof_2(self):
         # these two schema should be the same
@@ -1071,6 +1148,16 @@ class TestValidation(TestBase):
         self.assertSuccess({'nested_oneof_type': {'foo': 'a'}}, schema)
         self.assertSuccess({'nested_oneof_type': {'bar': 3}}, schema)
 
+    def test_no_of_validation_if_type_fails(self):
+        valid_parts = [{'schema': {'model number': {'type': 'string'},
+                                   'count': {'type': 'integer'}}},
+                       {'schema': {'serial number': {'type': 'string'},
+                                   'count': {'type': 'integer'}}}]
+        schema = {'part': {'type': ['dict', 'string'], 'anyof': valid_parts}}
+        document = {'part': 10}
+        self.assertFail(document, schema)
+        self.assertEqual(len(self.validator._errors), 1)
+
     def test_issue_107(self):
         schema = {'info': {'type': 'dict',
                   'schema': {'name': {'type': 'string', 'required': True}}}}
@@ -1094,9 +1181,10 @@ class TestValidation(TestBase):
                   'field2': {'required': True,
                              'dependencies': {'field1': ['one', 'two']}}}
         v.validate({'field2': 7}, schema)
-        self.assertDictEqual(v.errors, {'field2': "field 'field1' is required "
-                                                  "with one of these values: "
-                                                  "['one', 'two']"})
+        exp_msg = errors.BasicErrorHandler\
+            .messages[errors.DEPENDENCIES_FIELD_VALUE.code]\
+            .format(field='field2', constraint={'field1': ['one', 'two']})
+        self.assertDictEqual(v.errors, {'field2': exp_msg})
 
     def test_dependencies_on_boolean_field_with_one_value(self):
         # https://github.com/nicolaiarocci/cerberus/issues/138
@@ -1124,11 +1212,11 @@ class TestValidation(TestBase):
         self.assertFail({'text': 'foo', 'deleted': True}, schema)
         self.assertFail({'text': 'foo'}, schema)
 
-    def test_trail(self):
+    def test_document_trail(self):
         class TrailTester(Validator):
             def _validate_trail(self, constraint, field, value):
                 test_doc = self.root_document
-                for crumb in self.trail:
+                for crumb in self.document_path:
                     test_doc = test_doc[crumb]
                 assert test_doc == self.document
 
@@ -1205,11 +1293,13 @@ class TestValidation(TestBase):
                                  'required': True}}
         self.assertValidationError({'that_field': {},
                                     'this_field': {}}, schema)
-        self.assertDictEqual(self.validator.errors,
-                             {'that_field': errors.ERROR_EXCLUDES_FIELD.format(
-                                 "'this_field'", "that_field"),
-                              'this_field': errors.ERROR_EXCLUDES_FIELD.format(
-                                  "'that_field', 'bazo_field'", "this_field")})
+        handler = errors.BasicErrorHandler
+        self.assertDictEqual(
+            self.validator.errors,
+            {'that_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
+                "'this_field'", field="that_field"),
+             'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
+                 "'that_field', 'bazo_field'", field="this_field")})
 
     def test_excludes_hashable(self):
         self.validator = Validator()
@@ -1250,8 +1340,8 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'amount': 'not_a_number'}, validator=v)
-        self.assertError('amount',
-                         errors.ERROR_COERCION_FAILED.format('amount'), v)
+        self.assertError('amount', ('amount', 'coerce'), errors.COERCION_FAILED,
+                         int, v_errors=v._errors)
 
     def test_coerce_catches_TypeError(self):
         schema = {
@@ -1259,8 +1349,7 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'name': 1234}, validator=v)
-        self.assertError('name',
-                         errors.ERROR_COERCION_FAILED.format('name'), v)
+        self.assertError('name', ('name', 'coerce'), errors.COERCION_FAILED, str.lower, v_errors=v._errors)  # noqa
 
     def test_coerce_unknown(self):
         schema = {'foo': {'schema': {}, 'allow_unknown': {'coerce': int}}}
@@ -1370,6 +1459,84 @@ class DefinitionSchema(TestBase):
     def test_repr(self):
         v = Validator({'foo': {'type': 'string'}})
         self.assertEqual(repr(v.schema), "{'foo': {'type': 'string'}}")
+
+
+class ErrorHandling(TestBase):
+    def test__error_1(self):
+        v = Validator(schema={'foo': {'type': 'string'}})
+        v.document = {'foo': 42}
+        v._error('foo', errors.BAD_TYPE, 'string')
+        error = v._errors[0]
+        self.assertEqual(error.document_path, ('foo',))
+        self.assertEqual(error.schema_path, ('foo', 'type'))
+        self.assertEqual(error.code, 0x24)
+        self.assertEqual(error.rule, 'type')
+        self.assertEqual(error.constraint, 'string')
+        self.assertEqual(error.value, 42)
+        self.assertEqual(error.info, ('string',))
+        self.assertFalse(error.is_group_error)
+        self.assertFalse(error.is_logic_error)
+
+    def test__error_2(self):
+        v = Validator(schema={'foo': {'propertyschema': {'type': 'integer'}}})
+        v.document = {'foo': {'0': 'bar'}}
+        v._error('foo', errors.PROPERTYSCHEMA, ())
+        error = v._errors[0]
+        self.assertEqual(error.document_path, ('foo',))
+        self.assertEqual(error.schema_path, ('foo', 'propertyschema'))
+        self.assertEqual(error.code, 0x83)
+        self.assertEqual(error.rule, 'propertyschema')
+        self.assertEqual(error.constraint, {'type': 'integer'})
+        self.assertEqual(error.value, {'0': 'bar'})
+        self.assertEqual(error.info, ((),))
+        self.assertTrue(error.is_group_error)
+        self.assertFalse(error.is_logic_error)
+
+    def test__error_3(self):
+        valids = [{'type': 'string', 'regex': '0x[0-9a-f]{2}'},
+                  {'type': 'integer', 'min': 0, 'max': 255}]
+        v = Validator(schema={'foo': {'oneof': valids}})
+        v.document = {'foo': '0x100'}
+        v._error('foo', errors.ONEOF, (), 0, 2)
+        error = v._errors[0]
+        self.assertEqual(error.document_path, ('foo',))
+        self.assertEqual(error.schema_path, ('foo', 'oneof'))
+        self.assertEqual(error.code, 0x92)
+        self.assertEqual(error.rule, 'oneof')
+        self.assertEqual(error.constraint, valids)
+        self.assertEqual(error.value, '0x100')
+        self.assertEqual(error.info, ((), 0, 2))
+        self.assertTrue(error.is_group_error)
+        self.assertTrue(error.is_logic_error)
+
+    def test_basic_error_handler(self):
+        handler = errors.BasicErrorHandler()
+        _errors, ref = [], {}
+
+        _errors.append(errors.ValidationError(
+            ['foo'], ['foo'], 0x62, 'readonly', True, None, ()))
+        ref.update({'foo': handler.messages[0x62]})
+        self.assertDictEqual(handler(_errors), ref)
+
+        _errors.append(errors.ValidationError(
+            ['bar'], ['foo'], 0x42, 'min', 1, 2, ()))
+        ref.update({'bar': handler.messages[0x42].format(constraint=1)})
+        self.assertDictEqual(handler(_errors), ref)
+
+        _errors.append(errors.ValidationError(
+            ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x24, 'type', 'string',
+            True, ()))
+        ref.update({'zap': {'foo': handler.messages[0x24].format(
+            constraint='string')}})
+        self.assertDictEqual(handler(_errors), ref)
+
+        _errors.append(errors.ValidationError(
+            ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x41, 'regex',
+            '^p[äe]ng$', 'boom', ()))
+        ref['zap']['foo'] = \
+            [ref['zap']['foo'],
+             handler.messages[0x41].format(constraint='^p[äe]ng$')]
+        self.assertDictEqual(handler(_errors), ref)
 
 
 # TODO remove on next major release
