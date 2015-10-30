@@ -189,7 +189,7 @@ for a list of the contributed error definitions.
 
 Optionally you can submit further arguments as information. Error handlers
 that are targeted for humans will use these as positional arguments when
-formatting a message with :py:`str.format`. Serializing handlers will keep
+formatting a message with :py:meth:`str.format`. Serializing handlers will keep
 these values in a list. Keep in mind that bit 7 marks a group error.
 
 .. versionadded:: 0.10
