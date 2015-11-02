@@ -176,6 +176,9 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
+    mandatory_validations = ('nullable', )
+    priority_validations = ('nullable', 'readonly', 'type')
+
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
 
@@ -206,12 +209,13 @@ class Validator(object):
                 kwargs[p] = args[i]
         self.__config = kwargs
 
-        self.validation_rules = self.__introspect_validation_rules()
+        self.validation_rules = self.__introspect_rules_to('validate')
+        self.normalization_rules = self.__introspect_rules_to('normalize')
         self._schema = DefinitionSchema(self, kwargs.get('schema', ()))
 
-    def __introspect_validation_rules(self):
+    def __introspect_rules_to(self, rule_type):
         rules = ['_'.join(x.split('_')[2:]) for x in dir(self)
-                 if x.startswith('_validate')]
+                 if x.startswith('_' + rule_type)]
         return tuple(rules)
 
     def _error(self, *args):
@@ -438,22 +442,22 @@ class Validator(object):
         """
         document = document.copy()
         self.__init_processing(document, schema)
-        self._normalize_mapping(document, schema or self.schema)
+        self.__normalize_mapping(document, schema or self.schema)
         if self._errors:
             return None
         else:
             return document
 
-    def _normalize_mapping(self, mapping, schema):
+    def __normalize_mapping(self, mapping, schema):
         # TODO allow methods for coerce and rename_handler like validate_type
-        self._rename_fields(mapping, schema)
+        self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
-            self._purge_unknown_fields(mapping, schema)
-        self._coerce_values(mapping, schema)
-        self._normalize_containers(mapping, schema)
+            self._normalize_purge_unknown(mapping, schema)
+        self._normalize_coerce(mapping, schema)
+        self.__normalize_containers(mapping, schema)
         return mapping
 
-    def _coerce_values(self, mapping, schema):
+    def _normalize_coerce(self, mapping, schema):
         def coerce_value(coercer):
             try:
                 mapping[field] = coercer(mapping[field])
@@ -468,25 +472,25 @@ class Validator(object):
                 coerce_value(self.allow_unknown['coerce'])
 
     # TODO retrieve and store errors from child-validators
-    def _normalize_containers(self, mapping, schema):
+    def __normalize_containers(self, mapping, schema):
         for field in mapping:
             if isinstance(mapping[field], Mapping):
                 if 'propertyschema' in schema[field]:
-                    self._normalize_mapping_per_propertyschema(
+                    self.__normalize_mapping_per_propertyschema(
                         field, mapping, schema[field]['propertyschema'])
                 if 'valueschema' in schema[field]:
-                    self._normalize_mapping_per_valueschema(
+                    self.__normalize_mapping_per_valueschema(
                         field, mapping, schema[field]['valueschema'])
                 if set(schema[field]) & set(('allow_unknown', 'purge_unknown',
                                              'schema')):
-                    self._normalize_mapping_per_schema(field, mapping, schema)
+                    self.__normalize_mapping_per_schema(field, mapping, schema)
             elif isinstance(mapping[field], Sequence) and \
                 not isinstance(mapping[field], _str_type) and \
                     'schema' in schema[field]:
-                self._normalize_sequence(field, mapping, schema)
+                self.__normalize_sequence(field, mapping, schema)
 
-    def _normalize_mapping_per_propertyschema(self, field, mapping,
-                                              property_rules):
+    def __normalize_mapping_per_propertyschema(self, field, mapping,
+                                               property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self.__get_child_validator(field,
@@ -503,12 +507,12 @@ class Validator(object):
                 mapping[field][result[k]] = mapping[field][k]
                 del mapping[field][k]
 
-    def _normalize_mapping_per_valueschema(self, field, mapping, value_rules):
+    def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
         validator = self.__get_child_validator(field, schema=schema)
         mapping[field] = validator.normalized(mapping[field])
 
-    def _normalize_mapping_per_schema(self, field, mapping, schema):
+    def __normalize_mapping_per_schema(self, field, mapping, schema):
         child_schema = schema[field].get('schema', dict())
         allow_unknown = schema[field].get('allow_unknown',
                                           self.allow_unknown)
@@ -521,7 +525,7 @@ class Validator(object):
                                   purge_unknown=purge_unknown)
         mapping[field] = validator.normalized(mapping[field])
 
-    def _normalize_sequence(self, field, mapping, schema):
+    def __normalize_sequence(self, field, mapping, schema):
         child_schema = dict(((k, schema[field]['schema'])
                              for k in range(len(mapping[field]))))
         validator = self.__get_child_validator(field, schema=child_schema)
@@ -531,28 +535,34 @@ class Validator(object):
             mapping[field][i] = result[i]
 
     @staticmethod
-    def _purge_unknown_fields(mapping, schema):
+    def _normalize_purge_unknown(mapping, schema):
         for field in tuple(mapping):
             if field not in schema:
                 del mapping[field]
         return mapping
 
-    def _rename_fields(self, mapping, schema):
+    def __normalize_rename_fields(self, mapping, schema):
         for field in tuple(mapping):
             if field in schema:
-                if 'rename' in schema[field]:
-                    mapping[schema[field]['rename']] = mapping[field]
-                    del mapping[field]
-                elif 'rename_handler' in schema[field]:
-                    new_name = schema[field]['rename_handler'](field)
-                    mapping[new_name] = mapping[field]
-                    del mapping[field]
+                self._normalize_rename(mapping, schema, field)
+                self._normalize_rename_handler(mapping, schema, field)
             elif isinstance(self.allow_unknown, Mapping) and \
                     'rename_handler' in self.allow_unknown:
                 new_name = self.allow_unknown['rename_handler'](field)
                 mapping[new_name] = mapping[field]
                 del mapping[field]
         return mapping
+
+    def _normalize_rename(self, mapping, schema, field):
+        if 'rename' in schema[field]:
+            mapping[schema[field]['rename']] = mapping[field]
+            del mapping[field]
+
+    def _normalize_rename_handler(self, mapping, schema, field):
+        if 'rename_handler' in schema[field]:
+            new_name = schema[field]['rename_handler'](field)
+            mapping[new_name] = mapping[field]
+            del mapping[field]
 
     # # Validating
 
@@ -564,9 +574,8 @@ class Validator(object):
         :param schema: The validation-schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
                        class instantiation.
-        :param update: If ``True`` required fields won't be checked.
-        :param normalize: If ``True`` (default), normalize the document before
-                          validation.
+        :param update: If ``True``, required fields won't be checked.
+        :param normalize: If ``True``, normalize the document before validation.
 
         :return: ``True`` if validation succeeds, otherwise ``False``. Check
                  the :func:`errors` property for a list of processing errors.
@@ -632,8 +641,8 @@ class Validator(object):
     def __prepare_document(self, document, normalize):
         self.document = document.copy()  # needed by _error
         if normalize:
-            self.document = self._normalize_mapping(document.copy(),
-                                                    self.schema)
+            self.document = self.__normalize_mapping(document.copy(),
+                                                     self.schema)
 
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
@@ -659,20 +668,23 @@ class Validator(object):
             validatorname = "_validate_" + rule.replace(" ", "_")
             validator = getattr(self, validatorname, None)
             if validator:
-                return validator(definitions[rule], field, value)
+                return validator(definitions.get(rule, None), field, value)
 
         value = self.document[field]
 
         """ _validate_-methods must return True to abort validation. """
-        if (self._validate_nullable(definitions, field, value) or
-                self._validate_readonly(definitions, field, value) or
-                self._validate_type(definitions, field, value) or
-                self._validate_dependencies(definitions, field, value) or
-                self._validate_schema(definitions, field, value)):
-            return
+        prior_rules = tuple((x for x in self.priority_validations
+                             if x in definitions
+                             or x in self.mandatory_validations))
+        for rule in prior_rules:
+            if validate_rule(rule):
+                return
 
-        skip_rules = ('dependencies', 'coerce', 'schema', 'type')
-        for rule in [x for x in definitions if x not in skip_rules]:
+        rules = set(self.mandatory_validations)
+        rules |= set(definitions.keys())
+        rules -= set(prior_rules + self.normalization_rules +
+                     ('allow_unknown', 'required'))
+        for rule in rules:
             validate_rule(rule)
 
     def _validate_allowed(self, allowed_values, field, value):
@@ -687,11 +699,7 @@ class Validator(object):
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
-    def _validate_dependencies(self, definition, field, value):
-        dependencies = definition.get('dependencies')
-        if dependencies is None:
-            return
-
+    def _validate_dependencies(self, dependencies, field, value):
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
@@ -857,9 +865,9 @@ class Validator(object):
             if len(value) < min_length:
                 self._error(field, errors.MIN_LENGTH)
 
-    def _validate_nullable(self, definition, field, value):
+    def _validate_nullable(self, nullable, field, value):
         if value is None:
-            if definition.get("nullable", False):
+            if nullable:
                 return True
             else:
                 self._error(field, errors.NOT_NULLABLE)
@@ -877,11 +885,10 @@ class Validator(object):
                                                  [], [2, 4])
                 self._error(field, errors.PROPERTYSCHEMA, validator._errors)
 
-    def _validate_readonly(self, definition, field, value):
-        if definition.get('readonly', False):
+    def _validate_readonly(self, readonly, field, value):
+        if readonly:
             self._error(field, errors.READONLY_FIELD)
-            if self.errors.get(field):
-                return True
+            return True
 
     def _validate_regex(self, pattern, field, value):
         if not isinstance(value, _str_type):
@@ -918,25 +925,23 @@ class Validator(object):
                 for field in self._unrequired_by_excludes - fields:
                     self._error(field, errors.REQUIRED_FIELD)
 
-    def _validate_schema(self, definition, field, value):
-        schema = definition.get('schema')
+    def _validate_schema(self, schema, field, value):
         if schema is None:
             return
 
         if isinstance(value, Sequence) and not isinstance(value, _str_type):
             self.__validate_schema_sequence(field, schema, value)
         elif isinstance(value, Mapping):
-            self.__validate_schema_mapping(field, schema, value,
-                                           definition.get('allow_unknown',
-                                                          self.allow_unknown))
+            self.__validate_schema_mapping(field, schema, value)
 
-    def __validate_schema_mapping(self, field, schema, value, allow_unknown):
+    def __validate_schema_mapping(self, field, schema, value):
+        allow_unknown = self.schema[field].get('allow_unknown',
+                                               self.allow_unknown)
         validator = self.__get_child_validator(document_crumb=field,
                                                schema_crumb=(field, 'schema'),
                                                schema=schema,
                                                allow_unknown=allow_unknown)
         if not validator(value, update=self.update, normalize=False):
-            # FIXME rather submit as childerrors of errrors.MAPPING_SCHEMA ?
             self._error(validator._errors)
 
     def __validate_schema_sequence(self, field, schema, value):
@@ -949,7 +954,7 @@ class Validator(object):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
 
-    def _validate_type(self, definition, field, value):
+    def _validate_type(self, data_type, field, value):
         def call_type_validation(_type, value):
             # TODO refactor to a less complex code as submitting an error is now unified and can be triggered here  # noqa
             # validator = getattr(self, "_validate_type_" + _type)
@@ -963,10 +968,6 @@ class Validator(object):
             else:
                 self._errors = prev_errors
                 return False
-
-        data_type = definition.get('type')
-        if data_type is None:
-            return
 
         if isinstance(data_type, _str_type):
             if call_type_validation(data_type, value):
@@ -1042,7 +1043,6 @@ class DefinitionSchema(MutableMapping):
         def default(self, o):
             if isinstance(o, Callable):
                 return repr(o)
-
             return json.JSONEncoder.default(self, o)
 
     valid_schemas = set()
@@ -1056,7 +1056,7 @@ class DefinitionSchema(MutableMapping):
         """
         schema = expand_definition_schema(schema)
         self.validator = validator
-        self.validation_rules = validator.validation_rules
+        self.rules = validator.validation_rules + validator.normalization_rules
         self.schema = dict()
         self.update(schema)
 
@@ -1197,7 +1197,7 @@ class DefinitionSchema(MutableMapping):
                 elif constraint in ('propertyschema', 'valueschema'):
                     if set(value) & set(('rename', 'rename_handler')):
                         raise SchemaError(errors.SCHEMA_ERROR_XSCHEMA_RENAME)
-                elif constraint not in self.validation_rules:
+                elif constraint not in self.rules:
                     if not self.validator.transparent_schema_rules:
                         raise SchemaError(errors.SCHEMA_ERROR_UNKNOWN_RULE
                                           .format(constraint, field))
@@ -1249,7 +1249,7 @@ class DefinitionSchema(MutableMapping):
     def __validate_type_definition(self, type_defs):
         type_defs = type_defs if isinstance(type_defs, list) else [type_defs]
         for type_def in type_defs:
-            if not 'type_' + type_def in self.validation_rules:
+            if not 'type_' + type_def in self.rules:
                 raise SchemaError(
                     errors.SCHEMA_ERROR_UNKNOWN_TYPE.format(type_def))
 

@@ -246,3 +246,17 @@ schema that was traversed by possible parent-validators. Both will be used as
 base path when an error is submitted.
 
 .. versionadded:: 0.10
+
+`Validator.mandatory_validations` & `Validator.priority_validations`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can override these class properties if you want to adjust the validation
+logic for each field validation.
+``mandatory_validations`` is a tuple that contains rules that will be validated
+for each field, regardless if the rule is defined for a field in a schema or
+not.
+``priority_validations`` is a tuple of ordered rules that will be validated
+before any other. If the validation method or function returns ``True``, no
+further rule will be considered for that field.
+
+.. versionadded:: 0.10
