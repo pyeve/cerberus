@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from copy import copy
-from .utils import quote_string
+from .utils import compare_paths_lt, quote_string
 
 """
 Error definition constants
@@ -102,13 +102,28 @@ class ValidationError:
         self.value = value
         self.info = info
 
+    def __eq__(self, other):
+        """ Assumes the errors relate to the same document and schema. """
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        """ Expects that all other properties are transitively determined. """
+        return hash(self.document_path) ^ hash(self.schema_path) \
+            ^ hash(self.code)
+
+    def __lt__(self, other):
+        if self.document_path != other.document_path:
+            return compare_paths_lt(self.document_path, other.document_path)
+        else:
+            return compare_paths_lt(self.schema_path, other.schema_path)
+
     def __repr__(self):
         return "{class_name} @ {memptr} ( " \
                "document_path={document_path}," \
                "schema_path={schema_path}," \
                "code={code}," \
                "constraint={constraint}," \
-               "value={value}" \
+               "value={value}," \
                "info={info} )"\
                .format(class_name=self.__class__.__name__, memptr=hex(id(self)),  # noqa
                        document_path=self.document_path,
