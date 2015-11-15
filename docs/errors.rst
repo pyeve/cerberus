@@ -54,5 +54,36 @@ instance after a processing of a document:
   - ``_errors``: This list holds all submitted errors. It is not intended to
     manipulate errors directly via this attribute.
 
+  - ``document_error_tree``: A ``dict``-like object that allows you to query
+    nodes corresponding to your document. That node's errors are contained in
+    its :attr:`errors` property and are yielded when iterating over a node.
+    If no errors occurred in a node or below, ``None`` will be returned
+    instead.
+
+  - ``schema_error_tree``: Similarly for the used schema.
+
 .. versionchanged:: 0.10
     Errors are stored as :class:`~cerberus.errors.ValidationError` in a list.
+
+Examples
+~~~~~~~~
+
+.. doctest::
+
+    >>> schema = {'cats': {'type': 'integer'}}
+    >>> document = {'cats': 'two'}
+    >>> v.validate(document, schema)
+    False
+    >>> v.document_error_tree['cats'].errors == v.schema_error_tree['cats']['type'].errors
+    True
+    >>> error = v.document_error_tree['cats'].errors[0]
+    >>> error.document_path
+    ('cats',)
+    >>> error.schema_path
+    ('cats', 'type')
+    >>> error.rule
+    'type'
+    >>> error.constraint
+    'integer'
+    >>> error.value
+    'two'

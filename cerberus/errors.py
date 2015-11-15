@@ -1,8 +1,8 @@
 """ This module contains the error-related constants and classes. """
 
-from collections import namedtuple
+from collections import namedtuple, MutableMapping
 from copy import copy
-from .utils import quote_string
+from .utils import compare_paths_lt, quote_string
 
 """
 Error definition constants
@@ -89,9 +89,11 @@ SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"
 SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 
+""" Error representations """
+
+
 class ValidationError:
     """ A simple class to store and query basic error information. """
-    # TODO implement __lt__ for sorting?
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
         self.document_path = document_path
@@ -102,13 +104,28 @@ class ValidationError:
         self.value = value
         self.info = info
 
+    def __eq__(self, other):
+        """ Assumes the errors relate to the same document and schema. """
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        """ Expects that all other properties are transitively determined. """
+        return hash(self.document_path) ^ hash(self.schema_path) \
+            ^ hash(self.code)
+
+    def __lt__(self, other):
+        if self.document_path != other.document_path:
+            return compare_paths_lt(self.document_path, other.document_path)
+        else:
+            return compare_paths_lt(self.schema_path, other.schema_path)
+
     def __repr__(self):
         return "{class_name} @ {memptr} ( " \
                "document_path={document_path}," \
                "schema_path={schema_path}," \
                "code={code}," \
                "constraint={constraint}," \
-               "value={value}" \
+               "value={value}," \
                "info={info} )"\
                .format(class_name=self.__class__.__name__, memptr=hex(id(self)),  # noqa
                        document_path=self.document_path,
@@ -123,10 +140,7 @@ class ValidationError:
         """
         A list that contain the individual errors of a bulk validation error.
         """
-        if self.is_group_error:
-            return self.info[0]
-        else:
-            return None
+        return self.info[0] if self.is_group_error else None
 
     @property
     def is_group_error(self):
@@ -137,6 +151,115 @@ class ValidationError:
     def is_logic_error(self):
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
+
+
+class ErrorTreeNode(MutableMapping):
+    def __init__(self, path, parent_node):
+        self.parent_node = parent_node
+        self.tree_root = self.parent_node.tree_root
+        self.tree_type = self.parent_node.tree_type
+        self.path = path[:len(self.parent_node.path)+1]
+        self.errors = []
+        self.descendants = dict()
+
+    def __add__(self, error):
+        self.add(error)
+        return self
+
+    def __delitem__(self, key):
+        del self.descendants[key]
+
+    def __iter__(self):
+        return iter(self.errors)
+
+    def __getitem__(self, item):
+        if item in self.descendants:
+            return self.descendants[item]
+        else:
+            return None
+
+    def __len__(self):
+        return len(self.descendants)
+
+    def __setitem__(self, key, value):
+        self.descendants[key] = value
+
+    def __str__(self):
+        return str(self.errors) + ',' + str(self.descendants)
+
+    def _path_of_(self, error):
+        return getattr(error, self.tree_type + '_path')
+
+    def add(self, error):
+        error_path = self._path_of_(error)
+
+        key = error_path[len(self.path)]
+        if key not in self.descendants:
+            self[key] = ErrorTreeNode(error_path, self)
+
+        if len(error_path) == self.depth + 1:
+            self[key].errors.append(error)
+            self[key].errors.sort()
+            if error.is_group_error:
+                for child_error in error.info[0]:
+                    self.tree_root += child_error
+        else:
+            self[key] += error
+
+    @property
+    def depth(self):
+        return len(self.path)
+
+
+class ErrorTree(ErrorTreeNode):
+    def __init__(self, errors=[]):
+        self.parent_node = None
+        self.tree_root = self
+        self.path = ()
+        self.errors = []
+        self.descendants = dict()
+        for error in errors:
+            self += error
+
+    def add(self, error):
+        if not self._path_of_(error):
+            self.errors.append(error)
+            self.errors.sort()
+        else:
+            super(ErrorTree, self).add(error)
+
+    def fetch_errors_from(self, path):
+        """ Returns all errors for a particular path.
+        :param path: Tuple of hashables.
+        """
+        node = self.fetch_node_from(path)
+        if node is not None:
+            return node.errors
+        else:
+            return []
+
+    def fetch_node_from(self, path):
+        """ Returns a node for a path or ``None``.
+        :param path:  Tuple of hashables.
+        """
+        context = self
+        for key in path:
+            context = context[key]
+            if context is None:
+                return None
+        return context
+
+
+class DocumentErrorTree(ErrorTree):
+    """ Implements a dict-like class to query errors by indexes following the
+        structure of a validated document. """
+    tree_type = 'document'
+
+
+class SchemaErrorTree(ErrorTree):
+    """ Implements a dict-like class to query errors by indexes following the
+        structure of the used schema. """
+    tree_type = 'schema'
 
 
 class BaseErrorHandler:
@@ -156,7 +279,6 @@ class BaseErrorHandler:
         raise NotImplementedError
 
 
-# FIXME rename to LegacyErrorHandler?
 class BasicErrorHandler(BaseErrorHandler):
     """ Models cerberus' legacy. Returns a dictionary. """
     messages = {0x00: "{0}",
@@ -246,11 +368,11 @@ class BasicErrorHandler(BaseErrorHandler):
                 self.tree[field] = node
         elif len(path) >= 1:
             if path[0] in self.tree:
-                new = BasicErrorHandler(tree=copy(self.tree[path[0]]))
+                new = self.__class__(tree=copy(self.tree[path[0]]))
                 new.insert_error(path[1:], node)
                 self.tree[path[0]].update(new.tree)
             else:
-                child_handler = BasicErrorHandler()
+                child_handler = self.__class__()
                 child_handler.insert_error(path[1:], node)
                 self.tree[path[0]] = child_handler.tree
 
@@ -279,7 +401,6 @@ class BasicErrorHandler(BaseErrorHandler):
                 self.insert_error(path, self.format_message(field, child_error))  # noqa
 
 
-# TODO add an ErrorTreeHandler (a dict with raw and verbose error-information)
 # TODO add a SerializeErrorHandler (xml, json, yaml)
 # TODO add a HumanErrorHandler supporting l10n
 # TODO add various error output showcases to the docs

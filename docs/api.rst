@@ -17,11 +17,15 @@ ErrorHandlers
 
 .. autoclass:: cerberus.errors.BasicErrorHandler
 
-Python Error Representation
----------------------------
+Python Error Representations
+----------------------------
 
 .. autoclass:: cerberus.errors.ValidationError
   :members:
+
+.. autoclass:: cerberus.errors.DocumentErrorTree
+
+.. autoclass:: cerberus.errors.SchemaErrorTree
 
 Exceptions
 ----------

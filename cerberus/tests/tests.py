@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
 from . import TestBase
 from ..cerberus import errors, SchemaError, Validator
+
+
+ValidationError = errors.ValidationError
 
 
 class TestTestBase(TestBase):
@@ -397,6 +399,7 @@ class TestValidation(TestBase):
         self.assertError(field, (field, 'regex'), errors.REGEX_MISMATCH,
                          '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
+    # TODO remove on next major release
     def test_a_list_of_dicts_deprecated(self):
         self.assertSuccess(
             {
@@ -436,13 +439,22 @@ class TestValidation(TestBase):
 
     def test_a_dict_with_valueschema(self):
         self.assertSuccess(
-            {
-                'a_dict_with_valueschema': {
-                    'an integer': 99,
-                    'another integer': 100
-                }
-            }
-        )
+            {'a_dict_with_valueschema':
+                {'an integer': 99, 'another integer': 100}})
+
+        self.assertFail({'a_dict_with_valueschema': {'a string': '99'}})
+        self.assertChildErrors(
+            'a_dict_with_valueschema',
+            ('a_dict_with_valueschema', 'valueschema'),
+            errors.VALUESCHEMA, {'type': 'integer'}, child_errors=[
+                (('a_dict_with_valueschema', 'a string'),
+                 ('a_dict_with_valueschema', 'valueschema', 'type'),
+                 errors.BAD_TYPE, 'integer')])
+        self.assertIn('valueschema', self.validator.schema_error_tree
+                      ['a_dict_with_valueschema'])
+        self.assertEqual(len(self.validator.schema_error_tree
+                             ['a_dict_with_valueschema']['valueschema']
+                             .descendants), 1)
 
     def test_a_dict_with_propertyschema(self):
         self.assertSuccess(
@@ -508,8 +520,8 @@ class TestValidation(TestBase):
         self.assertError('test_field', ('test_field', 'type'), errors.BAD_TYPE,
                          'number', v_errors=v._errors)
         self.assertFail({'test_field': 0}, validator=v)
-        self.assertError('test_field', ('test_field', None,), errors.CUSTOM,
-                         None, ('Below the min',), v_errors=v._errors)
+        self.assertError('test_field', (), errors.CUSTOM, None,
+                         ('Below the min',), v_errors=v._errors)
         self.assertDictEqual(v.errors, {'test_field': 'Below the min'})
 
     def test_custom_validator(self):
@@ -522,8 +534,8 @@ class TestValidation(TestBase):
         v = MyValidator(schema)
         self.assertSuccess({'test_field': 7}, validator=v)
         self.assertFail({'test_field': 6}, validator=v)
-        self.assertError('test_field', ('test_field', None), errors.CUSTOM,
-                         None, ('Not an odd number',), v_errors=v._errors)
+        self.assertError('test_field', (), errors.CUSTOM, None,
+                         ('Not an odd number',), v_errors=v._errors)
         self.assertDictEqual(v.errors, {'test_field': 'Not an odd number'})
 
     def test_transparent_schema_rules(self):
@@ -836,7 +848,7 @@ class TestValidation(TestBase):
         v = Validator(schema)
 
         self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
-        self.assertError('name', ('name', None), errors.CUSTOM, None,
+        self.assertError('name', (), errors.CUSTOM, None,
                          ('must be lowercase',), v_errors=v._errors)
         self.assertDictEqual(v.errors, {'name': 'must be lowercase'})
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
@@ -847,10 +859,7 @@ class TestValidation(TestBase):
         document = {'property': 'string'}
         self.assertEqual(v.validated(document), document)
         document = {'property': 0}
-        if sys.version_info[0] * 10 + sys.version_info[1] < 27:
-            self.assertEqual(v.validated(document), None)
-        else:
-            self.assertIsNone(v.validated(document))
+        self.assertIsNone(v.validated(document))
 
     def test_anyof(self):
         # prop1 must be either a number between 0 and 10
@@ -1509,28 +1518,162 @@ class ErrorHandling(TestBase):
         self.assertTrue(error.is_group_error)
         self.assertTrue(error.is_logic_error)
 
+    def test_error_tree_1(self):
+        schema = {'foo': {'schema': {'bar': {'type': 'string'}}}}
+        document = {'foo': {'bar': 0}}
+        self.assertFail(document, schema)
+        d_error_tree = self.validator.document_error_tree
+        s_error_tree = self.validator.schema_error_tree
+        self.assertIn('foo', d_error_tree)
+        self.assertIn('bar', d_error_tree['foo'])
+        self.assertEqual(d_error_tree['foo']['bar'].errors[0].value, 0)
+        self.assertEqual(
+            d_error_tree.fetch_errors_from(('foo', 'bar'))[0].value, 0)
+        self.assertIn('foo', s_error_tree)
+        self.assertIn('schema', s_error_tree['foo'])
+        self.assertIn('bar', s_error_tree['foo']['schema'])
+        self.assertIn('type', s_error_tree['foo']['schema']['bar'])
+        self.assertEqual(
+            s_error_tree['foo']['schema']['bar']['type'].errors[0].value, 0)
+        self.assertEqual(
+            s_error_tree.fetch_errors_from(
+                ('foo', 'schema', 'bar', 'type'))[0].value, 0)
+
+    def test_error_tree_2(self):
+        schema = {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
+        document = {'foo': []}
+        self.assertFail(document, schema)
+        d_error_tree = self.validator.document_error_tree
+        s_error_tree = self.validator.schema_error_tree
+        self.assertIn('foo', d_error_tree)
+        self.assertEqual(d_error_tree['foo'].errors[0].value, [])
+        self.assertIn('foo', s_error_tree)
+        self.assertIn('anyof', s_error_tree['foo'])
+        self.assertIn(0, s_error_tree['foo']['anyof'])
+        self.assertIn(1, s_error_tree['foo']['anyof'])
+        self.assertIn('type', s_error_tree['foo']['anyof'][0])
+        self.assertEqual(
+            s_error_tree['foo']['anyof'][0]['type'].errors[0].value, [])
+
+    def test_nested_error_paths(self):
+        # TODO regexps can be shortened when #169 is solved
+        schema = {'a_dict': {'propertyschema': {'type': 'integer'},
+                             'valueschema': {'regex': '[a-z]*$'}},
+                  'a_list': {'schema': {'type': 'string',
+                                        'oneof_regex': ['[a-z]*$', '[A-Z]*$']}}}
+        document = {'a_dict': {0: 'abc', 'one': 'abc', 2: 'aBc', 'three': 'abC'},  # noqa
+                    'a_list': [0, 'abc', 'abC']}
+        self.assertFail(document, schema)
+
+        _det = self.validator.document_error_tree
+        _set = self.validator.schema_error_tree
+
+        self.assertEqual(len(_det.errors), 0)
+        self.assertEqual(len(_set.errors), 0)
+
+        self.assertEqual(len(_det['a_dict'].errors), 2)
+        self.assertEqual(len(_set['a_dict'].errors), 0)
+
+        self.assertIsNone(_det['a_dict'][0])
+        self.assertEqual(len(_det['a_dict']['one'].errors), 1)
+        self.assertEqual(len(_det['a_dict'][2].errors), 1)
+        self.assertEqual(len(_det['a_dict']['three'].errors), 2)
+
+        self.assertEqual(len(_set['a_dict']['propertyschema'].errors), 1)
+        self.assertEqual(len(_set['a_dict']['valueschema'].errors), 1)
+
+        self.assertEqual(
+            len(_set['a_dict']['propertyschema']['type'].errors), 2)
+        self.assertEqual(len(_set['a_dict']['valueschema']['regex'].errors), 2)
+
+        _ref_err = ValidationError(
+            ('a_dict', 'one'), ('a_dict', 'propertyschema', 'type'),
+            errors.BAD_TYPE.code, 'type', 'integer', 'one', ())
+        self.assertEqual(_det['a_dict']['one'].errors[0], _ref_err)
+        self.assertEqual(_set['a_dict']['propertyschema']['type'].errors[0],
+                         _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_dict', 2), ('a_dict', 'valueschema', 'regex'),
+            errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'aBc', ())
+        self.assertEqual(_det['a_dict'][2].errors[0], _ref_err)
+        self.assertEqual(
+            _set['a_dict']['valueschema']['regex'].errors[0], _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_dict', 'three'), ('a_dict', 'propertyschema', 'type'),
+            errors.BAD_TYPE.code, 'type', 'integer', 'three', ())
+        self.assertEqual(_det['a_dict']['three'].errors[0], _ref_err)
+        self.assertEqual(
+            _set['a_dict']['propertyschema']['type'].errors[1], _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_dict', 'three'), ('a_dict', 'valueschema', 'regex'),
+            errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
+        self.assertEqual(_det['a_dict']['three'].errors[1], _ref_err)
+        self.assertEqual(
+            _set['a_dict']['valueschema']['regex'].errors[1], _ref_err)
+
+        self.assertEqual(len(_det['a_list'].errors), 1)
+        self.assertEqual(len(_det['a_list'][0].errors), 1)
+        self.assertIsNone(_det['a_list'][1])
+        self.assertEqual(len(_det['a_list'][2].errors), 3)
+        self.assertEqual(len(_set['a_list'].errors), 0)
+        self.assertEqual(len(_set['a_list']['schema'].errors), 1)
+        self.assertEqual(len(_set['a_list']['schema']['type'].errors), 1)
+        self.assertEqual(
+            len(_set['a_list']['schema']['oneof'][0]['regex'].errors), 1)
+        self.assertEqual(
+            len(_set['a_list']['schema']['oneof'][1]['regex'].errors), 1)
+
+        _ref_err = ValidationError(
+            ('a_list', 0), ('a_list', 'schema', 'type'), errors.BAD_TYPE.code,
+            'type', 'string', 0, ())
+        self.assertEqual(_det['a_list'][0].errors[0], _ref_err)
+        self.assertEqual(_set['a_list']['schema']['type'].errors[0], _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_list', 2), ('a_list', 'schema', 'oneof'), errors.ONEOF.code,
+            'oneof', 'irrelevant_at_this_point', 'abC', ())
+        self.assertEqual(_det['a_list'][2].errors[0], _ref_err)
+        self.assertEqual(_set['a_list']['schema']['oneof'].errors[0], _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_list', 2), ('a_list', 'schema', 'oneof', 0, 'regex'),
+            errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
+        self.assertEqual(_det['a_list'][2].errors[1], _ref_err)
+        self.assertEqual(
+            _set['a_list']['schema']['oneof'][0]['regex'].errors[0], _ref_err)
+
+        _ref_err = ValidationError(
+            ('a_list', 2), ('a_list', 'schema', 'oneof', 1, 'regex'),
+            errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
+        self.assertEqual(_det['a_list'][2].errors[2], _ref_err)
+        self.assertEqual(
+            _set['a_list']['schema']['oneof'][1]['regex'].errors[0], _ref_err)
+
     def test_basic_error_handler(self):
         handler = errors.BasicErrorHandler()
         _errors, ref = [], {}
 
-        _errors.append(errors.ValidationError(
+        _errors.append(ValidationError(
             ['foo'], ['foo'], 0x62, 'readonly', True, None, ()))
         ref.update({'foo': handler.messages[0x62]})
         self.assertDictEqual(handler(_errors), ref)
 
-        _errors.append(errors.ValidationError(
+        _errors.append(ValidationError(
             ['bar'], ['foo'], 0x42, 'min', 1, 2, ()))
         ref.update({'bar': handler.messages[0x42].format(constraint=1)})
         self.assertDictEqual(handler(_errors), ref)
 
-        _errors.append(errors.ValidationError(
+        _errors.append(ValidationError(
             ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x24, 'type', 'string',
             True, ()))
         ref.update({'zap': {'foo': handler.messages[0x24].format(
             constraint='string')}})
         self.assertDictEqual(handler(_errors), ref)
 
-        _errors.append(errors.ValidationError(
+        _errors.append(ValidationError(
             ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x41, 'regex',
             '^p[äe]ng$', 'boom', ()))
         ref['zap']['foo'] = \

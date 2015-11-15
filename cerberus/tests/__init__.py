@@ -146,7 +146,7 @@ class TestBase(unittest.TestCase):
         except known_exception as e:
             self.assertTrue(msg == str(e)) if msg else self.assertTrue(True)
         except Exception as e:  # noqa
-            self.fail("%s not raised." % known_exception)
+            self.fail("'%s' raised, expected %s." % (e, known_exception))
 
     def assertFail(self, document, schema=None, validator=None, update=False):
         if validator is None:

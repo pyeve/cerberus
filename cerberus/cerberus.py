@@ -18,7 +18,7 @@ import re
 
 from . import errors
 from .platform import _str_type, _int_types
-from .utils import warn_deprecated
+from .utils import drop_item_from_tuple, warn_deprecated
 
 
 log = logging.getLogger('cerberus')
@@ -186,6 +186,8 @@ class Validator(object):
 
         self.document = None
         self._errors = []
+        self.document_error_tree = errors.DocumentErrorTree()
+        self.schema_error_tree = errors.SchemaErrorTree()
         self.root_document = None
         self.root_schema = None
         self.document_path = ()
@@ -240,6 +242,10 @@ class Validator(object):
         """
         if len(args) == 1:
             self._errors.extend(args[0])
+            self._errors.sort()
+            for error in args[0]:
+                self.document_error_tree += error
+                self.schema_error_tree += error
         elif len(args) == 2 and isinstance(args[1], _str_type):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
@@ -251,7 +257,7 @@ class Validator(object):
             document_path = self.document_path + (field, )
 
             schema_path = self.schema_path
-            if code != errors.UNKNOWN_FIELD.code:
+            if code != errors.UNKNOWN_FIELD.code and rule is not None:
                 schema_path += (field, rule)
 
             if rule == 'nullable':
@@ -265,6 +271,9 @@ class Validator(object):
                                            code, rule, constraint,
                                            value, info)
             self._errors.append(error)
+            self._errors.sort()
+            self.document_error_tree += error
+            self.schema_error_tree += error
 
     def __get_child_validator(self, document_crumb=None, schema_crumb=None,
                               **kwargs):
@@ -296,6 +305,28 @@ class Validator(object):
             child_validator.schema_path = self.schema_path + schema_crumb
 
         return child_validator
+
+    def _drop_nodes_from_errorpaths(self, errors, dp_items, sp_items):
+        """ Removes nodes by index from an errorpath, relatively to the
+            basepaths of self.
+
+        :param errors: A list of :class:`errors.ValidationError` instances.
+        :param dp_items: A list of integers, pointing at the nodes to drop from
+                         the :attr:`document_path`.
+        :param sp_items: Alike ``dp_items``, but for :attr:`schema_path`.
+        """
+        dp_basedepth = len(self.document_path)
+        sp_basedepth = len(self.schema_path)
+        for error in errors:
+            for i in sorted(dp_items, reverse=True):
+                error.document_path = \
+                    drop_item_from_tuple(error.document_path, dp_basedepth+i)
+            for i in sorted(sp_items, reverse=True):
+                error.schema_path = \
+                    drop_item_from_tuple(error.schema_path, sp_basedepth+i)
+            if error.child_errors:
+                self._drop_nodes_from_errorpaths(error.child_errors,
+                                                 dp_items, sp_items)
 
     # Properties
 
@@ -436,7 +467,7 @@ class Validator(object):
                     'coerce' in self.allow_unknown:
                 coerce_value(self.allow_unknown['coerce'])
 
-    # TODO add document-/schema-crumbs if necessary
+    # TODO retrieve and store errors from child-validators
     def _normalize_containers(self, mapping, schema):
         for field in mapping:
             if isinstance(mapping[field], Mapping):
@@ -669,8 +700,8 @@ class Validator(object):
         elif isinstance(dependencies, Mapping):
             self.__validate_dependencies_mapping(dependencies, field)
 
-        # TODO test more precicely with error tree
-        if self.errors.get(field):
+        if self.document_error_tree.fetch_node_from(
+                self.schema_path + (field, 'dependencies')) is not None:
             return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
@@ -773,14 +804,12 @@ class Validator(object):
             s.update(definition)
 
             validator = self.__get_child_validator(
-                schema_crumb=(field, operator, i),  # TODO skip-code?
+                schema_crumb=(field, operator, i),
                 schema={field: s})
             if validator({field: value}, normalize=False):
                 valid_counter += 1
             else:
-                for error in validator._errors:
-                    error.schema_path = \
-                        error.schema_path[:-2] + error.schema_path[-1:]
+                self._drop_nodes_from_errorpaths(validator._errors, [], [3])
                 _errors.extend(validator._errors)
 
         if operator == 'anyof' and valid_counter < 1:
@@ -839,11 +868,13 @@ class Validator(object):
     def _validate_propertyschema(self, schema, field, value):
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
+                document_crumb=(field,),
                 schema_crumb=(field, 'propertyschema'),
-                schema={field: {'schema': schema}})
-            if not validator({field: list(value.keys())}, normalize=False):
-                # TODO remove last 'schema' from error.schema_path
-                # TODO skip-code?
+                schema=dict(((k, schema) for k in value.keys())))
+            if not validator(dict(((k, k) for k in value.keys())),
+                             normalize=False):
+                self._drop_nodes_from_errorpaths(validator._errors,
+                                                 [], [2, 4])
                 self._error(field, errors.PROPERTYSCHEMA, validator._errors)
 
     def _validate_readonly(self, definition, field, value):
@@ -855,6 +886,8 @@ class Validator(object):
     def _validate_regex(self, pattern, field, value):
         if not isinstance(value, _str_type):
             return
+        if not pattern.endswith('$'):
+            pattern += '$'
         re_obj = re.compile(pattern)
         if not re_obj.match(value):
             self._error(field, errors.REGEX_MISMATCH)
@@ -907,24 +940,14 @@ class Validator(object):
             self._error(validator._errors)
 
     def __validate_schema_sequence(self, field, schema, value):
-        schema_crumb = (field, 'schema')
-        sequence_errors = []
-        # TODO do not iterate
-        for i in range(len(value)):
-            validator = self.__get_child_validator(
-                document_crumb=field, schema_crumb=schema_crumb,  # TODO skip-code?  # noqa
-                schema={i: schema}, allow_unknown=self.allow_unknown)
-            validator({i: value[i]}, normalize=False)
-            sequence_errors.extend(validator._errors)
-        if sequence_errors:
-            for error in sequence_errors:
-                # get rid of the i that was made up before
-                # TODO generalize this
-                error.schema_path = \
-                    self.schema_path + schema_crumb + \
-                    error.schema_path[len(self.schema_path) +
-                                      len(schema_crumb)+1:]
-            self._error(field, errors.SEQUENCE_SCHEMA, sequence_errors)
+        schema = dict(((i, schema) for i in range(len(value))))
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=schema, allow_unknown=self.allow_unknown)
+        validator(dict(((i, v) for i, v in enumerate(value))), normalize=False)
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+            self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
 
     def _validate_type(self, definition, field, value):
         def call_type_validation(_type, value):
@@ -941,7 +964,7 @@ class Validator(object):
                 self._errors = prev_errors
                 return False
 
-        data_type = definition.get('type', None)
+        data_type = definition.get('type')
         if data_type is None:
             return
 
@@ -1001,16 +1024,11 @@ class Validator(object):
         schema_crumb = (field, 'valueschema')
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
-                    document_crumb=field, schema_crumb=schema_crumb,  # TODO skip-code?  # noqa
-                    schema=dict((k, schema) for k in value))
+                document_crumb=field, schema_crumb=schema_crumb,
+                schema=dict((k, schema) for k in value))
             validator(value, normalize=False)
             if validator._errors:
-                # get rid of k that was used before
-                # TODO generalize this
-                for error in validator._errors:
-                    error.schema_path = self.schema_path + schema_crumb + \
-                        error.schema_path[len(self.schema_path) +
-                                          len(schema_crumb)+1:]
+                self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
 
 
@@ -1024,6 +1042,7 @@ class DefinitionSchema(MutableMapping):
         def default(self, o):
             if isinstance(o, Callable):
                 return repr(o)
+
             return json.JSONEncoder.default(self, o)
 
     valid_schemas = set()
@@ -1093,10 +1112,21 @@ class DefinitionSchema(MutableMapping):
 
     def __validate_on_update(self, schema):
         _hash = hash(repr(type(self.validator)) +
-                     json.dumps(schema, cls=self.Encoder, sort_keys=True))
+                     json.dumps(self.__cast_keys_to_strings(schema),
+                                cls=self.Encoder, sort_keys=True))
         if _hash not in self.valid_schemas:
             self.validate(schema)
             self.valid_schemas.add(_hash)
+
+    def __cast_keys_to_strings(self, mapping):
+        result = dict()
+        for key in mapping:
+            if isinstance(mapping[key], Mapping):
+                value = self.__cast_keys_to_strings(mapping[key])
+            else:
+                value = mapping[key]
+            result[str(type(key)) + str(key)] = value
+        return result
 
     def validate(self, schema=None):
         """ Validates a schema that defines rules against supported rules.
