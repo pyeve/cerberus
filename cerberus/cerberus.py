@@ -1026,6 +1026,7 @@ class DefinitionSchema(MutableMapping):
         def default(self, o):
             if isinstance(o, Callable):
                 return repr(o)
+
             return json.JSONEncoder.default(self, o)
 
     valid_schemas = set()
@@ -1095,10 +1096,21 @@ class DefinitionSchema(MutableMapping):
 
     def __validate_on_update(self, schema):
         _hash = hash(repr(type(self.validator)) +
-                     json.dumps(schema, cls=self.Encoder, sort_keys=True))
+                     json.dumps(self.__cast_keys_to_strings(schema),
+                                cls=self.Encoder, sort_keys=True))
         if _hash not in self.valid_schemas:
             self.validate(schema)
             self.valid_schemas.add(_hash)
+
+    def __cast_keys_to_strings(self, mapping):
+        result = dict()
+        for key in mapping:
+            if isinstance(mapping[key], Mapping):
+                value = self.__cast_keys_to_strings(mapping[key])
+            else:
+                value = mapping[key]
+            result[str(type(key)) + str(key)] = value
+        return result
 
     def validate(self, schema=None):
         """ Validates a schema that defines rules against supported rules.
