@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
 from datetime import datetime
 from random import choice
 from string import ascii_lowercase
@@ -847,10 +846,7 @@ class TestValidation(TestBase):
         document = {'property': 'string'}
         self.assertEqual(v.validated(document), document)
         document = {'property': 0}
-        if sys.version_info[0] * 10 + sys.version_info[1] < 27:
-            self.assertEqual(v.validated(document), None)
-        else:
-            self.assertIsNone(v.validated(document))
+        self.assertIsNone(v.validated(document))
 
     def test_anyof(self):
         # prop1 must be either a number between 0 and 10
