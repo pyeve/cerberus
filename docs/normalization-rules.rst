@@ -28,7 +28,7 @@ After renaming, unknown fields will be purged if the
 :attr:`~cerberus.Validator.purge_unknown` property of a
 :class:`~cerberus.Validator` instance is ``True``; it defaults to ``False``.
 You can set the property per keyword-argument upon initialization or as rule for
-subdocuments like :ref:`allow_unknown <allow_unknown-rule>`. The default is
+subdocuments like ``allow_unknown`` (see :ref:`allowing-the-unknown`). The default is
 ``False``.
 
 .. doctest::
