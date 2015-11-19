@@ -1438,6 +1438,45 @@ class TestNormalization(TestBase):
         for x in result['a_list']:
             self.assertIsInstance(x, float)
 
+    def test_default_missing(self):
+        schema = {'foo': {'type': 'string'},
+                  'bar': {'type': 'string',
+                          'default': 'bar_value'}}
+
+        self.assertSuccess({'foo': 'foo_value'}, schema)
+        result = self.validator.document
+        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': 'bar_value'})
+
+    def test_default_existent(self):
+        schema = {'foo': {'type': 'string'},
+                  'bar': {'type': 'string',
+                          'default': 'bar_value'}}
+
+        self.assertSuccess({'foo': 'foo_value', 'bar': 'non_default'}, schema)
+        result = self.validator.document
+        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': 'non_default'})
+
+    def test_default_none(self):
+        schema = {'foo': {'type': 'string'},
+                  'bar': {'type': 'string',
+                          'nullable': True,
+                          'default': 'bar_value'}}
+
+        self.assertSuccess({'foo': 'foo_value', 'bar': None}, schema)
+        result = self.validator.document
+        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': None})
+
+    def test_default_missing_in_subschema(self):
+        schema = {'thing': {'type': 'dict',
+                            'schema': {'foo': {'type': 'string'},
+                                       'bar': {'type': 'string',
+                                               'default': 'bar_value'}}}}
+
+        self.assertSuccess({'thing': {'foo': 'foo_value'}}, schema)
+        result = self.validator.document
+        self.assertDictEqual(result, {'thing': {'foo': 'foo_value',
+                                                'bar': 'bar_value'}})
+
 
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):

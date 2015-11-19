@@ -454,6 +454,7 @@ class Validator(object):
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
         self._normalize_coerce(mapping, schema)
+        self._normalize_default(mapping, schema)
         self.__normalize_containers(mapping, schema)
         return mapping
 
@@ -563,6 +564,11 @@ class Validator(object):
             new_name = schema[field]['rename_handler'](field)
             mapping[new_name] = mapping[field]
             del mapping[field]
+
+    def _normalize_default(self, mapping, schema):
+        for field in tuple(schema):
+            if 'default' in schema[field] and field not in mapping:
+                mapping[field] = schema[field]['default']
 
     # # Validating
 
