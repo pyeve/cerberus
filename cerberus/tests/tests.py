@@ -1179,9 +1179,8 @@ class TestValidation(TestBase):
         self.assertTrue(v.validate(document))
 
     def test_dont_type_validate_nulled_values(self):
-        v = self.validator
-        v.validate({'an_integer': None})
-        self.assertDictEqual(v.errors,
+        self.assertFail({'an_integer': None})
+        self.assertDictEqual(self.validator.errors,
                              {'an_integer': 'null value not allowed'})
 
     def test_dependencies_error(self):
