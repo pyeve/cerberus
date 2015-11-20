@@ -1319,19 +1319,17 @@ class TestValidation(TestBase):
 
 class TestNormalization(TestBase):
     def test_coerce(self):
-        schema = {
-            'amount': {'coerce': int}
-        }
-        v = Validator(schema)
-        v.validate({'amount': '1'})
-        self.assertEqual(v.document['amount'], 1)
+        schema = {'amount': {'coerce': int}}
+        document = {'amount': '1'}
+        expected = {'amount': 1}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_coerce_in_subschema(self):
         schema = {'thing': {'type': 'dict',
                             'schema': {'amount': {'coerce': int}}}}
-        v = Validator(schema)
-        self.assertEqual(v.validated({'thing': {'amount': '2'}})
-                                     ['thing']['amount'], 2)  # noqa
+        document = {'thing': {'amount': '2'}}
+        expected = {'thing': {'amount': 2}}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_coerce_not_destructive(self):
         schema = {
@@ -1361,34 +1359,47 @@ class TestNormalization(TestBase):
 
     def test_coerce_unknown(self):
         schema = {'foo': {'schema': {}, 'allow_unknown': {'coerce': int}}}
-        v = Validator(schema)
         document = {'foo': {'bar': '0'}}
-        self.assertDictEqual(v.normalized(document), {'foo': {'bar': 0}})
+        expected = {'foo': {'bar': 0}}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_normalized(self):
         schema = {'amount': {'coerce': int}}
-        v = Validator(schema)
-        self.assertEqual(v.normalized({'amount': '2'})['amount'], 2)
+        document = {'amount': '2'}
+        expected = {'amount': 2}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_rename(self):
+        schema = {'foo': {'rename': 'bar'}}
         document = {'foo': 0}
-        v = Validator({'foo': {'rename': 'bar'}})
-        self.assertDictEqual(v.normalized(document), {'bar': 0})
+        expected = {'bar': 0}
+        # We cannot use assertNormalizedEqual here since there is bug where
+        # Cerberus says that the renamed field is an unknown field:
+        # {'bar': 'unknown field'}
+        self.validator(document, schema, False)
+        self.assertDictEqual(self.validator.document, expected)
 
     def test_rename_handler(self):
+        validator = Validator(allow_unknown={'rename_handler': int})
+        schema = {}
         document = {'0': 'foo'}
-        v = Validator({}, allow_unknown={'rename_handler': int})
-        self.assertDictEqual(v.normalized(document), {0: 'foo'})
+        expected = {0: 'foo'}
+        self.assertNormalizedEqual(document, expected, schema, validator)
 
     def test_purge_unknown(self):
-        v = Validator({'foo': {'type': 'string'}}, purge_unknown=True)
-        self.assertDictEqual(v.normalized({'bar': 'foo'}), {})
-        v.purge_unknown = False
-        self.assertDictEqual(v.normalized({'bar': 'foo'}), {'bar': 'foo'})
-        v.schema = {'foo': {'type': 'dict',
-                            'schema': {'foo': {'type': 'string'}},
-                            'purge_unknown': True}}
-        self.assertDictEqual(v.normalized({'foo': {'bar': ''}}), {'foo': {}})
+        validator = Validator(purge_unknown=True)
+        schema = {'foo': {'type': 'string'}}
+        document = {'bar': 'foo'}
+        expected = {}
+        self.assertNormalizedEqual(document, expected, schema, validator)
+
+    def test_purge_unknown_in_subschema(self):
+        schema = {'foo': {'type': 'dict',
+                          'schema': {'foo': {'type': 'string'}},
+                          'purge_unknown': True}}
+        document = {'foo': {'bar': ''}}
+        expected = {'foo': {}}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_issue_147_complex(self):
         schema = {'revision': {'coerce': int}}
@@ -1417,65 +1428,61 @@ class TestNormalization(TestBase):
         schema = {'thing': {'type': 'dict',
                             'valueschema': {'coerce': int,
                                             'type': 'integer'}}}
-        self.assertSuccess({'thing': {'amount': '2'}}, schema)
-        self.assertDictEqual(self.validator.document, {'thing': {'amount': 2}})
+        document = {'thing': {'amount': '2'}}
+        expected = {'thing': {'amount': 2}}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_coerce_in_propertyschema(self):
         # https://github.com/nicolaiarocci/cerberus/issues/155
         schema = {'thing': {'type': 'dict',
                             'propertyschema': {'coerce': int,
                                                'type': 'integer'}}}
-        self.assertSuccess({'thing': {'5': 'foo'}}, schema)
-        self.assertDictEqual(self.validator.document, {'thing': {5: 'foo'}})
+        document = {'thing': {'5': 'foo'}}
+        expected = {'thing': {5: 'foo'}}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_coercion_of_sequence_items(self):
         # https://github.com/nicolaiarocci/cerberus/issues/161
         schema = {'a_list': {'type': 'list', 'schema': {'type': 'float',
                                                         'coerce': float}}}
-        self.assertSuccess({'a_list': [3, 4, 5]}, schema)
-        result = self.validator.document
-        self.assertListEqual(result['a_list'], [3.0, 4.0, 5.0])
-        for x in result['a_list']:
+        document = {'a_list': [3, 4, 5]}
+        expected = {'a_list': [3.0, 4.0, 5.0]}
+        self.assertNormalizedEqual(document, expected, schema)
+        for x in self.validator.document['a_list']:
             self.assertIsInstance(x, float)
 
     def test_default_missing(self):
         schema = {'foo': {'type': 'string'},
                   'bar': {'type': 'string',
                           'default': 'bar_value'}}
-
-        self.assertSuccess({'foo': 'foo_value'}, schema)
-        result = self.validator.document
-        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': 'bar_value'})
+        document = {'foo': 'foo_value'}
+        expected = {'foo': 'foo_value', 'bar': 'bar_value'}
+        self.assertNormalizedEqual(document, expected, schema)
 
     def test_default_existent(self):
         schema = {'foo': {'type': 'string'},
                   'bar': {'type': 'string',
                           'default': 'bar_value'}}
-
-        self.assertSuccess({'foo': 'foo_value', 'bar': 'non_default'}, schema)
-        result = self.validator.document
-        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': 'non_default'})
+        document = {'foo': 'foo_value', 'bar': 'non_default'}
+        self.assertNormalizedEqual(document, document.copy(), schema)
 
     def test_default_none(self):
         schema = {'foo': {'type': 'string'},
                   'bar': {'type': 'string',
                           'nullable': True,
                           'default': 'bar_value'}}
-
-        self.assertSuccess({'foo': 'foo_value', 'bar': None}, schema)
-        result = self.validator.document
-        self.assertDictEqual(result, {'foo': 'foo_value', 'bar': None})
+        document = {'foo': 'foo_value', 'bar': None}
+        self.assertNormalizedEqual(document, document.copy(), schema)
 
     def test_default_missing_in_subschema(self):
         schema = {'thing': {'type': 'dict',
                             'schema': {'foo': {'type': 'string'},
                                        'bar': {'type': 'string',
                                                'default': 'bar_value'}}}}
-
-        self.assertSuccess({'thing': {'foo': 'foo_value'}}, schema)
-        result = self.validator.document
-        self.assertDictEqual(result, {'thing': {'foo': 'foo_value',
-                                                'bar': 'bar_value'}})
+        document = {'thing': {'foo': 'foo_value'}}
+        expected = {'thing': {'foo': 'foo_value',
+                              'bar': 'bar_value'}}
+        self.assertNormalizedEqual(document, expected, schema)
 
 
 class DefinitionSchema(TestBase):

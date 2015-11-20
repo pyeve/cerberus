@@ -235,3 +235,11 @@ class TestBase(unittest.TestCase):
     def assertBadType(self, field, data_type, value):
         self.assertFail({field: value})
         self.assertError(field, (field, 'type'), errors.BAD_TYPE, data_type)
+
+    def assertNormalizedEqual(self, document, expected, schema=None,
+                              validator=None):
+        if validator is None:
+            validator = self.validator
+
+        self.assertSuccess(document, schema, validator)
+        self.assertDictEqual(validator.document, expected)
