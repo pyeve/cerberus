@@ -94,6 +94,9 @@ SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 class ValidationError:
     """ A simple class to store and query basic error information. """
+    __slots__ = ('code', 'constraint', 'document_path',
+                 'info', 'rule', 'schema_path', 'value')
+
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
         self.document_path = document_path
@@ -154,10 +157,11 @@ class ValidationError:
 
 
 class ErrorTreeNode(MutableMapping):
+    __slots__ = ('descendants', 'errors', 'parent_node', 'path', 'tree_root')
+
     def __init__(self, path, parent_node):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
-        self.tree_type = self.parent_node.tree_type
         self.path = path[:len(self.parent_node.path)+1]
         self.errors = []
         self.descendants = dict()
@@ -179,7 +183,7 @@ class ErrorTreeNode(MutableMapping):
             return None
 
     def __len__(self):
-        return len(self.descendants)
+        return len(self.errors)
 
     def __setitem__(self, key, value):
         self.descendants[key] = value
@@ -187,13 +191,21 @@ class ErrorTreeNode(MutableMapping):
     def __str__(self):
         return str(self.errors) + ',' + str(self.descendants)
 
+    @property
+    def depth(self):
+        return len(self.path)
+
+    @property
+    def tree_type(self):
+        return self.parent_node.tree_type
+
     def _path_of_(self, error):
         return getattr(error, self.tree_type + '_path')
 
     def add(self, error):
         error_path = self._path_of_(error)
 
-        key = error_path[len(self.path)]
+        key = error_path[self.depth]
         if key not in self.descendants:
             self[key] = ErrorTreeNode(error_path, self)
 
@@ -205,10 +217,6 @@ class ErrorTreeNode(MutableMapping):
                     self.tree_root += child_error
         else:
             self[key] += error
-
-    @property
-    def depth(self):
-        return len(self.path)
 
 
 class ErrorTree(ErrorTreeNode):
