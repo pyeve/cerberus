@@ -453,8 +453,8 @@ class Validator(object):
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
-        self._normalize_coerce(mapping, schema)
         self._normalize_default(mapping, schema)
+        self._normalize_coerce(mapping, schema)
         self.__normalize_containers(mapping, schema)
         return mapping
 
