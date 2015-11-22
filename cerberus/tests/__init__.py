@@ -236,8 +236,7 @@ class TestBase(unittest.TestCase):
         self.assertFail({field: value})
         self.assertError(field, (field, 'type'), errors.BAD_TYPE, data_type)
 
-    def assertNormalizedEqual(self, document, expected, schema=None,
-                              validator=None):
+    def assertNormalized(self, document, expected, schema=None, validator=None):
         if validator is None:
             validator = self.validator
 
