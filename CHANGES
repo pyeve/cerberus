@@ -8,6 +8,7 @@ Version 0.10
 
 Not released yet.
 
+- New: 'default' normalization rule. Closes #131 (Damián Nohales).
 - New: 'excludes' rule (calve). Addresses #132.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: '*of'-rules can be extended by concatenating another rule (Frank
