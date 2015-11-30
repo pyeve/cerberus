@@ -607,6 +607,20 @@ class TestValidation(TestBase):
         v.allow_unknown = False
         self.assertFail({'name': 'mark'}, validator=v)
 
+    def test_unknown_key_dict(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/177
+        self.validator.allow_unknown = True
+        document = {'a_dict': {'foo': 'foo_value', 'bar': 25}}
+
+        self.assertSuccess(document, {})
+
+    def test_unknown_key_list(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/177
+        self.validator.allow_unknown = True
+        document = {'a_dict': ['foo', 'bar']}
+
+        self.assertSuccess(document, {})
+
     def test_unknown_keys_list_of_dicts(self):
         # test that allow_unknown is honored even for subdicts in lists.
         # See 67.
