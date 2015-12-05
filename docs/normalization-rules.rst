@@ -49,11 +49,11 @@ You can set default values for missing fields in the document by using the ``def
    >>> v.normalized({'amount': 1})
    {'amount': 1, 'kind': 'purchase'}
 
+   >>> v.normalized({'amount': 1, 'kind': None})
+   {'amount': 1, 'kind': 'purchase'}
+
    >>> v.normalized({'amount': 1, 'kind': 'other'})
    {'amount': 1, 'kind': 'other'}
-
-   >>> v.normalized({'amount': 1, 'kind': None})
-   {'amount': 1, 'kind': None}
 
 .. versionadded:: 0.10
 
