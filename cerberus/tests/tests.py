@@ -1623,11 +1623,10 @@ class ErrorHandling(TestBase):
             s_error_tree['foo']['anyof'][0]['type'].errors[0].value, [])
 
     def test_nested_error_paths(self):
-        # TODO regexps can be shortened when #169 is solved
         schema = {'a_dict': {'propertyschema': {'type': 'integer'},
-                             'valueschema': {'regex': '[a-z]*$'}},
+                             'valueschema': {'regex': '[a-z]*'}},
                   'a_list': {'schema': {'type': 'string',
-                                        'oneof_regex': ['[a-z]*$', '[A-Z]*$']}}}
+                                        'oneof_regex': ['[a-z]*$', '[A-Z]*']}}}
         document = {'a_dict': {0: 'abc', 'one': 'abc', 2: 'aBc', 'three': 'abC'},  # noqa
                     'a_list': [0, 'abc', 'abC']}
         self.assertFail(document, schema)

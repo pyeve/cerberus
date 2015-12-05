@@ -361,14 +361,6 @@ class Validator(object):
             self.__config['error_handler'] = value
 
     @property
-    def _all_errors(self):
-        """
-        :return: A list of all errors, including child errors.
-        """
-        # TODO
-        pass
-
-    @property
     def errors(self):
         """
         Returns the errors of the last processing formatted by the handler that
@@ -966,7 +958,7 @@ class Validator(object):
 
     def _validate_type(self, data_type, field, value):
         def call_type_validation(_type, value):
-            # TODO refactor to a less complex code as submitting an error is now unified and can be triggered here  # noqa
+            # TODO refactor to a less complex code on next major release
             # validator = getattr(self, "_validate_type_" + _type)
             # return validator(field, value)
 
