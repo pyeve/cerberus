@@ -475,6 +475,8 @@ class Validator(object):
     # TODO retrieve and store errors from child-validators
     def __normalize_containers(self, mapping, schema):
         for field in mapping:
+            if field not in schema:
+                continue
             if isinstance(mapping[field], Mapping):
                 if 'propertyschema' in schema[field]:
                     self.__normalize_mapping_per_propertyschema(
