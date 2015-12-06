@@ -61,8 +61,11 @@ class Validator(object):
                           document unless a validation is called with disabled
                           normalization.
     :param error_handler: The error handler that formats the result of
-                          ``errors``.
+                          ``errors``. May be an instance or a class.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
+    :param error_handler_config: A dictionary the is passed to the inizializa-
+                                 tion of the error handler. Defaults to an
+                                 empty one.
 
 
     .. versionadded:: 0.10
@@ -183,7 +186,8 @@ class Validator(object):
 
         __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
+                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
+                 error_handler_config=dict())
         """
 
         self.document = None
@@ -196,10 +200,18 @@ class Validator(object):
         self.schema_path = ()
         self.update = False
 
+        error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
+        eh_config = kwargs.pop('error_handler_config', dict())
+        if issubclass(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler(**eh_config)
+        elif isinstance(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler
+        else:
+            raise RuntimeError('Invalid error_handler.')
+
         """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown', 'purge_unknown',
-                     'error_handler')
+                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -340,25 +352,6 @@ class Validator(object):
     @allow_unknown.setter
     def allow_unknown(self, value):
         self.__config['allow_unknown'] = value
-
-    @property
-    def error_handler(self):
-        """
-        This attribute binds to an error-handler that is supposed to format the
-        return value of :attr:`errors`.
-        Defaults to :class:`errors.BasicErrorHandler`.
-        Must be a subclass of :class:`errors.BaseErrorHandler`.
-        """
-        if isinstance(self.__config.get('error_handler'),
-                      errors.BaseErrorHandler):
-            return self.__config['error_handler']()
-        else:
-            return errors.BasicErrorHandler()
-
-    @error_handler.setter
-    def error_handler(self, value):
-        if isinstance(value, errors.BaseErrorHandler):
-            self.__config['error_handler'] = value
 
     @property
     def errors(self):
