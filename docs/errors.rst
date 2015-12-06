@@ -12,7 +12,10 @@ Error handlers will return different output via the
 :attr:`~cerberus.Validator.errors` property of a validator after the processing
 of a document. The error handler to be used can be passed as keyword-argument
 ``error_handler`` to the initialization of a validator or by setting it's
-property with the same name at any time.
+property with the same name at any time. On initialization either an instance
+or a class can be provided. If a class is provided, a dictionary with keyword-
+arguments for initialization can be passed as ``error_handler_config``.
+
 The following handlers are available:
 
   - :class:`~cerberus.errors.BasicErrorHandler`: This is the **default** that
