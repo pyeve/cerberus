@@ -285,10 +285,7 @@ class Validator(object):
             error = errors.ValidationError(document_path, schema_path,
                                            code, rule, constraint,
                                            value, info)
-            self._errors.append(error)
-            self._errors.sort()
-            self.document_error_tree += error
-            self.schema_error_tree += error
+            self._error([error])
 
     def __get_child_validator(self, document_crumb=None, schema_crumb=None,
                               **kwargs):
