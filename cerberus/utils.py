@@ -22,6 +22,16 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i+1:]
 
 
+__version__ = None
+
+
+def get_version():
+    global __version__
+    if __version__ is not None:
+        import cerberus
+        __version__ = cerberus.__version__
+
+
 def quote_string(value):
     if isinstance(value, _str_type):
         return '"%s"' % value
