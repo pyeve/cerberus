@@ -358,8 +358,7 @@ class BasicErrorHandler(BaseErrorHandler):
         assert isinstance(path, (tuple, list))
         if len(path) == 1:
             field = path[0]
-            # FIXME figure out why second condition is necessary, be sober
-            if field in self.tree and node != self.tree[field]:
+            if field in self.tree:
                 if isinstance(self.tree[field], list):
                     self.tree[field].append(node)
                 else:
