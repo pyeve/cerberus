@@ -494,7 +494,7 @@ class TestValidation(TestBase):
         class MyValidator(Validator):
             def _validate_type_objectid(self, field, value):
                 if not re.match('[a-f0-9]{24}', value):
-                    self._error(field, 'Not an ObjectId')
+                    self._error(field, errors.BAD_TYPE)
 
         schema = {'test_field': {'type': 'objectid'}}
         v = MyValidator(schema)
@@ -512,7 +512,7 @@ class TestValidation(TestBase):
 
             def _validate_type_number(self, field, value):
                 if not isinstance(value, int):
-                    self._error(field, 'Not a number')
+                    self._error(field, errors.BAD_TYPE)
 
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)

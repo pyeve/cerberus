@@ -10,7 +10,6 @@
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
-from copy import copy
 from datetime import datetime
 import json
 import logging
@@ -971,24 +970,25 @@ class Validator(object):
             # validator = getattr(self, "_validate_type_" + _type)
             # return validator(field, value)
 
-            prev_errors = copy(self._errors)
+            prev_errors = len(self._errors)
             validator = getattr(self, "_validate_type_" + _type)
             validator(field, value)
-            if len(self._errors) == len(prev_errors):
+            if len(self._errors) == prev_errors:
                 return True
             else:
-                self._errors = prev_errors
                 return False
 
         if isinstance(data_type, _str_type):
             if call_type_validation(data_type, value):
                 return
         elif isinstance(data_type, Iterable):
-            for _type in data_type:
-                if call_type_validation(_type, value):
-                    return
-
-        self._error(field, errors.BAD_TYPE)
+            # TODO simplify this when methods don't submit errors
+            validator = self.__get_child_validator(
+                schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
+            if validator({'turing': value}):
+                return
+            else:
+                self._error(field, errors.BAD_TYPE)
         return True
 
     def _validate_type_boolean(self, field, value):
