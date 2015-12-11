@@ -274,7 +274,7 @@ class BaseErrorHandler:
     """ Base class for all error handlers.
         Subclasses will be identified as error-handlers with an
         instance-test. """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """ Optionally initialize a new instance. """
         pass
 
@@ -285,6 +285,17 @@ class BaseErrorHandler:
     def __iter__(self):
         """ Be a superhero and implement an iterator over errors. """
         raise NotImplementedError
+
+
+class ToyErrorHandler(BaseErrorHandler):
+    def __call__(self, *args, **kwargs):
+        raise RuntimeError('This i not supposed to happen.')
+
+    def add(self, error):
+        pass
+
+    def clear(self):
+        pass
 
 
 class BasicErrorHandler(BaseErrorHandler):

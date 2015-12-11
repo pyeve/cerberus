@@ -297,6 +297,8 @@ class Validator(object):
         """
         child_config = self.__config.copy()
         child_config.update(kwargs)
+        child_config['error_handler'] = errors.ToyErrorHandler
+        child_config['error_handler_config'] = dict()
         child_validator = self.__class__(**child_config)
 
         child_validator.root_document = self.root_document or self.document
