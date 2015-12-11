@@ -1,6 +1,6 @@
 """ This module contains the error-related constants and classes. """
 
-from collections import namedtuple, MutableMapping
+from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy
 from .utils import compare_paths_lt, quote_string
 
@@ -146,6 +146,19 @@ class ValidationError:
         return self.info[0] if self.is_group_error else None
 
     @property
+    def definitions_errors(self):
+        """ Returns a dictionary with errors mapped to index of the definition
+            it occurred in. Returns ``None`` if not applicable. """
+        if not self.is_logic_error:
+            return None
+
+        result = defaultdict(list)
+        for error in self.child_errors:
+            i = error.schema_path[len(self.schema_path)]
+            result[i].append(error)
+        return result
+
+    @property
     def is_group_error(self):
         """ ``True`` for errors of bulk validations. """
         return bool(self.code & ERROR_GROUP.code)
@@ -154,6 +167,10 @@ class ValidationError:
     def is_logic_error(self):
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
+
+    @classmethod
+    def from_xml(cls, input):
+        pass  # TODO
 
 
 class ErrorTreeNode(MutableMapping):
