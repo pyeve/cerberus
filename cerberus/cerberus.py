@@ -10,7 +10,6 @@
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
-from copy import copy
 from datetime import datetime
 import json
 import logging
@@ -62,8 +61,11 @@ class Validator(object):
                           document unless a validation is called with disabled
                           normalization.
     :param error_handler: The error handler that formats the result of
-                          ``errors``.
+                          ``errors``. May be an instance or a class.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
+    :param error_handler_config: A dictionary the is passed to the inizializa-
+                                 tion of the error handler. Defaults to an
+                                 empty one.
 
 
     .. versionadded:: 0.10
@@ -184,7 +186,8 @@ class Validator(object):
 
         __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
+                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
+                 error_handler_config=dict())
         """
 
         self.document = None
@@ -197,10 +200,18 @@ class Validator(object):
         self.schema_path = ()
         self.update = False
 
+        error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
+        eh_config = kwargs.pop('error_handler_config', dict())
+        if issubclass(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler(**eh_config)
+        elif isinstance(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler
+        else:
+            raise RuntimeError('Invalid error_handler.')
+
         """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown', 'purge_unknown',
-                     'error_handler')
+                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -274,10 +285,7 @@ class Validator(object):
             error = errors.ValidationError(document_path, schema_path,
                                            code, rule, constraint,
                                            value, info)
-            self._errors.append(error)
-            self._errors.sort()
-            self.document_error_tree += error
-            self.schema_error_tree += error
+            self._error([error])
 
     def __get_child_validator(self, document_crumb=None, schema_crumb=None,
                               **kwargs):
@@ -289,6 +297,8 @@ class Validator(object):
         """
         child_config = self.__config.copy()
         child_config.update(kwargs)
+        child_config['error_handler'] = errors.ToyErrorHandler
+        child_config['error_handler_config'] = dict()
         child_validator = self.__class__(**child_config)
 
         child_validator.root_document = self.root_document or self.document
@@ -341,33 +351,6 @@ class Validator(object):
     @allow_unknown.setter
     def allow_unknown(self, value):
         self.__config['allow_unknown'] = value
-
-    @property
-    def error_handler(self):
-        """
-        This attribute binds to an error-handler that is supposed to format the
-        return value of :attr:`errors`.
-        Defaults to :class:`errors.BasicErrorHandler`.
-        Must be a subclass of :class:`errors.BaseErrorHandler`.
-        """
-        if isinstance(self.__config.get('error_handler'),
-                      errors.BaseErrorHandler):
-            return self.__config['error_handler']()
-        else:
-            return errors.BasicErrorHandler()
-
-    @error_handler.setter
-    def error_handler(self, value):
-        if isinstance(value, errors.BaseErrorHandler):
-            self.__config['error_handler'] = value
-
-    @property
-    def _all_errors(self):
-        """
-        :return: A list of all errors, including child errors.
-        """
-        # TODO
-        pass
 
     @property
     def errors(self):
@@ -472,7 +455,6 @@ class Validator(object):
                     'coerce' in self.allow_unknown:
                 coerce_value(self.allow_unknown['coerce'])
 
-    # TODO retrieve and store errors from child-validators
     def __normalize_containers(self, mapping, schema):
         for field in mapping:
             if field not in schema:
@@ -496,10 +478,16 @@ class Validator(object):
                                                property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
-        validator = self.__get_child_validator(field,
-                                               schema=schema)
+        validator = self.__get_child_validator(
+            document_crumb=(field,), schema_crumb=(field, 'propertyschema'),
+            schema=schema)
         result = validator.normalized(document)
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
+            self._error(validator._errors)
         for k in result:
+            if result[k] == mapping[field][k]:
+                continue
             if result[k] in mapping[field]:
                 log.warn("Normalizing keys of {path}: {key} already exists, "
                          "its value is replaced."
@@ -512,8 +500,13 @@ class Validator(object):
 
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
-        validator = self.__get_child_validator(field, schema=schema)
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'valueschema'),
+            schema=schema)
         mapping[field] = validator.normalized(mapping[field])
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+            self._error(validator._errors)
 
     def __normalize_mapping_per_schema(self, field, mapping, schema):
         child_schema = schema[field].get('schema', dict())
@@ -522,20 +515,28 @@ class Validator(object):
         purge_unknown = schema[field].get('purge_unknown',
                                           self.purge_unknown)
         validator = self. \
-            __get_child_validator(field,
+            __get_child_validator(document_crumb=field,
+                                  schema_crumb=(field, 'schema'),
                                   schema=child_schema,
                                   allow_unknown=allow_unknown,
                                   purge_unknown=purge_unknown)
         mapping[field] = validator.normalized(mapping[field])
+        if validator._errors:
+            self._error(validator._errors)
 
     def __normalize_sequence(self, field, mapping, schema):
         child_schema = dict(((k, schema[field]['schema'])
                              for k in range(len(mapping[field]))))
-        validator = self.__get_child_validator(field, schema=child_schema)
+        validator = self.__get_child_validator(document_crumb=field,
+                                               schema_crumb=(field, 'schema'),
+                                               schema=child_schema)
         result = validator.normalized(dict((k, v) for k, v
                                            in enumerate(mapping[field])))
         for i in result:
             mapping[field][i] = result[i]
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+            self._error(validator._errors)
 
     @staticmethod
     def _normalize_purge_unknown(mapping, schema):
@@ -967,28 +968,29 @@ class Validator(object):
 
     def _validate_type(self, data_type, field, value):
         def call_type_validation(_type, value):
-            # TODO refactor to a less complex code as submitting an error is now unified and can be triggered here  # noqa
+            # TODO refactor to a less complex code on next major release
             # validator = getattr(self, "_validate_type_" + _type)
             # return validator(field, value)
 
-            prev_errors = copy(self._errors)
+            prev_errors = len(self._errors)
             validator = getattr(self, "_validate_type_" + _type)
             validator(field, value)
-            if len(self._errors) == len(prev_errors):
+            if len(self._errors) == prev_errors:
                 return True
             else:
-                self._errors = prev_errors
                 return False
 
         if isinstance(data_type, _str_type):
             if call_type_validation(data_type, value):
                 return
         elif isinstance(data_type, Iterable):
-            for _type in data_type:
-                if call_type_validation(_type, value):
-                    return
-
-        self._error(field, errors.BAD_TYPE)
+            # TODO simplify this when methods don't submit errors
+            validator = self.__get_child_validator(
+                schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
+            if validator({'turing': value}):
+                return
+            else:
+                self._error(field, errors.BAD_TYPE)
         return True
 
     def _validate_type_boolean(self, field, value):

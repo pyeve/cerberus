@@ -494,7 +494,7 @@ class TestValidation(TestBase):
         class MyValidator(Validator):
             def _validate_type_objectid(self, field, value):
                 if not re.match('[a-f0-9]{24}', value):
-                    self._error(field, 'Not an ObjectId')
+                    self._error(field, errors.BAD_TYPE)
 
         schema = {'test_field': {'type': 'objectid'}}
         v = MyValidator(schema)
@@ -512,7 +512,7 @@ class TestValidation(TestBase):
 
             def _validate_type_number(self, field, value):
                 if not isinstance(value, int):
-                    self._error(field, 'Not a number')
+                    self._error(field, errors.BAD_TYPE)
 
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)
@@ -1623,11 +1623,10 @@ class ErrorHandling(TestBase):
             s_error_tree['foo']['anyof'][0]['type'].errors[0].value, [])
 
     def test_nested_error_paths(self):
-        # TODO regexps can be shortened when #169 is solved
         schema = {'a_dict': {'propertyschema': {'type': 'integer'},
-                             'valueschema': {'regex': '[a-z]*$'}},
+                             'valueschema': {'regex': '[a-z]*'}},
                   'a_list': {'schema': {'type': 'string',
-                                        'oneof_regex': ['[a-z]*$', '[A-Z]*$']}}}
+                                        'oneof_regex': ['[a-z]*$', '[A-Z]*']}}}
         document = {'a_dict': {0: 'abc', 'one': 'abc', 2: 'aBc', 'three': 'abC'},  # noqa
                     'a_list': [0, 'abc', 'abC']}
         self.assertFail(document, schema)

@@ -1,6 +1,6 @@
 """ This module contains the error-related constants and classes. """
 
-from collections import namedtuple, MutableMapping
+from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy
 from .utils import compare_paths_lt, quote_string
 
@@ -94,6 +94,9 @@ SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 class ValidationError:
     """ A simple class to store and query basic error information. """
+    __slots__ = ('code', 'constraint', 'document_path',
+                 'info', 'rule', 'schema_path', 'value')
+
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
         self.document_path = document_path
@@ -143,6 +146,19 @@ class ValidationError:
         return self.info[0] if self.is_group_error else None
 
     @property
+    def definitions_errors(self):
+        """ Returns a dictionary with errors mapped to index of the definition
+            it occurred in. Returns ``None`` if not applicable. """
+        if not self.is_logic_error:
+            return None
+
+        result = defaultdict(list)
+        for error in self.child_errors:
+            i = error.schema_path[len(self.schema_path)]
+            result[i].append(error)
+        return result
+
+    @property
     def is_group_error(self):
         """ ``True`` for errors of bulk validations. """
         return bool(self.code & ERROR_GROUP.code)
@@ -152,12 +168,17 @@ class ValidationError:
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
+    @classmethod
+    def from_xml(cls, input):
+        pass  # TODO
+
 
 class ErrorTreeNode(MutableMapping):
+    __slots__ = ('descendants', 'errors', 'parent_node', 'path', 'tree_root')
+
     def __init__(self, path, parent_node):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
-        self.tree_type = self.parent_node.tree_type
         self.path = path[:len(self.parent_node.path)+1]
         self.errors = []
         self.descendants = dict()
@@ -179,7 +200,7 @@ class ErrorTreeNode(MutableMapping):
             return None
 
     def __len__(self):
-        return len(self.descendants)
+        return len(self.errors)
 
     def __setitem__(self, key, value):
         self.descendants[key] = value
@@ -187,13 +208,21 @@ class ErrorTreeNode(MutableMapping):
     def __str__(self):
         return str(self.errors) + ',' + str(self.descendants)
 
+    @property
+    def depth(self):
+        return len(self.path)
+
+    @property
+    def tree_type(self):
+        return self.parent_node.tree_type
+
     def _path_of_(self, error):
         return getattr(error, self.tree_type + '_path')
 
     def add(self, error):
         error_path = self._path_of_(error)
 
-        key = error_path[len(self.path)]
+        key = error_path[self.depth]
         if key not in self.descendants:
             self[key] = ErrorTreeNode(error_path, self)
 
@@ -205,10 +234,6 @@ class ErrorTreeNode(MutableMapping):
                     self.tree_root += child_error
         else:
             self[key] += error
-
-    @property
-    def depth(self):
-        return len(self.path)
 
 
 class ErrorTree(ErrorTreeNode):
@@ -266,7 +291,7 @@ class BaseErrorHandler:
     """ Base class for all error handlers.
         Subclasses will be identified as error-handlers with an
         instance-test. """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """ Optionally initialize a new instance. """
         pass
 
@@ -277,6 +302,17 @@ class BaseErrorHandler:
     def __iter__(self):
         """ Be a superhero and implement an iterator over errors. """
         raise NotImplementedError
+
+
+class ToyErrorHandler(BaseErrorHandler):
+    def __call__(self, *args, **kwargs):
+        raise RuntimeError('This i not supposed to happen.')
+
+    def add(self, error):
+        pass
+
+    def clear(self):
+        pass
 
 
 class BasicErrorHandler(BaseErrorHandler):
@@ -358,8 +394,7 @@ class BasicErrorHandler(BaseErrorHandler):
         assert isinstance(path, (tuple, list))
         if len(path) == 1:
             field = path[0]
-            # FIXME figure out why second condition is necessary, be sober
-            if field in self.tree and node != self.tree[field]:
+            if field in self.tree:
                 if isinstance(self.tree[field], list):
                     self.tree[field].append(node)
                 else:
