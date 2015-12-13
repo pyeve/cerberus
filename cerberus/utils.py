@@ -30,6 +30,7 @@ def get_version():
     if __version__ is not None:
         import cerberus
         __version__ = cerberus.__version__
+    return __version__
 
 
 def quote_string(value):
