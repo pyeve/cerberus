@@ -141,14 +141,14 @@ class ValidationError:
     @property
     def child_errors(self):
         """
-        A list that contain the individual errors of a bulk validation error.
+        A list that contains the individual errors of a bulk validation error.
         """
         return self.info[0] if self.is_group_error else None
 
     @property
     def definitions_errors(self):
-        """ Returns a dictionary with errors mapped to index of the definition
-            it occurred in. Returns ``None`` if not applicable. """
+        """ Returns a dictionary with errors mapped to the index of the
+            definition it occurred in. Returns ``None`` if not applicable. """
         if not self.is_logic_error:
             return None
 
@@ -167,10 +167,6 @@ class ValidationError:
     def is_logic_error(self):
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
-
-    @classmethod
-    def from_xml(cls, input):
-        pass  # TODO
 
 
 class ErrorTreeNode(MutableMapping):
@@ -436,6 +432,3 @@ class BasicErrorHandler(BaseErrorHandler):
                 self.insert_error(path, self.format_message(field, child_error))  # noqa
 
 
-# TODO add a SerializeErrorHandler (xml, json, yaml)
-# TODO add a HumanErrorHandler supporting l10n
-# TODO add various error output showcases to the docs
