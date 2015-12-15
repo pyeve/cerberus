@@ -330,7 +330,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x22: "empty values not allowed",
                 0x23: "null value not allowed",
                 0x24: "must be of {constraint} type",
-                0x25: "length of list should be {0}, it is {1}",
+                0x25: "length of list should be {constraint}, it is {0}",
                 0x26: "min length is {constraint}",
                 0x27: "max length is {constraint}",
 
