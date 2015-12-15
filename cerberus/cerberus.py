@@ -985,12 +985,16 @@ class Validator(object):
                 return
         elif isinstance(data_type, Iterable):
             # TODO simplify this when methods don't submit errors
+            # for x in data_type:
+            #     if call_type_validation(x, value):
+            #         return
             validator = self.__get_child_validator(
                 schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
             if validator({'turing': value}):
                 return
             else:
                 self._error(field, errors.BAD_TYPE)
+
         return True
 
     def _validate_type_boolean(self, field, value):
