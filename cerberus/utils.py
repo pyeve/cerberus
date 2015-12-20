@@ -1,9 +1,4 @@
-import logging
-
 from .platform import _int_types, _str_type
-
-log = logging.getLogger('cerberus')
-depr_warnings_printed = {}
 
 
 def compare_paths_lt(x, y):
@@ -27,9 +22,3 @@ def quote_string(value):
         return '"%s"' % value
     else:
         return value
-
-
-def warn_deprecated(artifact, message):
-    if not depr_warnings_printed.get(artifact):
-        log.warn(message)
-        depr_warnings_printed[artifact] = True

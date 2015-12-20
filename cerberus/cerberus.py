@@ -12,15 +12,12 @@ from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
 from datetime import datetime
 import json
-import logging
 import re
+from warnings import warn
 
 from . import errors
 from .platform import _str_type, _int_types
-from .utils import drop_item_from_tuple, warn_deprecated
-
-
-log = logging.getLogger('cerberus')
+from .utils import drop_item_from_tuple
 
 
 class DocumentError(Exception):
@@ -492,10 +489,10 @@ class Validator(object):
             if result[k] in mapping[field]:
                 continue
             if result[k] in mapping[field]:
-                log.warn("Normalizing keys of {path}: {key} already exists, "
-                         "its value is replaced."
-                         .format(path='.'.join(self.document_path + (field,)),
-                                 key=k))
+                warn("Normalizing keys of {path}: {key} already exists, "
+                     "its value is replaced."
+                     .format(path='.'.join(self.document_path + (field,)),
+                             key=k))
             mapping[field][result[k]] = mapping[field][k]
             del mapping[field][k]
 
@@ -642,9 +639,8 @@ class Validator(object):
         .. deprecated:: 0.4.0
            Use :func:`validate` with ``update=True`` instead.
         """
-        warn_deprecated('validate_update',
-                        'Validator.validate_update is deprecated. '
-                        'Use Validator.validate(update=True) instead.')
+        warn('Validator.validate_update is deprecated. Use Validator.validate'
+             '(update=True) instead.', DeprecationWarning)
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
@@ -1186,10 +1182,9 @@ class DefinitionSchema(MutableMapping):
                     if isinstance(value, Mapping):
                         # TODO remove on next major release
                         # list of dicts, deprecated
-                        warn_deprecated('items_dict',
-                                        "The 'items'-rule with a mapping as "
-                                        "constraint is deprecated. Use the "
-                                        "'schema'-rule instead.")
+                        warn("The 'items'-rule with a mapping as constraint is "
+                             "deprecated. Use the 'schema'-rule instead.",
+                             DeprecationWarning)
                         DefinitionSchema(self.validator, value)
                     else:
                         for item_schema in value:
@@ -1285,8 +1280,8 @@ def expand_definition_schema(schema):
         if 'keyschema' in constraints:
             constraints['valueschema'] = constraints['keyschema']
             del constraints['keyschema']
-            warn_deprecated('keyschema', "The 'keyschema'-rule is deprecated. "
-                                         "Use 'valueschema' instead.")
+            warn("The 'keyschema'-rule is deprecated. Use 'valueschema' instead.",  # noqa
+                 DeprecationWarning)
         for key, value in constraints.items():
             constraints[key] = update_to_valueschema(value)
         return constraints
