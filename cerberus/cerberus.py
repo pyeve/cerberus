@@ -261,6 +261,7 @@ class Validator(object):
             for error in args[0]:
                 self.document_error_tree += error
                 self.schema_error_tree += error
+                self.error_handler.emit(error)
         elif len(args) == 2 and isinstance(args[1], _str_type):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
@@ -406,8 +407,9 @@ class Validator(object):
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
             raise DocumentError(
-                errors.DOCUMENT_FORMAT.format(document))
+                    errors.DOCUMENT_FORMAT.format(document))
         self.root_document = self.root_document or document
+        self.error_handler.start(self)
 
     # # Normalizing
 
@@ -426,6 +428,7 @@ class Validator(object):
         document = document.copy()
         self.__init_processing(document, schema)
         self.__normalize_mapping(document, schema or self.schema)
+        self.error_handler.end(self)
         if self._errors:
             return None
         else:
@@ -614,6 +617,8 @@ class Validator(object):
 
         if not self.update:
             self._validate_required_fields(self.document)
+
+        self.error_handler.end(self)
 
         return not bool(self._errors)
 
