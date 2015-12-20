@@ -246,5 +246,11 @@ You don't have to use YAML of course, you can use your favorite serializer.
 JSON for example. As long as there is a decoder that can produce a nested
 ``dict``, you can use it to define a schema.
 
-
 .. _PyYAML: http://pyyaml.org
+
+
+Warnings
+--------
+
+Warnings, such as about deprecations or likely causes of trouble, are issued
+through the Python standard library's :mod:`warnings` module.
