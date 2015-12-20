@@ -489,17 +489,15 @@ class Validator(object):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
         for k in result:
-            if result[k] == mapping[field][k]:
+            if result[k] in mapping[field]:
                 continue
             if result[k] in mapping[field]:
                 log.warn("Normalizing keys of {path}: {key} already exists, "
                          "its value is replaced."
                          .format(path='.'.join(self.document_path + (field,)),
                                  key=k))
-                mapping[field][result[k]] = mapping[field][k]
-            else:
-                mapping[field][result[k]] = mapping[field][k]
-                del mapping[field][k]
+            mapping[field][result[k]] = mapping[field][k]
+            del mapping[field][k]
 
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
@@ -512,17 +510,11 @@ class Validator(object):
             self._error(validator._errors)
 
     def __normalize_mapping_per_schema(self, field, mapping, schema):
-        child_schema = schema[field].get('schema', dict())
-        allow_unknown = schema[field].get('allow_unknown',
-                                          self.allow_unknown)
-        purge_unknown = schema[field].get('purge_unknown',
-                                          self.purge_unknown)
-        validator = self. \
-            __get_child_validator(document_crumb=field,
-                                  schema_crumb=(field, 'schema'),
-                                  schema=child_schema,
-                                  allow_unknown=allow_unknown,
-                                  purge_unknown=purge_unknown)
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=schema[field].get('schema', dict()),
+            allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
+            purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field])
         if validator._errors:
             self._error(validator._errors)
@@ -530,9 +522,9 @@ class Validator(object):
     def __normalize_sequence(self, field, mapping, schema):
         child_schema = dict(((k, schema[field]['schema'])
                              for k in range(len(mapping[field]))))
-        validator = self.__get_child_validator(document_crumb=field,
-                                               schema_crumb=(field, 'schema'),
-                                               schema=child_schema)
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=child_schema)
         result = validator.normalized(dict((k, v) for k, v
                                            in enumerate(mapping[field])))
         for i in result:
