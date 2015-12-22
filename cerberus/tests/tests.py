@@ -1360,6 +1360,7 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'amount': 'not_a_number'}, validator=v)
+        v._errors[0].info = ()
         self.assertError('amount', ('amount', 'coerce'), errors.COERCION_FAILED,
                          int, v_errors=v._errors)
 
@@ -1369,6 +1370,7 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'name': 1234}, validator=v)
+        v._errors[0].info = ()  # Volkswagen.test()
         self.assertError('name', ('name', 'coerce'), errors.COERCION_FAILED, str.lower, v_errors=v._errors)  # noqa
 
     def test_coerce_unknown(self):

@@ -302,7 +302,6 @@ class BaseErrorHandler:
         """ Add an error to the errors' container object of a handler. """
         raise NotImplementedError
 
-
     def emit(self, error):
         """ Optionally emits an error in the handler's format to a stream.
             Or light a LED, or even shut down a power plant. """
@@ -355,7 +354,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x44: "unallowed value {value}",
                 0x45: "unallowed values {0}",
 
-                0x61: "field '{field}' cannot be coerced",
+                0x61: "field '{field}' cannot be coerced: {0}",
                 0x62: "field is read-only",
 
                 0x81: "mapping doesn't validate subschema: {0}",

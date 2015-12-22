@@ -405,7 +405,7 @@ class Validator(object):
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
             raise DocumentError(
-                    errors.DOCUMENT_FORMAT.format(document))
+                errors.DOCUMENT_FORMAT.format(document))
         self.root_document = self.root_document or document
         self.error_handler.start(self)
 
@@ -446,8 +446,8 @@ class Validator(object):
         def coerce_value(coercer):
             try:
                 mapping[field] = coercer(mapping[field])
-            except (TypeError, ValueError):
-                self._error(field, errors.COERCION_FAILED)
+            except Exception as e:
+                self._error(field, errors.COERCION_FAILED, str(e))
 
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
@@ -557,7 +557,10 @@ class Validator(object):
 
     def _normalize_rename_handler(self, mapping, schema, field):
         if 'rename_handler' in schema[field]:
-            new_name = schema[field]['rename_handler'](field)
+            try:
+                new_name = schema[field]['rename_handler'](field)
+            except Exception as e:
+                self._error(field, errors.COERCION_FAILED, str(e))
             mapping[new_name] = mapping[field]
             del mapping[field]
 
