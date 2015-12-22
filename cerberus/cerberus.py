@@ -17,7 +17,7 @@ from warnings import warn
 
 from . import errors
 from .platform import _str_type, _int_types
-from .utils import drop_item_from_tuple
+from .utils import drop_item_from_tuple, isclass
 
 
 class DocumentError(Exception):
@@ -199,7 +199,8 @@ class Validator(object):
 
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
         eh_config = kwargs.pop('error_handler_config', dict())
-        if issubclass(error_handler, errors.BaseErrorHandler):
+        if isclass(error_handler) and \
+                issubclass(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler(**eh_config)
         elif isinstance(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler
