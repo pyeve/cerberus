@@ -17,6 +17,15 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i+1:]
 
 
+def isclass(obj):
+    try:
+        issubclass(obj, object)
+    except TypeError:
+        return False
+    else:
+        return True
+
+
 def quote_string(value):
     if isinstance(value, _str_type):
         return '"%s"' % value
