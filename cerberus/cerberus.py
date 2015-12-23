@@ -10,6 +10,7 @@
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
+from copy import copy
 from datetime import datetime
 import json
 import re
@@ -394,8 +395,10 @@ class Validator(object):
     # Document processing
 
     def __init_processing(self, document, schema=None):
-        self._errors = []
-        self._unrequired_by_excludes = set()
+        self._errors = errors.ErrorsList()
+        self.document_error_tree = errors.DocumentErrorTree()
+        self.schema_error_tree = errors.SchemaErrorTree()
+        self.document = copy(document)
 
         if schema is not None:
             self.schema = DefinitionSchema(self, schema)
@@ -423,14 +426,13 @@ class Validator(object):
         :return: A normalized copy of the provided mapping or ``None`` if an
                  error occurred during normalization.
         """
-        document = document.copy()
         self.__init_processing(document, schema)
-        self.__normalize_mapping(document, schema or self.schema)
+        self.__normalize_mapping(self.document, self.schema)
         self.error_handler.end(self)
         if self._errors:
             return None
         else:
-            return document
+            return self.document
 
     def __normalize_mapping(self, mapping, schema):
         # TODO allow methods for coerce and rename_handler like validate_type
@@ -596,8 +598,12 @@ class Validator(object):
            Support for update mode.
         """
         self.update = update
+        self._unrequired_by_excludes = set()
+
+
         self.__init_processing(document, schema)
-        self.__prepare_document(document, normalize)
+        if normalize:
+            self.__normalize_mapping(self.document, self.schema)
 
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
@@ -646,12 +652,6 @@ class Validator(object):
         warn('Validator.validate_update is deprecated. Use Validator.validate'
              '(update=True) instead.', DeprecationWarning)
         return self.validate(document, schema, update=True)
-
-    def __prepare_document(self, document, normalize):
-        self.document = document.copy()  # needed by _error
-        if normalize:
-            self.document = self.__normalize_mapping(document.copy(),
-                                                     self.schema)
 
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
