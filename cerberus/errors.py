@@ -48,7 +48,8 @@ UNALLOWED_VALUES = ErrorDefinition(0x45, 'allowed')
 
 # other
 COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
-READONLY_FIELD = ErrorDefinition(0x62, 'readonly')
+RENAMING_FAILED = ErrorDefinition(0x62, 'rename_handler')
+READONLY_FIELD = ErrorDefinition(0x63, 'readonly')
 
 # groups
 ERROR_GROUP = ErrorDefinition(0x80, None)
@@ -167,6 +168,14 @@ class ValidationError:
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
 
+class ErrorsList(list):
+    def __contains__(self, error_definition):
+        for code in (x.code for x in self):
+            if code == error_definition.code:
+                return True
+        return False
+
+
 class ErrorTreeNode(MutableMapping):
     __slots__ = ('descendants', 'errors', 'parent_node', 'path', 'tree_root')
 
@@ -174,7 +183,7 @@ class ErrorTreeNode(MutableMapping):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
         self.path = path[:len(self.parent_node.path)+1]
-        self.errors = []
+        self.errors = ErrorsList()
         self.descendants = dict()
 
     def __add__(self, error):
@@ -355,7 +364,8 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x45: "unallowed values {0}",
 
                 0x61: "field '{field}' cannot be coerced: {0}",
-                0x62: "field is read-only",
+                0x62: "field '{field}' cannot be renamed: {0}",
+                0x63: "field is read-only",
 
                 0x81: "mapping doesn't validate subschema: {0}",
                 0x82: "one or more sequence-items don't validate: {0}",

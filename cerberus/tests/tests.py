@@ -1508,6 +1508,34 @@ class TestNormalization(TestBase):
                               'bar': 'bar_value'}}
         self.assertNormalized(document, expected, schema)
 
+    def test_custom_coerce_and_rename(self):
+        class MyNormalizer(Validator):
+            def __init__(self, multiplier, *args, **kwargs):
+                super(MyNormalizer, self).__init__(*args, **kwargs)
+                self.multiplier = multiplier
+
+            def _normalize_coerce_multiply(self, value):
+                return value * self.multiplier
+
+        v = MyNormalizer(2, {'foo': {'coerce': 'multiply'}})
+        self.assertEqual(v.normalized({'foo': 2})['foo'], 4)
+
+        v = MyNormalizer(3, allow_unknown={'rename_handler': 'multiply'})
+        self.assertEqual(v.normalized({3: None}), {9: None})
+
+    def test_coerce_chain(self):
+        drop_prefix = lambda x: x[2:]
+        upper = lambda x: x.upper()
+        schema = {'foo': {'coerce': [hex, drop_prefix, upper]}}
+        self.assertNormalized({'foo': 15}, {'foo': 'F'}, schema)
+
+    def test_coerce_chain_aborts(self):
+        def dont_do_me(value):
+            raise AssertionError('The coercion chain did not abort after an error.')
+        schema = {'foo': {'coerce': [hex, dont_do_me]}}
+        self.validator({'foo': '0'}, schema)
+        self.assertIn(errors.COERCION_FAILED, self.validator._errors)
+
 
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):
@@ -1725,8 +1753,8 @@ class ErrorHandling(TestBase):
         _errors, ref = [], {}
 
         _errors.append(ValidationError(
-            ['foo'], ['foo'], 0x62, 'readonly', True, None, ()))
-        ref.update({'foo': handler.messages[0x62]})
+            ['foo'], ['foo'], 0x63, 'readonly', True, None, ()))
+        ref.update({'foo': handler.messages[0x63]})
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(ValidationError(

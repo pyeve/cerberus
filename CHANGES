@@ -16,7 +16,8 @@ Not released yet.
 - New: Known, validated definition schemas are cached, thus validation run-time
   of schemas is reduced (Frank Sachsenheim).
 - New: Implemented rules of a Validator-instance are accessible as
-  'validation_rules'-property (Frank Sachsenheim).
+  'validation_rules' and 'normalization_rules'-property (Frank Sachsenheim).
+- New: 'coerce' can use class-methods (Frank Sachsenheim).
 - New: 'rename'-rule renames a field to a given string during normalization
   (Frank Sachsenheim).
 - New: 'rename_handler'-rule that takes an callable that renames unknown

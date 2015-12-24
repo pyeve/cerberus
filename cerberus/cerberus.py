@@ -189,7 +189,7 @@ class Validator(object):
         """
 
         self.document = None
-        self._errors = []
+        self._errors = errors.ErrorsList()
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
         self.root_document = None
@@ -320,6 +320,10 @@ class Validator(object):
 
         return child_validator
 
+    def __get_rule_handler(self, domain, rule):
+        methodname = '_{0}_{1}'.format(domain, rule.replace(' ', '_'))
+        return getattr(self, methodname, None)
+
     def _drop_nodes_from_errorpaths(self, errors, dp_items, sp_items):
         """ Removes nodes by index from an errorpath, relatively to the
             basepaths of self.
@@ -435,7 +439,6 @@ class Validator(object):
             return self.document
 
     def __normalize_mapping(self, mapping, schema):
-        # TODO allow methods for coerce and rename_handler like validate_type
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
@@ -445,18 +448,33 @@ class Validator(object):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
-        def coerce_value(coercer):
-            try:
-                mapping[field] = coercer(mapping[field])
-            except Exception as e:
-                self._error(field, errors.COERCION_FAILED, str(e))
-
+        error = errors.COERCION_FAILED
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
-                coerce_value(schema[field]['coerce'])
+                mapping[field] = self.__normalize_coerce(
+                    schema[field]['coerce'], field, mapping[field], error)
             elif isinstance(self.allow_unknown, Mapping) and \
                     'coerce' in self.allow_unknown:
-                coerce_value(self.allow_unknown['coerce'])
+                mapping[field] = self.__normalize_coerce(
+                    self.allow_unknown['coerce'], field, mapping[field], error)
+
+    def __normalize_coerce(self, processor, field, value, error):
+        if isinstance(processor, _str_type):
+            processor = self.__get_rule_handler('normalize_coerce', processor)
+        elif isinstance(processor, Iterable):
+            result = value
+            for p in processor:
+                result = self.__normalize_coerce(p, field, result, error)
+                if errors.COERCION_FAILED in \
+                    self.document_error_tree.fetch_errors_from(
+                        self.document_path + (field,)):
+                    break
+            return result
+        try:
+            return processor(value)
+        except Exception as e:
+            self._error(field, error, str(e))
+            return value
 
     def __normalize_containers(self, mapping, schema):
         for field in mapping:
@@ -547,9 +565,8 @@ class Validator(object):
                 self._normalize_rename_handler(mapping, schema, field)
             elif isinstance(self.allow_unknown, Mapping) and \
                     'rename_handler' in self.allow_unknown:
-                new_name = self.allow_unknown['rename_handler'](field)
-                mapping[new_name] = mapping[field]
-                del mapping[field]
+                self._normalize_rename_handler(
+                    mapping, {field: self.allow_unknown}, field)
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
@@ -558,11 +575,12 @@ class Validator(object):
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
-        if 'rename_handler' in schema[field]:
-            try:
-                new_name = schema[field]['rename_handler'](field)
-            except Exception as e:
-                self._error(field, errors.COERCION_FAILED, str(e))
+        if 'rename_handler' not in schema[field]:
+            return
+        new_name = self.__normalize_coerce(
+            schema[field]['rename_handler'], field, field,
+            errors.RENAMING_FAILED)
+        if new_name != field:
             mapping[new_name] = mapping[field]
             del mapping[field]
 
@@ -599,7 +617,6 @@ class Validator(object):
         """
         self.update = update
         self._unrequired_by_excludes = set()
-
 
         self.__init_processing(document, schema)
         if normalize:
@@ -674,8 +691,7 @@ class Validator(object):
         """ Validate a field's value against its defined rules. """
 
         def validate_rule(rule):
-            validatorname = "_validate_" + rule.replace(" ", "_")
-            validator = getattr(self, validatorname, None)
+            validator = self.__get_rule_handler('validate', rule)
             if validator:
                 return validator(definitions.get(rule, None), field, value)
 
@@ -1032,8 +1048,14 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_validator(self, validator, field, value):
-        # call customized validator function
-        validator(field, value, self._error)
+        if isinstance(validator, _str_type):
+            validator = self.__get_rule_handler('validator', validator)
+            validator(field, value)
+        elif isinstance(validator, Iterable):
+            for v in validator:
+                self._validate_validator(v, field, value)
+        else:
+            validator(field, value, self._error)
 
     def _validate_valueschema(self, schema, field, value):
         schema_crumb = (field, 'valueschema')
@@ -1197,7 +1219,7 @@ class DefinitionSchema(MutableMapping):
                 elif constraint == 'dependencies':
                     self.__validate_dependencies_definition(field, value)
                 elif constraint in ('coerce', 'rename_handler', 'validator'):
-                    if not isinstance(value, Callable):
+                    if not isinstance(value, (Callable, _str_type, Iterable)):
                         raise SchemaError(
                             errors.SCHEMA_ERROR_CALLABLE_TYPE
                             .format(field))

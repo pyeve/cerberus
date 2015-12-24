@@ -55,7 +55,8 @@ You can access the errors per these properties of a :class:`~cerberus.Validator`
 instance after a processing of a document:
 
   - ``_errors``: This list holds all submitted errors. It is not intended to
-    manipulate errors directly via this attribute.
+    manipulate errors directly via this attribute. You can test if at least one
+    error with a specific error definition is ``in`` that list.
 
   - ``document_error_tree``: A ``dict``-like object that allows you to query
     nodes corresponding to your document. That node's errors are contained in
@@ -77,6 +78,8 @@ Examples
     >>> document = {'cats': 'two'}
     >>> v.validate(document, schema)
     False
+    >>> cerberus.errors.BAD_TYPE in v._errors
+    True
     >>> v.document_error_tree['cats'].errors == v.schema_error_tree['cats']['type'].errors
     True
     >>> error = v.document_error_tree['cats'].errors[0]

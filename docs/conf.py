@@ -282,6 +282,7 @@ linkcheck_anchors = True
 # -- Options for doctest extension ---------------------------------------------
 
 doctest_global_setup = """
-from cerberus import Validator
+import cerberus
+Validator = cerberus.Validator
 v = Validator()
 """

@@ -1,26 +1,30 @@
 Extending Cerberus
 ==================
 
-Cerberus supports custom validation in two styles:
+Though you can use functions in conjunction with the ``coerce`` and the
+``validator`` rules, you can easily extend the :class:`~cerberus.Validator`
+class with custom `rules`, `types`, `validators` and `coercers`.
+While the function-based style is more suitable for special and one-off uses,
+a custom class leverages these possibilities:
 
-    * `Class-based Custom Validators`_
-    * `Function-based Custom Validation`_
+    * custom rules can be defined with constrains in a schema
+    * extending the available :ref:`type` s
+    * use additional contextual data
+    * schemas are serializable
 
-As a general rule, when you are customizing validators in your application,
-``Class-based`` style is more suitable for common validators, which are
-also more human-readable (since the rule name is defined by yourself), while
-``Function-based`` style is more suitable for special and one-off ones.
+The references in schemas to these custom methods can use space characters
+instead of underscores, e.g. ``{'foo': {'validator': 'is odd'}}`` is an alias
+for ``{'foo': {'validator': 'is_odd'}}``.
 
-
-Class-based Custom Validators
------------------------------
+Custom Rules
+------------
 Suppose that in our use case some values can only be expressed as odd integers,
 therefore we decide to add support for a new ``isodd`` rule to our validation
 schema:
 
 .. testcode::
 
-    schema = {'oddity': {'isodd': True, 'type': 'integer'}}
+    schema = {'amount': {'isodd': True, 'type': 'integer'}}
 
 This is how we would go to implement that:
 
@@ -41,40 +45,20 @@ matters, we can use it to validate all odd values:
 .. doctest::
 
     >>> v = MyValidator(schema)
-    >>> v.validate({'oddity': 10})
+    >>> v.validate({'amount': 10})
     False
     >>> v.errors
-    {'oddity': 'Must be an odd number'}
-    >>> v.validate({'oddity': 9})
+    {'amount': 'Must be an odd number'}
+    >>> v.validate({'amount': 9})
     True
-
-In a schema schema you can use space characters instead of underscores, e.g.
-``{'oddity': {'is odd': 42'}}`` is an alias for ``{'oddity': {'is_odd': 42'}}``.
-
-
-To make use of additional contextual information in a sub-class of
-:class:`~cerberus.Validator`, use a pattern like this:
-
-.. testcode::
-
-    class MyValidator(Validator):
-        def __init__(self, *args, **kwargs):
-            if 'additional_context' in kwargs:
-                self.additional_context = kwargs['additional_context']
-            super(MyValidator, self).__init__(*args, **kwargs)
-
-        def _validate_type_foo(self, field, value):
-            make_use_of(self.additional_context)
-
-.. versionadded:: 0.9
 
 .. _new-types:
 
 Custom Data Types
-~~~~~~~~~~~~~~~~~
+-----------------
 Cerberus supports and validates several standard data types (see :ref:`type`).
-When building a `Class-based Custom Validators`_ you can add and validate your
-own data types.
+When building a custom validators you can add and validate your own data types.
+
 For example `Eve <http://python-eve.org>`_ (a tool for quickly building and
 deploying RESTful Web Services) supports a custom ``objectid`` type, which is
 used to validate that field values conform to the BSON/MongoDB ``ObjectId``
@@ -94,57 +78,79 @@ has been implemented:
          :param value: field value.
          """
          if not re.match('[a-f0-9]{24}', value):
-             self._error(field, ERROR_BAD_TYPE.format('ObjectId'))
+             self._error(field, errors.ERROR_BAD_TYPE)
 
 .. versionadded:: 0.0.2
 
-
-Function-based Custom Validation
---------------------------------
-With a special rule ``validator``, you can customize validators by defining
-your own functions with the following prototype: ::
-
-    def validate_<fieldname>(field, value, error):
-        pass
-
-As a contrast, if the odd value is a special case, you may want to make the
-above rule ``isodd`` into ``Function-based`` style, which is a more lightweight
-alternative:
+Custom Validators
+-----------------
+If a validation test doesn't depend on a specified constraint, it's possible to
+rather define these as validators than as a rule. They are called when the
+``validator`` rule is given a string as constraint. A matching method with the
+prefix ``_validator_`` will be called with the field and value as argument:
 
 .. testcode::
 
-    def validate_oddity(field, value, error):
-        if not bool(value & 1):
-            error(field, "Must be an odd number")
+    def _validator_oddity(self, field, value):
+        if not value & 1:
+            self._error(field, "Must be an odd number")
 
-Then, you can validate an odd value like this:
+Custom Coercers
+---------------
+You can also define custom methods that return a ``coerce`` d value or point to
+a method as ``rename_handler``. The method name must be prefixed with
+``_normalize_coerce_``.
+
+.. testcode::
+
+    class MyNormalizer(Validator):
+        def __init__(self, multiplier, *args, **kwargs):
+            super(MyNormalizer, self).__init__(*args, **kwargs)
+            self.multiplier = multiplier
+
+        def _normalize_coerce_multiply(self, value):
+            try:
+                return value * self.multiplier
+            except Exception as e:
+                self._error(field, errors.COERCION_FAILED, e)
 
 .. doctest::
 
-    >>> schema = {'oddity': {'validator': validate_oddity}}
-    >>> v = Validator(schema)
-    >>> v.validate({'oddity': 10})
-    False
-    >>> v.errors
-    {'oddity': 'Must be an odd number'}
-
-    >>> v.validate({'oddity': 9})
-    True
-
-.. versionadded:: 0.8
-
+   >>> schema = {'foo': {'coerce': 'multiply'}}
+   >>> document = {'foo': 2}
+   >>> MyNormalizer(2).normalized(document, schema)
+   {'foo': 4}
 
 Limitations
 -----------
-You must not call your custom rule ``validator`` and it may be a bad idea to
-overwrite particular contributed rules.
+It may be a bad idea to overwrite particular contributed rules.
 
+Instantiating Custom Validators
+-------------------------------
+To make use of additional contextual information in a sub-class of
+:class:`~cerberus.Validator`, use a pattern like this:
+
+.. testcode::
+
+    class MyValidator(Validator):
+        def __init__(self, *args, **kwargs):
+            if 'additional_context' in kwargs:
+                self.additional_context = kwargs['additional_context']
+            super(MyValidator, self).__init__(*args, **kwargs)
+
+        def _validate_type_foo(self, field, value):
+            make_use_of(self.additional_context)
+
+This ensures that the additional context will be available in
+:class:`~cerberus.Validator` child instances that may be used during
+validation.
+
+.. versionadded:: 0.9
 
 Relevant `Validator`-attributes
 -------------------------------
-
 There are some attributes of a :class:`~cerberus.Validator` that you should be
-aware of when writing `Class-based Custom Validators`_.
+aware of when writing custom Validators.
 
 `Validator.document`
 ~~~~~~~~~~~~~~~~~~~~
@@ -185,12 +191,14 @@ arguments:
 
 For custom rules you need to define an error as ``ErrorDefinition`` with a
 unique id and the causing rule that is violated. See :mod:`~cerberus.errors`
-for a list of the contributed error definitions.
+for a list of the contributed error definitions. Keep in mind that bit 7 marks
+a group error, bit 5 marks an error raised by a validation against different
+sets of rules.
 
 Optionally you can submit further arguments as information. Error handlers
 that are targeted for humans will use these as positional arguments when
 formatting a message with :py:meth:`str.format`. Serializing handlers will keep
-these values in a list. Keep in mind that bit 7 marks a group error.
+these values in a list.
 
 .. versionadded:: 0.10
 
@@ -204,8 +212,7 @@ can also be used when an in-depth error handling isn't needed.
 Multiple errors
 ...............
 When using child-validators, it is a convenience to submit all their errors
-(:attr:`~cerberus.Validator._errors`); which is a list of
-:class:`~cerberus.errors.ValidationError` instances.
+; which is a list of :class:`~cerberus.errors.ValidationError` instances.
 
 .. versionadded:: 0.10
 

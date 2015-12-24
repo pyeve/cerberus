@@ -607,6 +607,49 @@ A list of types can be used to allow different values:
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
 
+validator
+---------
+Validates the value by calling either a function or method.
+
+A function must be implemented like this the following prototype: ::
+
+    def validationname(field, value, error):
+        if value is invalid:
+            error(field, 'error message')
+
+The ``error`` argument points to the calling validator's ``_error`` method. See
+:doc:`customize` on how to submit errors.
+
+Here's an example that tests whether an integer is odd or not:
+
+.. testcode::
+
+    def oddity(field, value, error):
+        if not value & 1:
+            error(field, "Must be an odd number")
+
+Then, you can validate a value like this:
+
+.. doctest::
+
+    >>> schema = {'amount': {'validator': oddity}}
+    >>> v = Validator(schema)
+    >>> v.validate({'amount': 10})
+    False
+    >>> v.errors
+    {'amount': 'Must be an odd number'}
+
+    >>> v.validate({'amount': 9})
+    True
+
+If the rule's constraint is a string, the :class:`~cerberus.Validator` instance
+must have a method with that name prefixed by ``_validator_``. See
+:doc:`customize` for an equivalent to the function-based example above.
+
+The constraint can also be a sequence of these that will be called consecutively. ::
+
+   schema = {'field': {'validator': [oddity, 'prime number']}}
+
 valueschema
 -----------
 Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
