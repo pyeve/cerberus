@@ -6,7 +6,7 @@ from random import choice
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
 from . import TestBase
-from ..cerberus import errors, SchemaError, Validator
+from .. import errors, SchemaError, Validator
 
 
 ValidationError = errors.ValidationError
@@ -1531,7 +1531,8 @@ class TestNormalization(TestBase):
 
     def test_coerce_chain_aborts(self):
         def dont_do_me(value):
-            raise AssertionError('The coercion chain did not abort after an error.')
+            raise AssertionError('The coercion chain did not abort after an '
+                                 'error.')
         schema = {'foo': {'coerce': [hex, dont_do_me]}}
         self.validator({'foo': '0'}, schema)
         self.assertIn(errors.COERCION_FAILED, self.validator._errors)

@@ -8,7 +8,9 @@
 
 """
 
-from .cerberus import Validator, DocumentError, SchemaError
+from .cerberus import Validator, DocumentError
+from .schema import SchemaError
+
 
 __version__ = "0.10"
 
