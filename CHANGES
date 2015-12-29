@@ -38,6 +38,8 @@ Not released yet.
 - Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 - Change: Use a logger for deprecation-warnings if available (Frank Sachsenheim).
 
+- Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
+  #185.
 - Fix: normalization not working for valueschema and propertyschema. Closes
   #155 (Frank Sachsenheim).
 - Fix: 'coerce' on List elements produces unexpected results Closes 161 (Frank
