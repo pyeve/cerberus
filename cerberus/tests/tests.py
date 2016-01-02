@@ -52,30 +52,13 @@ class TestValidation(TestBase):
 
     def test_bad_schema_type_field(self):
         field = 'foo'
-        schema = {field: {'schema': {'bar': {'type': 'string'}}}}
+        schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_TYPE_TYPE.format(field))
-
-        schema = {field: {'type': 'integer',
-                          'schema': {'bar': {'type': 'string'}}}}
-        self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_TYPE_TYPE.format(field))
-
-    def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except SchemaError as e:
-            self.assertIn(err_msg, str(e))
-        else:
-            self.fail('SchemaError not raised')
+                               "{'schema': {'bar': 'unknown rule'}}")
 
     def test_invalid_schema(self):
-        schema = {'foo': {'unknown': 'rule'}}
-        err_msg = ' '.join(errors.SCHEMA_ERROR_UNKNOWN_RULE.split()[:2])
-        self._check_schema_content_error(err_msg, Validator, schema)
-        v = Validator()
-        self._check_schema_content_error(
-            err_msg, v.validate, {}, schema=schema)
+        self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
+                               "{'foo': {'unknown': 'unknown rule'}}")
 
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
@@ -92,8 +75,7 @@ class TestValidation(TestBase):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_CONSTRAINT_TYPE
-                               .format(field))
+                               str({field: 'must be of dict type'}))
 
     def test_unknown_field(self):
         field = 'surname'
@@ -103,10 +85,11 @@ class TestValidation(TestBase):
 
     def test_unknown_rule(self):
         field = 'name'
-        schema = {field: {'unknown_rule': True, 'type': 'string'}}
+        rule = 'unknown_rule'
+        schema = {field: {rule: True, 'type': 'string'}}
         self.assertSchemaError(
             self.document, schema, None,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field))
+            str({field: {rule: 'unknown rule'}}))
 
     def test_empty_field_definition(self):
         field = 'name'
@@ -154,8 +137,9 @@ class TestValidation(TestBase):
         field = 'name'
         value = 'catch_me'
         schema = {field: {'type': value}}
-        self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_UNKNOWN_TYPE, value)
+        self.assertSchemaError(
+            self.document, schema, None,
+            str({field: {'type': 'unallowed value %s' % value}}))
 
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
@@ -547,11 +531,11 @@ class TestValidation(TestBase):
         v.transparent_schema_rules = False
         self.assertSchemaError(
             document, schema, v,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            "{'test': {'unknown_rule': 'unknown rule'}}"
         )
         self.assertSchemaError(
             document, schema, None,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            "{'test': {'unknown_rule': 'unknown rule'}}"
         )
 
     def test_allow_empty_strings(self):

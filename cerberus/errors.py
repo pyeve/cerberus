@@ -70,27 +70,9 @@ ALLOF = ErrorDefinition(0x94, 'allof')
 
 """ SchemaError messages """
 
-SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE = \
-    "allow_unknown-definition for field '{0}' must be a bool or a dict"
-SCHEMA_ERROR_CALLABLE_TYPE = \
-    "coerce- and validator-definitions for field '{0}' must be a callable"
-SCHEMA_ERROR_CONSTRAINT_TYPE = "the constraint for field '{0}' must be a dict"
-SCHEMA_ERROR_DEFINITION_SET_TYPE = \
-    "definitions of '{0}' for field '{1}' must be a sequence of constraints"
 SCHEMA_ERROR_DEFINITION_TYPE = \
     "schema definition for field '{0}' must be a dict"
-SCHEMA_ERROR_DEPENDENCY_TYPE = \
-    "dependency-definition for field '{0}' must be a dict or a list"
-SCHEMA_ERROR_DEPENDENCY_VALIDITY = \
-    "'{0}' is no valid dependency for field '{1}'"
-SCHEMA_ERROR_EXCLUDES_HASHABLE = "{0} is not hashable ; cannot be excluded"
 SCHEMA_ERROR_MISSING = "validation schema missing"
-SCHEMA_ERROR_PURGE_UNKNOWN_TYPE = \
-    "purge_unknown-definition for field '{0}' must be a bool"
-SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
-SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
-SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"
-SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 
 """ Error representations """
@@ -462,3 +444,8 @@ class BasicErrorHandler(BaseErrorHandler):
 
     def start(self, validator):
         self.clear()
+
+
+class SchemaErrorHandler(BasicErrorHandler):
+    messages = BasicErrorHandler.messages.copy()
+    messages[0x03] = "unknown rule"

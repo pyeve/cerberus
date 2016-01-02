@@ -128,9 +128,7 @@ class TestBase(unittest.TestCase):
         self.validator = Validator(self.schema)
 
     def assertSchemaError(self, document, schema=None, validator=None,
-                          msg=None, value=None):
-        if msg is not None:
-            msg = msg.format(value)
+                          msg=None):
         """ Tests whether a validation raises an exception due to a malformed
             schema. """
         self.assertException(SchemaError, document, schema, validator, msg)

@@ -428,7 +428,10 @@ class Validator(object):
 
     @transparent_schema_rules.setter
     def transparent_schema_rules(self, value):
-        self.__config['transparent_schema_rules'] = value
+        if isinstance(self._schema, DefinitionSchema):
+            self._schema.regenerate_validation_schema()
+            self._schema.update(dict())
+        self._config['transparent_schema_rules'] = value
 
     # Document processing
 
