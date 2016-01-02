@@ -189,7 +189,13 @@ class Validator(object):
         self.document_path = ()
         self.schema_path = ()
         self.update = False
+        self.__init_error_handler(kwargs)
+        self.__store_config(args, kwargs)
+        self.__set_introspection_properties()
+        self.schema = kwargs.get('schema', None)
+        self.allow_unknown = kwargs.get('allow_unknown', False)
 
+    def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
         eh_config = kwargs.pop('error_handler_config', dict())
         if isclass(error_handler) and \
@@ -200,6 +206,7 @@ class Validator(object):
         else:
             raise RuntimeError('Invalid error_handler.')
 
+    def __store_config(self, args, kwargs):
         """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'transparent_schema_rules',
                      'ignore_none_values', 'allow_unknown', 'purge_unknown')
@@ -209,16 +216,31 @@ class Validator(object):
                                 "'%s'" % p)
             else:
                 kwargs[p] = args[i]
-        self.__config = kwargs
+        self._config = kwargs
 
-        self.validation_rules = self.__introspect_rules_to('validate')
-        self.normalization_rules = self.__introspect_rules_to('normalize')
-        self._schema = DefinitionSchema(self, kwargs.get('schema', ()))
+    @classmethod
+    def __set_introspection_properties(cls):
+        def attributes_with_prefix(prefix):
+            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
+                     if x.startswith('_' + prefix)]
+            return tuple(rules)
 
-    def __introspect_rules_to(self, rule_type):
-        rules = ['_'.join(x.split('_')[2:]) for x in dir(self)
-                 if x.startswith('_' + rule_type)]
-        return tuple(rules)
+        cls.types, cls.validation_rules, cls.validators = (), (), ()
+        for attribute in attributes_with_prefix('validate'):
+            if attribute.startswith('type_'):
+                cls.types += (attribute[len('type_'):],)
+            elif attribute.startswith('validator_'):
+                cls.validators += (attribute[len('validator_'):],)
+            else:
+                cls.validation_rules += (attribute,)
+        cls.validation_rules += ('required',)
+
+        cls.coercers, cls.normalization_rules = (), ()
+        for attribute in attributes_with_prefix('normalize'):
+            if attribute.startswith('coerce_'):
+                cls.coercers += (attribute[len('coerce_'):],)
+            else:
+                cls.normalization_rules += (attribute,)
 
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
@@ -371,6 +393,10 @@ class Validator(object):
     @purge_unknown.setter
     def purge_unknown(self, value):
         self.__config['purge_unknown'] = value
+
+    @property
+    def rules(self):
+        return self.validation_rules + self.normalization_rules
 
     @property
     def schema(self):
@@ -624,7 +650,7 @@ class Validator(object):
                 self.__validate_unknown_fields(field)
 
         if not self.update:
-            self._validate_required_fields(self.document)
+            self.__validate_required_fields(self.document)
 
         self.error_handler.end(self)
 
@@ -789,12 +815,12 @@ class Validator(object):
     # TODO remove on next major release
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):
-            self._validate_items_schema(items, field, value)
+            self.__validate_items_schema(items, field, value)
         elif isinstance(items, Sequence) and not isinstance(items, _str_type):
-            self._validate_items_list(items, field, value)
+            self.__validate_items_list(items, field, value)
 
     # TODO rename to _validate_items on next major release
-    def _validate_items_list(self, items, field, values):
+    def __validate_items_list(self, items, field, values):
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -807,7 +833,7 @@ class Validator(object):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
     # TODO remove on next major release
-    def _validate_items_schema(self, items, field, value):
+    def __validate_items_schema(self, items, field, value):
         validator = self.__get_child_validator(schema=items)
         for item in value:
             if not validator(item, normalize=False):
@@ -916,7 +942,7 @@ class Validator(object):
         if not re_obj.match(value):
             self._error(field, errors.REGEX_MISMATCH)
 
-    def _validate_required_fields(self, document):
+    def __validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
         are precised then validate 'required' only if all dependencies
         are validated.
