@@ -294,16 +294,15 @@ class TestValidation(TestBase):
 
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
+        subschema = self.schema['a_list_of_dicts']['schema']
+
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
         exp_child_errors = [((field, 0, 'price'),
                             (field, 'schema', 'schema', 'price', 'type'),
                             errors.BAD_TYPE, 'integer')]
         self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                               {'type': 'dict',
-                                'schema': {'sku': {'type': 'string'},
-                                           'price': {'type': 'integer'}}},
-                               child_errors=exp_child_errors)
+                               subschema, child_errors=exp_child_errors)
 
         v = self.validator
         self.assertIn(field, v.errors)
@@ -314,10 +313,11 @@ class TestValidation(TestBase):
         self.assertIn(exp_msg, v.errors[field][0]['price'])
 
         value = ["not a dict"]
-        self.assertValidationError(
-            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
-                value[0])
-        )
+        self.assertFail({field: value})
+        exp_child_errors = [((field, 0), (field, 'schema', 'type'),
+                             errors.BAD_TYPE, 'dict', ())]
+        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
+                               subschema, child_errors=exp_child_errors)
 
     def test_array_unallowed(self):
         field = 'an_array'
@@ -896,7 +896,7 @@ class TestValidation(TestBase):
                    [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
         doc = {'prop1': 50}
 
-        self.assertValidationError(doc, schema)
+        self.assertFail(doc, schema)
 
         # prop1 must be an integer that is either be
         # greater than or equal to 0, or greater than or equal to 10
@@ -1080,7 +1080,7 @@ class TestValidation(TestBase):
 
         document['parts'].append({'product name': "Monitors", 'count': 18})
         # document is invalid. 'product name' does not match any valid schemas
-        self.assertValidationError(document, schema)
+        self.assertFail(document, schema)
 
         document['parts'].pop()
         # document is valid again
@@ -1313,8 +1313,7 @@ class TestValidation(TestBase):
                   'that_field': {'type': 'dict',
                                  'excludes': 'this_field',
                                  'required': True}}
-        self.assertValidationError({'that_field': {},
-                                    'this_field': {}}, schema)
+        self.assertFail({'that_field': {}, 'this_field': {}}, schema)
         handler = errors.BasicErrorHandler
         self.assertDictEqual(
             self.validator.errors,
