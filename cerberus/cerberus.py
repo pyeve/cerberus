@@ -313,7 +313,7 @@ class Validator(object):
 
         :return: an instance of self.__class__
         """
-        child_config = self.__config.copy()
+        child_config = self._config.copy()
         child_config.update(kwargs)
         if not self.is_child:
             child_config['is_child'] = True
@@ -369,11 +369,13 @@ class Validator(object):
 
     @property
     def allow_unknown(self):
-        return self.__config.get('allow_unknown', False)
+        return self._config.get('allow_unknown', False)
 
     @allow_unknown.setter
     def allow_unknown(self, value):
-        self.__config['allow_unknown'] = value
+        if not isinstance(value, (bool, DefinitionSchema)):
+            DefinitionSchema(self, {'allow_unknown': value})
+        self._config['allow_unknown'] = value
 
     @property
     def errors(self):
@@ -413,11 +415,16 @@ class Validator(object):
 
     @schema.setter
     def schema(self, schema):
-        self._schema = DefinitionSchema(self, schema)
+        if schema is None:
+            self._schema = None
+        elif self.is_child or isinstance(schema, DefinitionSchema):
+            self._schema = schema
+        else:
+            self._schema = DefinitionSchema(self, schema)
 
     @property
     def transparent_schema_rules(self):
-        return self.__config.get('transparent_schema_rules', False)
+        return self._config.get('transparent_schema_rules', False)
 
     @transparent_schema_rules.setter
     def transparent_schema_rules(self, value):

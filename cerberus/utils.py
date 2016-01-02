@@ -17,6 +17,20 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i+1:]
 
 
+def validator_fabric(name, mixin=None, class_dict=dict()):
+    if 'Validator' not in globals():
+        from .cerberus import Validator
+
+    if mixin is None:
+        bases = (Validator,)
+    elif isinstance(mixin, tuple):
+        bases = (Validator,) + mixin
+    else:
+        bases = (Validator, mixin)
+
+    return type(name, bases, class_dict)
+
+
 def isclass(obj):
     try:
         issubclass(obj, object)
