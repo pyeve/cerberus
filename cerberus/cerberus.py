@@ -20,6 +20,9 @@ from .schema import DefinitionSchema, SchemaError
 from .utils import drop_item_from_tuple, isclass
 
 
+toy_error_handler = errors.ToyErrorHandler()
+
+
 class DocumentError(Exception):
     """ Raised when the target document is missing or has the wrong format """
     pass
@@ -168,6 +171,7 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
+    is_child = False
     mandatory_validations = ('nullable', )
     priority_validations = ('nullable', 'readonly', 'type')
 
@@ -311,8 +315,9 @@ class Validator(object):
         """
         child_config = self.__config.copy()
         child_config.update(kwargs)
-        child_config['error_handler'] = errors.ToyErrorHandler
-        child_config['error_handler_config'] = dict()
+        if not self.is_child:
+            child_config['is_child'] = True
+            child_config['error_handler'] = toy_error_handler
         child_validator = self.__class__(**child_config)
 
         child_validator.root_document = self.root_document or self.document
@@ -380,19 +385,23 @@ class Validator(object):
 
     @property
     def ignore_none_values(self):
-        return self.__config.get('ignore_none_values', False)
+        return self._config.get('ignore_none_values', False)
 
     @ignore_none_values.setter
     def ignore_none_values(self, value):
-        self.__config['ignore_none_values'] = value
+        self._config['ignore_none_values'] = value
+
+    @property
+    def is_child(self):
+        return self._config.get('is_child', False)
 
     @property
     def purge_unknown(self):
-        return self.__config.get('purge_unknown', False)
+        return self._config.get('purge_unknown', False)
 
     @purge_unknown.setter
     def purge_unknown(self, value):
-        self.__config['purge_unknown'] = value
+        self._config['purge_unknown'] = value
 
     @property
     def rules(self):
