@@ -812,6 +812,18 @@ class Validator(object):
                                       .format(word) for word in excludes)
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
+    def _validate_forbidden(self, forbidden_values, field, value):
+        if isinstance(value, _str_type):
+            if value in forbidden_values:
+                self._error(field, errors.FORBIDDEN_VALUE, value)
+        elif isinstance(value, Sequence):
+            forbidden = set(value) & set(forbidden_values)
+            if forbidden:
+                self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
+        elif isinstance(value, int):
+            if value in forbidden_values:
+                self._error(field, errors.FORBIDDEN_VALUE, value)
+
     # TODO remove on next major release
     def _validate_items(self, items, field, value):
         if isinstance(items, Mapping):

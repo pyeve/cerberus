@@ -45,6 +45,8 @@ MIN_VALUE = ErrorDefinition(0x42, 'min')
 MAX_VALUE = ErrorDefinition(0x43, 'max')
 UNALLOWED_VALUE = ErrorDefinition(0x44, 'allowed')
 UNALLOWED_VALUES = ErrorDefinition(0x45, 'allowed')
+FORBIDDEN_VALUE = ErrorDefinition(0x46, 'forbidden')
+FORBIDDEN_VALUES = ErrorDefinition(0x47, 'forbidden')
 
 # other
 COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
@@ -362,6 +364,8 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x43: "max value is {constraint}",
                 0x44: "unallowed value {value}",
                 0x45: "unallowed values {0}",
+                0x46: "unallowed value {value}",
+                0x47: "unallowed values {0}",
 
                 0x61: "field '{field}' cannot be coerced: {0}",
                 0x62: "field '{field}' cannot be renamed: {0}",

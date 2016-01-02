@@ -218,6 +218,21 @@ You can also pass multiples fields to exclude in a list :
    >>> v.validate({'this_field': {}, 'bazo_field': {}}, schema)
    False
 
+forbidden
+---------
+
+Opposite to `allowed`_ this validates if a value is any but one of the defined
+values:
+
+.. doctest::
+
+   >>> schema = {'user': {'forbidden': ['root', 'admin']}}
+   >>> document = {'user': 'root'}
+   >>> v.validate(document, schema)
+   False
+
+.. versionadded:: 0.10
+
 items (dict)
 ------------
 .. deprecated:: 0.0.3

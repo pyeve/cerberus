@@ -1536,6 +1536,11 @@ class TestNormalization(TestBase):
         self.validator({'foo': '0'}, schema)
         self.assertIn(errors.COERCION_FAILED, self.validator._errors)
 
+    def test_forbidden(self):
+        schema = {'user': {'forbidden': ['root', 'admin']}}
+        self.assertFail({'user': 'admin'}, schema)
+        self.assertSuccess({'user': 'alice'}, schema)
+
 
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):
