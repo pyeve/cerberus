@@ -153,58 +153,13 @@ class UnvalidatedSchema(DefinitionSchema):
 
 
 class SchemaValidationSchema(UnvalidatedSchema):
-    handler = {'type': ['callable', 'list', 'string'],
-               'validator': 'handler'}
-
-    base = {
-        'type': 'dict',
-        'allow_unknown': False,
-        'schema': {
-            'allof': {'type': 'list', 'logical': 'allof'},
-            'allow_unknown': {'type': ['boolean', 'dict'],
-                              'validator': 'allow_unknown'},
-            'anyof': {'type': 'list', 'logical': 'anyof'},
-            'allowed': {'type': 'list'},
-            'coerce': handler,
-            'default': {},
-            'dependencies': {'type': ['dict', 'hashable', 'hashables']},
-            'empty': {'type': 'boolean'},
-            'excludes': {'type': ['hashable', 'hashables']},
-            'forbidden': {'type': 'list'},
-            # TODO remove 'dict' type on next major release
-            'items': {'type': ['list', 'dict'], 'validator': 'items'},
-            'max': {'type': 'number'},
-            'min': {'type': 'number'},
-            'maxlength': {'type': 'integer'},
-            'minlength': {'type': 'integer'},
-            'noneof': {'type': 'list', 'logical': 'noneof'},
-            'oneof': {'type': 'list', 'logical': 'oneof'},
-            'nullable': {'type': 'boolean'},
-            'propertyschema': {'type': 'dict', 'validator': 'bulk_schema',
-                               'unallowed': ['rename', 'rename_handler']},
-            'purge_unknown': {'type': 'boolean'},
-            'readonly': {'type': 'boolean'},
-            'regex': {'type': 'string'},
-            'rename': {'type': 'hashable'},
-            'rename_handler': handler,
-            'required': {'type': 'boolean'},
-            'schema': {'type': ['dict', 'list'], 'validator': 'schema'},
-            'type': {'type': ['string', 'list']},
-            'validator': handler,
-            'valueschema': {'type': 'dict', 'validator': 'bulk_schema',
-                            'unallowed': ['rename', 'rename_handler']}
-        }
-    }
+    base = {'type': 'dict',
+            'allow_unknown': False,
+            'schema': {}}
 
     def __init__(self, validator):
-        self.schema = deepcopy(self.base)
-        schema = self.schema['schema']
-
-        schema['type']['allowed'] = validator.types
-
-        for rule in [x for x in validator.rules if x not in schema]:
-            schema[rule] = {}
-
+        self.schema = self.base.copy()
+        self.schema['schema'].update(validator.rules)
         if validator.transparent_schema_rules:
             self.schema['allow_unknown'] = True
 
@@ -212,13 +167,12 @@ class SchemaValidationSchema(UnvalidatedSchema):
 class SchemaValidatorMixin:
     @property
     def target_schema(self):
+        """ The schema that is being validated. """
         return self._config['target_schema']
 
     @property
     def target_validator(self):
-        """
-        :return: The validator whose schema is being validated.
-        """
+        """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
     def _validate_logical(self, rule, none, value):

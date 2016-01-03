@@ -25,6 +25,8 @@ Not released yet.
 - New: Available rules etc. of a Validator-instance are accessible as
   'validation_rules', 'normalization_rules', 'types', 'validators' and 'coercer'
   -property (Frank Sachsenheim).
+- New: Custom rule's method docstrings can contain an expression to validate
+  constraints for that rule when a schema is validated (Frank Sachsenheim).
 - New: 'Validator.root_schema' complements 'Validator.root_document' (Frank
   Sachsenheim).
 - New: 'Validator.document_path' and 'Validator.schema_path' properties can

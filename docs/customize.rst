@@ -34,11 +34,12 @@ This is how we would go to implement that:
 
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
+            """ {'type': 'boolean'} """
             if isodd and not bool(value & 1):
                 self._error(field, "Must be an odd number")
 
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
-``_validate_<rulename>`` function, we just enhanced Cerberus to suit our needs.
+``_validate_<rulename>`` method, we just enhanced Cerberus to suit our needs.
 The custom rule ``isodd`` is now available in our schema and, what really
 matters, we can use it to validate all odd values:
 
@@ -51,6 +52,9 @@ matters, we can use it to validate all odd values:
     {'amount': 'Must be an odd number'}
     >>> v.validate({'amount': 9})
     True
+
+As the rule's method docstring contains a literal Python expression, this will
+be used to validate the constraints for this rule when a schema is validated.
 
 .. _new-types:
 

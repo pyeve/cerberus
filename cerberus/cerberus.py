@@ -8,6 +8,7 @@
     Full documentation is available at http://python-cerberus.org
 """
 
+from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
 from datetime import datetime
@@ -21,6 +22,15 @@ from .utils import drop_item_from_tuple, isclass
 
 
 toy_error_handler = errors.ToyErrorHandler()
+
+
+def dummy_for_rule_validation(rule_constraints):
+    def dummy(self, constraint, field, value):
+        raise RuntimeError('Dummy method called. Its purpose is to hold just'
+                           'validation constraints for a rule.')
+    f = dummy
+    f.__doc__ = rule_constraints
+    return f
 
 
 class DocumentError(Exception):
@@ -229,22 +239,40 @@ class Validator(object):
                      if x.startswith('_' + prefix)]
             return tuple(rules)
 
-        cls.types, cls.validation_rules, cls.validators = (), (), ()
+        cls.types, cls.validation_rules, cls.validators = (), {}, ()
         for attribute in attributes_with_prefix('validate'):
             if attribute.startswith('type_'):
                 cls.types += (attribute[len('type_'):],)
             elif attribute.startswith('validator_'):
                 cls.validators += (attribute[len('validator_'):],)
             else:
-                cls.validation_rules += (attribute,)
-        cls.validation_rules += ('required',)
+                constraints = getattr(cls, '_validate_' + attribute).__doc__
+                constraints = {} if constraints is None \
+                    else literal_eval(constraints.lstrip())
+                cls.validation_rules[attribute] = constraints
 
-        cls.coercers, cls.normalization_rules = (), ()
+        cls.validation_rules['type']['allowed'] = cls.types
+        x = cls.validation_rules['validator']['anyof']
+        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
+
+        cls.coercers, cls.normalization_rules = (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
                 cls.coercers += (attribute[len('coerce_'):],)
             else:
-                cls.normalization_rules += (attribute,)
+                constraints = getattr(cls, '_normalize_' + attribute).__doc__
+                constraints = {} if constraints is None \
+                    else literal_eval(constraints.lstrip())
+                cls.normalization_rules[attribute] = constraints
+
+        for rule in ('coerce', 'rename_handler'):
+            x = cls.normalization_rules[rule]['anyof']
+            x[1]['schema']['oneof'][1]['allowed'] = \
+                x[2]['allowed'] = cls.coercers
+
+        cls.rules = {}
+        cls.rules.update(cls.validation_rules)
+        cls.rules.update(cls.normalization_rules)
 
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
@@ -406,10 +434,6 @@ class Validator(object):
         self._config['purge_unknown'] = value
 
     @property
-    def rules(self):
-        return self.validation_rules + self.normalization_rules
-
-    @property
     def schema(self):
         return self._schema
 
@@ -488,6 +512,14 @@ class Validator(object):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
+        """ {'anyof': [
+                {'type': 'callable'},
+                {'type': 'list',
+                 'schema': {'oneof': [{'type': 'callable'},
+                                      {'type': 'string'}]}},
+                {'type': 'string'}
+                ]} """
+
         error = errors.COERCION_FAILED
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
@@ -593,6 +625,7 @@ class Validator(object):
 
     @staticmethod
     def _normalize_purge_unknown(mapping, schema):
+        """ {'type': 'boolean'} """
         for field in tuple(mapping):
             if field not in schema:
                 del mapping[field]
@@ -610,11 +643,19 @@ class Validator(object):
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
+        """ {'type': 'hashable'} """
         if 'rename' in schema[field]:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
+        """ {'anyof': [
+                {'type': 'callable'},
+                {'type': 'list',
+                 'schema': {'oneof': [{'type': 'callable'},
+                                      {'type': 'string'}]}},
+                {'type': 'string'}
+                ]} """
         if 'rename_handler' not in schema[field]:
             return
         new_name = self.__normalize_coerce(
@@ -749,12 +790,16 @@ class Validator(object):
 
         rules = set(self.mandatory_validations)
         rules |= set(definitions.keys())
-        rules -= set(prior_rules + self.normalization_rules +
-                     ('allow_unknown', 'required'))
+        rules -= set(prior_rules + ('allow_unknown', 'required'))
+        rules -= set(self.normalization_rules)
         for rule in rules:
             validate_rule(rule)
 
+    _validate_allow_unknown = dummy_for_rule_validation(
+        """ {'type': ['boolean', 'dict'], 'validator': 'allow_unknown'} """)
+
     def _validate_allowed(self, allowed_values, field, value):
+        """ {'type': 'list'} """
         if isinstance(value, _str_type):
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)
@@ -767,6 +812,7 @@ class Validator(object):
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
     def _validate_dependencies(self, dependencies, field, value):
+        """ {'type': ['dict', 'hashable', 'hashables']} """
         if isinstance(dependencies, _str_type):
             dependencies = [dependencies]
 
@@ -813,10 +859,12 @@ class Validator(object):
                     self._error(field, errors.DEPENDENCIES_FIELD, dependency)
 
     def _validate_empty(self, empty, field, value):
+        """ {'type': 'boolean'} """
         if isinstance(value, _str_type) and len(value) == 0 and not empty:
             self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excludes, field, value):
+        """ {'type': ['hashable', 'hashables']} """
         if isinstance(excludes, Hashable):
             excludes = [excludes]
 
@@ -837,6 +885,7 @@ class Validator(object):
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
+        """ {'type': 'list'} """
         if isinstance(value, _str_type):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
@@ -850,6 +899,7 @@ class Validator(object):
 
     # TODO remove on next major release
     def _validate_items(self, items, field, value):
+        """ {'type': ['list', 'dict'], 'validator': 'items'} """
         if isinstance(items, Mapping):
             self.__validate_items_schema(items, field, value)
         elif isinstance(items, Sequence) and not isinstance(items, _str_type):
@@ -857,6 +907,7 @@ class Validator(object):
 
     # TODO rename to _validate_items on next major release
     def __validate_items_list(self, items, field, values):
+        """ {'type': 'list', 'validator': 'items'} """
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -913,38 +964,47 @@ class Validator(object):
                         valid_counter, len(definitions))
 
     def _validate_anyof(self, definitions, field, value):
+        """ {'type': 'list', 'logical': 'anyof'} """
         self.__validate_logical('anyof', definitions, field, value)
 
     def _validate_allof(self, definitions, field, value):
+        """ {'type': 'list', 'logical': 'allof'} """
         self.__validate_logical('allof', definitions, field, value)
 
     def _validate_noneof(self, definitions, field, value):
+        """ {'type': 'list', 'logical': 'noneof'} """
         self.__validate_logical('noneof', definitions, field, value)
 
     def _validate_oneof(self, definitions, field, value):
+        """ {'type': 'list', 'logical': 'oneof'} """
         self.__validate_logical('oneof', definitions, field, value)
 
     def _validate_max(self, max_value, field, value):
+        """ {'type': 'number'} """
         if isinstance(value, (_int_types, float)):
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
 
     def _validate_min(self, min_value, field, value):
+        """ {'type': 'number'} """
         if isinstance(value, (_int_types, float)):
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
 
     def _validate_maxlength(self, max_length, field, value):
+        """ {'type': 'integer'} """
         if isinstance(value, Sequence):
             if len(value) > max_length:
                 self._error(field, errors.MAX_LENGTH, len(value))
 
     def _validate_minlength(self, min_length, field, value):
+        """ {'type': 'integer'} """
         if isinstance(value, Sequence):
             if len(value) < min_length:
                 self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
+        """ {'type': 'boolean'} """
         if value is None:
             if nullable:
                 return True
@@ -953,6 +1013,8 @@ class Validator(object):
                 return True
 
     def _validate_propertyschema(self, schema, field, value):
+        """ {'type': 'dict', 'validator': 'bulk_schema',
+            'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
                 document_crumb=(field,),
@@ -965,11 +1027,13 @@ class Validator(object):
                 self._error(field, errors.PROPERTYSCHEMA, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
+        """ {'type': 'boolean'} """
         if readonly:
             self._error(field, errors.READONLY_FIELD)
             return True
 
     def _validate_regex(self, pattern, field, value):
+        """ {'type': 'string'} """
         if not isinstance(value, _str_type):
             return
         if not pattern.endswith('$'):
@@ -977,6 +1041,8 @@ class Validator(object):
         re_obj = re.compile(pattern)
         if not re_obj.match(value):
             self._error(field, errors.REGEX_MISMATCH)
+
+    _validate_required = dummy_for_rule_validation(""" {'type': 'boolean'} """)
 
     def __validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
@@ -1005,6 +1071,7 @@ class Validator(object):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
+        """ {'type': ['dict', 'list'], 'validator': 'schema'} """
         if schema is None:
             return
 
@@ -1034,6 +1101,7 @@ class Validator(object):
             self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
+        """ {'type': ['string', 'list']} """
         def call_type_validation(_type, value):
             # TODO refactor to a less complex code on next major release
             # validator = getattr(self, "_validate_type_" + _type)
@@ -1103,6 +1171,13 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_validator(self, validator, field, value):
+        """ {'anyof': [
+                {'type': 'callable'},
+                {'type': 'list',
+                 'schema': {'oneof': [{'type': 'callable'},
+                                      {'type': 'string'}]}},
+                {'type': 'string'}
+                ]} """
         if isinstance(validator, _str_type):
             validator = self.__get_rule_handler('validator', validator)
             validator(field, value)
@@ -1113,6 +1188,8 @@ class Validator(object):
             validator(field, value, self._error)
 
     def _validate_valueschema(self, schema, field, value):
+        """ {'type': 'dict', 'validator': 'bulk_schema',
+            'forbidden': ['rename', 'rename_handler']} """
         schema_crumb = (field, 'valueschema')
         if isinstance(value, Mapping):
             validator = self.__get_child_validator(
