@@ -1522,14 +1522,14 @@ class TestNormalization(TestBase):
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):
         v = Validator({'foozifix': {'coerce': int}})
-        cache_size = len(v.schema.valid_schemas)
+        cache_size = len(v._valid_schemas)
 
         v = Validator({'foozifix': {'type': 'integer'}})
         cache_size += 1
-        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+        self.assertEqual(len(v._valid_schemas), cache_size)
 
         v = Validator({'foozifix': {'coerce': int}})
-        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+        self.assertEqual(len(v._valid_schemas), cache_size)
 
         max_cache_size = 200
         self.assertLess(cache_size, max_cache_size,

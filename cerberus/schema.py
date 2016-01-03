@@ -28,7 +28,12 @@ class DefinitionSchema(MutableMapping):
                 return repr(o)
             return json.JSONEncoder.default(self, o)
 
-    valid_schemas = set()
+    def __new__(cls, *args, **kwargs):
+        if 'SchemaValidator' not in globals():
+            global SchemaValidator
+            SchemaValidator = validator_fabric('SchemaValidator',
+                                               SchemaValidatorMixin)
+        return super(DefinitionSchema, cls).__new__(cls)
 
     def __init__(self, validator, schema=dict()):
         """
@@ -48,10 +53,9 @@ class DefinitionSchema(MutableMapping):
         self.validator = validator
         self.schema = schema
         self.validation_schema = SchemaValidationSchema(validator)
-        self.schema_validator = \
-            validator_fabric('SchemaValidator', SchemaValidatorMixin)(
-                UnvalidatedSchema(), error_handler=errors.SchemaErrorHandler,
-                target_schema=schema, target_validator=validator)
+        self.schema_validator = SchemaValidator(
+            UnvalidatedSchema(), error_handler=errors.SchemaErrorHandler,
+            target_schema=schema, target_validator=validator)
         self.schema_validator.allow_unknown = self.validation_schema
         self.validate(self.schema)
 
@@ -59,7 +63,6 @@ class DefinitionSchema(MutableMapping):
         _new_schema = self.schema.copy()
         try:
             del _new_schema[key]
-            self.validate(_new_schema)
         except ValueError:
             raise SchemaError("Schema has no field '%s' defined" % key)
         except:
@@ -80,14 +83,12 @@ class DefinitionSchema(MutableMapping):
         return str(self)
 
     def __setitem__(self, key, value):
-        _new_schema = self.schema.copy()
         try:
-            _new_schema.update({key: value})
-            self.validate(_new_schema)
+            self.validate({key: value})
         except:
             raise
         else:
-            self.schema = _new_schema
+            self.schema[key] = value
 
     def __str__(self):
         return str(self.schema)
@@ -109,13 +110,13 @@ class DefinitionSchema(MutableMapping):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
     def validate(self, schema):
-        _hash = hash(repr(type(self.validator)) +
-                     str(self.validator.transparent_schema_rules) +
-                     json.dumps(self.__cast_keys_to_strings(schema),
+        _hash = hash(json.dumps(self.__cast_keys_to_strings(schema),
                                 cls=self.Encoder, sort_keys=True))
-        if _hash not in self.valid_schemas:
+        if self.validator.transparent_schema_rules:
+            _hash *= -1
+        if _hash not in self.validator._valid_schemas:
             self._validate(schema)
-            self.valid_schemas.add(_hash)
+            self.validator._valid_schemas.add(_hash)
 
     def __cast_keys_to_strings(self, mapping):
         result = dict()

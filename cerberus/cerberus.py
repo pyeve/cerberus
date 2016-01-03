@@ -181,56 +181,17 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
+    _inspected_classed = set()
     is_child = False
     mandatory_validations = ('nullable', )
     priority_validations = ('nullable', 'readonly', 'type')
+    _valid_schemas = set()
 
-    def __init__(self, *args, **kwargs):
-        """ The arguments will be treated as with this signature:
-
-        __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
-                 error_handler_config=dict())
-        """
-
-        self.document = None
-        self._errors = errors.ErrorsList()
-        self.document_error_tree = errors.DocumentErrorTree()
-        self.schema_error_tree = errors.SchemaErrorTree()
-        self.root_document = None
-        self.root_schema = None
-        self.document_path = ()
-        self.schema_path = ()
-        self.update = False
-        self.__init_error_handler(kwargs)
-        self.__store_config(args, kwargs)
-        self.__set_introspection_properties()
-        self.schema = kwargs.get('schema', None)
-        self.allow_unknown = kwargs.get('allow_unknown', False)
-
-    def __init_error_handler(self, kwargs):
-        error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
-        eh_config = kwargs.pop('error_handler_config', dict())
-        if isclass(error_handler) and \
-                issubclass(error_handler, errors.BaseErrorHandler):
-            self.error_handler = error_handler(**eh_config)
-        elif isinstance(error_handler, errors.BaseErrorHandler):
-            self.error_handler = error_handler
-        else:
-            raise RuntimeError('Invalid error_handler.')
-
-    def __store_config(self, args, kwargs):
-        """ Assign args to kwargs and store configuration. """
-        signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
-        for i, p in enumerate(signature[:len(args)]):
-            if p in kwargs:
-                raise TypeError("__init__ got multiple values for argument "
-                                "'%s'" % p)
-            else:
-                kwargs[p] = args[i]
-        self._config = kwargs
+    def __new__(cls, *args, **kwargs):
+        if cls not in cls._inspected_classed:
+            cls.__set_introspection_properties()
+            cls._inspected_classed.add(cls)
+        return super(Validator, cls).__new__(cls)
 
     @classmethod
     def __set_introspection_properties(cls):
@@ -273,6 +234,52 @@ class Validator(object):
         cls.rules = {}
         cls.rules.update(cls.validation_rules)
         cls.rules.update(cls.normalization_rules)
+
+    def __init__(self, *args, **kwargs):
+        """ The arguments will be treated as with this signature:
+
+        __init__(self, schema=None, transparent_schema_rules=False,
+                 ignore_none_values=False, allow_unknown=False,
+                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
+                 error_handler_config=dict())
+        """
+
+        self.document = None
+        self._errors = errors.ErrorsList()
+        self.document_error_tree = errors.DocumentErrorTree()
+        self.schema_error_tree = errors.SchemaErrorTree()
+        self.root_document = None
+        self.root_schema = None
+        self.document_path = ()
+        self.schema_path = ()
+        self.update = False
+        self.__init_error_handler(kwargs)
+        self.__store_config(args, kwargs)
+        self.schema = kwargs.get('schema', None)
+        self.allow_unknown = kwargs.get('allow_unknown', False)
+
+    def __init_error_handler(self, kwargs):
+        error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
+        eh_config = kwargs.pop('error_handler_config', dict())
+        if isclass(error_handler) and \
+                issubclass(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler(**eh_config)
+        elif isinstance(error_handler, errors.BaseErrorHandler):
+            self.error_handler = error_handler
+        else:
+            raise RuntimeError('Invalid error_handler.')
+
+    def __store_config(self, args, kwargs):
+        """ Assign args to kwargs and store configuration. """
+        signature = ('schema', 'transparent_schema_rules',
+                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
+        for i, p in enumerate(signature[:len(args)]):
+            if p in kwargs:
+                raise TypeError("__init__ got multiple values for argument "
+                                "'%s'" % p)
+            else:
+                kwargs[p] = args[i]
+        self._config = kwargs
 
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
