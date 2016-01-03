@@ -1306,13 +1306,6 @@ class TestValidation(TestBase):
              'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")})
 
-    def test_excludes_hashable(self):
-        self.validator = Validator()
-        schema = {'this_field': {'type': 'dict',
-                                 'excludes': 42,
-                                 'required': True}}
-        self.assertSchemaError({'this_field': {}}, schema)
-
 
 class TestNormalization(TestBase):
     def test_coerce(self):
