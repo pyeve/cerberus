@@ -4,6 +4,7 @@ from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy
 from .utils import compare_paths_lt, quote_string
 
+
 """
 Error definition constants
 
@@ -94,9 +95,6 @@ SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 class ValidationError:
     """ A simple class to store and query basic error information. """
-    __slots__ = ('code', 'constraint', 'document_path',
-                 'info', 'rule', 'schema_path', 'value')
-
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
         self.document_path = document_path
@@ -141,14 +139,14 @@ class ValidationError:
     @property
     def child_errors(self):
         """
-        A list that contain the individual errors of a bulk validation error.
+        A list that contains the individual errors of a bulk validation error.
         """
         return self.info[0] if self.is_group_error else None
 
     @property
     def definitions_errors(self):
-        """ Returns a dictionary with errors mapped to index of the definition
-            it occurred in. Returns ``None`` if not applicable. """
+        """ Returns a dictionary with errors mapped to the index of the
+            definition it occurred in. Returns ``None`` if not applicable. """
         if not self.is_logic_error:
             return None
 
@@ -167,10 +165,6 @@ class ValidationError:
     def is_logic_error(self):
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
-
-    @classmethod
-    def from_xml(cls, input):
-        pass  # TODO
 
 
 class ErrorTreeNode(MutableMapping):
@@ -289,27 +283,47 @@ class SchemaErrorTree(ErrorTree):
 
 class BaseErrorHandler:
     """ Base class for all error handlers.
-        Subclasses will be identified as error-handlers with an
-        instance-test. """
+        Subclasses are identified as error-handlers with an instance-test. """
     def __init__(self, *args, **kwargs):
         """ Optionally initialize a new instance. """
         pass
 
     def __call__(self, errors):
-        """ Returns errors in a handler-specific format. """
+        """ Returns errors in a handler-specific format.
+            Should accept an iterable of :class:`ValidationError` or a
+            :class:`~cerberus.Validator` instance."""
         raise NotImplementedError
 
     def __iter__(self):
         """ Be a superhero and implement an iterator over errors. """
         raise NotImplementedError
 
+    def add(self, error):
+        """ Add an error to the errors' container object of a handler. """
+        raise NotImplementedError
+
+    def emit(self, error):
+        """ Optionally emits an error in the handler's format to a stream.
+            Or light a LED, or even shut down a power plant. """
+        pass
+
+    def end(self, validator):
+        """ Gets called when a validation ends. """
+        pass
+
+    def extend(self, errors):
+        """ Adds all errors to the handler's container object. """
+        for error in errors:
+            self.add(error)
+
+    def start(self, validator):
+        """ Gets called when a validation starts. """
+        pass
+
 
 class ToyErrorHandler(BaseErrorHandler):
     def __call__(self, *args, **kwargs):
-        raise RuntimeError('This i not supposed to happen.')
-
-    def add(self, error):
-        pass
+        raise RuntimeError('This is not supposed to happen.')
 
     def clear(self):
         pass
@@ -330,7 +344,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x22: "empty values not allowed",
                 0x23: "null value not allowed",
                 0x24: "must be of {constraint} type",
-                0x25: "length of list should be {0}, it is {1}",
+                0x25: "length of list should be {constraint}, it is {0}",
                 0x26: "min length is {constraint}",
                 0x27: "max length is {constraint}",
 
@@ -340,7 +354,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x44: "unallowed value {value}",
                 0x45: "unallowed values {0}",
 
-                0x61: "field '{field}' cannot be coerced",
+                0x61: "field '{field}' cannot be coerced: {0}",
                 0x62: "field is read-only",
 
                 0x81: "mapping doesn't validate subschema: {0}",
@@ -359,23 +373,24 @@ class BasicErrorHandler(BaseErrorHandler):
     def __init__(self, tree=None):
         self.tree = dict() if tree is None else tree
 
-    def __call__(self, errors):
-        self.__init__()
-
-        for error in errors:
-            if error.code not in self.messages and \
-                    not error.is_group_error:
-                continue
-
-            field = error.document_path[-1] if error.document_path else None
-
-            if error.is_group_error:
-                self.insert_group_error(error)
-            else:
-                self.insert_error(error.document_path,
-                                  self.format_message(field, error))
-
+    def __call__(self, errors=None):
+        if errors is not None:
+            self.clear()
+            self.extend(errors)
         return self.tree
+
+    def add(self, error):
+        if error.code not in self.messages and not error.is_group_error:
+            return
+        elif error.is_group_error:
+            self.insert_group_error(error)
+        else:
+            field = error.document_path[-1] if error.document_path else None
+            self.insert_error(error.document_path,
+                              self.format_message(field, error))
+
+    def clear(self):
+        self.tree = dict()
 
     def format_message(self, field, error):
         return self.messages[error.code]\
@@ -390,8 +405,6 @@ class BasicErrorHandler(BaseErrorHandler):
         :param node: An error message or a sub-tree.
         :type node: String or dictionary.
         """
-
-        assert isinstance(path, (tuple, list))
         if len(path) == 1:
             field = path[0]
             if field in self.tree:
@@ -426,16 +439,12 @@ class BasicErrorHandler(BaseErrorHandler):
     def insert_logic_error(self, error):
         path = error.document_path + (error.rule, )
         self.insert_error(path, self.format_message(None, error))
-        for i in range(error.info[2]):
-            def_errors = (x for x in error.child_errors
-                          if x.schema_path[-2] == i)
-            for child_error in def_errors:
+        for i in error.definitions_errors:
+            for child_error in error.definitions_errors[i]:
                 field = child_error.document_path[-1]
                 path = child_error.document_path[:-1] + \
                     ('definition % s' % i, field)
                 self.insert_error(path, self.format_message(field, child_error))  # noqa
 
-
-# TODO add a SerializeErrorHandler (xml, json, yaml)
-# TODO add a HumanErrorHandler supporting l10n
-# TODO add various error output showcases to the docs
+    def start(self, validator):
+        self.clear()

@@ -179,7 +179,6 @@ class TestBase(unittest.TestCase):
                 self.assertEqual(v_error.code, error.code)
                 self.assertEqual(v_error.rule, error.rule)
                 self.assertEqual(v_error.constraint, constraint)
-                # TODO test value?
                 if not v_error.is_group_error:
                     self.assertEqual(v_error.info, info)
             except AssertionError:

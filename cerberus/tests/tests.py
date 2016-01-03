@@ -187,7 +187,7 @@ class TestValidation(TestBase):
         value = "".join(choice(ascii_lowercase) for i in range(max_length + 1))
         self.assertFail({field: value})
         self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
-                         max_length)
+                         max_length, (len(value),))
 
     def test_bad_min_length(self):
         field = 'a_string'
@@ -195,7 +195,7 @@ class TestValidation(TestBase):
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
         self.assertFail({field: value})
         self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
-                         min_length)
+                         min_length, (len(value),))
 
     def test_bad_max_value(self):
         def assert_bad_max_value(field, inc):
@@ -480,7 +480,7 @@ class TestValidation(TestBase):
 
         self.assertFail({field: [1] * (min_length - 1)})
         self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
-                         min_length)
+                         min_length, (min_length - 1,))
 
         for i in range(min_length, max_length):
             value = [1] * i
@@ -488,7 +488,7 @@ class TestValidation(TestBase):
 
         self.assertFail({field: [1] * (max_length + 1)})
         self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
-                         max_length)
+                         max_length, (max_length + 1,))
 
     def test_custom_datatype(self):
         class MyValidator(Validator):
@@ -1360,6 +1360,7 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'amount': 'not_a_number'}, validator=v)
+        v._errors[0].info = ()
         self.assertError('amount', ('amount', 'coerce'), errors.COERCION_FAILED,
                          int, v_errors=v._errors)
 
@@ -1369,6 +1370,7 @@ class TestNormalization(TestBase):
         }
         v = Validator(schema)
         self.assertFail({'name': 1234}, validator=v)
+        v._errors[0].info = ()  # Volkswagen.test()
         self.assertError('name', ('name', 'coerce'), errors.COERCION_FAILED, str.lower, v_errors=v._errors)  # noqa
 
     def test_coerce_unknown(self):

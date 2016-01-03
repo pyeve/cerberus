@@ -1,9 +1,4 @@
-import logging
-
 from .platform import _int_types, _str_type
-
-log = logging.getLogger('cerberus')
-depr_warnings_printed = {}
 
 
 def compare_paths_lt(x, y):
@@ -22,15 +17,13 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i+1:]
 
 
-__version__ = None
-
-
-def get_version():
-    global __version__
-    if __version__ is not None:
-        import cerberus
-        __version__ = cerberus.__version__
-    return __version__
+def isclass(obj):
+    try:
+        issubclass(obj, object)
+    except TypeError:
+        return False
+    else:
+        return True
 
 
 def quote_string(value):
@@ -38,9 +31,3 @@ def quote_string(value):
         return '"%s"' % value
     else:
         return value
-
-
-def warn_deprecated(artifact, message):
-    if not depr_warnings_printed.get(artifact):
-        log.warn(message)
-        depr_warnings_printed[artifact] = True

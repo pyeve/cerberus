@@ -12,15 +12,12 @@ from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
     Sequence
 from datetime import datetime
 import json
-import logging
 import re
+from warnings import warn
 
 from . import errors
 from .platform import _str_type, _int_types
-from .utils import drop_item_from_tuple, warn_deprecated
-
-
-log = logging.getLogger('cerberus')
+from .utils import drop_item_from_tuple, isclass
 
 
 class DocumentError(Exception):
@@ -202,7 +199,8 @@ class Validator(object):
 
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
         eh_config = kwargs.pop('error_handler_config', dict())
-        if issubclass(error_handler, errors.BaseErrorHandler):
+        if isclass(error_handler) and \
+                issubclass(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler(**eh_config)
         elif isinstance(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler
@@ -261,6 +259,7 @@ class Validator(object):
             for error in args[0]:
                 self.document_error_tree += error
                 self.schema_error_tree += error
+                self.error_handler.emit(error)
         elif len(args) == 2 and isinstance(args[1], _str_type):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
@@ -408,6 +407,7 @@ class Validator(object):
             raise DocumentError(
                 errors.DOCUMENT_FORMAT.format(document))
         self.root_document = self.root_document or document
+        self.error_handler.start(self)
 
     # # Normalizing
 
@@ -426,6 +426,7 @@ class Validator(object):
         document = document.copy()
         self.__init_processing(document, schema)
         self.__normalize_mapping(document, schema or self.schema)
+        self.error_handler.end(self)
         if self._errors:
             return None
         else:
@@ -445,8 +446,8 @@ class Validator(object):
         def coerce_value(coercer):
             try:
                 mapping[field] = coercer(mapping[field])
-            except (TypeError, ValueError):
-                self._error(field, errors.COERCION_FAILED)
+            except Exception as e:
+                self._error(field, errors.COERCION_FAILED, str(e))
 
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
@@ -486,17 +487,15 @@ class Validator(object):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
         for k in result:
-            if result[k] == mapping[field][k]:
+            if result[k] in mapping[field]:
                 continue
             if result[k] in mapping[field]:
-                log.warn("Normalizing keys of {path}: {key} already exists, "
-                         "its value is replaced."
-                         .format(path='.'.join(self.document_path + (field,)),
-                                 key=k))
-                mapping[field][result[k]] = mapping[field][k]
-            else:
-                mapping[field][result[k]] = mapping[field][k]
-                del mapping[field][k]
+                warn("Normalizing keys of {path}: {key} already exists, "
+                     "its value is replaced."
+                     .format(path='.'.join(self.document_path + (field,)),
+                             key=k))
+            mapping[field][result[k]] = mapping[field][k]
+            del mapping[field][k]
 
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
@@ -509,17 +508,11 @@ class Validator(object):
             self._error(validator._errors)
 
     def __normalize_mapping_per_schema(self, field, mapping, schema):
-        child_schema = schema[field].get('schema', dict())
-        allow_unknown = schema[field].get('allow_unknown',
-                                          self.allow_unknown)
-        purge_unknown = schema[field].get('purge_unknown',
-                                          self.purge_unknown)
-        validator = self. \
-            __get_child_validator(document_crumb=field,
-                                  schema_crumb=(field, 'schema'),
-                                  schema=child_schema,
-                                  allow_unknown=allow_unknown,
-                                  purge_unknown=purge_unknown)
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=schema[field].get('schema', dict()),
+            allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
+            purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field])
         if validator._errors:
             self._error(validator._errors)
@@ -527,9 +520,9 @@ class Validator(object):
     def __normalize_sequence(self, field, mapping, schema):
         child_schema = dict(((k, schema[field]['schema'])
                              for k in range(len(mapping[field]))))
-        validator = self.__get_child_validator(document_crumb=field,
-                                               schema_crumb=(field, 'schema'),
-                                               schema=child_schema)
+        validator = self.__get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=child_schema)
         result = validator.normalized(dict((k, v) for k, v
                                            in enumerate(mapping[field])))
         for i in result:
@@ -564,7 +557,10 @@ class Validator(object):
 
     def _normalize_rename_handler(self, mapping, schema, field):
         if 'rename_handler' in schema[field]:
-            new_name = schema[field]['rename_handler'](field)
+            try:
+                new_name = schema[field]['rename_handler'](field)
+            except Exception as e:
+                self._error(field, errors.COERCION_FAILED, str(e))
             mapping[new_name] = mapping[field]
             del mapping[field]
 
@@ -615,6 +611,8 @@ class Validator(object):
         if not self.update:
             self._validate_required_fields(self.document)
 
+        self.error_handler.end(self)
+
         return not bool(self._errors)
 
     __call__ = validate
@@ -645,9 +643,8 @@ class Validator(object):
         .. deprecated:: 0.4.0
            Use :func:`validate` with ``update=True`` instead.
         """
-        warn_deprecated('validate_update',
-                        'Validator.validate_update is deprecated. '
-                        'Use Validator.validate(update=True) instead.')
+        warn('Validator.validate_update is deprecated. Use Validator.validate'
+             '(update=True) instead.', DeprecationWarning)
         return self.validate(document, schema, update=True)
 
     def __prepare_document(self, document, normalize):
@@ -870,12 +867,12 @@ class Validator(object):
     def _validate_maxlength(self, max_length, field, value):
         if isinstance(value, Sequence):
             if len(value) > max_length:
-                self._error(field, errors.MAX_LENGTH)
+                self._error(field, errors.MAX_LENGTH, len(value))
 
     def _validate_minlength(self, min_length, field, value):
         if isinstance(value, Sequence):
             if len(value) < min_length:
-                self._error(field, errors.MIN_LENGTH)
+                self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
         if value is None:
@@ -985,12 +982,16 @@ class Validator(object):
                 return
         elif isinstance(data_type, Iterable):
             # TODO simplify this when methods don't submit errors
+            # for x in data_type:
+            #     if call_type_validation(x, value):
+            #         return
             validator = self.__get_child_validator(
                 schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
             if validator({'turing': value}):
                 return
             else:
                 self._error(field, errors.BAD_TYPE)
+
         return True
 
     def _validate_type_boolean(self, field, value):
@@ -1185,10 +1186,9 @@ class DefinitionSchema(MutableMapping):
                     if isinstance(value, Mapping):
                         # TODO remove on next major release
                         # list of dicts, deprecated
-                        warn_deprecated('items_dict',
-                                        "The 'items'-rule with a mapping as "
-                                        "constraint is deprecated. Use the "
-                                        "'schema'-rule instead.")
+                        warn("The 'items'-rule with a mapping as constraint is "
+                             "deprecated. Use the 'schema'-rule instead.",
+                             DeprecationWarning)
                         DefinitionSchema(self.validator, value)
                     else:
                         for item_schema in value:
@@ -1284,8 +1284,8 @@ def expand_definition_schema(schema):
         if 'keyschema' in constraints:
             constraints['valueschema'] = constraints['keyschema']
             del constraints['keyschema']
-            warn_deprecated('keyschema', "The 'keyschema'-rule is deprecated. "
-                                         "Use 'valueschema' instead.")
+            warn("The 'keyschema'-rule is deprecated. Use 'valueschema' instead.",  # noqa
+                 DeprecationWarning)
         for key, value in constraints.items():
             constraints[key] = update_to_valueschema(value)
         return constraints
