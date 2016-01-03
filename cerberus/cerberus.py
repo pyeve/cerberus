@@ -1040,7 +1040,8 @@ class Validator(object):
             # return validator(field, value)
 
             prev_errors = len(self._errors)
-            validator = getattr(self, "_validate_type_" + _type)
+            validator = getattr(self, "_validate_type_"
+                                      + _type.replace(' ', '_'))
             validator(field, value)
             if len(self._errors) == prev_errors:
                 return True
