@@ -444,7 +444,10 @@ class Validator(object):
         if schema is not None:
             self.schema = DefinitionSchema(self, schema)
         elif self.schema is None:
-            raise SchemaError(errors.SCHEMA_ERROR_MISSING)
+            if isinstance(self.allow_unknown, Mapping):
+                self.schema = {}
+            else:
+                raise SchemaError(errors.SCHEMA_ERROR_MISSING)
         if document is None:
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
@@ -713,8 +716,10 @@ class Validator(object):
             if isinstance(self.allow_unknown, Mapping):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
+                schema_crumb = 'allow_unknown' if self.is_child \
+                    else '__allow_unknown__'
                 validator = self.__get_child_validator(
-                    schema_crumb='allow_unknown',
+                    schema_crumb=schema_crumb,
                     schema={field: self.allow_unknown})
                 if not validator({field: value}, normalize=False):
                     self._error(validator._errors)
