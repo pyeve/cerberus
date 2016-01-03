@@ -78,7 +78,7 @@ has been implemented:
          :param value: field value.
          """
          if not re.match('[a-f0-9]{24}', value):
-             self._error(field, errors.ERROR_BAD_TYPE)
+             self._error(field, errors.BAD_TYPE)
 
 .. versionadded:: 0.0.2
 

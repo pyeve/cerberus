@@ -23,6 +23,8 @@ Python Error Representations
 .. autoclass:: cerberus.errors.ValidationError
   :members:
 
+.. autoclass:: cerberus.errors.ErrorTree
+
 .. autoclass:: cerberus.errors.DocumentErrorTree
 
 .. autoclass:: cerberus.errors.SchemaErrorTree

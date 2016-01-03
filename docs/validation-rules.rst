@@ -62,9 +62,9 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 dependencies
 ------------
-This rule allows for either a list or dict of dependencies. When a list is
-provided, all listed fields must be present in order for the target field to be
-validated.
+This rule allows for either a single field, a list or dict of dependencies.
+When a list is provided, all listed fields must be present in order for the
+target field to be validated.
 
 .. doctest::
 
