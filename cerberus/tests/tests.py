@@ -6,7 +6,7 @@ from random import choice
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
 from . import TestBase
-from ..cerberus import errors, SchemaError, Validator
+from .. import errors, SchemaError, Validator
 
 
 ValidationError = errors.ValidationError
@@ -52,30 +52,13 @@ class TestValidation(TestBase):
 
     def test_bad_schema_type_field(self):
         field = 'foo'
-        schema = {field: {'schema': {'bar': {'type': 'string'}}}}
+        schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
         self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_TYPE_TYPE.format(field))
-
-        schema = {field: {'type': 'integer',
-                          'schema': {'bar': {'type': 'string'}}}}
-        self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_TYPE_TYPE.format(field))
-
-    def _check_schema_content_error(self, err_msg, func, *args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except SchemaError as e:
-            self.assertIn(err_msg, str(e))
-        else:
-            self.fail('SchemaError not raised')
+                               "{'schema': {'bar': 'unknown rule'}}")
 
     def test_invalid_schema(self):
-        schema = {'foo': {'unknown': 'rule'}}
-        err_msg = ' '.join(errors.SCHEMA_ERROR_UNKNOWN_RULE.split()[:2])
-        self._check_schema_content_error(err_msg, Validator, schema)
-        v = Validator()
-        self._check_schema_content_error(
-            err_msg, v.validate, {}, schema=schema)
+        self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
+                               "{'foo': {'unknown': 'unknown rule'}}")
 
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
@@ -92,8 +75,7 @@ class TestValidation(TestBase):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_CONSTRAINT_TYPE
-                               .format(field))
+                               str({field: 'must be of dict type'}))
 
     def test_unknown_field(self):
         field = 'surname'
@@ -103,10 +85,11 @@ class TestValidation(TestBase):
 
     def test_unknown_rule(self):
         field = 'name'
-        schema = {field: {'unknown_rule': True, 'type': 'string'}}
+        rule = 'unknown_rule'
+        schema = {field: {rule: True, 'type': 'string'}}
         self.assertSchemaError(
             self.document, schema, None,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field))
+            str({field: {rule: 'unknown rule'}}))
 
     def test_empty_field_definition(self):
         field = 'name'
@@ -154,8 +137,9 @@ class TestValidation(TestBase):
         field = 'name'
         value = 'catch_me'
         schema = {field: {'type': value}}
-        self.assertSchemaError(self.document, schema, None,
-                               errors.SCHEMA_ERROR_UNKNOWN_TYPE, value)
+        self.assertSchemaError(
+            self.document, schema, None,
+            str({field: {'type': 'unallowed value %s' % value}}))
 
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
@@ -294,16 +278,15 @@ class TestValidation(TestBase):
 
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
+        subschema = self.schema['a_list_of_dicts']['schema']
+
         value = [{'sku': 'KT123', 'price': '100'}]
         self.assertFail({field: value})
         exp_child_errors = [((field, 0, 'price'),
                             (field, 'schema', 'schema', 'price', 'type'),
                             errors.BAD_TYPE, 'integer')]
         self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                               {'type': 'dict',
-                                'schema': {'sku': {'type': 'string'},
-                                           'price': {'type': 'integer'}}},
-                               child_errors=exp_child_errors)
+                               subschema, child_errors=exp_child_errors)
 
         v = self.validator
         self.assertIn(field, v.errors)
@@ -314,10 +297,11 @@ class TestValidation(TestBase):
         self.assertIn(exp_msg, v.errors[field][0]['price'])
 
         value = ["not a dict"]
-        self.assertValidationError(
-            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
-                value[0])
-        )
+        self.assertFail({field: value})
+        exp_child_errors = [((field, 0), (field, 'schema', 'type'),
+                             errors.BAD_TYPE, 'dict', ())]
+        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
+                               subschema, child_errors=exp_child_errors)
 
     def test_array_unallowed(self):
         field = 'an_array'
@@ -547,11 +531,11 @@ class TestValidation(TestBase):
         v.transparent_schema_rules = False
         self.assertSchemaError(
             document, schema, v,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            "{'test': {'unknown_rule': 'unknown rule'}}"
         )
         self.assertSchemaError(
             document, schema, None,
-            errors.SCHEMA_ERROR_UNKNOWN_RULE.format('unknown_rule', field)
+            "{'test': {'unknown_rule': 'unknown rule'}}"
         )
 
     def test_allow_empty_strings(self):
@@ -896,7 +880,7 @@ class TestValidation(TestBase):
                    [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
         doc = {'prop1': 50}
 
-        self.assertValidationError(doc, schema)
+        self.assertFail(doc, schema)
 
         # prop1 must be an integer that is either be
         # greater than or equal to 0, or greater than or equal to 10
@@ -1080,7 +1064,7 @@ class TestValidation(TestBase):
 
         document['parts'].append({'product name': "Monitors", 'count': 18})
         # document is invalid. 'product name' does not match any valid schemas
-        self.assertValidationError(document, schema)
+        self.assertFail(document, schema)
 
         document['parts'].pop()
         # document is valid again
@@ -1313,8 +1297,7 @@ class TestValidation(TestBase):
                   'that_field': {'type': 'dict',
                                  'excludes': 'this_field',
                                  'required': True}}
-        self.assertValidationError({'that_field': {},
-                                    'this_field': {}}, schema)
+        self.assertFail({'that_field': {}, 'this_field': {}}, schema)
         handler = errors.BasicErrorHandler
         self.assertDictEqual(
             self.validator.errors,
@@ -1322,13 +1305,6 @@ class TestValidation(TestBase):
                 "'this_field'", field="that_field"),
              'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")})
-
-    def test_excludes_hashable(self):
-        self.validator = Validator()
-        schema = {'this_field': {'type': 'dict',
-                                 'excludes': 42,
-                                 'required': True}}
-        self.assertSchemaError({'this_field': {}}, schema)
 
 
 class TestNormalization(TestBase):
@@ -1508,18 +1484,52 @@ class TestNormalization(TestBase):
                               'bar': 'bar_value'}}
         self.assertNormalized(document, expected, schema)
 
+    def test_custom_coerce_and_rename(self):
+        class MyNormalizer(Validator):
+            def __init__(self, multiplier, *args, **kwargs):
+                super(MyNormalizer, self).__init__(*args, **kwargs)
+                self.multiplier = multiplier
+
+            def _normalize_coerce_multiply(self, value):
+                return value * self.multiplier
+
+        v = MyNormalizer(2, {'foo': {'coerce': 'multiply'}})
+        self.assertEqual(v.normalized({'foo': 2})['foo'], 4)
+
+        v = MyNormalizer(3, allow_unknown={'rename_handler': 'multiply'})
+        self.assertEqual(v.normalized({3: None}), {9: None})
+
+    def test_coerce_chain(self):
+        drop_prefix = lambda x: x[2:]
+        upper = lambda x: x.upper()
+        schema = {'foo': {'coerce': [hex, drop_prefix, upper]}}
+        self.assertNormalized({'foo': 15}, {'foo': 'F'}, schema)
+
+    def test_coerce_chain_aborts(self):
+        def dont_do_me(value):
+            raise AssertionError('The coercion chain did not abort after an '
+                                 'error.')
+        schema = {'foo': {'coerce': [hex, dont_do_me]}}
+        self.validator({'foo': '0'}, schema)
+        self.assertIn(errors.COERCION_FAILED, self.validator._errors)
+
+    def test_forbidden(self):
+        schema = {'user': {'forbidden': ['root', 'admin']}}
+        self.assertFail({'user': 'admin'}, schema)
+        self.assertSuccess({'user': 'alice'}, schema)
+
 
 class DefinitionSchema(TestBase):
     def test_validated_schema_cache(self):
         v = Validator({'foozifix': {'coerce': int}})
-        cache_size = len(v.schema.valid_schemas)
+        cache_size = len(v._valid_schemas)
 
         v = Validator({'foozifix': {'type': 'integer'}})
         cache_size += 1
-        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+        self.assertEqual(len(v._valid_schemas), cache_size)
 
         v = Validator({'foozifix': {'coerce': int}})
-        self.assertEqual(len(v.schema.valid_schemas), cache_size)
+        self.assertEqual(len(v._valid_schemas), cache_size)
 
         max_cache_size = 200
         self.assertLess(cache_size, max_cache_size,
@@ -1725,8 +1735,8 @@ class ErrorHandling(TestBase):
         _errors, ref = [], {}
 
         _errors.append(ValidationError(
-            ['foo'], ['foo'], 0x62, 'readonly', True, None, ()))
-        ref.update({'foo': handler.messages[0x62]})
+            ['foo'], ['foo'], 0x63, 'readonly', True, None, ()))
+        ref.update({'foo': handler.messages[0x63]})
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(ValidationError(

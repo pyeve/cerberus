@@ -1,4 +1,4 @@
-from ..cerberus import Validator, SchemaError, DocumentError, errors
+from .. import Validator, SchemaError, DocumentError, errors
 
 import sys
 if sys.version_info >= (2, 7):
@@ -128,33 +128,42 @@ class TestBase(unittest.TestCase):
         self.validator = Validator(self.schema)
 
     def assertSchemaError(self, document, schema=None, validator=None,
-                          msg=None, value=None):
-        if msg is not None:
-            msg = msg.format(value)
+                          msg=None):
+        """ Tests whether a validation raises an exception due to a malformed
+            schema. """
         self.assertException(SchemaError, document, schema, validator, msg)
 
     def assertValidationError(self, document, schema=None, validator=None,
                               msg=None):
+        """ Tests whether a validation raises an exception due to a malformed
+            document. """
         self.assertException(DocumentError, document, schema, validator, msg)
 
     def assertException(self, known_exception, document, schema=None,
                         validator=None, msg=None):
+        """ Tests whether a specific exception is raised. Optionally also tests
+            if the exception message is as expected. """
         if validator is None:
             validator = self.validator
         try:
             validator(document, schema)
         except known_exception as e:
-            self.assertTrue(msg == str(e)) if msg else self.assertTrue(True)
+            if msg is not None:
+                self.assertEqual(str(e), msg)
         except Exception as e:  # noqa
             self.fail("'%s' raised, expected %s." % (e, known_exception))
+        else:
+            self.fail('no exception was raised.')
 
     def assertFail(self, document, schema=None, validator=None, update=False):
+        """ Tests whether a validation fails. """
         if validator is None:
             validator = self.validator
         self.assertFalse(validator(document, schema, update))
 
     def assertSuccess(self, document, schema=None, validator=None,
                       update=False):
+        """ Tests whether a validation succeeds. """
         if validator is None:
             validator = self.validator
         self.assertTrue(validator(document, schema, update),

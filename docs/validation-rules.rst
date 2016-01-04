@@ -62,9 +62,9 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 dependencies
 ------------
-This rule allows for either a list or dict of dependencies. When a list is
-provided, all listed fields must be present in order for the target field to be
-validated.
+This rule allows for either a single field, a list or dict of dependencies.
+When a list is provided, all listed fields must be present in order for the
+target field to be validated.
 
 .. doctest::
 
@@ -217,6 +217,21 @@ You can also pass multiples fields to exclude in a list :
    ...           'bazo_field': {'type': 'dict'}}
    >>> v.validate({'this_field': {}, 'bazo_field': {}}, schema)
    False
+
+forbidden
+---------
+
+Opposite to `allowed`_ this validates if a value is any but one of the defined
+values:
+
+.. doctest::
+
+   >>> schema = {'user': {'forbidden': ['root', 'admin']}}
+   >>> document = {'user': 'root'}
+   >>> v.validate(document, schema)
+   False
+
+.. versionadded:: 0.10
 
 items (dict)
 ------------
@@ -606,6 +621,49 @@ A list of types can be used to allow different values:
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
+
+validator
+---------
+Validates the value by calling either a function or method.
+
+A function must be implemented like this the following prototype: ::
+
+    def validationname(field, value, error):
+        if value is invalid:
+            error(field, 'error message')
+
+The ``error`` argument points to the calling validator's ``_error`` method. See
+:doc:`customize` on how to submit errors.
+
+Here's an example that tests whether an integer is odd or not:
+
+.. testcode::
+
+    def oddity(field, value, error):
+        if not value & 1:
+            error(field, "Must be an odd number")
+
+Then, you can validate a value like this:
+
+.. doctest::
+
+    >>> schema = {'amount': {'validator': oddity}}
+    >>> v = Validator(schema)
+    >>> v.validate({'amount': 10})
+    False
+    >>> v.errors
+    {'amount': 'Must be an odd number'}
+
+    >>> v.validate({'amount': 9})
+    True
+
+If the rule's constraint is a string, the :class:`~cerberus.Validator` instance
+must have a method with that name prefixed by ``_validator_``. See
+:doc:`customize` for an equivalent to the function-based example above.
+
+The constraint can also be a sequence of these that will be called consecutively. ::
+
+   schema = {'field': {'validator': [oddity, 'prime number']}}
 
 valueschema
 -----------

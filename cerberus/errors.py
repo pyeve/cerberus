@@ -45,10 +45,13 @@ MIN_VALUE = ErrorDefinition(0x42, 'min')
 MAX_VALUE = ErrorDefinition(0x43, 'max')
 UNALLOWED_VALUE = ErrorDefinition(0x44, 'allowed')
 UNALLOWED_VALUES = ErrorDefinition(0x45, 'allowed')
+FORBIDDEN_VALUE = ErrorDefinition(0x46, 'forbidden')
+FORBIDDEN_VALUES = ErrorDefinition(0x47, 'forbidden')
 
 # other
 COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
-READONLY_FIELD = ErrorDefinition(0x62, 'readonly')
+RENAMING_FAILED = ErrorDefinition(0x62, 'rename_handler')
+READONLY_FIELD = ErrorDefinition(0x63, 'readonly')
 
 # groups
 ERROR_GROUP = ErrorDefinition(0x80, None)
@@ -67,27 +70,9 @@ ALLOF = ErrorDefinition(0x94, 'allof')
 
 """ SchemaError messages """
 
-SCHEMA_ERROR_ALLOW_UNKNOWN_TYPE = \
-    "allow_unknown-definition for field '{0}' must be a bool or a dict"
-SCHEMA_ERROR_CALLABLE_TYPE = \
-    "coerce- and validator-definitions for field '{0}' must be a callable"
-SCHEMA_ERROR_CONSTRAINT_TYPE = "the constraint for field '{0}' must be a dict"
-SCHEMA_ERROR_DEFINITION_SET_TYPE = \
-    "definitions of '{0}' for field '{1}' must be a sequence of constraints"
 SCHEMA_ERROR_DEFINITION_TYPE = \
     "schema definition for field '{0}' must be a dict"
-SCHEMA_ERROR_DEPENDENCY_TYPE = \
-    "dependency-definition for field '{0}' must be a dict or a list"
-SCHEMA_ERROR_DEPENDENCY_VALIDITY = \
-    "'{0}' is no valid dependency for field '{1}'"
-SCHEMA_ERROR_EXCLUDES_HASHABLE = "{0} is not hashable ; cannot be excluded"
 SCHEMA_ERROR_MISSING = "validation schema missing"
-SCHEMA_ERROR_PURGE_UNKNOWN_TYPE = \
-    "purge_unknown-definition for field '{0}' must be a bool"
-SCHEMA_ERROR_RENAME_TYPE = "rename-definition for field '{0}' must be hashable"
-SCHEMA_ERROR_TYPE_TYPE = "type of field '{0}' must be either 'list' or 'dict'"
-SCHEMA_ERROR_UNKNOWN_RULE = "unknown rule '{0}' for field '{0}'"
-SCHEMA_ERROR_UNKNOWN_TYPE = "unrecognized data-type '{0}'"
 
 
 """ Error representations """
@@ -167,6 +152,14 @@ class ValidationError:
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
 
+class ErrorsList(list):
+    def __contains__(self, error_definition):
+        for code in (x.code for x in self):
+            if code == error_definition.code:
+                return True
+        return False
+
+
 class ErrorTreeNode(MutableMapping):
     __slots__ = ('descendants', 'errors', 'parent_node', 'path', 'tree_root')
 
@@ -174,7 +167,7 @@ class ErrorTreeNode(MutableMapping):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
         self.path = path[:len(self.parent_node.path)+1]
-        self.errors = []
+        self.errors = ErrorsList()
         self.descendants = dict()
 
     def __add__(self, error):
@@ -353,9 +346,12 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x43: "max value is {constraint}",
                 0x44: "unallowed value {value}",
                 0x45: "unallowed values {0}",
+                0x46: "unallowed value {value}",
+                0x47: "unallowed values {0}",
 
                 0x61: "field '{field}' cannot be coerced: {0}",
-                0x62: "field is read-only",
+                0x62: "field '{field}' cannot be renamed: {0}",
+                0x63: "field is read-only",
 
                 0x81: "mapping doesn't validate subschema: {0}",
                 0x82: "one or more sequence-items don't validate: {0}",
@@ -448,3 +444,8 @@ class BasicErrorHandler(BaseErrorHandler):
 
     def start(self, validator):
         self.clear()
+
+
+class SchemaErrorHandler(BasicErrorHandler):
+    messages = BasicErrorHandler.messages.copy()
+    messages[0x03] = "unknown rule"
