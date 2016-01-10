@@ -2,13 +2,20 @@ sudo: false
 language: python
 cache: pip
 python: 2.7
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
 env:
   - TOX_ENV=py26
   - TOX_ENV=py27
   - TOX_ENV=py33
   - TOX_ENV=py34
+  - TOX_ENV=py35
   - TOX_ENV=pypy
-  - TOX_ENV=pypy3  
+  - TOX_ENV=pypy3
   - TOX_ENV=flake8
 install: travis_retry pip install tox
 script:
