@@ -2,6 +2,12 @@ sudo: false
 language: python
 cache: pip
 python: 2.7
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
 env:
   - TOX_ENV=py26
   - TOX_ENV=py27
