@@ -2,8 +2,9 @@
 
 Running the Tests
 -----------------
-Cerberus runs under Python 2.6, 2.7, Python 3.3, Python 3.4 and PyPy. Therefore tests
-will be run in those four platforms in our `continuous integration server`_.
+Cerberus runs under Python 2.6, 2.7, 3.3, 3.4, 3.5, PyPy and PyPy3. Therefore
+tests will be run in those four platforms in our `continuous integration
+server`_.
 
 The easiest way to get started is to run the tests in your local environment
 with:
