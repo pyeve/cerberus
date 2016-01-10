@@ -11,8 +11,8 @@ Python.
 
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be easily extensible, allowing for easy custom validation. It
-has no dependencies and is thoroughly tested under Python 2.6, Python 2.7,
-Python 3.3, Python 3.4, PyPy and PyPy3.
+has no dependencies and is thoroughly tested from Python 2.6 up to 3.5, PyPy
+and PyPy3.
 
 At a Glance
 -----------
