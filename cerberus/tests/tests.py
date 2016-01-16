@@ -1474,6 +1474,15 @@ class TestNormalization(TestBase):
         document = {'foo': 'foo_value', 'bar': 'bar_value'}
         self.assertNormalized(document, document.copy(), schema)
 
+    def test_default_none_default_value(self):
+        schema = {'foo': {'type': 'string'},
+                  'bar': {'type': 'string',
+                          'nullable': True,
+                          'default': None}}
+        document = {'foo': 'foo_value'}
+        expected = {'foo': 'foo_value', 'bar': None}
+        self.assertNormalized(document, expected, schema)
+
     def test_default_missing_in_subschema(self):
         schema = {'thing': {'type': 'dict',
                             'schema': {'foo': {'type': 'string'},

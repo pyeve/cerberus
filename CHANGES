@@ -45,6 +45,7 @@ Not released yet.
 - Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 - Change: Use warnings.warn for deprecation-warnings if available (Frank Sachsenheim).
 
+- Fix: allow None in 'default' normalization rule (Damián Nohales).
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
   #185.
 - Fix: normalization not working for valueschema and propertyschema. Closes

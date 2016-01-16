@@ -673,6 +673,7 @@ class Validator(object):
             del mapping[field]
 
     def _normalize_default(self, mapping, schema):
+        """ {'nullable': True} """
         for field in tuple(schema):
             nullable = schema[field].get('nullable', False)
             if 'default' in schema[field] and \
