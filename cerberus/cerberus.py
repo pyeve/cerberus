@@ -392,10 +392,10 @@ class Validator(object):
         for error in errors:
             for i in sorted(dp_items, reverse=True):
                 error.document_path = \
-                    drop_item_from_tuple(error.document_path, dp_basedepth+i)
+                    drop_item_from_tuple(error.document_path, dp_basedepth + i)
             for i in sorted(sp_items, reverse=True):
                 error.schema_path = \
-                    drop_item_from_tuple(error.schema_path, sp_basedepth+i)
+                    drop_item_from_tuple(error.schema_path, sp_basedepth + i)
             if error.child_errors:
                 self._drop_nodes_from_errorpaths(error.child_errors,
                                                  dp_items, sp_items)
@@ -790,8 +790,8 @@ class Validator(object):
 
         """ _validate_-methods must return True to abort validation. """
         prior_rules = tuple((x for x in self.priority_validations
-                             if x in definitions
-                             or x in self.mandatory_validations))
+                             if x in definitions or
+                             x in self.mandatory_validations))
         for rule in prior_rules:
             if validate_rule(rule):
                 return
@@ -1116,8 +1116,8 @@ class Validator(object):
             # return validator(field, value)
 
             prev_errors = len(self._errors)
-            validator = getattr(self, "_validate_type_"
-                                      + _type.replace(' ', '_'))
+            validator = getattr(self, "_validate_type_" +
+                                _type.replace(' ', '_'))
             validator(field, value)
             if len(self._errors) == prev_errors:
                 return True

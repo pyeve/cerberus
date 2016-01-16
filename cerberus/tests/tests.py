@@ -419,7 +419,7 @@ class TestValidation(TestBase):
              errors.BAD_TYPE, 'string'),
             (('a_dict', 'city'), ('a_dict', 'schema', 'city', 'required'),
              errors.REQUIRED_FIELD, True)
-            ])
+        ])
 
     def test_a_dict_with_valueschema(self):
         self.assertSuccess(
@@ -1509,6 +1509,7 @@ class TestNormalization(TestBase):
         self.assertEqual(v.normalized({3: None}), {9: None})
 
     def test_coerce_chain(self):
+        # noqa
         drop_prefix = lambda x: x[2:]
         upper = lambda x: x.upper()
         schema = {'foo': {'coerce': [hex, drop_prefix, upper]}}

@@ -14,7 +14,7 @@ def compare_paths_lt(x, y):
 
 
 def drop_item_from_tuple(t, i):
-    return t[:i] + t[i+1:]
+    return t[:i] + t[i + 1:]
 
 
 def validator_fabric(name, mixin=None, class_dict=dict()):

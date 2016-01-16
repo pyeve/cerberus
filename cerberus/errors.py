@@ -166,7 +166,7 @@ class ErrorTreeNode(MutableMapping):
     def __init__(self, path, parent_node):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
-        self.path = path[:len(self.parent_node.path)+1]
+        self.path = path[:len(self.parent_node.path) + 1]
         self.errors = ErrorsList()
         self.descendants = dict()
 
