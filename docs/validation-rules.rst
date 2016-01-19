@@ -498,7 +498,7 @@ constraint.
 .. note::
 
     To validate *arbitrary keys* of a mapping, see `propertyschema`_, resp.
-    `valueschema`_ for *arbitrary values* of a mapping.
+    `valueschema`_ for validating *arbitrary values* of a mapping.
 
 schema (list)
 -------------
