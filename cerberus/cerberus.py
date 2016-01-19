@@ -27,7 +27,8 @@ toy_error_handler = errors.ToyErrorHandler()
 def dummy_for_rule_validation(rule_constraints):
     def dummy(self, constraint, field, value):
         raise RuntimeError('Dummy method called. Its purpose is to hold just'
-                           'validation constraints for a rule.')
+                           'validation constraints for a rule in its '
+                           'docstring.')
     f = dummy
     f.__doc__ = rule_constraints
     return f
