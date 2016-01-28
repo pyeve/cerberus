@@ -168,7 +168,7 @@ class ErrorTreeNode(MutableMapping):
         self.tree_root = self.parent_node.tree_root
         self.path = path[:len(self.parent_node.path) + 1]
         self.errors = ErrorsList()
-        self.descendants = dict()
+        self.descendants = {}
 
     def __add__(self, error):
         self.add(error)
@@ -229,7 +229,7 @@ class ErrorTree(ErrorTreeNode):
         self.tree_root = self
         self.path = ()
         self.errors = []
-        self.descendants = dict()
+        self.descendants = {}
         for error in errors:
             self += error
 
@@ -367,7 +367,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 }
 
     def __init__(self, tree=None):
-        self.tree = dict() if tree is None else tree
+        self.tree = {} if tree is None else tree
 
     def __call__(self, errors=None):
         if errors is not None:
@@ -386,7 +386,7 @@ class BasicErrorHandler(BaseErrorHandler):
                               self.format_message(field, error))
 
     def clear(self):
-        self.tree = dict()
+        self.tree = {}
 
     def format_message(self, field, error):
         return self.messages[error.code]\
