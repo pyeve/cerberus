@@ -182,16 +182,16 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
-    _inspected_classed = set()
+    _inspected_classes = set()
     is_child = False
     mandatory_validations = ('nullable', )
     priority_validations = ('nullable', 'readonly', 'type')
     _valid_schemas = set()
 
     def __new__(cls, *args, **kwargs):
-        if cls not in cls._inspected_classed:
+        if cls not in cls._inspected_classes:
             cls.__set_introspection_properties()
-            cls._inspected_classed.add(cls)
+            cls._inspected_classes.add(cls)
         return super(Validator, cls).__new__(cls)
 
     @classmethod
@@ -814,7 +814,8 @@ class Validator(object):
             validate_rule(rule)
 
     _validate_allow_unknown = dummy_for_rule_validation(
-        """ {'type': ['boolean', 'dict'], 'validator': 'allow_unknown'} """)
+        """ {'oneof': [{'type': 'boolean'},
+                       {'type': 'dict', 'validator': 'bulk_schema'}]} """)
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': 'list'} """
@@ -1089,7 +1090,8 @@ class Validator(object):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
-        """ {'type': ['dict', 'list'], 'validator': 'schema'} """
+        """ {'type': 'dict', 'anyof': [{'validator': 'schema'},
+                                       {'validator': 'bulk_schema'}]} """
         if schema is None:
             return
 

@@ -1501,8 +1501,7 @@ class DefinitionSchema(TestBase):
     def test_bad_schema_type_field(self):
         field = 'foo'
         schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
-        self.assertSchemaError(self.document, schema, None,
-                               "{'schema': {'bar': 'unknown rule'}}")
+        self.assertSchemaError(self.document, schema)
 
     def test_invalid_schema(self):
         self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
