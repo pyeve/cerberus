@@ -29,37 +29,6 @@ class TestTestBase(TestBase):
 
 
 class TestValidation(TestBase):
-    def test_empty_schema(self):
-        v = Validator()
-        self.assertSchemaError(self.document, None, v,
-                               errors.SCHEMA_ERROR_MISSING)
-
-    def test_bad_schema_type(self):
-        schema = "this string should really be dict"
-        try:
-            Validator(schema)
-        except SchemaError as e:
-            self.assertEqual(str(e),
-                             errors.SCHEMA_ERROR_DEFINITION_TYPE
-                             .format(schema))
-        else:
-            self.fail('SchemaError not raised')
-
-        v = Validator()
-        self.assertSchemaError(self.document, schema, v,
-                               errors.SCHEMA_ERROR_DEFINITION_TYPE
-                               .format(schema))
-
-    def test_bad_schema_type_field(self):
-        field = 'foo'
-        schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
-        self.assertSchemaError(self.document, schema, None,
-                               "{'schema': {'bar': 'unknown rule'}}")
-
-    def test_invalid_schema(self):
-        self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
-                               "{'foo': {'unknown': 'unknown rule'}}")
-
     def test_empty_document(self):
         self.assertValidationError(None, None, None,
                                    errors.DOCUMENT_MISSING)
@@ -71,25 +40,11 @@ class TestValidation(TestBase):
                 document)
         )
 
-    def test_bad_schema_definition(self):
-        field = 'name'
-        schema = {field: 'this should really be a dict'}
-        self.assertSchemaError(self.document, schema, None,
-                               str({field: 'must be of dict type'}))
-
     def test_unknown_field(self):
         field = 'surname'
         self.assertFail({field: 'doe'})
         self.assertError(field, (), errors.UNKNOWN_FIELD, None)
         self.assertDictEqual(self.validator.errors, {field: 'unknown field'})
-
-    def test_unknown_rule(self):
-        field = 'name'
-        rule = 'unknown_rule'
-        schema = {field: {rule: True, 'type': 'string'}}
-        self.assertSchemaError(
-            self.document, schema, None,
-            str({field: {rule: 'unknown rule'}}))
 
     def test_empty_field_definition(self):
         field = 'name'
@@ -132,14 +87,6 @@ class TestValidation(TestBase):
         # it would be a list if there's more than one error; we get a dict
         # instead.
         self.assertIn('read-only', v.errors['a_readonly_number'])
-
-    def test_unknown_data_type(self):
-        field = 'name'
-        value = 'catch_me'
-        schema = {field: {'type': value}}
-        self.assertSchemaError(
-            self.document, schema, None,
-            str({field: {'type': 'unallowed value %s' % value}}))
 
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
@@ -804,8 +751,8 @@ class TestValidation(TestBase):
         self.assertSuccess({'sub_dict': {'foo': 'bar', 'unknown': True}},
                            validator=v)
 
-    def test_self_document_always_root(self):
-        """ Make sure self.document is always the root document.
+    def test_self_root_document(self):
+        """ Make sure self.root_document is always the root document.
         See:
         * https://github.com/nicolaiarocci/cerberus/pull/42
         * https://github.com/nicolaiarocci/eve/issues/295
@@ -1033,19 +980,6 @@ class TestValidation(TestBase):
         doc = {'prop1': '5.5'}
         self.assertFail(doc, schema)
 
-    def test_anyof_allof_schema_validate(self):
-        # make sure schema with 'anyof' and 'allof' constraints are checked
-        # correctly
-        schema = {'doc': {'type': 'dict',
-                          'anyof': [
-                              {'schema': [{'param': {'type': 'number'}}]}]}}
-        self.assertSchemaError({'doc': 'this is my document'}, schema)
-
-        schema = {'doc': {'type': 'dict',
-                          'allof': [
-                              {'schema': [{'param': {'type': 'number'}}]}]}}
-        self.assertSchemaError({'doc': 'this is my document'}, schema)
-
     def test_anyof_schema(self):
         # test that a list of schemas can be specified.
 
@@ -1218,15 +1152,15 @@ class TestValidation(TestBase):
         self.assertFail({'text': 'foo', 'deleted': True}, schema)
         self.assertFail({'text': 'foo'}, schema)
 
-    def test_document_trail(self):
-        class TrailTester(Validator):
+    def test_document_path(self):
+        class DocumentPathTester(Validator):
             def _validate_trail(self, constraint, field, value):
                 test_doc = self.root_document
                 for crumb in self.document_path:
                     test_doc = test_doc[crumb]
                 assert test_doc == self.document
 
-        v = TrailTester()
+        v = DocumentPathTester()
         schema = {'foo': {'schema': {'bar': {'trail': True}}}}
         document = {'foo': {'bar': {}}}
         self.assertSuccess(document, schema, v)
@@ -1319,6 +1253,11 @@ class TestValidation(TestBase):
         schema = {'dict': {'minlength': 1}}
         self.assertFail({'dict': {}}, schema)
         self.assertSuccess({'dict': {'foo': 'bar'}}, schema)
+
+    def test_forbidden(self):
+        schema = {'user': {'forbidden': ['root', 'admin']}}
+        self.assertFail({'user': 'admin'}, schema)
+        self.assertSuccess({'user': 'alice'}, schema)
 
 
 class TestNormalization(TestBase):
@@ -1523,7 +1462,6 @@ class TestNormalization(TestBase):
         self.assertEqual(v.normalized({3: None}), {9: None})
 
     def test_coerce_chain(self):
-        # noqa
         drop_prefix = lambda x: x[2:]
         upper = lambda x: x.upper()
         schema = {'foo': {'coerce': [hex, drop_prefix, upper]}}
@@ -1537,13 +1475,82 @@ class TestNormalization(TestBase):
         self.validator({'foo': '0'}, schema)
         self.assertIn(errors.COERCION_FAILED, self.validator._errors)
 
-    def test_forbidden(self):
-        schema = {'user': {'forbidden': ['root', 'admin']}}
-        self.assertFail({'user': 'admin'}, schema)
-        self.assertSuccess({'user': 'alice'}, schema)
-
 
 class DefinitionSchema(TestBase):
+    def test_empty_schema(self):
+        v = Validator()
+        self.assertSchemaError(self.document, None, v,
+                               errors.SCHEMA_ERROR_MISSING)
+
+    def test_bad_schema_type(self):
+        schema = "this string should really be dict"
+        try:
+            Validator(schema)
+        except SchemaError as e:
+            self.assertEqual(str(e),
+                             errors.SCHEMA_ERROR_DEFINITION_TYPE
+                             .format(schema))
+        else:
+            self.fail('SchemaError not raised')
+
+        v = Validator()
+        self.assertSchemaError(self.document, schema, v,
+                               errors.SCHEMA_ERROR_DEFINITION_TYPE
+                               .format(schema))
+
+    def test_bad_schema_type_field(self):
+        field = 'foo'
+        schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
+        self.assertSchemaError(self.document, schema, None,
+                               "{'schema': {'bar': 'unknown rule'}}")
+
+    def test_invalid_schema(self):
+        self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
+                               "{'foo': {'unknown': 'unknown rule'}}")
+
+    def test_unknown_rule(self):
+        field = 'name'
+        rule = 'unknown_rule'
+        schema = {field: {rule: True, 'type': 'string'}}
+        self.assertSchemaError(
+            self.document, schema, None,
+            str({field: {rule: 'unknown rule'}}))
+
+    def test_unknown_type(self):
+        field = 'name'
+        value = 'catch_me'
+        schema = {field: {'type': value}}
+        self.assertSchemaError(
+            self.document, schema, None,
+            str({field: {'type': 'unallowed value %s' % value}}))
+
+    def test_bad_schema_definition(self):
+        field = 'name'
+        schema = {field: 'this should really be a dict'}
+        self.assertSchemaError(self.document, schema, None,
+                               str({field: 'must be of dict type'}))
+
+    def bad_of_rules(self):
+        schema = {'foo': {'anyof': {'type': 'string'}}}
+        self.assertSchemaError({}, schema)
+
+    def test_anyof_allof_schema_validate(self):
+        # make sure schema with 'anyof' and 'allof' constraints are checked
+        # correctly
+        schema = {'doc': {'type': 'dict',
+                          'anyof': [
+                              {'schema': [{'param': {'type': 'number'}}]}]}}
+        self.assertSchemaError({'doc': 'this is my document'}, schema)
+
+        schema = {'doc': {'type': 'dict',
+                          'allof': [
+                              {'schema': [{'param': {'type': 'number'}}]}]}}
+        self.assertSchemaError({'doc': 'this is my document'}, schema)
+
+    def test_repr(self):
+        v = Validator({'foo': {'type': 'string'}})
+        self.assertEqual(repr(v.schema), "{'foo': {'type': 'string'}}")
+
     def test_validated_schema_cache(self):
         v = Validator({'foozifix': {'coerce': int}})
         cache_size = len(v._valid_schemas)
@@ -1564,13 +1571,13 @@ class DefinitionSchema(TestBase):
                         "adjust the variable `max_cache_size` according to "
                         "the added schemas.")
 
-    def bad_of_rules(self):
-        schema = {'foo': {'anyof': {'type': 'string'}}}
-        self.assertSchemaError({}, schema)
-
-    def test_repr(self):
-        v = Validator({'foo': {'type': 'string'}})
-        self.assertEqual(repr(v.schema), "{'foo': {'type': 'string'}}")
+    def test_expansion_in_nested_schema(self):
+        schema = {'detroit':
+                  {'schema': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
+        v = Validator(schema)
+        self.assertDictEqual(v.schema['detroit']['schema'],
+                             {'anyof': [{'regex': '^Aladdin'},
+                                        {'regex': 'Sane$'}]})
 
 
 class ErrorHandling(TestBase):
