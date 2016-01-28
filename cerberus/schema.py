@@ -5,7 +5,7 @@ from warnings import warn
 
 from . import errors
 from .platform import _str_type
-from .utils import validator_fabric
+from .utils import validator_factory
 
 
 class SchemaError(Exception):
@@ -28,8 +28,8 @@ class DefinitionSchema(MutableMapping):
     def __new__(cls, *args, **kwargs):
         if 'SchemaValidator' not in globals():
             global SchemaValidator
-            SchemaValidator = validator_fabric('SchemaValidator',
-                                               SchemaValidatorMixin)
+            SchemaValidator = validator_factory('SchemaValidator',
+                                                SchemaValidatorMixin)
         return super(DefinitionSchema, cls).__new__(cls)
 
     def __init__(self, validator, schema=dict()):
