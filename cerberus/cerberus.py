@@ -259,7 +259,7 @@ class Validator(object):
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
-        eh_config = kwargs.pop('error_handler_config', dict())
+        eh_config = kwargs.pop('error_handler_config', {})
         if isclass(error_handler) and \
                 issubclass(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler(**eh_config)
@@ -472,7 +472,7 @@ class Validator(object):
     def transparent_schema_rules(self, value):
         if isinstance(self._schema, DefinitionSchema):
             self._schema.regenerate_validation_schema()
-            self._schema.update(dict())
+            self._schema.update({})  # trigger validation
         self._config['transparent_schema_rules'] = value
 
     # Document processing
@@ -619,7 +619,7 @@ class Validator(object):
     def __normalize_mapping_per_schema(self, field, mapping, schema):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema[field].get('schema', dict()),
+            schema=schema[field].get('schema', {}),
             allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field])
@@ -898,7 +898,7 @@ class Validator(object):
                 dep_values = [dep_values]
             context = self.document.copy()
             parts = dep_name.split('.')
-            info = dict()
+            info = {}
 
             for part in parts:
                 if part in context:

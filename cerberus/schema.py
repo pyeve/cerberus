@@ -32,7 +32,7 @@ class DefinitionSchema(MutableMapping):
                                                 SchemaValidatorMixin)
         return super(DefinitionSchema, cls).__new__(cls)
 
-    def __init__(self, validator, schema=dict()):
+    def __init__(self, validator, schema={}):
         """
         :param validator: An instance of Validator-(sub-)class that uses this
                           schema.
@@ -116,7 +116,7 @@ class DefinitionSchema(MutableMapping):
             self.validator._valid_schemas.add(_hash)
 
     def __cast_keys_to_strings(self, mapping):
-        result = dict()
+        result = {}
         for key in mapping:
             if isinstance(mapping[key], Mapping):
                 value = self.__cast_keys_to_strings(mapping[key])
@@ -141,7 +141,7 @@ class DefinitionSchema(MutableMapping):
 
 
 class UnvalidatedSchema(DefinitionSchema):
-    def __init__(self, schema=dict()):
+    def __init__(self, schema={}):
         if not isinstance(schema, Mapping):
             schema = dict(schema)
         self.schema = schema
