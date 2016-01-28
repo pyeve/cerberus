@@ -17,7 +17,7 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i + 1:]
 
 
-def validator_fabric(name, mixin=None, class_dict=dict()):
+def validator_factory(name, mixin=None, class_dict=dict()):
     if 'Validator' not in globals():
         from .cerberus import Validator
 
