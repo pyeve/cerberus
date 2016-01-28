@@ -249,8 +249,6 @@ class Validator(object):
         self._errors = errors.ErrorsList()
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
-        self.root_document = None
-        self.root_schema = None
         self.document_path = ()
         self.schema_path = ()
         self.update = False
@@ -354,10 +352,10 @@ class Validator(object):
         if not self.is_child:
             child_config['is_child'] = True
             child_config['error_handler'] = toy_error_handler
+            child_config['root_allow_unknown'] = self.allow_unknown
+            child_config['root_document'] = self.document
+            child_config['root_schema'] = self.schema
         child_validator = self.__class__(**child_config)
-
-        child_validator.root_document = self.root_document or self.document
-        child_validator.root_schema = self.root_schema or self.schema
 
         if document_crumb is None:
             child_validator.document_path = self.document_path
@@ -409,7 +407,7 @@ class Validator(object):
 
     @allow_unknown.setter
     def allow_unknown(self, value):
-        if not isinstance(value, (bool, DefinitionSchema)):
+        if not (self.is_child or isinstance(value, (bool, DefinitionSchema))):
             DefinitionSchema(self, {'allow_unknown': value})
         self._config['allow_unknown'] = value
 
@@ -440,6 +438,18 @@ class Validator(object):
     @purge_unknown.setter
     def purge_unknown(self, value):
         self._config['purge_unknown'] = value
+
+    @property
+    def root_allow_unknown(self):
+        return self._config.get('root_allow_unknown', self.allow_unknown)
+
+    @property
+    def root_document(self):
+        return self._config.get('root_document', self.document)
+
+    @property
+    def root_schema(self):
+        return self._config.get('root_schema', self.schema)
 
     @property
     def schema(self):
@@ -477,7 +487,7 @@ class Validator(object):
             self.schema = DefinitionSchema(self, schema)
         elif self.schema is None:
             if isinstance(self.allow_unknown, Mapping):
-                self.schema = {}
+                self._schema = {}
             else:
                 raise SchemaError(errors.SCHEMA_ERROR_MISSING)
         if document is None:
@@ -485,7 +495,6 @@ class Validator(object):
         if not isinstance(document, Mapping):
             raise DocumentError(
                 errors.DOCUMENT_FORMAT.format(document))
-        self.root_document = self.root_document or document
         self.error_handler.start(self)
 
     # # Normalizing
