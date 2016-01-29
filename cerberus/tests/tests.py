@@ -1316,6 +1316,19 @@ class TestValidation(TestBase):
                                  'required': True}}
         self.assertSchemaError({'this_field': {}}, schema)
 
+    def test_allows_recursive_schema(self):
+        schema = {
+            'a': {'type': 'integer'},
+            'b': {'valueschema': {'type': 'dict', 'schema': None}}
+        }
+
+        schema['b']['valueschema']['schema'] = schema
+
+        try:
+            Validator(schema)
+        except RuntimeError:
+            self.fail("Raised RuntimeError unexpectedly.")
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
