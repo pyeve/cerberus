@@ -557,8 +557,8 @@ Data type allowed for the key value. Can be one of the following names:
      - :class:`py2:collections.Sequence`, excl. ``string``
      - :class:`py3:collections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`
-     - :class:`py3:float`, :class:`py3:int`
+     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`, excl. :class:`py2:bool`
+     - :class:`py3:float`, :class:`py3:int`, excl. :class:`py3:bool`
    * - ``set``
      - :class:`py2:set`
      - :class:`py3:set`

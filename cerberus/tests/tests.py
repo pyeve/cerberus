@@ -1306,6 +1306,10 @@ class TestValidation(TestBase):
              'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")})
 
+    def test_boolean_is_not_a_number(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/144
+        self.assertFail({'value': True}, {'value': {'type': 'number'}})
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
