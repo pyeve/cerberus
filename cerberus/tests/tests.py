@@ -1315,6 +1315,11 @@ class TestValidation(TestBase):
         self.assertSuccess({'date': date(1945, 5, 8)}, schema)
         self.assertFail({'date': date(1871, 5, 10)}, schema)
 
+    def test_dict_length(self):
+        schema = {'dict': {'minlength': 1}}
+        self.assertFail({'dict': {}}, schema)
+        self.assertSuccess({'dict': {'foo': 'bar'}}, schema)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
