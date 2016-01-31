@@ -257,15 +257,17 @@ See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
 min, max
 --------
-Minimum and maximum value allowed for ``integer``, ``float`` and ``number``
-types.
+Minimum and maximum value allowed for any types that implement comparison operators.
+
+.. versionchanged:: 0.10
+  Allows any type to be compared.
 
 .. versionchanged:: 0.7
   Added support for ``float`` and ``number`` types.
 
 minlength, maxlength
 --------------------
-Minimum and maximum length allowed for ``string`` and ``list`` types.
+Minimum and maximum length allowed for sequences.
 
 noneof
 ------
