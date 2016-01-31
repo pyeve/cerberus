@@ -267,7 +267,7 @@ Minimum and maximum value allowed for any types that implement comparison operat
 
 minlength, maxlength
 --------------------
-Minimum and maximum length allowed for sequences.
+Minimum and maximum length allowed for iterables.
 
 noneof
 ------

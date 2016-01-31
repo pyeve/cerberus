@@ -1002,14 +1002,12 @@ class Validator(object):
 
     def _validate_maxlength(self, max_length, field, value):
         """ {'type': 'integer'} """
-        if isinstance(value, Sequence):
-            if len(value) > max_length:
+        if isinstance(value, Iterable) and len(value) > max_length:
                 self._error(field, errors.MAX_LENGTH, len(value))
 
     def _validate_minlength(self, min_length, field, value):
         """ {'type': 'integer'} """
-        if isinstance(value, Sequence):
-            if len(value) < min_length:
+        if isinstance(value, Iterable) and len(value) < min_length:
                 self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
@@ -1168,7 +1166,8 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_type_number(self, field, value):
-        if not isinstance(value, (_int_types, float)) or isinstance(value, bool):
+        if not isinstance(value, (_int_types, float)) \
+                or isinstance(value, bool):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_type_set(self, field, value):
