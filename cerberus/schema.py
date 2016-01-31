@@ -24,9 +24,7 @@ class DefinitionSchema(MutableMapping):
 
     class Encoder(json.JSONEncoder):
         def default(self, o):
-            if isinstance(o, Callable):
-                return repr(o)
-            return json.JSONEncoder.default(self, o)
+            return repr(o)
 
     def __new__(cls, *args, **kwargs):
         if 'SchemaValidator' not in globals():

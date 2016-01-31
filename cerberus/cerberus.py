@@ -988,16 +988,18 @@ class Validator(object):
         self.__validate_logical('oneof', definitions, field, value)
 
     def _validate_max(self, max_value, field, value):
-        """ {'type': 'number'} """
-        if isinstance(value, (_int_types, float)):
+        try:
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
+        except TypeError:
+            pass
 
     def _validate_min(self, min_value, field, value):
-        """ {'type': 'number'} """
-        if isinstance(value, (_int_types, float)):
+        try:
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
+        except TypeError:
+            pass
 
     def _validate_maxlength(self, max_length, field, value):
         """ {'type': 'integer'} """
