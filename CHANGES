@@ -8,6 +8,8 @@ Version 0.10
 
 Not released yet.
 
+- New: Support arbitrary types with 'max' and 'min' (Frank Sachsenheim).
+- New: Support any iterable with 'minlength' and 'maxlength'. Closes #158 (Frank Sachsenheim).
 - New: 'default' normalization rule. Closes #131 (Damián Nohales).
 - New: 'excludes' rule (calve). Addresses #132.
 - New: 'forbidden' rule (Frank Sachsenheim).
@@ -45,6 +47,7 @@ Not released yet.
 - Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
 - Change: Use warnings.warn for deprecation-warnings if available (Frank Sachsenheim).
 
+- Fix: 'number' type fails if value is boolean. Closes #144 (Frank Sachsenheim).
 - Fix: allow None in 'default' normalization rule (Damián Nohales).
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
   #185.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 from random import choice
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
@@ -1305,6 +1305,20 @@ class TestValidation(TestBase):
                 "'this_field'", field="that_field"),
              'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")})
+
+    def test_boolean_is_not_a_number(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/144
+        self.assertFail({'value': True}, {'value': {'type': 'number'}})
+
+    def test_min_max_date(self):
+        schema = {'date': {'min': date(1900, 1, 1), 'max': date(1999, 12, 31)}}
+        self.assertSuccess({'date': date(1945, 5, 8)}, schema)
+        self.assertFail({'date': date(1871, 5, 10)}, schema)
+
+    def test_dict_length(self):
+        schema = {'dict': {'minlength': 1}}
+        self.assertFail({'dict': {}}, schema)
+        self.assertSuccess({'dict': {'foo': 'bar'}}, schema)
 
 
 class TestNormalization(TestBase):
