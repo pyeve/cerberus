@@ -62,14 +62,14 @@ You can set default values for missing fields in the document by using the ``def
 .. doctest::
 
    >>> v.schema = {'amount': {'type': 'integer'}, 'kind': {'type': 'string', 'default': 'purchase'}}
-   >>> v.normalized({'amount': 1})
-   {'amount': 1, 'kind': 'purchase'}
+   >>> v.normalized({'amount': 1}) == {'amount': 1, 'kind': 'purchase'}
+   True
 
-   >>> v.normalized({'amount': 1, 'kind': None})
-   {'amount': 1, 'kind': 'purchase'}
+   >>> v.normalized({'amount': 1, 'kind': None}) == {'amount': 1, 'kind': 'purchase'}
+   True
 
-   >>> v.normalized({'amount': 1, 'kind': 'other'})
-   {'amount': 1, 'kind': 'other'}
+   >>> v.normalized({'amount': 1, 'kind': 'other'}) == {'amount': 1, 'kind': 'other'}
+   True
 
 .. versionadded:: 0.10
 
