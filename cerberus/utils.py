@@ -1,4 +1,17 @@
+from collections import Mapping
+
 from .platform import _int_types, _str_type
+
+
+def cast_keys_to_strings(mapping):
+    result = {}
+    for key in mapping:
+        if isinstance(mapping[key], Mapping):
+            value = cast_keys_to_strings(mapping[key])
+        else:
+            value = mapping[key]
+        result[str(type(key)) + str(key)] = value
+    return result
 
 
 def compare_paths_lt(x, y):
