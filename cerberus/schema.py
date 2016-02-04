@@ -5,7 +5,20 @@ from warnings import warn
 
 from . import errors
 from .platform import _str_type
-from .utils import validator_factory
+from .utils import cast_keys_to_strings, validator_factory
+
+
+def schema_hash(schema, validator):
+    class Encoder(json.JSONEncoder):
+        def default(self, o):
+            return repr(o)
+
+    _hash = hash(json.dumps(cast_keys_to_strings(schema),
+                            cls=Encoder, sort_keys=True))
+    if validator.transparent_schema_rules:
+        _hash *= -1
+
+    return _hash
 
 
 class SchemaError(Exception):
@@ -20,10 +33,6 @@ class DefinitionSchema(MutableMapping):
 
         .. versionadded:: 0.10
     """
-
-    class Encoder(json.JSONEncoder):
-        def default(self, o):
-            return repr(o)
 
     def __new__(cls, *args, **kwargs):
         if 'SchemaValidator' not in globals():
@@ -107,23 +116,10 @@ class DefinitionSchema(MutableMapping):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
     def validate(self, schema):
-        _hash = hash(json.dumps(self.__cast_keys_to_strings(schema),
-                                cls=self.Encoder, sort_keys=True))
-        if self.validator.transparent_schema_rules:
-            _hash *= -1
+        _hash = schema_hash(schema, self.validator)
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
             self.validator._valid_schemas.add(_hash)
-
-    def __cast_keys_to_strings(self, mapping):
-        result = {}
-        for key in mapping:
-            if isinstance(mapping[key], Mapping):
-                value = self.__cast_keys_to_strings(mapping[key])
-            else:
-                value = mapping[key]
-            result[str(type(key)) + str(key)] = value
-        return result
 
     def _validate(self, schema):
         """ Validates a schema that defines rules against supported rules.
@@ -179,9 +175,17 @@ class SchemaValidatorMixin:
             schema=self.root_allow_unknown['schema'],
             allow_unknown=self.root_allow_unknown['allow_unknown']
         )
+
         for constraints in value:
+            _hash = schema_hash({'turing': constraints}, self.target_validator)
+            if _hash in self.target_validator._valid_schemas:
+                continue
+
             validator(constraints, normalize=False)
-            self._error(validator._errors)
+            if validator._errors:
+                self._error(validator._errors)
+            else:
+                self.target_validator._valid_schemas.add(_hash)
 
     def _validate_type_callable(self, field, value):
         if not isinstance(value, Callable):
@@ -197,12 +201,19 @@ class SchemaValidatorMixin:
             self._validate_type_hashable(field, item)
 
     def _validator_bulk_schema(self, field, value):
+        _hash = schema_hash({'turing': value}, self.target_validator)
+        if _hash in self.target_validator._valid_schemas:
+            return
+
         validator = self._get_child_validator(
             document_crumb=field,
             schema=self.root_allow_unknown['schema'],
             allow_unknown=self.root_allow_unknown['allow_unknown'])
         validator(value, normalize=False)
-        self._error(validator._errors)
+        if validator._errors:
+            self._error(validator._errors)
+        else:
+            self.target_validator._valid_schemas.add(_hash)
 
     def _validator_handler(self, field, value):
         if isinstance(value, Callable):
@@ -227,11 +238,18 @@ class SchemaValidatorMixin:
                 self._validator_bulk_schema((field, i), schema)
 
     def _validator_schema(self, field, value):
+        _hash = schema_hash(value, self.target_validator)
+        if _hash in self.target_validator._valid_schemas:
+            return
+
         validator = self._get_child_validator(
             document_crumb=field,
             schema=None, allow_unknown=self.root_allow_unknown)
         validator(value, normalize=False)
-        self._error(validator._errors)
+        if validator._errors:
+            self._error(validator._errors)
+        else:
+            self.target_validator._valid_schemas.add(_hash)
 
 
 def expand_definition_schema(schema):
