@@ -71,6 +71,23 @@ You can set default values for missing fields in the document by using the ``def
    >>> v.normalized({'amount': 1, 'kind': 'other'}) == {'amount': 1, 'kind': 'other'}
    True
 
+You can also define a default setter callable to set the default value
+dynamically. The callable gets called with the current (sub)document as the
+only argument. Callables can even depend on one another, but normalizing will
+fail if there is a unresolvable/circular dependency. If the constraint is a
+string, it points to a :doc:`custom method <customize>`.
+
+.. doctest::
+
+   >>> v.schema = {'a': {'type': 'integer'}, 'b': {'type': 'integer', 'default_setter': lambda doc: doc['a'] + 1}}
+   >>> v.normalized({'a': 1}) == {'a': 1, 'b': 2}
+   True
+
+   >>> v.schema = {'a': {'type': 'integer', 'default_setter': lambda doc: doc['not_there']}}
+   >>> v.normalized({})
+   >>> v.errors
+   {'a': "default value for 'a' cannot be set: Circular/unresolvable dependencies for default setters."}
+
 .. versionadded:: 0.10
 
 .. _type-coercion:
