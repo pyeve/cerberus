@@ -682,6 +682,12 @@ class Validator(object):
         for field in filter(lambda f: 'default' in schema[f], fields):
             self._normalize_default(mapping, schema, field)
 
+        # Now only fields with default_setter remain. We create a "todo list"
+        # and process them in order. If calling a default setter fails we
+        # assume that it depends on another one and retry later by moving the
+        # field to the end of the todo list.
+        # But if we see the same todo list twice we would end up in an infinite
+        # loop. In this case we set errors for all remaining fields in the list.
         todo = list(filter(lambda f: 'default_setter' in schema[f], fields))
         known_states = set()
         while todo:
@@ -689,15 +695,13 @@ class Validator(object):
             try:
                 self._normalize_default_setter(mapping, schema, field)
             except KeyError:
-                # delay processing of this field as it may depend on
-                # another default setter which is processed later
                 todo.append(field)
             except Exception as e:
                 self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
             self._watch_for_unresolvable_dependencies(todo, known_states)
 
     def _watch_for_unresolvable_dependencies(self, todo, known_states):
-        """ Raises an error if the same todo list appears twice. """
+        """ Sets errors for fields if the same todo list appears twice. """
         state = repr(todo)
         if state in known_states:
             for field in todo:
