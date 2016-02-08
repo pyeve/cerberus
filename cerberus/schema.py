@@ -51,7 +51,7 @@ class DefinitionSchema(MutableMapping):
         self.validator = validator
         self.schema = schema
         self.validation_schema = SchemaValidationSchema(validator)
-        self.schema_validator = SchemaValidator(
+        self.schema_validator = SchemaValidator(  # noqa
             UnvalidatedSchema(), error_handler=errors.SchemaErrorHandler,
             target_schema=schema, target_validator=validator)
         self.schema_validator.allow_unknown = self.validation_schema

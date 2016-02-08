@@ -1458,33 +1458,66 @@ class TestNormalization(TestBase):
             self.assertIsInstance(x, float)
 
     def test_default_missing(self):
+        self._test_default_missing({'default': 'bar_value'})
+
+    def test_default_setter_missing(self):
+        self._test_default_missing({'default_setter': lambda doc: 'bar_value'})
+
+    def _test_default_missing(self, default):
+        bar_schema = {'type': 'string'}
+        bar_schema.update(default)
         schema = {'foo': {'type': 'string'},
-                  'bar': {'type': 'string',
-                          'default': 'bar_value'}}
+                  'bar': bar_schema}
         document = {'foo': 'foo_value'}
         expected = {'foo': 'foo_value', 'bar': 'bar_value'}
         self.assertNormalized(document, expected, schema)
 
     def test_default_existent(self):
+        self._test_default_existent({'default': 'bar_value'})
+
+    def test_default_setter_existent(self):
+        def raise_error(doc):
+            raise RuntimeError('should not be called')
+        self._test_default_existent({'default_setter': raise_error})
+
+    def _test_default_existent(self, default):
+        bar_schema = {'type': 'string'}
+        bar_schema.update(default)
         schema = {'foo': {'type': 'string'},
-                  'bar': {'type': 'string',
-                          'default': 'bar_value'}}
+                  'bar': bar_schema}
         document = {'foo': 'foo_value', 'bar': 'non_default'}
         self.assertNormalized(document, document.copy(), schema)
 
     def test_default_none_nullable(self):
+        self._test_default_none_nullable({'default': 'bar_value'})
+
+    def test_default_setter_none_nullable(self):
+        def raise_error(doc):
+            raise RuntimeError('should not be called')
+        self._test_default_none_nullable({'default_setter': raise_error})
+
+    def _test_default_none_nullable(self, default):
+        bar_schema = {'type': 'string',
+                      'nullable': True}
+        bar_schema.update(default)
         schema = {'foo': {'type': 'string'},
-                  'bar': {'type': 'string',
-                          'nullable': True,
-                          'default': 'bar_value'}}
+                  'bar': bar_schema}
         document = {'foo': 'foo_value', 'bar': None}
         self.assertNormalized(document, document.copy(), schema)
 
     def test_default_none_nonnullable(self):
+        self._test_default_none_nullable({'default': 'bar_value'})
+
+    def test_default_setter_none_nonnullable(self):
+        self._test_default_none_nullable(
+            {'default_setter': lambda doc: 'bar_value'})
+
+    def _test_default_none_nonnullable(self, default):
+        bar_schema = {'type': 'string',
+                      'nullable': False}
+        bar_schema.update(default)
         schema = {'foo': {'type': 'string'},
-                  'bar': {'type': 'string',
-                          'nullable': False,
-                          'default': 'bar_value'}}
+                  'bar': bar_schema}
         document = {'foo': 'foo_value', 'bar': 'bar_value'}
         self.assertNormalized(document, document.copy(), schema)
 
@@ -1498,14 +1531,60 @@ class TestNormalization(TestBase):
         self.assertNormalized(document, expected, schema)
 
     def test_default_missing_in_subschema(self):
+        self._test_default_missing_in_subschema({'default': 'bar_value'})
+
+    def test_default_setter_missing_in_subschema(self):
+        self._test_default_missing_in_subschema(
+            {'default_setter': lambda doc: 'bar_value'})
+
+    def _test_default_missing_in_subschema(self, default):
+        bar_schema = {'type': 'string'}
+        bar_schema.update(default)
         schema = {'thing': {'type': 'dict',
                             'schema': {'foo': {'type': 'string'},
-                                       'bar': {'type': 'string',
-                                               'default': 'bar_value'}}}}
+                                       'bar': bar_schema}}}
         document = {'thing': {'foo': 'foo_value'}}
         expected = {'thing': {'foo': 'foo_value',
                               'bar': 'bar_value'}}
         self.assertNormalized(document, expected, schema)
+
+    def test_depending_default_setters(self):
+        schema = {
+            'a': {'type': 'integer'},
+            'b': {'type': 'integer', 'default_setter': lambda d: d['a'] + 1},
+            'c': {'type': 'integer', 'default_setter': lambda d: d['b'] * 2},
+            'd': {'type': 'integer',
+                  'default_setter': lambda d: d['b'] + d['c']}
+        }
+        document = {'a': 1}
+        expected = {'a': 1, 'b': 2, 'c': 4, 'd': 6}
+        self.assertNormalized(document, expected, schema)
+
+    # def test_depending_and_nested_default_setters(self):
+    #     schema = {
+    #         'outer': {'type': 'integer'},
+    #         'nested': {
+    #             'type': 'dict',
+    #             'schema': {
+    #                 'a': {'type': 'integer'},
+    #                 'b': {'type': 'integer',
+    #                       'default_setter': lambda d: d['a'] + d['outer']}
+    #             }
+    #         },
+    #         'c': {'type': 'integer',
+    #               'default_setter': lambda d: d['nested']['b'] + 1}
+    #     }
+    #     document = {'outer': 1, 'nested': {'a': 1}}
+    #     expected = {'outer': 1, 'nested': {'a': 1, 'b': 2}, 'c': 3}
+    #     self.assertNormalized(document, expected, schema)
+
+    def test_circular_depending_default_setters(self):
+        schema = {
+            'a': {'type': 'integer', 'default_setter': lambda d: d['b'] + 1},
+            'b': {'type': 'integer', 'default_setter': lambda d: d['a'] + 1}
+        }
+        self.validator({}, schema)
+        self.assertIn(errors.SETTING_DEFAULT_FAILED, self.validator._errors)
 
     def test_custom_coerce_and_rename(self):
         class MyNormalizer(Validator):

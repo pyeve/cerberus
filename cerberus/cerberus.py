@@ -513,7 +513,7 @@ class Validator(object):
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
-        self._normalize_default(mapping, schema)
+        self.__normalize_default_fields(mapping, schema)
         self._normalize_coerce(mapping, schema)
         self.__normalize_containers(mapping, schema)
         return mapping
@@ -672,14 +672,56 @@ class Validator(object):
             mapping[new_name] = mapping[field]
             del mapping[field]
 
-    def _normalize_default(self, mapping, schema):
+    def __normalize_default_fields(self, mapping, schema):
+        def has_no_value(field):
+            return field not in mapping or mapping[field] is None and \
+                not schema[field].get('nullable', False)
+        fields = list(filter(has_no_value, list(schema)))
+
+        # process constant default values first
+        for field in filter(lambda f: 'default' in schema[f], fields):
+            self._normalize_default(mapping, schema, field)
+
+        todo = list(filter(lambda f: 'default_setter' in schema[f], fields))
+        known_states = set()
+        while todo:
+            field = todo.pop(0)
+            try:
+                self._normalize_default_setter(mapping, schema, field)
+            except KeyError:
+                # delay processing of this field as it may depend on
+                # another default setter which is processed later
+                todo.append(field)
+            except Exception as e:
+                self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
+            self._watch_for_unresolvable_dependencies(todo, known_states)
+
+    def _watch_for_unresolvable_dependencies(self, todo, known_states):
+        """ Raises an error if the same todo list appears twice. """
+        state = repr(todo)
+        if state in known_states:
+            for field in todo:
+                msg = 'Circular/unresolvable dependencies for default setters.'
+                self._error(field, errors.SETTING_DEFAULT_FAILED, msg)
+                todo.remove(field)
+        else:
+            known_states.add(state)
+
+    def _normalize_default(self, mapping, schema, field):
         """ {'nullable': True} """
-        for field in tuple(schema):
-            nullable = schema[field].get('nullable', False)
-            if 'default' in schema[field] and \
-                    (field not in mapping or
-                     mapping[field] is None and not nullable):
-                mapping[field] = schema[field]['default']
+        mapping[field] = schema[field]['default']
+
+    def _normalize_default_setter(self, mapping, schema, field):
+        """ {'anyof': [
+                {'type': 'callable'},
+                {'type': 'string'}
+                ]} """
+        if 'default_setter' in schema[field]:
+            setter = schema[field]['default_setter']
+            if isinstance(setter, _str_type):
+                setter = self.__get_rule_handler('normalize_default_setter',
+                                                 setter)
+            mapping[field] = setter(mapping)
 
     # # Validating
 

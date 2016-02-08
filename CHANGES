@@ -8,6 +8,7 @@ Version 0.10
 
 Not released yet.
 
+- New: Allow callables for 'default' schema rule (Dominik Kellner).
 - New: Support arbitrary types with 'max' and 'min' (Frank Sachsenheim).
 - New: Support any iterable with 'minlength' and 'maxlength'. Closes #158 (Frank Sachsenheim).
 - New: 'default' normalization rule. Closes #131 (Damián Nohales).

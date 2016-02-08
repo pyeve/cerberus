@@ -52,6 +52,7 @@ FORBIDDEN_VALUES = ErrorDefinition(0x47, 'forbidden')
 COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
 RENAMING_FAILED = ErrorDefinition(0x62, 'rename_handler')
 READONLY_FIELD = ErrorDefinition(0x63, 'readonly')
+SETTING_DEFAULT_FAILED = ErrorDefinition(0x64, 'default_setter')
 
 # groups
 ERROR_GROUP = ErrorDefinition(0x80, None)
@@ -352,6 +353,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x61: "field '{field}' cannot be coerced: {0}",
                 0x62: "field '{field}' cannot be renamed: {0}",
                 0x63: "field is read-only",
+                0x64: "default value for '{field}' cannot be set: {0}",
 
                 0x81: "mapping doesn't validate subschema: {0}",
                 0x82: "one or more sequence-items don't validate: {0}",

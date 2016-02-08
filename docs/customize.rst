@@ -125,6 +125,25 @@ a method as ``rename_handler``. The method name must be prefixed with
    >>> MyNormalizer(2).normalized(document, schema)
    {'foo': 4}
 
+Custom Default Setters
+----------------------
+Similar to custom rename handlers, it is also possible to create custom default
+setters.
+
+.. testcode::
+
+    from datetime import datetime
+
+    class MyNormalizer(Validator):
+        def _normalize_default_setter_utcnow(self, document):
+            return datetime.utcnow()
+
+.. doctest::
+
+   >>> schema = {'creation_date': {'type': 'datetime', 'default_setter': 'utcnow'}}
+   >>> MyNormalizer().normalized({}, schema)
+   {'creation_date': datetime.datetime(...)}
+
 Limitations
 -----------
 It may be a bad idea to overwrite particular contributed rules.
