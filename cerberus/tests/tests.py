@@ -1560,24 +1560,6 @@ class TestNormalization(TestBase):
         expected = {'a': 1, 'b': 2, 'c': 4, 'd': 6}
         self.assertNormalized(document, expected, schema)
 
-    # def test_depending_and_nested_default_setters(self):
-    #     schema = {
-    #         'outer': {'type': 'integer'},
-    #         'nested': {
-    #             'type': 'dict',
-    #             'schema': {
-    #                 'a': {'type': 'integer'},
-    #                 'b': {'type': 'integer',
-    #                       'default_setter': lambda d: d['a'] + d['outer']}
-    #             }
-    #         },
-    #         'c': {'type': 'integer',
-    #               'default_setter': lambda d: d['nested']['b'] + 1}
-    #     }
-    #     document = {'outer': 1, 'nested': {'a': 1}}
-    #     expected = {'outer': 1, 'nested': {'a': 1, 'b': 2}, 'c': 3}
-    #     self.assertNormalized(document, expected, schema)
-
     def test_circular_depending_default_setters(self):
         schema = {
             'a': {'type': 'integer', 'default_setter': lambda d: d['b'] + 1},
