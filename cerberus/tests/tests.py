@@ -91,6 +91,10 @@ class TestValidation(TestBase):
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
 
+    def test_not_a_binary(self):
+        # 'u' literal prefix produces type `str` in Python 3
+        self.assertBadType('a_binary', 'binary', u"i'm not a binary")
+
     def test_not_a_integer(self):
         self.assertBadType('an_integer', 'integer', "i'm not an integer")
 
@@ -120,10 +124,26 @@ class TestValidation(TestBase):
         self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
                          max_length, (len(value),))
 
+    def test_bad_max_length_binary(self):
+        field = 'a_binary'
+        max_length = self.schema[field]['maxlength']
+        value = b'\x00' * (max_length + 1)
+        self.assertFail({field: value})
+        self.assertError(field, (field, 'maxlength'), errors.MAX_LENGTH,
+                         max_length, (len(value),))
+
     def test_bad_min_length(self):
         field = 'a_string'
         min_length = self.schema[field]['minlength']
         value = "".join(choice(ascii_lowercase) for i in range(min_length - 1))
+        self.assertFail({field: value})
+        self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
+                         min_length, (len(value),))
+
+    def test_bad_min_length_binary(self):
+        field = 'a_binary'
+        min_length = self.schema[field]['minlength']
+        value = b'\x00' * (min_length - 1)
         self.assertFail({field: value})
         self.assertError(field, (field, 'minlength'), errors.MIN_LENGTH,
                          min_length, (len(value),))

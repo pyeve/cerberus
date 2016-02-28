@@ -1219,6 +1219,10 @@ class Validator(object):
         if not isinstance(value, _int_types):
             self._error(field, errors.BAD_TYPE)
 
+    def _validate_type_binary(self, field, value):
+        if not isinstance(value, (bytes, bytearray)):
+            self._error(field, errors.BAD_TYPE)
+
     def _validate_type_list(self, field, value):
         if not isinstance(value, Sequence) or isinstance(
                 value, _str_type):

@@ -567,6 +567,9 @@ Data type allowed for the key value. Can be one of the following names:
    * - ``string``
      - :func:`py2:basestring`
      - :class:`py3:str`
+   * - ``binary``
+     - :class:`py2:str`
+     - :class:`py3:bytes`, :class:`py3:bytearry`
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -598,6 +601,9 @@ A list of types can be used to allow different values:
     rules on the field will be skipped and validation will continue on other
     fields. This allows to safely assume that field type is correct when other
     (standard or custom) rules are invoked.
+
+.. versionchanged:: 0.10
+   Added the ``binary`` data type.
 
 .. versionchanged:: 0.9
    If a list of types is given, the key value must match *any* of them.

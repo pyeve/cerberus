@@ -18,9 +18,16 @@ class TestBase(unittest.TestCase):
     def setUp(self):
         self.document = {'name': 'john doe'}
         self.schema = {
-            'a_string': {'type': 'string',
-                         'minlength': 2,
-                         'maxlength': 10},
+            'a_string': {
+                'type': 'string',
+                'minlength': 2,
+                'maxlength': 10
+            },
+            'a_binary': {
+                'type': 'binary',
+                'minlength': 2,
+                'maxlength': 10
+            },
             'a_nullable_integer': {
                 'type': 'integer',
                 'nullable': True
