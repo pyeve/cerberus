@@ -258,12 +258,13 @@ Study the source code for example usages.
     Added ``document_crumb`` and ``schema_crumb`` as optional keyword-
     arguments.
 
-`Validator.root_document` & `Validator.root_schema`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`Validator.root_document`, `.root_schema` & `root_allow_unknown`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A child-validator - as used when validating a ``schema`` - can access the first
-generation validator's document and schema that are being processed via its
-``root_document`` and ``root_schema``-properties.
+generation validator's document and schema that are being processed as well as
+the constraints for unknown fields via its ``root_document`` and ``root_schema``
+``root_allow_unknown``-properties.
 It's untested what happens when you change that. It may make ``boom``.
 
 .. versionadded:: 0.10
@@ -274,6 +275,14 @@ It's untested what happens when you change that. It may make ``boom``.
 These properties maintain the path of keys within the document respectively the
 schema that was traversed by possible parent-validators. Both will be used as
 base path when an error is submitted.
+
+.. versionadded:: 0.10
+
+`Validator.recent_error`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The last single error that was submitted is accessible through the
+``recent_error``-attribute.
 
 .. versionadded:: 0.10
 

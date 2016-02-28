@@ -253,6 +253,7 @@ class Validator(object):
 
         self.document = None
         self._errors = errors.ErrorsList()
+        self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
         self.document_path = ()
@@ -340,10 +341,10 @@ class Validator(object):
 
             value = self.document.get(field)
 
-            error = errors.ValidationError(document_path, schema_path,
-                                           code, rule, constraint,
-                                           value, info)
-            self._error([error])
+            self.recent_error = errors.ValidationError(
+                document_path, schema_path, code, rule, constraint, value, info
+            )
+            self._error([self.recent_error])
 
     def _get_child_validator(self, document_crumb=None, schema_crumb=None,
                              **kwargs):
@@ -485,6 +486,7 @@ class Validator(object):
 
     def __init_processing(self, document, schema=None):
         self._errors = errors.ErrorsList()
+        self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
         self.document = copy(document)
