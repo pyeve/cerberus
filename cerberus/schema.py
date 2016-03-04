@@ -89,12 +89,8 @@ class DefinitionSchema(MutableMapping):
         return str(self)
 
     def __setitem__(self, key, value):
-        try:
-            self.validate({key: value})
-        except:
-            raise
-        else:
-            self.schema[key] = value
+        self.validate({key: value})
+        self.schema[key] = value
 
     def __str__(self):
         return str(self.schema)

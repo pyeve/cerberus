@@ -39,6 +39,12 @@ class DocumentError(Exception):
     pass
 
 
+class _SchemaRuleTypeError(Exception):
+    """ Raised when a schema (list) validation encounters a mapping.
+        Not supposed to be used outside this module. """
+    pass
+
+
 class Validator(object):
     """ Validator class. Normalizes and validates any mapping against a
     validation-schema which is provided as an argument at class instantiation
@@ -247,6 +253,7 @@ class Validator(object):
 
         self.document = None
         self._errors = errors.ErrorsList()
+        self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
         self.document_path = ()
@@ -334,10 +341,10 @@ class Validator(object):
 
             value = self.document.get(field)
 
-            error = errors.ValidationError(document_path, schema_path,
-                                           code, rule, constraint,
-                                           value, info)
-            self._error([error])
+            self.recent_error = errors.ValidationError(
+                document_path, schema_path, code, rule, constraint, value, info
+            )
+            self._error([self.recent_error])
 
     def _get_child_validator(self, document_crumb=None, schema_crumb=None,
                              **kwargs):
@@ -479,6 +486,7 @@ class Validator(object):
 
     def __init_processing(self, document, schema=None):
         self._errors = errors.ErrorsList()
+        self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
         self.document = copy(document)
@@ -852,12 +860,15 @@ class Validator(object):
             if validate_rule(rule):
                 return
 
-        rules = set(self.mandatory_validations)
-        rules |= set(definitions.keys())
+        rules = set(definitions.keys())
+        rules |= set(self.mandatory_validations)
         rules -= set(prior_rules + ('allow_unknown', 'required'))
         rules -= set(self.normalization_rules)
         for rule in rules:
-            validate_rule(rule)
+            try:
+                validate_rule(rule)
+            except _SchemaRuleTypeError:
+                break
 
     _validate_allow_unknown = dummy_for_rule_validation(
         """ {'oneof': [{'type': 'boolean'},
@@ -1116,8 +1127,14 @@ class Validator(object):
 
         :param document: The document being validated.
         """
-        required = set(field for field, definition in self.schema.items()
-                       if definition.get('required') is True)
+        try:
+            required = set(field for field, definition in self.schema.items()
+                           if definition.get('required') is True)
+        except AttributeError:
+            if self.is_child and self.schema_path[-1] == 'schema':
+                raise _SchemaRuleTypeError
+            else:
+                raise
         required -= self._unrequired_by_excludes
         missing = required - set(field for field in document
                                  if document.get(field) is not None or
@@ -1153,8 +1170,12 @@ class Validator(object):
                                               schema_crumb=(field, 'schema'),
                                               schema=schema,
                                               allow_unknown=allow_unknown)
-        if not validator(value, update=self.update, normalize=False):
-            self._error(validator._errors)
+        try:
+            if not validator(value, update=self.update, normalize=False):
+                self._error(validator._errors)
+        except _SchemaRuleTypeError:
+            self._error(field, errors.BAD_TYPE_FOR_SCHEMA)
+            raise
 
     def __validate_schema_sequence(self, field, schema, value):
         schema = dict(((i, schema) for i in range(len(value))))

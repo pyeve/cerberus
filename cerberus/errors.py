@@ -35,9 +35,11 @@ DOCUMENT_FORMAT = "'{0}' is not a document, must be a dict"
 EMPTY_NOT_ALLOWED = ErrorDefinition(0x22, 'empty')
 NOT_NULLABLE = ErrorDefinition(0x23, 'nullable')
 BAD_TYPE = ErrorDefinition(0x24, 'type')
-ITEMS_LENGTH = ErrorDefinition(0x25, 'items')
-MIN_LENGTH = ErrorDefinition(0x26, 'minlength')
-MAX_LENGTH = ErrorDefinition(0x27, 'maxlength')
+BAD_TYPE_FOR_SCHEMA = ErrorDefinition(0x25, 'schema')
+ITEMS_LENGTH = ErrorDefinition(0x26, 'items')
+MIN_LENGTH = ErrorDefinition(0x27, 'minlength')
+MAX_LENGTH = ErrorDefinition(0x28, 'maxlength')
+
 
 # color
 REGEX_MISMATCH = ErrorDefinition(0x41, 'regex')

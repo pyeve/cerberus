@@ -516,6 +516,13 @@ all items of the sequence will be validated against the rules provided in
 The `schema` rule on ``list`` types is also the preferred method for defining
 and validating a list of dictionaries.
 
+.. note::
+
+    Using this rule should be accompanied with a ``type``-rule explicitly
+    restricting the field to the ``list``-type like in the example. Otherwise
+    false results can be expected when a mapping is validated against this rule
+    with constraints for a sequence.
+
 .. doctest::
 
    >>> schema = {'rows': {'type': 'list',

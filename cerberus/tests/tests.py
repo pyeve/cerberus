@@ -1259,6 +1259,31 @@ class TestValidation(TestBase):
         self.assertFail({'user': 'admin'}, schema)
         self.assertSuccess({'user': 'alice'}, schema)
 
+    def test_mapping_with_sequence_schema(self):
+        schema = {'list': {'schema': {'allowed': ['a', 'b', 'c']}}}
+        document = {'list': {'is_a': 'mapping'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('list', ('list', 'schema'),
+                         errors.BAD_TYPE_FOR_SCHEMA, schema['list']['schema'],
+                         v_errors=_errors)
+
+    def test_sequence_with_mapping_schema(self):
+        schema = {'list': {'schema': {'foo': {'allowed': ['a', 'b', 'c']}},
+                           'type': 'dict'}}
+        document = {'list': ['a', 'b', 'c']}
+        self.assertFail(document, schema)
+
+    def test_type_error_aborts_validation(self):
+        schema = {'foo': {'type': 'string', 'allowed': ['a']}}
+        document = {'foo': 0}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('foo', ('foo', 'type'), errors.BAD_TYPE, 'string',
+                         v_errors=_errors)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
