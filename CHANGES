@@ -8,6 +8,7 @@ Version 0.10
 
 Not released yet.
 
+- New: Support for binary type (Matthew Ellison).
 - New: Allow callables for 'default' schema rule (Dominik Kellner).
 - New: Support arbitrary types with 'max' and 'min' (Frank Sachsenheim).
 - New: Support any iterable with 'minlength' and 'maxlength'. Closes #158 (Frank Sachsenheim).
