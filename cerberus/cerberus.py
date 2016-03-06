@@ -611,14 +611,14 @@ class Validator(object):
             self._error(validator._errors)
         for k in result:
             if result[k] in mapping[field]:
-                continue
-            if result[k] in mapping[field]:
                 warn("Normalizing keys of {path}: {key} already exists, "
                      "its value is replaced."
                      .format(path='.'.join(self.document_path + (field,)),
                              key=k))
-            mapping[field][result[k]] = mapping[field][k]
-            del mapping[field][k]
+                mapping[field][result[k]] = mapping[field][k]
+            else:
+                mapping[field][result[k]] = mapping[field][k]
+                del mapping[field][k]
 
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
