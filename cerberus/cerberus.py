@@ -605,7 +605,7 @@ class Validator(object):
         validator = self._get_child_validator(
             document_crumb=(field,), schema_crumb=(field, 'propertyschema'),
             schema=schema)
-        result = validator.normalized(document)
+        result = validator.normalized(document, always_return_document=True)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
@@ -625,7 +625,8 @@ class Validator(object):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'valueschema'),
             schema=schema)
-        mapping[field] = validator.normalized(mapping[field])
+        mapping[field] = validator.normalized(mapping[field],
+                                              always_return_document=True)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
@@ -636,7 +637,8 @@ class Validator(object):
             schema=schema[field].get('schema', {}),
             allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
-        mapping[field] = validator.normalized(mapping[field])
+        mapping[field] = validator.normalized(mapping[field],
+                                              always_return_document=True)
         if validator._errors:
             self._error(validator._errors)
 
