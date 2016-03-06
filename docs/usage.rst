@@ -183,8 +183,10 @@ to process a document and fetch its processed result.
 `validated` Method
 ~~~~~~~~~~~~~~~~~~
 There's a wrapper-method :meth:`~cerberus.Validator.validated` that returns the
-validated document. If the document didn't validate ``None`` is returned. It
-can be useful for flows like this:
+validated document. If the document didn't validate ``None`` is returned,
+unless you call the method with the keyword argument ``always_return_document``
+set to ``True``.
+It can be useful for flows like this:
 
 .. testsetup::
 
@@ -193,17 +195,17 @@ can be useful for flows like this:
 .. testcode::
 
     v = Validator(schema)
-    valid_documents = [x for x in [v.validated(y) for y in documents] if x is not None]
+    valid_documents = [x for x in [v.validated(y) for y in documents]
+                       if x is not None]
 
-If a coercion callable raises a :exc:`TypeError` or :exc:`ValueError` then the
-exception will be caught and the validation with fail.  All other exception
-pass through.
+If a coercion callable or method raises an exception then the exception will
+be caught and the validation with fail.
 
 .. versionadded:: 0.9
 
 `normalized` Method
 ~~~~~~~~~~~~~~~~~~~
-Similary, the :meth:`~cerberus.Validator.normalized` method returns a
+Similarly, the :meth:`~cerberus.Validator.normalized` method returns a
 normalized copy of a document without validating it:
 
 .. doctest::
@@ -253,4 +255,5 @@ Warnings
 --------
 
 Warnings, such as about deprecations or likely causes of trouble, are issued
-through the Python standard library's :mod:`warnings` module.
+through the Python standard library's :mod:`warnings` module. The logging
+module can be configured to catch these :func:`logging.captureWarnings`.

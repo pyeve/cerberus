@@ -511,7 +511,7 @@ class Validator(object):
 
     # # Normalizing
 
-    def normalized(self, document, schema=None):
+    def normalized(self, document, schema=None, always_return_document=False):
         """ Returns the document normalized according to the specified rules
         of a schema.
 
@@ -519,6 +519,8 @@ class Validator(object):
         :param schema: The validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
                        class instantiation.
+        :param always_return_document: Return the document, even if an error
+                                       occurred; default: False.
 
         :return: A normalized copy of the provided mapping or ``None`` if an
                  error occurred during normalization.
@@ -526,7 +528,7 @@ class Validator(object):
         self.__init_processing(document, schema)
         self.__normalize_mapping(self.document, self.schema)
         self.error_handler.end(self)
-        if self._errors:
+        if self._errors and not always_return_document:
             return None
         else:
             return self.document
@@ -801,8 +803,9 @@ class Validator(object):
         """ Wrapper around :func:`validate` that returns the normalized and
         validated document or ``None`` if validation failed.
         """
+        always_return_document = kwargs.pop('always_return_document', False)
         self.validate(*args, **kwargs)
-        if self._errors:
+        if self._errors and not always_return_document:
             return None
         else:
             return self.document
