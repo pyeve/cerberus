@@ -220,13 +220,15 @@ class Validator(object):
                 cls.validation_rules[attribute] = constraints
 
         cls.validation_rules['type']['allowed'] = cls.types
-        x = cls.validation_rules['validator']['anyof']
+        x = cls.validation_rules['validator']['oneof']
         x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
 
-        cls.coercers, cls.normalization_rules = (), {}
+        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
                 cls.coercers += (attribute[len('coerce_'):],)
+            elif attribute.startswith('default_setter_'):
+                cls.default_setters += (attribute[len('default_setter_'):],)
             else:
                 constraints = getattr(cls, '_normalize_' + attribute).__doc__
                 constraints = {} if constraints is None \
@@ -234,9 +236,11 @@ class Validator(object):
                 cls.normalization_rules[attribute] = constraints
 
         for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['anyof']
+            x = cls.normalization_rules[rule]['oneof']
             x[1]['schema']['oneof'][1]['allowed'] = \
                 x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
+            cls.default_setters
 
         cls.rules = {}
         cls.rules.update(cls.validation_rules)
@@ -537,7 +541,7 @@ class Validator(object):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
@@ -674,7 +678,7 @@ class Validator(object):
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
@@ -734,7 +738,7 @@ class Validator(object):
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'string'}
                 ]} """
@@ -1263,7 +1267,7 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_validator(self, validator, field, value):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
