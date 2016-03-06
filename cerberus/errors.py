@@ -51,6 +51,7 @@ FORBIDDEN_VALUE = ErrorDefinition(0x46, 'forbidden')
 FORBIDDEN_VALUES = ErrorDefinition(0x47, 'forbidden')
 
 # other
+NORMALIZATION = ErrorDefinition(0x60, None)
 COERCION_FAILED = ErrorDefinition(0x61, 'coerce')
 RENAMING_FAILED = ErrorDefinition(0x62, 'rename_handler')
 READONLY_FIELD = ErrorDefinition(0x63, 'readonly')
@@ -154,6 +155,11 @@ class ValidationError:
         """ ``True`` for validation errors against different schemas. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
+    @property
+    def is_normalization_error(self):
+        """" ``True`` for normalization errors. """
+        return bool(self.code & NORMALIZATION.code)
+
 
 class ErrorsList(list):
     def __contains__(self, error_definition):
@@ -251,7 +257,7 @@ class ErrorTree(ErrorTreeNode):
         if node is not None:
             return node.errors
         else:
-            return []
+            return ErrorsList()
 
     def fetch_node_from(self, path):
         """ Returns a node for a path or ``None``.
