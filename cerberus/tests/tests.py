@@ -1581,6 +1581,18 @@ class TestNormalization(TestBase):
         self.validator({'foo': '0'}, schema)
         self.assertIn(errors.COERCION_FAILED, self.validator._errors)
 
+    def test_coerce_non_digit_in_sequence(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/211
+        schema = {'data': {'type': 'list',
+                           'schema': {'type': 'integer', 'coerce': int}}}
+        document = {'data': ['q']}
+        self.assertEqual(self.validator.validated(document, schema),
+                         None)
+        self.assertEqual(
+            self.validator.validated(document, schema,
+                                     always_return_document=True),
+            document)
+
 
 class DefinitionSchema(TestBase):
     def test_empty_schema(self):

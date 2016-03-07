@@ -220,13 +220,15 @@ class Validator(object):
                 cls.validation_rules[attribute] = constraints
 
         cls.validation_rules['type']['allowed'] = cls.types
-        x = cls.validation_rules['validator']['anyof']
+        x = cls.validation_rules['validator']['oneof']
         x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
 
-        cls.coercers, cls.normalization_rules = (), {}
+        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
                 cls.coercers += (attribute[len('coerce_'):],)
+            elif attribute.startswith('default_setter_'):
+                cls.default_setters += (attribute[len('default_setter_'):],)
             else:
                 constraints = getattr(cls, '_normalize_' + attribute).__doc__
                 constraints = {} if constraints is None \
@@ -234,9 +236,11 @@ class Validator(object):
                 cls.normalization_rules[attribute] = constraints
 
         for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['anyof']
+            x = cls.normalization_rules[rule]['oneof']
             x[1]['schema']['oneof'][1]['allowed'] = \
                 x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
+            cls.default_setters
 
         cls.rules = {}
         cls.rules.update(cls.validation_rules)
@@ -507,7 +511,7 @@ class Validator(object):
 
     # # Normalizing
 
-    def normalized(self, document, schema=None):
+    def normalized(self, document, schema=None, always_return_document=False):
         """ Returns the document normalized according to the specified rules
         of a schema.
 
@@ -515,6 +519,8 @@ class Validator(object):
         :param schema: The validation schema. Defaults to ``None``. If not
                        provided here, the schema must have been provided at
                        class instantiation.
+        :param always_return_document: Return the document, even if an error
+                                       occurred; default: False.
 
         :return: A normalized copy of the provided mapping or ``None`` if an
                  error occurred during normalization.
@@ -522,7 +528,7 @@ class Validator(object):
         self.__init_processing(document, schema)
         self.__normalize_mapping(self.document, self.schema)
         self.error_handler.end(self)
-        if self._errors:
+        if self._errors and not always_return_document:
             return None
         else:
             return self.document
@@ -537,7 +543,7 @@ class Validator(object):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
@@ -558,6 +564,7 @@ class Validator(object):
     def __normalize_coerce(self, processor, field, value, error):
         if isinstance(processor, _str_type):
             processor = self.__get_rule_handler('normalize_coerce', processor)
+
         elif isinstance(processor, Iterable):
             result = value
             for p in processor:
@@ -567,6 +574,7 @@ class Validator(object):
                         self.document_path + (field,)):
                     break
             return result
+
         try:
             return processor(value)
         except Exception as e:
@@ -587,8 +595,9 @@ class Validator(object):
                 if set(schema[field]) & set(('allow_unknown', 'purge_unknown',
                                              'schema')):
                     self.__normalize_mapping_per_schema(field, mapping, schema)
+            elif isinstance(mapping[field], _str_type):
+                continue
             elif isinstance(mapping[field], Sequence) and \
-                not isinstance(mapping[field], _str_type) and \
                     'schema' in schema[field]:
                 self.__normalize_sequence(field, mapping, schema)
 
@@ -597,29 +606,30 @@ class Validator(object):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=(field,), schema_crumb=(field, 'propertyschema'),
+            document_crumb=field, schema_crumb=(field, 'propertyschema'),
             schema=schema)
-        result = validator.normalized(document)
+        result = validator.normalized(document, always_return_document=True)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
         for k in result:
             if result[k] in mapping[field]:
-                continue
-            if result[k] in mapping[field]:
                 warn("Normalizing keys of {path}: {key} already exists, "
                      "its value is replaced."
                      .format(path='.'.join(self.document_path + (field,)),
                              key=k))
-            mapping[field][result[k]] = mapping[field][k]
-            del mapping[field][k]
+                mapping[field][result[k]] = mapping[field][k]
+            else:
+                mapping[field][result[k]] = mapping[field][k]
+                del mapping[field][k]
 
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'valueschema'),
             schema=schema)
-        mapping[field] = validator.normalized(mapping[field])
+        mapping[field] = validator.normalized(mapping[field],
+                                              always_return_document=True)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
@@ -630,18 +640,19 @@ class Validator(object):
             schema=schema[field].get('schema', {}),
             allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
-        mapping[field] = validator.normalized(mapping[field])
+        mapping[field] = validator.normalized(mapping[field],
+                                              always_return_document=True)
         if validator._errors:
             self._error(validator._errors)
 
     def __normalize_sequence(self, field, mapping, schema):
-        child_schema = dict(((k, schema[field]['schema'])
-                             for k in range(len(mapping[field]))))
+        schema = dict(((k, schema[field]['schema'])
+                      for k in range(len(mapping[field]))))
+        document = dict((k, v) for k, v in enumerate(mapping[field]))
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=child_schema)
-        result = validator.normalized(dict((k, v) for k, v
-                                           in enumerate(mapping[field])))
+            schema=schema)
+        result = validator.normalized(document, always_return_document=True)
         for i in result:
             mapping[field][i] = result[i]
         if validator._errors:
@@ -674,7 +685,7 @@ class Validator(object):
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
@@ -691,50 +702,38 @@ class Validator(object):
             del mapping[field]
 
     def __normalize_default_fields(self, mapping, schema):
-        def has_no_value(field):
-            return field not in mapping or mapping[field] is None and \
-                not schema[field].get('nullable', False)
-        fields = list(filter(has_no_value, list(schema)))
+        fields = [x for x in schema if x not in mapping or
+                  mapping[x] is None and not schema[x].get('nullable', False)]
 
-        # process constant default values first
-        for field in filter(lambda f: 'default' in schema[f], fields):
+        for field in [x for x in fields if 'default' in schema[x]]:
             self._normalize_default(mapping, schema, field)
 
-        # Now only fields with default_setter remain. We create a "todo list"
-        # and process them in order. If calling a default setter fails we
-        # assume that it depends on another one and retry later by moving the
-        # field to the end of the todo list.
-        # But if we see the same todo list twice we would end up in an infinite
-        # loop. In this case we set errors for all remaining fields in the list.
-        todo = list(filter(lambda f: 'default_setter' in schema[f], fields))
-        known_states = set()
-        while todo:
-            field = todo.pop(0)
+        known_fields_states = set()
+        fields = [x for x in fields if 'default_setter' in schema[x]]
+        while fields:
+            field = fields.pop(0)
             try:
                 self._normalize_default_setter(mapping, schema, field)
             except KeyError:
-                todo.append(field)
+                fields.append(field)
             except Exception as e:
                 self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
-            self._watch_for_unresolvable_dependencies(todo, known_states)
 
-    def _watch_for_unresolvable_dependencies(self, todo, known_states):
-        """ Sets errors for fields if the same todo list appears twice. """
-        state = repr(todo)
-        if state in known_states:
-            for field in todo:
-                msg = 'Circular/unresolvable dependencies for default setters.'
-                self._error(field, errors.SETTING_DEFAULT_FAILED, msg)
-                todo.remove(field)
-        else:
-            known_states.add(state)
+            fields_state = tuple(fields)
+            if fields_state in known_fields_states:
+                for field in fields:
+                    self._error(field, errors.SETTING_DEFAULT_FAILED,
+                                'Circular dependencies of default setters.')
+                break
+            else:
+                known_fields_states.add(fields_state)
 
     def _normalize_default(self, mapping, schema, field):
         """ {'nullable': True} """
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'string'}
                 ]} """
@@ -797,8 +796,9 @@ class Validator(object):
         """ Wrapper around :func:`validate` that returns the normalized and
         validated document or ``None`` if validation failed.
         """
+        always_return_document = kwargs.pop('always_return_document', False)
         self.validate(*args, **kwargs)
-        if self._errors:
+        if self._errors and not always_return_document:
             return None
         else:
             return self.document
@@ -1093,7 +1093,7 @@ class Validator(object):
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
-                document_crumb=(field,),
+                document_crumb=field,
                 schema_crumb=(field, 'propertyschema'),
                 schema=dict(((k, schema) for k in value.keys())))
             if not validator(dict(((k, k) for k in value.keys())),
@@ -1263,7 +1263,7 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_validator(self, validator, field, value):
-        """ {'anyof': [
+        """ {'oneof': [
                 {'type': 'callable'},
                 {'type': 'list',
                  'schema': {'oneof': [{'type': 'callable'},
