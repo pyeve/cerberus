@@ -1937,6 +1937,9 @@ class TestInheritance(TestBase):
         self.assertSuccess({'test': ['foo']}, validator=v)
 
 
+class TestAssorted(TestBase):
+    def test_clear_cache(self):
+        self.assertGreater(len(self.validator._valid_schemas), 0)
 class TestDockerCompose(TestBase):
     """ Tests for https://github.com/docker/compose """
     def setUp(self):
@@ -1995,3 +1998,5 @@ class TestDockerCompose(TestBase):
 
         document = {'extra_hosts': "somehost::alias:127.0.0.1"}
         self.assertFail(document, schema)
+        self.validator.clear_caches()
+        self.assertEqual(len(self.validator._valid_schemas), 0)

@@ -294,6 +294,11 @@ class Validator(object):
                 kwargs[p] = args[i]
         self._config = kwargs
 
+    @classmethod
+    def clear_caches(cls):
+        """" Purge the cache of known valid schemas. """
+        cls._valid_schemas.clear()
+
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
         :param args: Either an iterable of ValidationError-instances, a field's
