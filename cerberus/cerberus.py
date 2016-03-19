@@ -11,7 +11,7 @@
 from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
-from datetime import datetime
+from datetime import date, datetime
 import re
 from warnings import warn
 
@@ -1222,6 +1222,10 @@ class Validator(object):
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
+            self._error(field, errors.BAD_TYPE)
+
+    def _validate_type_date(self, field, value):
+        if not isinstance(value, date):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_type_datetime(self, field, value):
