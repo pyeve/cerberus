@@ -72,10 +72,10 @@ class Validator(object):
                           normalization.
     :param error_handler: The error handler that formats the result of
                           ``errors``. May be an instance or a class.
+                          Or a two-value tuple with the error-handler and a
+                          dictionary that is passed to the inizializa tion of
+                          the error handler.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
-    :param error_handler_config: A dictionary the is passed to the inizializa-
-                                 tion of the error handler. Defaults to an
-                                 empty one.
 
 
     .. versionadded:: 0.10
@@ -251,8 +251,7 @@ class Validator(object):
 
         __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
-                 error_handler_config=dict())
+                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
         """
 
         self.document = None
@@ -270,7 +269,10 @@ class Validator(object):
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
-        eh_config = kwargs.pop('error_handler_config', {})
+        if isinstance(error_handler, tuple):
+            error_handler, eh_config = error_handler
+        else:
+            eh_config = {}
         if isclass(error_handler) and \
                 issubclass(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler(**eh_config)
