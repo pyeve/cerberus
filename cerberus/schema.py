@@ -5,7 +5,7 @@ from warnings import warn
 
 from . import errors
 from .platform import _str_type
-from .utils import cast_keys_to_strings, validator_factory
+from .utils import cast_keys_to_strings, get_Validator_class, validator_factory
 
 
 def schema_hash(schema, validator):
@@ -48,6 +48,11 @@ class DefinitionSchema(MutableMapping):
         :param schema: A definition-schema as ``dict``. Defaults to an empty
                       one.
         """
+        if not isinstance(validator, get_Validator_class()):
+            raise RuntimeError('validator argument must be a Validator-'
+                               'instance.')
+        self.validator = validator
+
         if not isinstance(schema, Mapping):
             try:
                 schema = dict(schema)
@@ -55,15 +60,15 @@ class DefinitionSchema(MutableMapping):
                 raise SchemaError(
                     errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
 
-        schema = expand_definition_schema(schema)
-        self.validator = validator
-        self.schema = schema
         self.validation_schema = SchemaValidationSchema(validator)
         self.schema_validator = SchemaValidator(
             None, allow_unknown=self.validation_schema,
             error_handler=errors.SchemaErrorHandler,
             target_schema=schema, target_validator=validator)
-        self.validate(self.schema)
+
+        schema = expand_definition_schema(schema)
+        self.validate(schema)
+        self.schema = schema
 
     def __delitem__(self, key):
         _new_schema = self.schema.copy()
@@ -146,14 +151,12 @@ class UnvalidatedSchema(DefinitionSchema):
 
 class SchemaValidationSchema(UnvalidatedSchema):
     base = {'type': 'dict',
-            'allow_unknown': False,
             'schema': {}}
 
     def __init__(self, validator):
         self.schema = self.base.copy()
-        self.schema['schema'].update(validator.rules)
-        if validator.transparent_schema_rules:
-            self.schema['allow_unknown'] = True
+        self.schema['schema'] = validator.rules
+        self.schema['allow_unknown'] = validator.transparent_schema_rules
 
 
 class SchemaValidatorMixin:

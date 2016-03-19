@@ -1594,7 +1594,7 @@ class TestNormalization(TestBase):
             document)
 
 
-class DefinitionSchema(TestBase):
+class TestDefinitionSchema(TestBase):
     def test_empty_schema(self):
         v = Validator()
         self.assertSchemaError(self.document, None, v,
@@ -1697,7 +1697,7 @@ class DefinitionSchema(TestBase):
                                         {'regex': 'Sane$'}]})
 
 
-class ErrorHandling(TestBase):
+class TestErrorHandling(TestBase):
     def test__error_1(self):
         v = Validator(schema={'foo': {'type': 'string'}})
         v.document = {'foo': 42}
@@ -1909,7 +1909,7 @@ class ErrorHandling(TestBase):
 
 
 # TODO remove on next major release
-class BackwardCompatibility(TestBase):
+class TestBackwardCompatibility(TestBase):
     def test_keyschema(self):
         schema = {'a_field': {'type': 'list',
                               'schema': {'keyschema': {'type': 'string'}}}}
@@ -1940,63 +1940,5 @@ class TestInheritance(TestBase):
 class TestAssorted(TestBase):
     def test_clear_cache(self):
         self.assertGreater(len(self.validator._valid_schemas), 0)
-class TestDockerCompose(TestBase):
-    """ Tests for https://github.com/docker/compose """
-    def setUp(self):
-        self.validator = Validator()
-
-    def test_environment(self):
-        schema = {'environment': {'oneof': [{'type': 'dict',
-                                             'valueschema': {'type': 'string',
-                                                             'nullable': True}},  # noqa
-                                            {'type': 'list',
-                                             'schema': {'type': 'string'}}]}}
-
-        document = {'environment': {'VARIABLE': 'FOO'}}
-        self.assertSuccess(document, schema)
-
-        document = {'environment': ['VARIABLE=FOO']}
-        self.assertSuccess(document, schema)
-
-    def test_one_of_dict_list_string(self):
-        ptrn_domain = '[a-z0-9-]+(\.[a-z0-9-]+)+'
-        ptrn_hostname = '[a-z0-9-]+'
-        ptrn_ip = '(([0-9]{1,3})\.){3}[0-9]{1,3}'
-        ptrn_extra_host = '^(' + ptrn_hostname + '|' + ptrn_domain + '):' + ptrn_ip + '$'  # noqa
-        schema = {'extra_hosts': {'oneof': [{'type': 'string',
-                                             'regex': ptrn_extra_host},
-
-                                             {'type': 'list', 'schema': {'type': 'string', 'regex': ptrn_extra_host}},  # noqa
-
-                                             {'type': 'list',
-                                              'schema': {'type': 'dict',
-                                                         'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # noqa
-                                                         'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}},  # noqa
-
-                                             {'type': 'dict',
-                                              'propertyschema': {'type': 'string', 'regex': '^(' + ptrn_hostname + '|' + ptrn_domain + ')$'},  # noqa
-                                              'valueschema': {'type': 'string', 'regex': '^' + ptrn_ip + '$'}}  # noqa
-                                            ]}}
-
-        document = {'extra_hosts': ["www.domain.net:127.0.0.1"]}
-        self.assertSuccess(document, schema)
-
-        document = {'extra_hosts': "www.domain.net:127.0.0.1"}
-        self.assertSuccess(document, schema)
-
-        document = {'extra_hosts': ["somehost:127.0.0.1"]}
-        self.assertSuccess(document, schema)
-
-        document = {'extra_hosts': [{"somehost": "127.0.0.1"}]}
-        self.assertSuccess(document, schema)
-
-        document = {'extra_hosts': {"somehost": "127.0.0.1"}}
-        self.assertSuccess(document, schema)
-
-        document = {'extra_hosts': "127.0.0.1:somehost"}
-        self.assertFail(document, schema)
-
-        document = {'extra_hosts': "somehost::alias:127.0.0.1"}
-        self.assertFail(document, schema)
         self.validator.clear_caches()
         self.assertEqual(len(self.validator._valid_schemas), 0)
