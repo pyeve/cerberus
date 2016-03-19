@@ -16,7 +16,7 @@ import re
 from warnings import warn
 
 from . import errors
-from .platform import _str_type, _int_types
+from .platform import _int_types, _str_type, WeakSet
 from .schema import DefinitionSchema, SchemaError
 from .utils import drop_item_from_tuple, isclass
 
@@ -188,16 +188,17 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
-    _inspected_classes = set()
     is_child = False
     mandatory_validations = ('nullable', )
     priority_validations = ('nullable', 'readonly', 'type')
     _valid_schemas = set()
 
     def __new__(cls, *args, **kwargs):
-        if cls not in cls._inspected_classes:
+        if not hasattr(Validator, '_inspected_classes'):
+            Validator._inspected_classes = WeakSet()
+        if cls not in Validator._inspected_classes:
             cls.__set_introspection_properties()
-            cls._inspected_classes.add(cls)
+            Validator._inspected_classes.add(cls)
         return super(Validator, cls).__new__(cls)
 
     @classmethod
