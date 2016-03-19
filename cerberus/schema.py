@@ -111,7 +111,9 @@ class DefinitionSchema(MutableMapping):
     def regenerate_validation_schema(self):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
-    def validate(self, schema):
+    def validate(self, schema=None):
+        if schema is None:
+            schema = self.schema
         _hash = schema_hash(schema, self.validator)
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
