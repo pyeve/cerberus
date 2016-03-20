@@ -53,12 +53,10 @@ the first validation issue. The whole document will always be processed, and
     >>> v.errors
     {'age': 'min value is 10'}
 
-You will still get :exc:`~cerberus.SchemaError` and
-:exc:`~cerberus.DocumentError` exceptions.
+A :exc:`~cerberus.DocumentError` is raised when the document is not a mapping.
 
-.. versionchanged:: 0.4.1
-    The Validator class is callable, allowing for the following shorthand
-    syntax:
+The Validator class and its instances are callable, allowing for the following
+shorthand syntax:
 
 .. doctest::
 
@@ -66,12 +64,14 @@ You will still get :exc:`~cerberus.SchemaError` and
     >>> v(document)
     True
 
+.. versionadded:: 0.4.1
+
 
 Validation Schema
 -----------------
-A validation schema is a dictionary. Schema keys are the keys allowed in
-the target dictionary. Schema values express the rules that must be  matched by
-the corresponding target values.
+A validation schema is a mapping, usually a :class:`dict`. Schema keys are the
+keys allowed in the target dictionary. Schema values express the rules that
+must be matched by the corresponding target values.
 
 .. testcode::
 
@@ -82,11 +82,39 @@ which is expected to be a string not longer than 10 characters. Something like
 ``{'name': 'john doe'}`` would validate, while something like ``{'name': 'a
 very long string'}`` or ``{'name': 99}`` would not.
 
-By definition all keys are optional unless the :ref:`required`-rule is set for
-a key.
+By default all keys in a document are optional unless the :ref:`required`-rule
+is set for a key.
 
 See :doc:`validation-rules` and :doc:`normalization-rules` for an extensive
 documentation of all supported rules.
+
+Validation schemas themselves are validated when passed to the validator or a
+new set of rules is set for a document's key. A :exc:`~cerberus.SchemaError`
+is raised when an invalid validation schema is encountered.
+However, be aware that no validation can be triggered for all changes below
+that level. You could therefore trigger a validation and catch the exception:
+
+    >>> v = Validator({'foo': {'allowed': []}})
+    >>> v.schema['foo'] = {'allowed': 'strings are no valid constraint for allowed'}
+    Traceback (most recent call last):
+      File "<input>", line 1, in <module>
+      File "cerberus/schema.py", line 99, in __setitem__
+        self.validate({key: value})
+      File "cerberus/schema.py", line 126, in validate
+        self._validate(schema)
+      File "cerberus/schema.py", line 141, in _validate
+        raise SchemaError(self.schema_validator.errors)
+    SchemaError: {'foo': {'allowed': 'must be of list type'}}
+    >>> v.schema['foo']['allowed'] = 'strings are no valid constraint for allowed'
+    >>> v.schema.validate()
+    Traceback (most recent call last):
+      File "<input>", line 1, in <module>
+      File "cerberus/schema.py", line 126, in validate
+        self._validate(schema)
+      File "cerberus/schema.py", line 141, in _validate
+        raise SchemaError(self.schema_validator.errors)
+    SchemaError: {'foo': {'allowed': 'must be of list type'}}
+
 
 .. _allowing-the-unknown:
 
@@ -102,7 +130,7 @@ By default only keys defined in the schema are allowed:
     >>> v.errors
     {'sex': 'unknown field'}
 
-However, you can allow unknown key/value pairs by either setting
+However, you can allow unknown document keys pairs by either setting
 ``allow_unknown`` to ``True``:
 
 .. doctest::
@@ -157,11 +185,16 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
     ...   }
     ... }
 
-    >>> v.validate({'name': 'john', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    >>> v.validate({'name': 'john',
+    ...             'a_dict': {'an_unknown_field': 'is allowed'}},
+    ...            schema)
     True
 
     >>> # this fails as allow_unknown is still False for the parent document.
-    >>> v.validate({'name': 'john', 'an_unknown_field': 'is not allowed', 'a_dict':{'an_unknown_field': 'is allowed'}}, schema)
+    >>> v.validate({'name': 'john',
+    ...             'an_unknown_field': 'is not allowed',
+    ...             'a_dict':{'an_unknown_field': 'is allowed'}},
+    ...            schema)
     False
 
     >>> v.errors

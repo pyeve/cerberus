@@ -550,6 +550,9 @@ Data type allowed for the key value. Can be one of the following names:
    * - ``boolean``
      - :class:`py2:bool`
      - :class:`py3:bool`
+   * - ``date``
+     - :class:`py2:datetime.date`
+     - :class:`py3:datetime.date`
    * - ``datetime``
      - :class:`py2:datetime.datetime`
      - :class:`py3:datetime.datetime`

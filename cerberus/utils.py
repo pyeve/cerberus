@@ -30,9 +30,14 @@ def drop_item_from_tuple(t, i):
     return t[:i] + t[i + 1:]
 
 
-def validator_factory(name, mixin=None, class_dict={}):
+def get_Validator_class():
     if 'Validator' not in globals():
         from .cerberus import Validator
+    return Validator
+
+
+def validator_factory(name, mixin=None, class_dict={}):
+    Validator = get_Validator_class()
 
     if mixin is None:
         bases = (Validator,)

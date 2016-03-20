@@ -11,12 +11,12 @@
 from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
-from datetime import datetime
+from datetime import date, datetime
 import re
 from warnings import warn
 
 from . import errors
-from .platform import _str_type, _int_types
+from .platform import _int_types, _str_type, WeakSet
 from .schema import DefinitionSchema, SchemaError
 from .utils import drop_item_from_tuple, isclass
 
@@ -72,10 +72,10 @@ class Validator(object):
                           normalization.
     :param error_handler: The error handler that formats the result of
                           ``errors``. May be an instance or a class.
+                          Or a two-value tuple with the error-handler and a
+                          dictionary that is passed to the inizializa tion of
+                          the error handler.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
-    :param error_handler_config: A dictionary the is passed to the inizializa-
-                                 tion of the error handler. Defaults to an
-                                 empty one.
 
 
     .. versionadded:: 0.10
@@ -188,16 +188,17 @@ class Validator(object):
         Support for addition and validation of custom data types.
     """
 
-    _inspected_classes = set()
     is_child = False
     mandatory_validations = ('nullable', )
     priority_validations = ('nullable', 'readonly', 'type')
     _valid_schemas = set()
 
     def __new__(cls, *args, **kwargs):
-        if cls not in cls._inspected_classes:
+        if not hasattr(Validator, '_inspected_classes'):
+            Validator._inspected_classes = WeakSet()
+        if cls not in Validator._inspected_classes:
             cls.__set_introspection_properties()
-            cls._inspected_classes.add(cls)
+            Validator._inspected_classes.add(cls)
         return super(Validator, cls).__new__(cls)
 
     @classmethod
@@ -251,8 +252,7 @@ class Validator(object):
 
         __init__(self, schema=None, transparent_schema_rules=False,
                  ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler,
-                 error_handler_config=dict())
+                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
         """
 
         self.document = None
@@ -270,7 +270,10 @@ class Validator(object):
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
-        eh_config = kwargs.pop('error_handler_config', {})
+        if isinstance(error_handler, tuple):
+            error_handler, eh_config = error_handler
+        else:
+            eh_config = {}
         if isclass(error_handler) and \
                 issubclass(error_handler, errors.BaseErrorHandler):
             self.error_handler = error_handler(**eh_config)
@@ -290,6 +293,11 @@ class Validator(object):
             else:
                 kwargs[p] = args[i]
         self._config = kwargs
+
+    @classmethod
+    def clear_caches(cls):
+        """" Purge the cache of known valid schemas. """
+        cls._valid_schemas.clear()
 
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
@@ -1222,6 +1230,10 @@ class Validator(object):
 
     def _validate_type_boolean(self, field, value):
         if not isinstance(value, bool):
+            self._error(field, errors.BAD_TYPE)
+
+    def _validate_type_date(self, field, value):
+        if not isinstance(value, date):
             self._error(field, errors.BAD_TYPE)
 
     def _validate_type_datetime(self, field, value):

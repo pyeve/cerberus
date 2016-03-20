@@ -190,10 +190,7 @@ class ErrorTreeNode(MutableMapping):
         return iter(self.errors)
 
     def __getitem__(self, item):
-        if item in self.descendants:
-            return self.descendants[item]
-        else:
-            return None
+        return self.descendants.get(item)
 
     def __len__(self):
         return len(self.errors)
@@ -212,9 +209,6 @@ class ErrorTreeNode(MutableMapping):
     def tree_type(self):
         return self.parent_node.tree_type
 
-    def _path_of_(self, error):
-        return getattr(error, self.tree_type + '_path')
-
     def add(self, error):
         error_path = self._path_of_(error)
 
@@ -230,6 +224,9 @@ class ErrorTreeNode(MutableMapping):
                     self.tree_root += child_error
         else:
             self[key] += error
+
+    def _path_of_(self, error):
+        return getattr(error, self.tree_type + '_path')
 
 
 class ErrorTree(ErrorTreeNode):
