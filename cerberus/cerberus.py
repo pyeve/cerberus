@@ -69,121 +69,15 @@ class Validator(object):
                           Defaults to to ``False``.
     :type purge_unknown: :class:`bool`
     :param error_handler: The error handler that formats the result of
-                          ``errors``. May be an instance or a class.
-                          Or a two-value tuple with the error-handler and a
-                          dictionary that is passed to the inizializa tion of
-                          the error handler.
-                          Default: :class:`cerberus.errors.BasicErrorHandler`.
-
-
-    .. versionadded:: 0.10
-       'normalized'-method
-       '*of'-rules can be extended by another rule
-       'validation_rules'-property
-       'rename'-rule renames a field to a given string
-       'rename_handler'-rule for unknown fields
-       'purge_unknown'-property and conditional purging of unknown fields added
-       'trail'-property of Validator that relates the 'document' to
-           'root_document'
-
-    .. versionchanged:: 0.10
-
-       refactoring
-
-    .. versionchanged:: 0.9.2
-       only perform shallow copies in order to avoid issues with Python 2.6
-       way to handle deepcopy on BytesIO (and in general, complex objects).
-       Closes #147.
-
-    .. versionchanged:: 0.9.1
-       'required' will always be validated, regardless of any dependencies.
-
-    .. versionadded:: 0.9
-       'anyof', 'noneof', 'allof', 'anyof' validation rules.
-       PyPy support.
-       'coerce' rule.
-       'propertyschema' validation rule.
-       'validator.validated' takes a document as argument and returns a
-           validated document or 'None' if validation failed.
-
-    .. versionchanged:: 0.9
-       Use 'str.format' in error messages so if someone wants to override them
-           does not get an exception if arguments are not passed.
-       'keyschema' is renamed to 'valueschema'. Closes #92.
-       'type' can be a list of valid types.
-       Usages of 'document' to 'self.document' in '_validate'.
-       When 'items' is applied to a list, field name is used as key for
-           'validator.errors', and offending field indexes are used as keys for
-       Field errors ({'a_list_of_strings': {1: 'not a string'}})
-       Additional kwargs that are passed to the __init__-method of an
-           instance of Validator-(sub-)class are passed to child-validators.
-       Ensure that additional **kwargs of a subclass persist through
-           validation.
-       Improve failure message when testing against multiple types.
-       Ignore 'keyschema' when not a mapping.
-       Ignore 'schema' when not a sequence.
-       'allow_unknown' can also be set for nested dicts. Closes #75.
-       Raise SchemaError when an unallowed 'type' is used in conjunction with
-           'schema' rule.
-
-
-    .. versionchanged:: 0.8.1
-       'dependencies' for sub-document fields. Closes #64.
-       'readonly' should be validated before any other validation. Closes #63.
-       'allow_unknown' does not apply to sub-dictionaries in a list.
-           Closes #67.
-       update mode does not ignore required fields in subdocuments. Closes #72.
-       'allow_unknown' does not respect custom rules. Closes #66.
-
-    .. versionadded:: 0.8
-       'dependencies' also support a dict of dependencies.
-       'allow_unknown' can be a schema used to validate unknown fields.
-       Support for function-based validation mode.
-
-    .. versionchanged:: 0.7.2
-       Successfully validate int as a float type.
-
-    .. versionchanged:: 0.7.1
-       Validator options like 'allow_unknown' and 'ignore_none_values' are now
-           taken into consideration when validating sub-dictionaries.
-       Make self.document always the root level document.
-       Up-front validation for schemas.
-
-    .. versionadded:: 0.7
-       'keyschema' validation rule.
-       'regex' validation rule.
-       'dependencies' validation rule.
-       'mix', 'max' now apply on floats and numbers too. Closes #30.
-       'set' data type.
-
-    .. versionadded:: 0.6
-       'number' (integer or float) validator.
-
-    .. versionchanged:: 0.5.0
-       ``validator.errors`` returns a dict where keys are document fields and
-           values are validation errors.
-
-    .. versionchanged:: 0.4.0
-       :func:`validate_update` is deprecated. Use :func:`validate` with
-           ``update=True`` instead.
-       Type validation is always performed first (only exception being
-           ``nullable``). On failure, it blocks other rules on the same field.
-       Closes #18.
-
-    .. versionadded:: 0.2.0
-       `self.errors` returns an empty list when validate() has not been called.
-       Option so allow nullable field values.
-       Option to allow unknown key/value pairs.
-
-    .. versionadded:: 0.1.0
-       Option to ignore None values for type checking.
-
-    .. versionadded:: 0.0.3
-       Support for transparent schema rules.
-       Added new 'empty' rule for string fields.
-
-    .. versionadded:: 0.0.2
-        Support for addition and validation of custom data types.
+                          :attr:`~cerberus.Validator.errors`.
+                          When given as two-value tuple with an error-handler
+                          class and a dictionary, the latter is passed to the
+                          initialization of the error handler.
+                          Default: :class:`BasicErrorHandler
+                          <cerberus.errors.BasicErrorHandler>`.
+    :type error_handler: class or instance based on
+                         :class:`BaseErrorHandler <cerberus.errors.BaseErrorHandler>`
+                         or :class:`tuple`
     """  # noqa
 
     mandatory_validations = ('nullable', )

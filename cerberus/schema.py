@@ -28,10 +28,7 @@ class SchemaError(Exception):
 
 
 class DefinitionSchema(MutableMapping):
-    """ A dict-subclass for caching of validated schemas.
-
-        .. versionadded:: 0.10
-    """
+    """ A dict-subclass for caching of validated schemas. """
 
     def __new__(cls, *args, **kwargs):
         if 'SchemaValidator' not in globals():
@@ -128,8 +125,6 @@ class DefinitionSchema(MutableMapping):
 
         :param schema: The schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
-
-        .. versionadded:: 0.7.1
         """
         if schema is None:
             raise SchemaError(errors.SCHEMA_ERROR_MISSING)
@@ -256,10 +251,7 @@ def expand_definition_schema(schema):
     """ Expand agglutinated rules in a definition-schema.
 
     :param schema: The schema-definition to expand.
-
     :return: The expanded schema-definition.
-
-    .. versionadded:: 0.10
     """
 
     # TODO remove on next major release
