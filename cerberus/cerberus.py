@@ -73,7 +73,7 @@ class Validator(object):
     :param error_handler: The error handler that formats the result of
                           ``errors``. May be an instance or a class.
                           Or a two-value tuple with the error-handler and a
-                          dictionary that is passed to the inizializa tion of
+                          dictionary that is passed to the inizialization of
                           the error handler.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
 
