@@ -46,34 +46,32 @@ class _SchemaRuleTypeError(Exception):
 
 
 class Validator(object):
-    """ Validator class. Normalizes and validates any mapping against a
-    validation-schema which is provided as an argument at class instantiation
-    or upon calling the :func:`validate`, :func:`validated` or
-    :func:`normalized` method.
+    """ Validator class. Normalizes and/or validates any mapping against a
+        validation-schema which is provided as an argument at class
+        instantiation or upon calling the :meth:`~cerberus.Validator.validate`,
+        :meth:`~cerberus.Validator.validated` or
+        :meth:`~cerberus.Validator.normalized` method. All parameters are
+        optional.
 
-    :param schema: Optional validation schema, can also be provided upon
-                   processing.
-    :param transparent_schema_rules: If ``True`` unknown schema rules will be
-                                     ignored; no SchemaError will be raised.
-                                     Defaults to ``False``. Useful you need to
-                                     extend the schema grammar beyond Cerberus'
-                                     domain.
-    :param ignore_none_values: If ``True`` it will ignore fields with``None``-
-                               values when validating. Defaults to ``False``.
-                               Useful if your document is composed from
-                               function-kwargs with ``None``-defaults.
-    :param allow_unknown: If ``True`` unknown fields that are not defined in
-                          the schema will be ignored.
-                          If a ``dict`` with a definition-schema is given, any
-                          undefined field will be validated against its rules.
+    :param schema: See :attr:`~cerberus.Validator.schema`.
+                   Defaults to :obj:`None`.
+    :type schema: any :term:`mapping`
+    :param transparent_schema_rules: See :attr:`~cerberus.Validator.transparent_schema_rules`.
+                                     Defaults to ``False``.
+    :type transparent_schema_rules: :class:`bool`
+    :param ignore_none_values: See :attr:`~cerberus.Validator.ignore_none_values`.
+                               Defaults to ``False``.
+    :type ignore_none_values: :class:`bool`
+    :param allow_unknown: See :attr:`~cerberus.Validator.allow_unknown`.
                           Defaults to ``False``.
-    :param purge_unknown: If ``True`` unknown fields will be deleted from the
-                          document unless a validation is called with disabled
-                          normalization.
+    :type allow_unknown: :class:`bool` or any :term:`mapping`
+    :param purge_unknown: See :attr:`~cerberus.Validator.purge_unknown`.
+                          Defaults to to ``False``.
+    :type purge_unknown: :class:`bool`
     :param error_handler: The error handler that formats the result of
                           ``errors``. May be an instance or a class.
                           Or a two-value tuple with the error-handler and a
-                          dictionary that is passed to the inizialization of
+                          dictionary that is passed to the inizializa tion of
                           the error handler.
                           Default: :class:`cerberus.errors.BasicErrorHandler`.
 
@@ -186,12 +184,19 @@ class Validator(object):
 
     .. versionadded:: 0.0.2
         Support for addition and validation of custom data types.
-    """
+    """  # noqa
 
-    is_child = False
     mandatory_validations = ('nullable', )
+    """ Rules that are evaluated on any field, regardless whether defined in
+        the schema or not.
+        Type: :class:`tuple` """
     priority_validations = ('nullable', 'readonly', 'type')
+    """ Rules that will be processed in that order before any other and abort
+        validation of a document's field if return ``True``.
+        Type: :class:`tuple` """
     _valid_schemas = set()
+    """ A :class:`set` of hashed validation schemas that are legit for a
+        particular ``Validator`` class. """
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(Validator, '_inspected_classes'):
@@ -208,7 +213,7 @@ class Validator(object):
                      if x.startswith('_' + prefix)]
             return tuple(rules)
 
-        cls.types, cls.validation_rules, cls.validators = (), {}, ()
+        cls.types, cls.validators, cls.validation_rules = (), (), {}
         for attribute in attributes_with_prefix('validate'):
             if attribute.startswith('type_'):
                 cls.types += (attribute[len('type_'):],)
@@ -256,14 +261,35 @@ class Validator(object):
         """
 
         self.document = None
-        self._errors = errors.ErrorsList()
+        """ The document that is or was recently processed.
+            Type: any :term:`mapping` """
+        self._errors = errors.ErrorList()
+        """ The list of errors that were encountered since the last document
+            processing was invoked.
+            Type: :class:`~cerberus.errors.ErrorList` """
         self.recent_error = None
+        """ The last individual error that was submitted.
+            Type: :class:`~cerberus.errors.ValidationError` """
         self.document_error_tree = errors.DocumentErrorTree()
+        """ A tree representiation of encountered errors following the
+            structure of the document.
+            Type: :class:`~cerberus.errors.DocumentErrorTree` """
         self.schema_error_tree = errors.SchemaErrorTree()
+        """ A tree representiation of encountered errors following the
+            structure of the schema.
+            Type: :class:`~cerberus.errors.SchemaErrorTree` """
         self.document_path = ()
+        """ The path within the document to the current sub-document.
+            Type: :class:`tuple` """
         self.schema_path = ()
+        """ The path within the schema to the current sub-schema.
+            Type: :class:`tuple` """
         self.update = False
-        self.__init_error_handler(kwargs)
+        self.error_handler = self.__init_error_handler(kwargs)
+        """ The error handler used to format :attr:`~cerberus.Validator.errors`
+            and process submitted errors with
+            :meth:`~cerberus.Validator._error`.
+            Type: :class:`~cerberus.errors.BaseErrorHandler` """
         self.__store_config(args, kwargs)
         self.schema = kwargs.get('schema', None)
         self.allow_unknown = kwargs.get('allow_unknown', False)
@@ -276,9 +302,9 @@ class Validator(object):
             eh_config = {}
         if isclass(error_handler) and \
                 issubclass(error_handler, errors.BaseErrorHandler):
-            self.error_handler = error_handler(**eh_config)
+            return error_handler(**eh_config)
         elif isinstance(error_handler, errors.BaseErrorHandler):
-            self.error_handler = error_handler
+            return error_handler
         else:
             raise RuntimeError('Invalid error_handler.')
 
@@ -296,34 +322,45 @@ class Validator(object):
 
     @classmethod
     def clear_caches(cls):
-        """" Purge the cache of known valid schemas. """
+        """ Purge the cache of known valid schemas. """
         cls._valid_schemas.clear()
 
     def _error(self, *args):
         """ Creates and adds one or multiple errors.
-        :param args: Either an iterable of ValidationError-instances, a field's
-                     name and an error message or a field's name, a reference
-                     to a defined error and supplemental information.
 
-                     Iterable of errors:
-                     Expects an iterable of :class:`errors.Validation error`
-                     instances.
-                     The errors will be added to the errors stash
-                     :attr:`_errors` of self.
+        :param args: Accepts different argument's signatures.
 
-                     Field's name and error message:
-                     Expects two strings as arguments, the first is the field's
-                     name, the second the error message.
-                     A custom error will be created containing the message.
+                     *1. Bulk addition of errors:*
+
+                     - :term:`iterable` of
+                       :class:`~cerberus.errors.ValidationError`-instances
+
+                     The errors will be added to
+                     :attr:`~cerberus.Validator._errors`.
+
+                     *2. Custom error:*
+
+                     - the invalid field's name
+
+                     - the error message
+
+                     A custom error containing the message will be created and
+                     added to :attr:`~cerberus.Validator._errors`.
                      There will however be fewer information contained in the
                      error (no reference to the violated rule and its
                      constraint).
 
-                     Field's name, error reference and suppl. information:
-                     Expects:
-                     - the invalid field's name as string
+                     *3. Defined error:*
+
+                     - the invalid field's name
+
                      - the error-reference, see :mod:`errors`
+
                      - arbitrary, supplemental information about the error
+
+                     A :class:`~cerberus.errors.ValidationError` instance will
+                     be created and added to
+                     :attr:`~cerberus.Validator._errors`.
         """
         if len(args) == 1:
             self._errors.extend(args[0])
@@ -361,10 +398,21 @@ class Validator(object):
     def _get_child_validator(self, document_crumb=None, schema_crumb=None,
                              **kwargs):
         """ Creates a new instance of Validator-(sub-)class. All initial
-        parameters of the parent are passed to the initialization, unless
-        a parameter is given as an explicit *keyword*-parameter.
+            parameters of the parent are passed to the initialization, unless
+            a parameter is given as an explicit *keyword*-parameter.
 
-        :return: an instance of self.__class__
+        :param document_crumb: Extends the
+                               :attr:`~cerberus.Validator.document_path`
+                               of the child-validator.
+        :type document_crumb: :class:`tuple` or :term:`hashable`
+        :param schema_crumb: Extends the
+                             :attr:`~cerberus.Validator.schema_path`
+                             of the child-validator.
+        :type schema_crumb: :class:`tuple` or hashable
+        :param kwargs: Overriding keyword-arguments for initialization.
+        :type kwargs: :class:`dict`
+
+        :return: an instance of ``self.__class__``
         """
         child_config = self._config.copy()
         child_config.update(kwargs)
@@ -422,6 +470,11 @@ class Validator(object):
 
     @property
     def allow_unknown(self):
+        """ If ``True`` unknown fields that are not defined in the schema will
+            be ignored. If a mapping with a validation schema is given, any
+            undefined field will be validated against its rules.
+            Also see :ref:`allowing-the-unknown`.
+            Type: :class:`bool` or any :term:`mapping` """
         return self._config.get('allow_unknown', False)
 
     @allow_unknown.setter
@@ -432,14 +485,14 @@ class Validator(object):
 
     @property
     def errors(self):
-        """
-        Returns the errors of the last processing formatted by the handler that
-        is bound to :attr:`error_handler` of self.
-        """
+        """ The errors of the last processing formatted by the handler that is
+            bound to :attr:`~cerberus.Validator.error_handler`. """
         return self.error_handler(self._errors)
 
     @property
     def ignore_none_values(self):
+        """ Whether to not process :obj:`None`-values in a document or not.
+            Type: :class:`bool` """
         return self._config.get('ignore_none_values', False)
 
     @ignore_none_values.setter
@@ -448,10 +501,16 @@ class Validator(object):
 
     @property
     def is_child(self):
+        """ ``True`` for child-validators obtained with
+        :meth:`~cerberus.Validator._get_child_validator`.
+        Type: :class:`bool` """
         return self._config.get('is_child', False)
 
     @property
     def purge_unknown(self):
+        """ If ``True`` unknown fields will be deleted from the document
+            unless a validation is called with disabled normalization.
+            Also see :ref:`purging-unknown-fields`. Type: :class:`bool` """
         return self._config.get('purge_unknown', False)
 
     @purge_unknown.setter
@@ -460,18 +519,27 @@ class Validator(object):
 
     @property
     def root_allow_unknown(self):
+        """ The :attr:`~cerberus.Validator.allow_unknown` attribute of the
+            first level ancestor of a child validator. """
         return self._config.get('root_allow_unknown', self.allow_unknown)
 
     @property
     def root_document(self):
+        """ The :attr:`~cerberus.Validator.document` attribute of the
+            first level ancestor of a child validator. """
         return self._config.get('root_document', self.document)
 
     @property
     def root_schema(self):
+        """ The :attr:`~cerberus.Validator.schema` attribute of the
+            first level ancestor of a child validator. """
         return self._config.get('root_schema', self.schema)
 
     @property
     def schema(self):
+        """ The validation schema of a validator. When a schema is passed to
+            a method, it replaces this attribute.
+            Type: any :term:`mapping` or :obj:`None` """
         return self._schema
 
     @schema.setter
@@ -485,6 +553,8 @@ class Validator(object):
 
     @property
     def transparent_schema_rules(self):
+        """ Whether to ignore unknown rules when validating validation schemas
+            for this validator, defaults to ``False``. Type: :class:`bool` """
         return self._config.get('transparent_schema_rules', False)
 
     @transparent_schema_rules.setter
@@ -497,7 +567,7 @@ class Validator(object):
     # Document processing
 
     def __init_processing(self, document, schema=None):
-        self._errors = errors.ErrorsList()
+        self._errors = errors.ErrorList()
         self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
@@ -523,14 +593,16 @@ class Validator(object):
         """ Returns the document normalized according to the specified rules
         of a schema.
 
-        :param document: The mapping to normalize.
-        :param schema: The validation schema. Defaults to ``None``. If not
+        :param document: The document to normalize.
+        :type document: any :term:`mapping`
+        :param schema: The validation schema. Defaults to :obj:`None`. If not
                        provided here, the schema must have been provided at
                        class instantiation.
+        :type schema: any :term:`mapping`
         :param always_return_document: Return the document, even if an error
-                                       occurred; default: False.
-
-        :return: A normalized copy of the provided mapping or ``None`` if an
+                                       occurred. Defaults to: ``False``.
+        :type always_return_document: :class:`bool`
+        :return: A normalized copy of the provided mapping or :obj:`None` if an
                  error occurred during normalization.
         """
         self.__init_processing(document, schema)
@@ -758,15 +830,20 @@ class Validator(object):
         """ Normalizes and validates a mapping against a validation-schema of
         defined rules.
 
-        :param document: The mapping to validate.
-        :param schema: The validation-schema. Defaults to ``None``. If not
+        :param document: The document to normalize.
+        :type document: any :term:`mapping`
+        :param schema: The validation schema. Defaults to :obj:`None`. If not
                        provided here, the schema must have been provided at
                        class instantiation.
+        :type schema: any :term:`mapping`
         :param update: If ``True``, required fields won't be checked.
+        :type update: :class:`bool`
         :param normalize: If ``True``, normalize the document before validation.
+        :type normalize: :class:`bool`
 
         :return: ``True`` if validation succeeds, otherwise ``False``. Check
                  the :func:`errors` property for a list of processing errors.
+        :rtype: :class:`bool`
 
         .. versionchanged:: 0.10
            Removed 'context'-argument, Validator takes care of setting it now.
@@ -802,8 +879,7 @@ class Validator(object):
 
     def validated(self, *args, **kwargs):
         """ Wrapper around :func:`validate` that returns the normalized and
-        validated document or ``None`` if validation failed.
-        """
+            validated document or :obj:`None` if validation failed. """
         always_return_document = kwargs.pop('always_return_document', False)
         self.validate(*args, **kwargs)
         if self._errors and not always_return_document:
@@ -817,8 +893,8 @@ class Validator(object):
         difference with :func:`validate` is that the ``required`` rule will be
         ignored here.
 
-        :param schema: Optional validation schema. Defaults to ``None``. If not
-                       provided here, the schema must have been provided at
+        :param schema: Optional validation schema. Defaults to :obj:`None`. If
+                       not provided here, the schema must have been provided at
                        class instantiation.
 
         :return: True if validation succeeds, False otherwise. Check the
@@ -1012,8 +1088,7 @@ class Validator(object):
 
     def __validate_logical(self, operator, definitions, field, value):
         """ Validates value against all definitions and logs errors according
-        to the operator.
-        """
+            to the operator. """
         if isinstance(definitions, Mapping):
             definitions = [definitions]
 
@@ -1130,8 +1205,8 @@ class Validator(object):
 
     def __validate_required_fields(self, document):
         """ Validates that required fields are not missing. If dependencies
-        are precised then validate 'required' only if all dependencies
-        are validated.
+            are precised then validate 'required' only if all dependencies
+            are validated.
 
         :param document: The document being validated.
         """

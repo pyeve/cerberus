@@ -87,12 +87,22 @@ class ValidationError:
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
         self.document_path = document_path
+        """ The path to the field within the document that caused the error.
+            Type: :class:`tuple` """
         self.schema_path = schema_path
+        """ The path to the rule within the schema that caused the error.
+            Type: :class:`tuple` """
         self.code = code
+        """ The error's identifier code. Type: :class:`int` """
         self.rule = rule
+        """ The rule that failed. Type: `string` """
         self.constraint = constraint
+        """ The constraint that failed. """
         self.value = value
+        """ The value that failed. """
         self.info = info
+        """ May hold additional information about the error.
+            Type: :class:`tuple` """
 
     def __eq__(self, other):
         """ Assumes the errors relate to the same document and schema. """
@@ -134,8 +144,9 @@ class ValidationError:
 
     @property
     def definitions_errors(self):
-        """ Returns a dictionary with errors mapped to the index of the
-            definition it occurred in. Returns ``None`` if not applicable. """
+        """ Dictionary with errors of an *of-rule mapped to the index of the
+            definition it occurred in. Returns :obj:`None` if not applicable.
+            """
         if not self.is_logic_error:
             return None
 
@@ -152,16 +163,19 @@ class ValidationError:
 
     @property
     def is_logic_error(self):
-        """ ``True`` for validation errors against different schemas. """
+        """ ``True`` for validation errors against different schemas with
+            *of-rules. """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
     @property
     def is_normalization_error(self):
-        """" ``True`` for normalization errors. """
+        """ ``True`` for normalization errors. """
         return bool(self.code & NORMALIZATION.code)
 
 
-class ErrorsList(list):
+class ErrorList(list):
+    """ A list for :class:`~cerberus.errrors.ValidationError` instances that
+        can be queried with the ``in`` keyword for a particular error code. """
     def __contains__(self, error_definition):
         for code in (x.code for x in self):
             if code == error_definition.code:
@@ -176,7 +190,7 @@ class ErrorTreeNode(MutableMapping):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
         self.path = path[:len(self.parent_node.path) + 1]
-        self.errors = ErrorsList()
+        self.errors = ErrorList()
         self.descendants = {}
 
     def __add__(self, error):
@@ -230,6 +244,8 @@ class ErrorTreeNode(MutableMapping):
 
 
 class ErrorTree(ErrorTreeNode):
+    """ Base class for :class:`~cerberus.errors.DocumentErrorTree` and
+        :class:`~cerberus.errors.SchemaErrorTree`. """
     def __init__(self, errors=[]):
         self.parent_node = None
         self.tree_root = self
@@ -240,6 +256,10 @@ class ErrorTree(ErrorTreeNode):
             self += error
 
     def add(self, error):
+        """ Add an error to the tree.
+
+        :param error: :class:`~cerberus.errors.ValidationError`
+        """
         if not self._path_of_(error):
             self.errors.append(error)
             self.errors.sort()
@@ -248,17 +268,21 @@ class ErrorTree(ErrorTreeNode):
 
     def fetch_errors_from(self, path):
         """ Returns all errors for a particular path.
-        :param path: Tuple of hashables.
+
+        :param path: :class:`tuple` of :term:`hashable` s.
+        :rtype: :class:`~cerberus.errors.ErrorList`
         """
         node = self.fetch_node_from(path)
         if node is not None:
             return node.errors
         else:
-            return ErrorsList()
+            return ErrorList()
 
     def fetch_node_from(self, path):
-        """ Returns a node for a path or ``None``.
-        :param path:  Tuple of hashables.
+        """ Returns a node for a path.
+
+        :param path: Tuple of :term:`hashable` s.
+        :rtype: :class:`~cerberus.errors.ErrorTreeNode` or :obj:`None`
         """
         context = self
         for key in path:
@@ -289,8 +313,12 @@ class BaseErrorHandler:
 
     def __call__(self, errors):
         """ Returns errors in a handler-specific format.
-            Should accept an iterable of :class:`ValidationError` or a
-            :class:`~cerberus.Validator` instance."""
+
+        :param errors: An object containing the errors.
+        :type errors: :term:`iterable` of
+                      :class:`~cerberus.errors.ValidationError` instances or a
+                      :class:`~cerberus.Validator` instance
+        """
         raise NotImplementedError
 
     def __iter__(self):
@@ -298,25 +326,45 @@ class BaseErrorHandler:
         raise NotImplementedError
 
     def add(self, error):
-        """ Add an error to the errors' container object of a handler. """
+        """ Add an error to the errors' container object of a handler.
+
+        :param error: The error to add.
+        :type error: :class:`~cerberus.errors.ValidationError`
+        """
         raise NotImplementedError
 
     def emit(self, error):
         """ Optionally emits an error in the handler's format to a stream.
-            Or light a LED, or even shut down a power plant. """
+            Or light a LED, or even shut down a power plant.
+
+        :param error: The error to emit.
+        :type error: :class:`~cerberus.errors.ValidationError`
+        """
         pass
 
     def end(self, validator):
-        """ Gets called when a validation ends. """
+        """ Gets called when a validation ends.
+
+        :param validator: The calling validator.
+        :type validator: :class:`~cerberus.Validator` """
         pass
 
     def extend(self, errors):
-        """ Adds all errors to the handler's container object. """
+        """ Adds all errors to the handler's container object.
+
+        :param errors: The errors to add.
+        :type errors: :term:`iterable` of
+                      :class:`~cerberus.errors.ValidationError` instances
+        """
         for error in errors:
             self.add(error)
 
     def start(self, validator):
-        """ Gets called when a validation starts. """
+        """ Gets called when a validation starts.
+
+        :param validator: The calling validator.
+        :type validator: :class:`~cerberus.Validator`
+        """
         pass
 
 
@@ -329,7 +377,7 @@ class ToyErrorHandler(BaseErrorHandler):
 
 
 class BasicErrorHandler(BaseErrorHandler):
-    """ Models cerberus' legacy. Returns a dictionary. """
+    """ Models cerberus' legacy. Returns a :class:`dict`. """
     messages = {0x00: "{0}",
 
                 0x01: "document is missing",

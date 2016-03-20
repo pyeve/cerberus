@@ -3,7 +3,8 @@ Extending Cerberus
 
 Though you can use functions in conjunction with the ``coerce`` and the
 ``validator`` rules, you can easily extend the :class:`~cerberus.Validator`
-class with custom `rules`, `types`, `validators` and `coercers`.
+class with custom `rules`, `types`, `validators`, `coercers` and
+`default_setters`.
 While the function-based style is more suitable for special and one-off uses,
 a custom class leverages these possibilities:
 
@@ -15,6 +16,7 @@ a custom class leverages these possibilities:
 The references in schemas to these custom methods can use space characters
 instead of underscores, e.g. ``{'foo': {'validator': 'is odd'}}`` is an alias
 for ``{'foo': {'validator': 'is_odd'}}``.
+
 
 Custom Rules
 ------------
@@ -53,8 +55,13 @@ matters, we can use it to validate all odd values:
     >>> v.validate({'amount': 9})
     True
 
-As the rule's method docstring contains a literal Python expression, this will
-be used to validate the constraints for this rule when a schema is validated.
+.. important::
+
+    As schemas themselves are validated, you must provide constraints as
+    literal Python expression in the docstring of the rule's implementing
+    method to validate the constraints given in a schema for that rule. See
+    the source of the contributed rules for more examples.
+
 
 .. _new-types:
 
@@ -86,6 +93,7 @@ has been implemented:
 
 .. versionadded:: 0.0.2
 
+
 Custom Validators
 -----------------
 If a validation test doesn't depend on a specified constraint, it's possible to
@@ -98,6 +106,7 @@ prefix ``_validator_`` will be called with the field and value as argument:
     def _validator_oddity(self, field, value):
         if not value & 1:
             self._error(field, "Must be an odd number")
+
 
 Custom Coercers
 ---------------
@@ -125,6 +134,7 @@ a method as ``rename_handler``. The method name must be prefixed with
    >>> MyNormalizer(2).normalized(document, schema)
    {'foo': 4}
 
+
 Custom Default Setters
 ----------------------
 Similar to custom rename handlers, it is also possible to create custom default
@@ -144,9 +154,11 @@ setters.
    >>> MyNormalizer().normalized({}, schema)
    {'creation_date': datetime.datetime(...)}
 
+
 Limitations
 -----------
 It may be a bad idea to overwrite particular contributed rules.
+
 
 Instantiating Custom Validators
 -------------------------------
@@ -169,6 +181,7 @@ This ensures that the additional context will be available in
 validation.
 
 .. versionadded:: 0.9
+
 
 Relevant `Validator`-attributes
 -------------------------------
@@ -239,11 +252,11 @@ When using child-validators, it is a convenience to submit all their errors
 
 .. versionadded:: 0.10
 
-`Validator.__get_child_validator`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`Validator._get_child_validator`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you need another instance of your :class:`~cerberus.Validator`-subclass, the
-:meth:`~cerberus.Validator.__get_child_validator`-method returns another
+:meth:`~cerberus.Validator._get_child_validator`-method returns another
 instance that is initiated with the same arguments as ``self`` was. You can
 specify overriding keyword-arguments.
 As the properties ``document_path`` and ``schema_path`` (see below) are
@@ -265,7 +278,6 @@ A child-validator - as used when validating a ``schema`` - can access the first
 generation validator's document and schema that are being processed as well as
 the constraints for unknown fields via its ``root_document`` and ``root_schema``
 ``root_allow_unknown``-properties.
-It's untested what happens when you change that. It may make ``boom``.
 
 .. versionadded:: 0.10
 

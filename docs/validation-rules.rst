@@ -278,7 +278,7 @@ Validates if *none* of the provided constraints validates the field. See `\*of-r
 
 nullable
 --------
-If ``True`` the field value can be set to ``None``. It is essentially the
+If ``True`` the field value can be set to :obj:`None`. It is essentially the
 functionality of the :attr:`~cerberus.Validator.ignore_none_values` property
 of a :class:`~cerberus.Validator` instance, but allowing for more fine grained
 control down to the field level.

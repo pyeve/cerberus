@@ -34,8 +34,8 @@ the following properties:
     this simply be a key's name in a tuple, for nested ones it's all traversed
     key names. Items in sequences are represented by their index.
   - ``schema_path``: The path within the schema.
-  - ``code``: The unique identifier for an error. See :mod:`~cerberus.errors`
-    for a list.
+  - ``code``: The unique identifier for an error. See :red:`error-codes` for a
+    list.
   - ``rule``: The rule that was evaluated when the error occurred.
   - ``constraint``: That rule's constraint.
   - ``value``: The value being validated.
@@ -62,7 +62,7 @@ instance after a processing of a document:
   - ``document_error_tree``: A ``dict``-like object that allows you to query
     nodes corresponding to your document. That node's errors are contained in
     its :attr:`errors` property and are yielded when iterating over a node.
-    If no errors occurred in a node or below, ``None`` will be returned
+    If no errors occurred in a node or below, :obj:`None` will be returned
     instead.
 
   - ``schema_error_tree``: Similarly for the used schema.

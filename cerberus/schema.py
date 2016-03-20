@@ -23,8 +23,7 @@ def schema_hash(schema, validator):
 
 class SchemaError(Exception):
     """ Raised when the validation schema is missing, has the wrong format or
-    contains errors.
-    """
+        contains errors. """
     pass
 
 
