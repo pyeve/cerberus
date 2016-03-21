@@ -38,6 +38,8 @@ is processed through that chain.
 
 .. versionadded:: 0.10
 
+.. _purging-unknown-fields:
+
 Purging Unknown Fields
 ----------------------
 After renaming, unknown fields will be purged if the

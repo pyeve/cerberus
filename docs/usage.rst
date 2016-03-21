@@ -90,7 +90,9 @@ documentation of all supported rules.
 
 Validation schemas themselves are validated when passed to the validator or a
 new set of rules is set for a document's key. A :exc:`~cerberus.SchemaError`
-is raised when an invalid validation schema is encountered.
+is raised when an invalid validation schema is encountered. See
+:ref:`schema-validation-schema` for a reference.
+
 However, be aware that no validation can be triggered for all changes below
 that level. You could therefore trigger a validation and catch the exception:
 
@@ -216,7 +218,7 @@ to process a document and fetch its processed result.
 `validated` Method
 ~~~~~~~~~~~~~~~~~~
 There's a wrapper-method :meth:`~cerberus.Validator.validated` that returns the
-validated document. If the document didn't validate ``None`` is returned,
+validated document. If the document didn't validate :obj:`None` is returned,
 unless you call the method with the keyword argument ``always_return_document``
 set to ``True``.
 It can be useful for flows like this:

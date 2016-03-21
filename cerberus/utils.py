@@ -37,6 +37,16 @@ def get_Validator_class():
 
 
 def validator_factory(name, mixin=None, class_dict={}):
+    """ Dynamically create a :class:`~cerberus.Validator` subclass.
+
+    :param name: The name of the new class.
+    :type name: :class:`str`
+    :param mixin: Class(es) with mixin-methods.
+    :type mixin: :class:`tuple` of or a single :term:`class`
+    :param class_dict: Attributes for the new class.
+    :type class_dict: :class:`dict`
+    :return: The created class.
+    """
     Validator = get_Validator_class()
 
     if mixin is None:
