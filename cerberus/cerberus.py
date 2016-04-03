@@ -213,6 +213,8 @@ class Validator(object):
             else:
                 kwargs[p] = args[i]
         self._config = kwargs
+        """ This dictionary holds the configuration arguments that were used to
+            initialize the :class:`Validator` instance. """
 
     @classmethod
     def clear_caches(cls):
