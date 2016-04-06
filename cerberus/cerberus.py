@@ -587,6 +587,8 @@ class Validator(object):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
         for k in result:
+            if k == result[k]:
+                continue
             if result[k] in mapping[field]:
                 warn("Normalizing keys of {path}: {key} already exists, "
                      "its value is replaced."
