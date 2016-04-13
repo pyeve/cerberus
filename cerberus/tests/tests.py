@@ -1931,6 +1931,7 @@ class TestInheritance(TestBase):
                 if not self.working_dir:
                     self._error('self.working_dir', 'is None')
 
+        self.assertIn('test', InheritedValidator.types)
         v = InheritedValidator({'test': {'type': 'list',
                                          'schema': {'type': 'test'}}},
                                working_dir='/tmp')

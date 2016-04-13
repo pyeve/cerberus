@@ -16,7 +16,7 @@ import re
 from warnings import warn
 
 from . import errors
-from .platform import _int_types, _str_type, WeakSet
+from .platform import _int_types, _str_type
 from .schema import DefinitionSchema, SchemaError
 from .utils import drop_item_from_tuple, isclass
 
@@ -91,60 +91,6 @@ class Validator(object):
     _valid_schemas = set()
     """ A :class:`set` of hashed validation schemas that are legit for a
         particular ``Validator`` class. """
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(Validator, '_inspected_classes'):
-            Validator._inspected_classes = WeakSet()
-        if cls not in Validator._inspected_classes:
-            cls.__set_introspection_properties()
-            Validator._inspected_classes.add(cls)
-        return super(Validator, cls).__new__(cls)
-
-    @classmethod
-    def __set_introspection_properties(cls):
-        def attributes_with_prefix(prefix):
-            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
-                     if x.startswith('_' + prefix)]
-            return tuple(rules)
-
-        cls.types, cls.validators, cls.validation_rules = (), (), {}
-        for attribute in attributes_with_prefix('validate'):
-            if attribute.startswith('type_'):
-                cls.types += (attribute[len('type_'):],)
-            elif attribute.startswith('validator_'):
-                cls.validators += (attribute[len('validator_'):],)
-            else:
-                constraints = getattr(cls, '_validate_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.validation_rules[attribute] = constraints
-
-        cls.validation_rules['type']['allowed'] = cls.types
-        x = cls.validation_rules['validator']['oneof']
-        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
-
-        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
-        for attribute in attributes_with_prefix('normalize'):
-            if attribute.startswith('coerce_'):
-                cls.coercers += (attribute[len('coerce_'):],)
-            elif attribute.startswith('default_setter_'):
-                cls.default_setters += (attribute[len('default_setter_'):],)
-            else:
-                constraints = getattr(cls, '_normalize_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.normalization_rules[attribute] = constraints
-
-        for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['oneof']
-            x[1]['schema']['oneof'][1]['allowed'] = \
-                x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
-            cls.default_setters
-
-        cls.rules = {}
-        cls.rules.update(cls.validation_rules)
-        cls.rules.update(cls.normalization_rules)
 
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
@@ -1276,3 +1222,54 @@ class Validator(object):
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
+
+
+class InspectedValidator(type):
+    """ Metaclass for all validators """
+    def __init__(cls, name, bases, attributes):
+        def attributes_with_prefix(prefix):
+            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
+                     if x.startswith('_' + prefix)]
+            return tuple(rules)
+
+        cls.types, cls.validators, cls.validation_rules = (), (), {}
+        for attribute in attributes_with_prefix('validate'):
+            if attribute.startswith('type_'):
+                cls.types += (attribute[len('type_'):],)
+            elif attribute.startswith('validator_'):
+                cls.validators += (attribute[len('validator_'):],)
+            else:
+                constraints = getattr(cls, '_validate_' + attribute).__doc__
+                constraints = {} if constraints is None \
+                    else literal_eval(constraints.lstrip())
+                cls.validation_rules[attribute] = constraints
+
+        cls.validation_rules['type']['allowed'] = cls.types
+        x = cls.validation_rules['validator']['oneof']
+        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
+
+        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
+        for attribute in attributes_with_prefix('normalize'):
+            if attribute.startswith('coerce_'):
+                cls.coercers += (attribute[len('coerce_'):],)
+            elif attribute.startswith('default_setter_'):
+                cls.default_setters += (attribute[len('default_setter_'):],)
+            else:
+                constraints = getattr(cls, '_normalize_' + attribute).__doc__
+                constraints = {} if constraints is None \
+                    else literal_eval(constraints.lstrip())
+                cls.normalization_rules[attribute] = constraints
+
+        for rule in ('coerce', 'rename_handler'):
+            x = cls.normalization_rules[rule]['oneof']
+            x[1]['schema']['oneof'][1]['allowed'] = \
+                x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
+            cls.default_setters
+
+        cls.rules = {}
+        cls.rules.update(cls.validation_rules)
+        cls.rules.update(cls.normalization_rules)
+
+
+Validator = InspectedValidator('Validator', (Validator,), {})
