@@ -34,7 +34,7 @@ the following properties:
     this simply be a key's name in a tuple, for nested ones it's all traversed
     key names. Items in sequences are represented by their index.
   - ``schema_path``: The path within the schema.
-  - ``code``: The unique identifier for an error. See :red:`error-codes` for a
+  - ``code``: The unique identifier for an error. See :ref:`error-codes` for a
     list.
   - ``rule``: The rule that was evaluated when the error occurred.
   - ``constraint``: That rule's constraint.
@@ -45,12 +45,6 @@ the following properties:
     all individual errors.
     See the implementation of a rule in the source code to figure out its
     additional logging.
-
-.. warning::
-
-    As this is a fresh addition, the additional ``info`` that is logged *may*
-    change during beta. If you have an urge for sustainability, please
-    :doc:`open an issue <contact>`.
 
 You can access the errors per these properties of a :class:`~cerberus.Validator`
 instance after a processing of a document:

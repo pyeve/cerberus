@@ -47,11 +47,21 @@ class _SchemaRuleTypeError(Exception):
 
 class Validator(object):
     """ Validator class. Normalizes and/or validates any mapping against a
-        validation-schema which is provided as an argument at class
-        instantiation or upon calling the :meth:`~cerberus.Validator.validate`,
-        :meth:`~cerberus.Validator.validated` or
-        :meth:`~cerberus.Validator.normalized` method. All parameters are
-        optional.
+    validation-schema which is provided as an argument at class instantiation
+    or upon calling the :meth:`~cerberus.Validator.validate`,
+    :meth:`~cerberus.Validator.validated` or
+    :meth:`~cerberus.Validator.normalized` method. An instance itself is
+    callable and executes a validation.
+
+    All instantiation parameters are optional.
+
+    There are the introspective properties :attr:`types`, :attr:`validators`,
+    :attr:`coercers`, :attr:`default_setters`, :attr:`rules`,
+    :attr:`normalization_rules` and :attr:`validation_rules`.
+
+    The attributes reflecting the available rules are assembled considering
+    constraints that are defined in the docstrings of rules' methods and is
+    effectively used as validation schema for :attr:`schema`.
 
     :param schema: See :attr:`~cerberus.Validator.schema`.
                    Defaults to :obj:`None`.
@@ -73,11 +83,10 @@ class Validator(object):
                           When given as two-value tuple with an error-handler
                           class and a dictionary, the latter is passed to the
                           initialization of the error handler.
-                          Default: :class:`BasicErrorHandler
-                          <cerberus.errors.BasicErrorHandler>`.
+                          Default: :class:`~cerberus.errors.BasicErrorHandler`.
     :type error_handler: class or instance based on
-                         :class:`BaseErrorHandler <cerberus.errors.BaseErrorHandler>`
-                         or :class:`tuple`
+                         :class:`~erberus.errors.BaseErrorHandler>` or
+                         :class:`tuple`
     """  # noqa
 
     mandatory_validations = ('nullable', )

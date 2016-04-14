@@ -33,6 +33,9 @@ Python Error Representations
 
 .. _error-codes:
 
+Error Codes
+~~~~~~~~~~~
+
 These errors are used as :attr:`~cerberus.errors.ValidationError.code`.
 
 .. include:: includes/error-codes.rst
