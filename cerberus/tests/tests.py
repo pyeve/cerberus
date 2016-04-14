@@ -1908,14 +1908,8 @@ class TestErrorHandling(TestBase):
         self.assertDictEqual(handler(_errors), ref)
 
 
-# TODO remove on next major release
 class TestBackwardCompatibility(TestBase):
-    def test_keyschema(self):
-        schema = {'a_field': {'type': 'list',
-                              'schema': {'keyschema': {'type': 'string'}}}}
-        document = {'a_field': [{'a_key': 'a_string'}]}
-        v = Validator()
-        self.assertSuccess(document, schema, v)
+    pass
 
 
 class TestInheritance(TestBase):

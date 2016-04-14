@@ -253,20 +253,6 @@ def expand_definition_schema(schema):
     :param schema: The schema-definition to expand.
     :return: The expanded schema-definition.
     """
-
-    # TODO remove on next major release
-    def update_to_valueschema(constraints):
-        if not isinstance(constraints, Mapping):
-            return constraints
-        if 'keyschema' in constraints:
-            constraints['valueschema'] = constraints['keyschema']
-            del constraints['keyschema']
-            warn("The 'keyschema'-rule is deprecated. Use 'valueschema' instead.",  # noqa
-                 DeprecationWarning)
-        for key, value in constraints.items():
-            constraints[key] = update_to_valueschema(value)
-        return constraints
-
     def is_of_rule(rule):
         for operator in ('allof', 'anyof', 'noneof', 'oneof'):
             if isinstance(rule, _str_type) and rule.startswith(operator + '_'):
@@ -293,12 +279,6 @@ def expand_definition_schema(schema):
         return True
 
     for field in schema:
-        # TODO remove on next major release
-        try:
-            schema[field] = update_to_valueschema(schema[field])
-        except TypeError:
-            return schema  # bad schema will fail on validation
-
         try:
             of_rules = [x for x in schema[field] if is_of_rule(x)]
         except TypeError:
