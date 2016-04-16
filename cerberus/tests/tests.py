@@ -230,19 +230,6 @@ class TestValidation(TestBase):
         value = [34, 'not an integer']
         self.assertFail({field: value})
 
-    def test_bad_list_of_dicts_deprecated(self):
-        field = 'a_list_of_dicts_deprecated'
-        value = [{'sku': 'KT123', 'price': '100'}]
-        self.assertFail({field: value})
-        # this is not a proper expectation, it's a deprecated feature
-        self.assertError('price', ('price', 'type'), errors.BAD_TYPE, 'integer')
-
-        value = ["not a dict"]
-        self.assertValidationError(
-            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
-                value[0])
-        )
-
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
         subschema = self.schema['a_list_of_dicts']['schema']
@@ -349,17 +336,6 @@ class TestValidation(TestBase):
         self.assertFail({field: 'invalid'}, self.schema, update=True)
         self.assertError(field, (field, 'regex'), errors.REGEX_MISMATCH,
                          '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-
-    # TODO remove on next major release
-    def test_a_list_of_dicts_deprecated(self):
-        self.assertSuccess(
-            {
-                'a_list_of_dicts_deprecated': [
-                    {'sku': 'AK345', 'price': 100},
-                    {'sku': 'YZ069', 'price': 25}
-                ]
-            }
-        )
 
     def test_a_list_of_dicts(self):
         self.assertSuccess(

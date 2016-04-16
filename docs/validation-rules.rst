@@ -233,13 +233,8 @@ values:
 
 .. versionadded:: 0.10
 
-items (dict)
-------------
-.. deprecated:: 0.0.3
-   Use `schema (dict)`_ instead.
-
-items (list)
-------------
+items
+-----
 When a list, ``items`` defines a list of values allowed in a ``list`` type of
 fixed length in the given order:
 

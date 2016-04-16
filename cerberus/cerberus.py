@@ -910,16 +910,7 @@ class Validator(object):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
-    # TODO remove on next major release
-    def _validate_items(self, items, field, value):
-        """ {'type': ['list', 'dict'], 'validator': 'items'} """
-        if isinstance(items, Mapping):
-            self.__validate_items_schema(items, field, value)
-        elif isinstance(items, Sequence) and not isinstance(items, _str_type):
-            self.__validate_items_list(items, field, value)
-
-    # TODO rename to _validate_items on next major release
-    def __validate_items_list(self, items, field, values):
+    def _validate_items(self, items, field, values):
         """ {'type': 'list', 'validator': 'items'} """
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
@@ -931,13 +922,6 @@ class Validator(object):
             if not validator(dict((i, item) for i, item in enumerate(values)),
                              normalize=False):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
-
-    # TODO remove on next major release
-    def __validate_items_schema(self, items, field, value):
-        validator = self._get_child_validator(schema=items)
-        for item in value:
-            if not validator(item, normalize=False):
-                self._error(validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
         """ Validates value against all definitions and logs errors according

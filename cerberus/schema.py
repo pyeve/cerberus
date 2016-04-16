@@ -1,7 +1,5 @@
-from collections import Callable, Hashable, Iterable, Mapping, MutableMapping,\
-    Sequence
+from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 import json
-from warnings import warn
 
 from . import errors
 from .platform import _str_type
@@ -223,15 +221,8 @@ class SchemaValidatorMixin:
                 self._validator_handler(field, handler)
 
     def _validator_items(self, field, value):
-        if isinstance(value, Mapping):
-            # TODO remove on next major release
-            warn("The 'items'-rule with a mapping as constraint is "
-                 "deprecated. Use the 'schema'-rule instead.",
-                 DeprecationWarning)
-            self._validator_schema(field, value)
-        else:
-            for i, schema in enumerate(value):
-                self._validator_bulk_schema((field, i), schema)
+        for i, schema in enumerate(value):
+            self._validator_bulk_schema((field, i), schema)
 
     def _validator_schema(self, field, value):
         _hash = schema_hash(value, self.target_validator)
@@ -307,9 +298,7 @@ def expand_definition_schema(schema):
                     expand_definition_schema({0: schema[field][rule]})[0]
 
         for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
-            # TODO remove instance-check at next major-release
-            if rule in schema[field] and isinstance(schema[field][rule],
-                                                    Sequence):
+            if rule in schema[field]:
                 new_rules_definition = []
                 for item in schema[field][rule]:
                     new_rules_definition\
