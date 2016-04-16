@@ -458,6 +458,7 @@ class TestValidation(TestBase):
     def test_custom_datatype_rule(self):
         class MyValidator(Validator):
             def _validate_min_number(self, min_number, field, value):
+                """ {'type': 'number'} """
                 if value < min_number:
                     self._error(field, 'Below the min')
 
@@ -478,6 +479,7 @@ class TestValidation(TestBase):
     def test_custom_validator(self):
         class MyValidator(Validator):
             def _validate_isodd(self, isodd, field, value):
+                """ {'type': 'boolean'} """
                 if isodd and not bool(value & 1):
                     self._error(field, 'Not an odd number')
 
@@ -779,6 +781,7 @@ class TestValidation(TestBase):
         """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
+                """ {'type': 'boolean'} """
                 if('sub' not in self.root_document or
                         len(self.root_document['sub']) != 2):
                     self._error(field, 'self.context is not the root doc!')
@@ -1175,6 +1178,7 @@ class TestValidation(TestBase):
     def test_document_path(self):
         class DocumentPathTester(Validator):
             def _validate_trail(self, constraint, field, value):
+                """ {'type': 'boolean'} """
                 test_doc = self.root_document
                 for crumb in self.document_path:
                     test_doc = test_doc[crumb]
@@ -1930,6 +1934,21 @@ class TestInheritance(TestBase):
                                          'schema': {'type': 'test'}}},
                                working_dir='/tmp')
         self.assertSuccess({'test': ['foo']}, validator=v)
+
+    def test_docstring_parsing(self):
+        class CustomValidator(Validator):
+            def _validate_foo(self, argument, field, value):
+                """ {'type': 'zap'} """
+                pass
+
+            def _validate_bar(self, value):
+                """ Test the barreness of a value.
+
+                The rule's arguments are validated against this schema:
+                    {'type': 'boolean'}
+                """
+
+        self.assertIn('foo', CustomValidator.validation_rules)
 
 
 class TestAssorted(TestBase):

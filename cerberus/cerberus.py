@@ -992,6 +992,7 @@ class Validator(object):
         self.__validate_logical('oneof', definitions, field, value)
 
     def _validate_max(self, max_value, field, value):
+        """ {'nullable': False } """
         try:
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
@@ -999,6 +1000,7 @@ class Validator(object):
             pass
 
     def _validate_min(self, min_value, field, value):
+        """ {'nullable': False } """
         try:
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
@@ -1233,13 +1235,19 @@ class Validator(object):
                 self._error(field, errors.VALUESCHEMA, validator._errors)
 
 
+RULE_SCHEMA_SEPERATOR = \
+    "The rule's arguments are validated against this schema:"
+
+
 class InspectedValidator(type):
     """ Metaclass for all validators """
-    def __init__(cls, name, bases, attributes):
+    def __init__(cls, *args):
         def attributes_with_prefix(prefix):
             rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
                      if x.startswith('_' + prefix)]
             return tuple(rules)
+
+        super(InspectedValidator, cls).__init__(*args)
 
         cls.types, cls.validators, cls.validation_rules = (), (), {}
         for attribute in attributes_with_prefix('validate'):
@@ -1248,10 +1256,8 @@ class InspectedValidator(type):
             elif attribute.startswith('validator_'):
                 cls.validators += (attribute[len('validator_'):],)
             else:
-                constraints = getattr(cls, '_validate_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.validation_rules[attribute] = constraints
+                cls.validation_rules[attribute] = \
+                    cls.__get_rule_schema('_validate_' + attribute)
 
         cls.validation_rules['type']['allowed'] = cls.types
         x = cls.validation_rules['validator']['oneof']
@@ -1264,10 +1270,8 @@ class InspectedValidator(type):
             elif attribute.startswith('default_setter_'):
                 cls.default_setters += (attribute[len('default_setter_'):],)
             else:
-                constraints = getattr(cls, '_normalize_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.normalization_rules[attribute] = constraints
+                cls.normalization_rules[attribute] = \
+                    cls.__get_rule_schema('_normalize_' + attribute)
 
         for rule in ('coerce', 'rename_handler'):
             x = cls.normalization_rules[rule]['oneof']
@@ -1279,6 +1283,24 @@ class InspectedValidator(type):
         cls.rules = {}
         cls.rules.update(cls.validation_rules)
         cls.rules.update(cls.normalization_rules)
+
+    def __get_rule_schema(cls, method_name):
+        docstring = getattr(cls, method_name).__doc__
+        if docstring is None:
+            result = {}
+        else:
+            if RULE_SCHEMA_SEPERATOR in docstring:
+                docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
+            try:
+                result = literal_eval(docstring.strip())
+            except:
+                result = {}
+
+        if not result:
+            warn("No validation schema is defined for the arguments of rule "
+                 "'%s'" % '_'.join(method_name.split('_')[2:]))
+
+        return result
 
 
 Validator = InspectedValidator('Validator', (Validator,), {})

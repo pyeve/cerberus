@@ -165,6 +165,7 @@ class SchemaValidatorMixin:
         return self._config['target_validator']
 
     def _validate_logical(self, rule, none, value):
+        """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
         validator = self._get_child_validator(
             document_crumb=rule,
             schema=self.root_allow_unknown['schema'],
