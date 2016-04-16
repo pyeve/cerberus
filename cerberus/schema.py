@@ -6,15 +6,13 @@ from .platform import _str_type
 from .utils import cast_keys_to_strings, get_Validator_class, validator_factory
 
 
-def schema_hash(schema, validator):
+def schema_hash(schema):
     class Encoder(json.JSONEncoder):
         def default(self, o):
             return repr(o)
 
     _hash = hash(json.dumps(cast_keys_to_strings(schema),
                             cls=Encoder, sort_keys=True))
-    if validator.transparent_schema_rules:
-        _hash *= -1
 
     return _hash
 
@@ -113,7 +111,7 @@ class DefinitionSchema(MutableMapping):
     def validate(self, schema=None):
         if schema is None:
             schema = self.schema
-        _hash = schema_hash(schema, self.validator)
+        _hash = schema_hash(schema)
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
             self.validator._valid_schemas.add(_hash)
@@ -142,13 +140,10 @@ class UnvalidatedSchema(DefinitionSchema):
 
 
 class SchemaValidationSchema(UnvalidatedSchema):
-    base = {'type': 'dict',
-            'schema': {}}
-
     def __init__(self, validator):
-        self.schema = self.base.copy()
-        self.schema['schema'] = validator.rules
-        self.schema['allow_unknown'] = validator.transparent_schema_rules
+        self.schema = {'allow_unknown': False,
+                       'schema': validator.rules,
+                       'type': 'dict'}
 
 
 class SchemaValidatorMixin:
@@ -171,7 +166,7 @@ class SchemaValidatorMixin:
         )
 
         for constraints in value:
-            _hash = schema_hash({'turing': constraints}, self.target_validator)
+            _hash = schema_hash({'turing': constraints})
             if _hash in self.target_validator._valid_schemas:
                 continue
 
@@ -195,7 +190,7 @@ class SchemaValidatorMixin:
             self._validate_type_hashable(field, item)
 
     def _validator_bulk_schema(self, field, value):
-        _hash = schema_hash({'turing': value}, self.target_validator)
+        _hash = schema_hash({'turing': value})
         if _hash in self.target_validator._valid_schemas:
             return
 
@@ -225,7 +220,7 @@ class SchemaValidatorMixin:
             self._validator_bulk_schema((field, i), schema)
 
     def _validator_schema(self, field, value):
-        _hash = schema_hash(value, self.target_validator)
+        _hash = schema_hash(value)
         if _hash in self.target_validator._valid_schemas:
             return
 

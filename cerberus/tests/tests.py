@@ -467,22 +467,6 @@ class TestValidation(TestBase):
                          ('Not an odd number',), v_errors=v._errors)
         self.assertDictEqual(v.errors, {'test_field': 'Not an odd number'})
 
-    def test_transparent_schema_rules(self):
-        field = 'test'
-        schema = {field: {'type': 'string', 'unknown_rule': 'a value'}}
-        document = {field: 'hey!'}
-        v = Validator(transparent_schema_rules=True)
-        self.assertSuccess(schema=schema, document=document, validator=v)
-        v.transparent_schema_rules = False
-        self.assertSchemaError(
-            document, schema, v,
-            "{'test': {'unknown_rule': 'unknown rule'}}"
-        )
-        self.assertSchemaError(
-            document, schema, None,
-            "{'test': {'unknown_rule': 'unknown rule'}}"
-        )
-
     def test_allow_empty_strings(self):
         field = 'test'
         schema = {field: {'type': 'string'}}

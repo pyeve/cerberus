@@ -42,3 +42,16 @@ Note that ``propertyschema`` will *not* be handled as an alias like
 
 
 .. [#] compare :term:`dictionary`
+
+
+transparent_schema_rules
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the past you could override the schema validation by setting the
+``transparent_schema_rules`` to ``True``. Now all rules whose implementing
+method's docstring contain a schema to validate the arguments for that rule in the
+validation schema, are validated.
+To omit the schema validation for a particular rule, just omit that definition,
+but consider it a bad practice.
+The :class:`~cerberus.Validator`-attribute and -initialization-argument
+``transparent_schema_rules`` are removed without replacement.

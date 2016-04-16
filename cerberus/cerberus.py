@@ -66,9 +66,6 @@ class Validator(object):
     :param schema: See :attr:`~cerberus.Validator.schema`.
                    Defaults to :obj:`None`.
     :type schema: any :term:`mapping`
-    :param transparent_schema_rules: See :attr:`~cerberus.Validator.transparent_schema_rules`.
-                                     Defaults to ``False``.
-    :type transparent_schema_rules: :class:`bool`
     :param ignore_none_values: See :attr:`~cerberus.Validator.ignore_none_values`.
                                Defaults to ``False``.
     :type ignore_none_values: :class:`bool`
@@ -104,9 +101,9 @@ class Validator(object):
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
 
-        __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
+        __init__(self, schema=None, ignore_none_values=False,
+                 allow_unknown=False, purge_unknown=False,
+                 error_handler=errors.BasicErrorHandler)
         """
 
         self.document = None
@@ -159,8 +156,8 @@ class Validator(object):
 
     def __store_config(self, args, kwargs):
         """ Assign args to kwargs and store configuration. """
-        signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
+        signature = ('schema', 'ignore_none_values', 'allow_unknown',
+                     'purge_unknown')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -401,19 +398,6 @@ class Validator(object):
             self._schema = schema
         else:
             self._schema = DefinitionSchema(self, schema)
-
-    @property
-    def transparent_schema_rules(self):
-        """ Whether to ignore unknown rules when validating validation schemas
-            for this validator, defaults to ``False``. Type: :class:`bool` """
-        return self._config.get('transparent_schema_rules', False)
-
-    @transparent_schema_rules.setter
-    def transparent_schema_rules(self, value):
-        if isinstance(self._schema, DefinitionSchema):
-            self._schema.regenerate_validation_schema()
-            self._schema.update({})  # trigger validation
-        self._config['transparent_schema_rules'] = value
 
     # Document processing
 
