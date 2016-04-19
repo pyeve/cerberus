@@ -29,7 +29,7 @@ class TestComplexCases(TestCase):
             }
         }
         validator = Validator(schema=test_schema)
-        validator.validate(
+        assert validator.validate(
             {
                 'temp': [
                     {
