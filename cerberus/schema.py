@@ -58,7 +58,7 @@ class DefinitionSchema(MutableMapping):
             error_handler=errors.SchemaErrorHandler,
             target_schema=schema, target_validator=validator)
 
-        schema = expand_definition_schema(schema)
+        schema = self.expand(schema)
         self.validate(schema)
         self.schema = schema
 
@@ -86,14 +86,79 @@ class DefinitionSchema(MutableMapping):
         return str(self)
 
     def __setitem__(self, key, value):
+        value = self.expand({0: value})[0]
         self.validate({key: value})
         self.schema[key] = value
 
     def __str__(self):
         return str(self.schema)
 
+    def expand(self, schema):
+        try:
+            schema = self._expand_logical_shortcuts(schema)
+            schema = self._expand_subschemas(schema)
+        except:
+            pass
+        return schema
+
+    def _expand_logical_shortcuts(self, schema):
+        """ Expand agglutinated rules in a definition-schema.
+
+        :param schema: The schema-definition to expand.
+        :return: The expanded schema-definition.
+        """
+        def is_of_rule(x):
+            return isinstance(x, _str_type) and \
+                x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
+
+        for field in schema:
+            for of_rule in (x for x in schema[field] if is_of_rule(x)):
+                operator, rule = of_rule.split('_')
+                schema[field].update({operator: []})
+                for value in schema[field][of_rule]:
+                    schema[field][operator].append({rule: value})
+                del schema[field][of_rule]
+        return schema
+
+    def _expand_subschemas(self, schema):
+        def has_schema_rule():
+            return isinstance(schema[field], Mapping) and \
+                'schema' in schema[field]
+
+        def has_mapping_schema():
+            """ Tries to determine heuristically if the schema-constraints are
+                aimed to mappings. """
+            try:
+                return all(isinstance(x, Mapping) for x
+                           in schema[field]['schema'].values())
+            except TypeError:
+                return False
+
+        for field in schema:
+            if not has_schema_rule():
+                pass
+            elif has_mapping_schema():
+                schema[field]['schema'] = self.expand(schema[field]['schema'])
+            else:  # assumes schema-constraints for a sequence
+                schema[field]['schema'] = \
+                    self.expand({0: schema[field]['schema']})[0]
+
+            for rule in ('propertyschema', 'valueschema'):
+                if rule in schema[field]:
+                    schema[field][rule] = \
+                        self.expand({0: schema[field][rule]})[0]
+
+            for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
+                if rule in schema[field]:
+                    new_rules_definition = []
+                    for item in schema[field][rule]:
+                        new_rules_definition.append(self.expand({0: item})[0])
+                    schema[field][rule] = new_rules_definition
+        return schema
+
     def update(self, schema):
         try:
+            schema = self.expand(schema)
             _new_schema = self.schema.copy()
             _new_schema.update(schema)
             self.validate(_new_schema)
@@ -232,72 +297,3 @@ class SchemaValidatorMixin:
             self._error(validator._errors)
         else:
             self.target_validator._valid_schemas.add(_hash)
-
-
-def expand_definition_schema(schema):
-    """ Expand agglutinated rules in a definition-schema.
-
-    :param schema: The schema-definition to expand.
-    :return: The expanded schema-definition.
-    """
-    def is_of_rule(rule):
-        for operator in ('allof', 'anyof', 'noneof', 'oneof'):
-            if isinstance(rule, _str_type) and rule.startswith(operator + '_'):
-                return True
-        return False
-
-    def has_schema_rule(constraints):
-        if not isinstance(constraints, Mapping):
-            return False
-        if 'schema' in constraints:
-            return True
-        else:
-            return False
-
-    def has_mapping_schema(constraints):
-        """ Tries to determine heuristically if the schema-constraints are
-            aimed to mappings. """
-        for key in constraints['schema']:
-            try:
-                if not isinstance(constraints['schema'][key], Mapping):
-                    return False
-            except TypeError:
-                return False
-        return True
-
-    for field in schema:
-        try:
-            of_rules = [x for x in schema[field] if is_of_rule(x)]
-        except TypeError:
-            return schema  # bad schema will fail on validation
-
-        for of_rule in of_rules:
-            operator, rule = of_rule.split('_')
-            schema[field].update({operator: []})
-            for value in schema[field][of_rule]:
-                schema[field][operator].append({rule: value})
-            del schema[field][of_rule]
-
-        if not has_schema_rule(schema[field]):
-            pass
-        elif has_mapping_schema(schema[field]):
-            schema[field]['schema'] = \
-                expand_definition_schema(schema[field]['schema'])
-        else:  # assumes schema-constraints for a sequence
-            schema[field]['schema'] = \
-                expand_definition_schema({0: schema[field]['schema']})[0]
-
-        for rule in ('propertyschema', 'valueschema'):
-            if rule in schema[field]:
-                schema[field][rule] = \
-                    expand_definition_schema({0: schema[field][rule]})[0]
-
-        for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
-            if rule in schema[field]:
-                new_rules_definition = []
-                for item in schema[field][rule]:
-                    new_rules_definition\
-                        .append(expand_definition_schema({0: item})[0])
-                schema[field][rule] = new_rules_definition
-
-    return schema
