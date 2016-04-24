@@ -10,12 +10,19 @@ Validator Class
             _get_child_validator, ignore_none_values, is_child,
             mandatory_validations, normalized, priority_validations,
             purge_unknown, recent_error, root_allow_unknown, root_document,
-            root_schema, schema, schema_error_tree, schema_path,
-            _valid_schemas, validate, validated
+            root_schema, rules_set_registry, schema, schema_error_tree,
+            schema_path, schema_registry, _valid_schemas, validate, validated
 
 
-ErrorHandlers
--------------
+Rules Set & Schema Registry
+---------------------------
+
+.. autoclass:: cerberus.Registry
+  :members:
+
+
+Error Handlers
+--------------
 
 .. autoclass:: cerberus.errors.BaseErrorHandler
   :members:
@@ -70,7 +77,7 @@ Utilities
 Schema Validation Schema
 ------------------------
 
-Against this schema schemas given to a vanilla :class:`~cerberus.Validator`
-will be validated:
+Against this schema validation schemas given to a vanilla
+:class:`~cerberus.Validator` will be validated:
 
 .. include:: includes/schema-validation-schema.rst

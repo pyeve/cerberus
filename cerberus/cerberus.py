@@ -17,7 +17,8 @@ from warnings import warn
 
 from . import errors
 from .platform import _int_types, _str_type
-from .schema import DefinitionSchema, SchemaError
+from .schema import schema_registry, rules_set_registry, DefinitionSchema, \
+    SchemaError
 from .utils import drop_item_from_tuple, isclass
 
 
@@ -231,10 +232,14 @@ class Validator(object):
             if code != errors.UNKNOWN_FIELD.code and rule is not None:
                 schema_path += (field, rule)
 
-            if rule == 'nullable':
-                constraint = self.schema[field].get(rule, False)
+            if not rule:
+                constraint = None
             else:
-                constraint = self.schema[field][rule] if rule else None
+                field_definitions = self._resolve_rules_set(self.schema[field])
+                if rule == 'nullable':
+                    constraint = field_definitions.get(rule, False)
+                else:
+                    constraint = field_definitions[rule]
 
             value = self.document.get(field)
 
@@ -314,6 +319,20 @@ class Validator(object):
                 self._drop_nodes_from_errorpaths(error.child_errors,
                                                  dp_items, sp_items)
 
+    def _resolve_rules_set(self, rules_set):
+        if isinstance(rules_set, Mapping):
+            return rules_set
+        elif isinstance(rules_set, _str_type):
+            return self.rules_set_registry.get(rules_set)
+        return None
+
+    def _resolve_schema(self, schema):
+        if isinstance(schema, Mapping):
+            return schema
+        elif isinstance(schema, _str_type):
+            return self.schema_registry.get(schema)
+        return None
+
     # Properties
 
     @property
@@ -378,6 +397,16 @@ class Validator(object):
         return self._config.get('root_document', self.document)
 
     @property
+    def rules_set_registry(self):
+        """ The registry that holds referenced rules sets.
+            Type: :class:`~cerberus.Registry` """
+        return self._config.get('rules_set_registry', rules_set_registry)
+
+    @rules_set_registry.setter
+    def rules_set_registry(self, registry):
+        self._config['rules_set_registry'] = registry
+
+    @property
     def root_schema(self):
         """ The :attr:`~cerberus.Validator.schema` attribute of the
             first level ancestor of a child validator. """
@@ -398,6 +427,16 @@ class Validator(object):
             self._schema = schema
         else:
             self._schema = DefinitionSchema(self, schema)
+
+    @property
+    def schema_registry(self):
+        """ The registry that holds referenced schemas.
+        Type: :class:`~cerberus.Registry` """
+        return self._config.get('schema_registry', schema_registry)
+
+    @schema_registry.setter
+    def schema_registry(self, registry):
+        self._config['schema_registry'] = registry
 
     # Document processing
 
@@ -554,7 +593,7 @@ class Validator(object):
     def __normalize_mapping_per_schema(self, field, mapping, schema):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema[field].get('schema', {}),
+            schema=self._resolve_schema(schema[field].get('schema', {})),
             allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field],
@@ -747,7 +786,7 @@ class Validator(object):
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
             value = self.document[field]
-            if isinstance(self.allow_unknown, Mapping):
+            if isinstance(self.allow_unknown, (Mapping, _str_type)):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
                 schema_crumb = 'allow_unknown' if self.is_child \
@@ -771,6 +810,7 @@ class Validator(object):
             if validator:
                 return validator(definitions.get(rule, None), field, value)
 
+        definitions = self._resolve_rules_set(definitions)
         value = self.document[field]
 
         """ _validate_-methods must return True to abort validation. """
@@ -793,7 +833,8 @@ class Validator(object):
 
     _validate_allow_unknown = dummy_for_rule_validation(
         """ {'oneof': [{'type': 'boolean'},
-                       {'type': 'dict', 'validator': 'bulk_schema'}]} """)
+                       {'type': ['dict', 'string'],
+                        'validator': 'bulk_schema'}]} """)
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': 'list'} """
@@ -995,7 +1036,7 @@ class Validator(object):
                 return True
 
     def _validate_propertyschema(self, schema, field, value):
-        """ {'type': 'dict', 'validator': 'bulk_schema',
+        """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
@@ -1035,7 +1076,8 @@ class Validator(object):
         """
         try:
             required = set(field for field, definition in self.schema.items()
-                           if definition.get('required') is True)
+                           if self._resolve_rules_set(definition).
+                           get('required') is True)
         except AttributeError:
             if self.is_child and self.schema_path[-1] == 'schema':
                 raise _SchemaRuleTypeError
@@ -1059,8 +1101,9 @@ class Validator(object):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
-        """ {'type': 'dict', 'anyof': [{'validator': 'schema'},
-                                       {'validator': 'bulk_schema'}]} """
+        """ {'type': ['dict', 'string'],
+             'anyof': [{'validator': 'schema'},
+                       {'validator': 'bulk_schema'}]} """
         if schema is None:
             return
 
@@ -1070,6 +1113,7 @@ class Validator(object):
             self.__validate_schema_mapping(field, schema, value)
 
     def __validate_schema_mapping(self, field, schema, value):
+        schema = self._resolve_schema(schema)
         allow_unknown = self.schema[field].get('allow_unknown',
                                                self.allow_unknown)
         validator = self._get_child_validator(document_crumb=field,
@@ -1190,7 +1234,7 @@ class Validator(object):
             validator(field, value, self._error)
 
     def _validate_valueschema(self, schema, field, value):
-        """ {'type': 'dict', 'validator': 'bulk_schema',
+        """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         schema_crumb = (field, 'valueschema')
         if isinstance(value, Mapping):

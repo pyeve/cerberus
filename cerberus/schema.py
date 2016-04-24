@@ -1,4 +1,5 @@
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
+from copy import copy
 import json
 
 from . import errors
@@ -44,6 +45,9 @@ class DefinitionSchema(MutableMapping):
             raise RuntimeError('validator argument must be a Validator-'
                                'instance.')
         self.validator = validator
+
+        if isinstance(schema, _str_type):
+            schema = validator.schema_registry.get(schema, schema)
 
         if not isinstance(schema, Mapping):
             try:
@@ -187,8 +191,17 @@ class DefinitionSchema(MutableMapping):
         :param schema: The schema to be validated as a legal cerberus schema
                        according to the rules of this Validator object.
         """
+        if isinstance(schema, _str_type):
+            schema = self.validator.schema_registry.get(schema, schema)
+
         if schema is None:
             raise SchemaError(errors.SCHEMA_ERROR_MISSING)
+
+        schema = copy(schema)
+        for field in schema:
+            if isinstance(schema[field], _str_type):
+                schema[field] = rules_set_registry.get(schema[field],
+                                                       schema[field])
 
         if not self.schema_validator(schema, normalize=False):
             raise SchemaError(self.schema_validator.errors)
@@ -212,6 +225,22 @@ class SchemaValidationSchema(UnvalidatedSchema):
 
 
 class SchemaValidatorMixin:
+    @property
+    def known_rules_set_refs(self):
+        return self._config.get('known_rules_set_refs', ())
+
+    @known_rules_set_refs.setter
+    def known_rules_set_refs(self, value):
+        self._config['known_rules_set_refs'] = value
+
+    @property
+    def known_schema_refs(self):
+        return self._config.get('known_schema_refs', ())
+
+    @known_schema_refs.setter
+    def known_schema_refs(self, value):
+        self._config['known_schema_refs'] = value
+
     @property
     def target_schema(self):
         """ The schema that is being validated. """
@@ -255,6 +284,19 @@ class SchemaValidatorMixin:
             self._validate_type_hashable(field, item)
 
     def _validator_bulk_schema(self, field, value):
+        if isinstance(value, _str_type):
+            if value in self.known_rules_set_refs:
+                return
+            else:
+                self.known_rules_set_refs += (value,)
+            definition = self.target_validator.rules_set_registry.get(value)
+            if definition is None:
+                path = self.document_path + (field,)
+                self._error(path, 'Rules set definition %s not found.' % value)
+                return
+            else:
+                value = definition
+
         _hash = schema_hash({'turing': value})
         if _hash in self.target_validator._valid_schemas:
             return
@@ -285,6 +327,19 @@ class SchemaValidatorMixin:
             self._validator_bulk_schema((field, i), schema)
 
     def _validator_schema(self, field, value):
+        if isinstance(value, _str_type):
+            if value in self.known_schema_refs:
+                return
+            else:
+                self.known_schema_refs += (value,)
+            definition = self.target_validator.schema_registry.get(value)
+            if definition is None:
+                path = self.document_path + (field,)
+                self._error(path, 'Schema definition %s not found.' % value)
+                return
+            else:
+                value = definition
+
         _hash = schema_hash(value)
         if _hash in self.target_validator._valid_schemas:
             return
@@ -297,3 +352,67 @@ class SchemaValidatorMixin:
             self._error(validator._errors)
         else:
             self.target_validator._valid_schemas.add(_hash)
+
+
+####
+
+
+class Registry:
+    """ A registry to store and retrieve schemas and parts of it by a name
+    that can be used in validation schemas.
+
+    :param definitions: Optional, initial defintions.
+    :type definitions: any :term:`mapping` """
+
+    def __init__(self, definitions={}):
+        self._storage = {}
+        self.extend(definitions)
+
+    def add(self, name, definition):
+        """ Register a definition to the registry. Existing defintions are
+        replaced silently.
+
+        :param name: The name which can be used as reference in a validation
+                     schema.
+        :type name: :class:`str`
+        :param definition: The definition.
+        :type definition: any :term:`mapping` """
+        self._storage[name] = definition
+
+    def all(self):
+        """ Returns a :class:`dict` with all registered definitions mapped to
+        their name. """
+        return self._storage
+
+    def extend(self, definitions):
+        """ Add several defintions at once. Existing defintions are
+        replaced silently.
+
+        :param definitions: The names and defintions.
+        :type definitions: a :term:`mapping` or an :term:`iterable` with
+                           two-value :class:`tuple` s """
+        for name, definition in dict(definitions).items():
+            self.add(name, definition)
+
+    def clear(self):
+        """ Purge all defintions in the registry. """
+        self._storage.clear()
+
+    def get(self, name, default=None):
+        """ Retrieve a defintion from the registry.
+
+        :param name: The reference that points to the defintion.
+        :type name: :class:`str`
+        :param default: Return value if the reference isn't registered. """
+        return self._storage.get(name, default)
+
+    def remove(self, *names):
+        """ Unregister definitions from the registry.
+
+        :param names: The names of the defintions that are to be
+                      unregistered. """
+        for name in names:
+            self._storage.pop(name, None)
+
+
+schema_registry, rules_set_registry = Registry(), Registry()

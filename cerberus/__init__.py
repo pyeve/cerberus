@@ -9,13 +9,16 @@
 """
 
 from .cerberus import Validator, DocumentError
-from .schema import SchemaError
+from .schema import rules_set_registry, schema_registry, Registry, SchemaError
 
 
 __version__ = "0.10"
 
 __all__ = [
-    Validator.__name__,
     DocumentError.__name__,
-    SchemaError.__name__
+    Registry.__name__,
+    SchemaError.__name__,
+    Validator.__name__,
+    'schema_registry',
+    'rules_set_registry'
 ]
