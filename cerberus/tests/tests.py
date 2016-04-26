@@ -230,19 +230,6 @@ class TestValidation(TestBase):
         value = [34, 'not an integer']
         self.assertFail({field: value})
 
-    def test_bad_list_of_dicts_deprecated(self):
-        field = 'a_list_of_dicts_deprecated'
-        value = [{'sku': 'KT123', 'price': '100'}]
-        self.assertFail({field: value})
-        # this is not a proper expectation, it's a deprecated feature
-        self.assertError('price', ('price', 'type'), errors.BAD_TYPE, 'integer')
-
-        value = ["not a dict"]
-        self.assertValidationError(
-            {field: value}, None, None, errors.DOCUMENT_FORMAT.format(
-                value[0])
-        )
-
     def test_bad_list_of_dicts(self):
         field = 'a_list_of_dicts'
         subschema = self.schema['a_list_of_dicts']['schema']
@@ -350,17 +337,6 @@ class TestValidation(TestBase):
         self.assertError(field, (field, 'regex'), errors.REGEX_MISMATCH,
                          '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
-    # TODO remove on next major release
-    def test_a_list_of_dicts_deprecated(self):
-        self.assertSuccess(
-            {
-                'a_list_of_dicts_deprecated': [
-                    {'sku': 'AK345', 'price': 100},
-                    {'sku': 'YZ069', 'price': 25}
-                ]
-            }
-        )
-
     def test_a_list_of_dicts(self):
         self.assertSuccess(
             {
@@ -458,6 +434,7 @@ class TestValidation(TestBase):
     def test_custom_datatype_rule(self):
         class MyValidator(Validator):
             def _validate_min_number(self, min_number, field, value):
+                """ {'type': 'number'} """
                 if value < min_number:
                     self._error(field, 'Below the min')
 
@@ -478,6 +455,7 @@ class TestValidation(TestBase):
     def test_custom_validator(self):
         class MyValidator(Validator):
             def _validate_isodd(self, isodd, field, value):
+                """ {'type': 'boolean'} """
                 if isodd and not bool(value & 1):
                     self._error(field, 'Not an odd number')
 
@@ -488,22 +466,6 @@ class TestValidation(TestBase):
         self.assertError('test_field', (), errors.CUSTOM, None,
                          ('Not an odd number',), v_errors=v._errors)
         self.assertDictEqual(v.errors, {'test_field': 'Not an odd number'})
-
-    def test_transparent_schema_rules(self):
-        field = 'test'
-        schema = {field: {'type': 'string', 'unknown_rule': 'a value'}}
-        document = {field: 'hey!'}
-        v = Validator(transparent_schema_rules=True)
-        self.assertSuccess(schema=schema, document=document, validator=v)
-        v.transparent_schema_rules = False
-        self.assertSchemaError(
-            document, schema, v,
-            "{'test': {'unknown_rule': 'unknown rule'}}"
-        )
-        self.assertSchemaError(
-            document, schema, None,
-            "{'test': {'unknown_rule': 'unknown rule'}}"
-        )
 
     def test_allow_empty_strings(self):
         field = 'test'
@@ -779,6 +741,7 @@ class TestValidation(TestBase):
         """
         class MyValidator(Validator):
             def _validate_root_doc(self, root_doc, field, value):
+                """ {'type': 'boolean'} """
                 if('sub' not in self.root_document or
                         len(self.root_document['sub']) != 2):
                     self._error(field, 'self.context is not the root doc!')
@@ -1175,6 +1138,7 @@ class TestValidation(TestBase):
     def test_document_path(self):
         class DocumentPathTester(Validator):
             def _validate_trail(self, constraint, field, value):
+                """ {'type': 'boolean'} """
                 test_doc = self.root_document
                 for crumb in self.document_path:
                     test_doc = test_doc[crumb]
@@ -1908,14 +1872,8 @@ class TestErrorHandling(TestBase):
         self.assertDictEqual(handler(_errors), ref)
 
 
-# TODO remove on next major release
 class TestBackwardCompatibility(TestBase):
-    def test_keyschema(self):
-        schema = {'a_field': {'type': 'list',
-                              'schema': {'keyschema': {'type': 'string'}}}}
-        document = {'a_field': [{'a_key': 'a_string'}]}
-        v = Validator()
-        self.assertSuccess(document, schema, v)
+    pass
 
 
 class TestInheritance(TestBase):
@@ -1931,10 +1889,26 @@ class TestInheritance(TestBase):
                 if not self.working_dir:
                     self._error('self.working_dir', 'is None')
 
+        self.assertIn('test', InheritedValidator.types)
         v = InheritedValidator({'test': {'type': 'list',
                                          'schema': {'type': 'test'}}},
                                working_dir='/tmp')
         self.assertSuccess({'test': ['foo']}, validator=v)
+
+    def test_docstring_parsing(self):
+        class CustomValidator(Validator):
+            def _validate_foo(self, argument, field, value):
+                """ {'type': 'zap'} """
+                pass
+
+            def _validate_bar(self, value):
+                """ Test the barreness of a value.
+
+                The rule's arguments are validated against this schema:
+                    {'type': 'boolean'}
+                """
+
+        self.assertIn('foo', CustomValidator.validation_rules)
 
 
 class TestAssorted(TestBase):

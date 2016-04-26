@@ -23,7 +23,7 @@ for error_definition in error_definitions:
                 hex(error_definition[1].code),
                 error_definition[0],
                 error_definition[1].rule))
-with open (os.path.join(DIR, 'error-codes.rst'), 'wt') as f:
+with open(os.path.join(DIR, 'error-codes.rst'), 'wt') as f:
     print('.. list-table::\n'
           '   :header-rows: 1\n'
           '\n'
@@ -39,8 +39,8 @@ with open (os.path.join(DIR, 'error-codes.rst'), 'wt') as f:
 
 
 from cerberus import Validator
-schema_defintion_schema = pformat(Validator().rules)
+schema_validation_schema = pformat(Validator().rules)
 with open(os.path.join(DIR, 'schema-validation-schema.rst'), 'wt') as f:
     print('.. code-block:: python\n', file=f)
-    for line in schema_defintion_schema.split('\n'):
+    for line in schema_validation_schema.split('\n'):
         print('    ' + line, file=f)

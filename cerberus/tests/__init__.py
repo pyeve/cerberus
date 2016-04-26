@@ -80,13 +80,6 @@ class TestBase(unittest.TestCase):
                 'type': 'list',
                 'allowed': ["agent", "client", "vendor"],
             },
-            'a_list_of_dicts_deprecated': {
-                'type': 'list',
-                'items': {
-                    'sku': {'type': 'string'},
-                    'price': {'type': 'integer'},
-                },
-            },
             'a_list_of_dicts': {
                 'type': 'list',
                 'schema': {

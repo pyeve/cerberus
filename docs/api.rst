@@ -11,7 +11,7 @@ Validator Class
             mandatory_validations, normalized, priority_validations,
             purge_unknown, recent_error, root_allow_unknown, root_document,
             root_schema, schema, schema_error_tree, schema_path,
-            transparent_schema_rules, _valid_schemas, validate, validated
+            _valid_schemas, validate, validated
 
 
 ErrorHandlers
@@ -32,6 +32,9 @@ Python Error Representations
   :members:
 
 .. _error-codes:
+
+Error Codes
+~~~~~~~~~~~
 
 These errors are used as :attr:`~cerberus.errors.ValidationError.code`.
 

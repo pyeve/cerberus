@@ -36,7 +36,11 @@ This is how we would go to implement that:
 
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
-            """ {'type': 'boolean'} """
+            """ Test the oddity of a value.
+
+            The rule's arguments are validated against this schema:
+            {'type': 'boolean'}
+            """
             if isodd and not bool(value & 1):
                 self._error(field, "Must be an odd number")
 
@@ -55,12 +59,13 @@ matters, we can use it to validate all odd values:
     >>> v.validate({'amount': 9})
     True
 
-.. important::
-
-    As schemas themselves are validated, you must provide constraints as
-    literal Python expression in the docstring of the rule's implementing
-    method to validate the constraints given in a schema for that rule. See
-    the source of the contributed rules for more examples.
+As schemas themselves are validated, you can provide constraints as literal
+Python expression in the docstring of the rule's implementing method to
+validate the arguments given in a schema for that rule. Either the docstring
+contains solely the literal or the literal is placed at the bottom of the
+docstring preceded by
+``The rule's arguments are validated against this schema:``
+See the source of the contributed rules for more examples.
 
 
 .. _new-types:

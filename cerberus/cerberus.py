@@ -16,7 +16,7 @@ import re
 from warnings import warn
 
 from . import errors
-from .platform import _int_types, _str_type, WeakSet
+from .platform import _int_types, _str_type
 from .schema import DefinitionSchema, SchemaError
 from .utils import drop_item_from_tuple, isclass
 
@@ -47,18 +47,25 @@ class _SchemaRuleTypeError(Exception):
 
 class Validator(object):
     """ Validator class. Normalizes and/or validates any mapping against a
-        validation-schema which is provided as an argument at class
-        instantiation or upon calling the :meth:`~cerberus.Validator.validate`,
-        :meth:`~cerberus.Validator.validated` or
-        :meth:`~cerberus.Validator.normalized` method. All parameters are
-        optional.
+    validation-schema which is provided as an argument at class instantiation
+    or upon calling the :meth:`~cerberus.Validator.validate`,
+    :meth:`~cerberus.Validator.validated` or
+    :meth:`~cerberus.Validator.normalized` method. An instance itself is
+    callable and executes a validation.
+
+    All instantiation parameters are optional.
+
+    There are the introspective properties :attr:`types`, :attr:`validators`,
+    :attr:`coercers`, :attr:`default_setters`, :attr:`rules`,
+    :attr:`normalization_rules` and :attr:`validation_rules`.
+
+    The attributes reflecting the available rules are assembled considering
+    constraints that are defined in the docstrings of rules' methods and is
+    effectively used as validation schema for :attr:`schema`.
 
     :param schema: See :attr:`~cerberus.Validator.schema`.
                    Defaults to :obj:`None`.
     :type schema: any :term:`mapping`
-    :param transparent_schema_rules: See :attr:`~cerberus.Validator.transparent_schema_rules`.
-                                     Defaults to ``False``.
-    :type transparent_schema_rules: :class:`bool`
     :param ignore_none_values: See :attr:`~cerberus.Validator.ignore_none_values`.
                                Defaults to ``False``.
     :type ignore_none_values: :class:`bool`
@@ -73,11 +80,10 @@ class Validator(object):
                           When given as two-value tuple with an error-handler
                           class and a dictionary, the latter is passed to the
                           initialization of the error handler.
-                          Default: :class:`BasicErrorHandler
-                          <cerberus.errors.BasicErrorHandler>`.
+                          Default: :class:`~cerberus.errors.BasicErrorHandler`.
     :type error_handler: class or instance based on
-                         :class:`BaseErrorHandler <cerberus.errors.BaseErrorHandler>`
-                         or :class:`tuple`
+                         :class:`~erberus.errors.BaseErrorHandler>` or
+                         :class:`tuple`
     """  # noqa
 
     mandatory_validations = ('nullable', )
@@ -92,66 +98,12 @@ class Validator(object):
     """ A :class:`set` of hashed validation schemas that are legit for a
         particular ``Validator`` class. """
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(Validator, '_inspected_classes'):
-            Validator._inspected_classes = WeakSet()
-        if cls not in Validator._inspected_classes:
-            cls.__set_introspection_properties()
-            Validator._inspected_classes.add(cls)
-        return super(Validator, cls).__new__(cls)
-
-    @classmethod
-    def __set_introspection_properties(cls):
-        def attributes_with_prefix(prefix):
-            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
-                     if x.startswith('_' + prefix)]
-            return tuple(rules)
-
-        cls.types, cls.validators, cls.validation_rules = (), (), {}
-        for attribute in attributes_with_prefix('validate'):
-            if attribute.startswith('type_'):
-                cls.types += (attribute[len('type_'):],)
-            elif attribute.startswith('validator_'):
-                cls.validators += (attribute[len('validator_'):],)
-            else:
-                constraints = getattr(cls, '_validate_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.validation_rules[attribute] = constraints
-
-        cls.validation_rules['type']['allowed'] = cls.types
-        x = cls.validation_rules['validator']['oneof']
-        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
-
-        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
-        for attribute in attributes_with_prefix('normalize'):
-            if attribute.startswith('coerce_'):
-                cls.coercers += (attribute[len('coerce_'):],)
-            elif attribute.startswith('default_setter_'):
-                cls.default_setters += (attribute[len('default_setter_'):],)
-            else:
-                constraints = getattr(cls, '_normalize_' + attribute).__doc__
-                constraints = {} if constraints is None \
-                    else literal_eval(constraints.lstrip())
-                cls.normalization_rules[attribute] = constraints
-
-        for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['oneof']
-            x[1]['schema']['oneof'][1]['allowed'] = \
-                x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
-            cls.default_setters
-
-        cls.rules = {}
-        cls.rules.update(cls.validation_rules)
-        cls.rules.update(cls.normalization_rules)
-
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
 
-        __init__(self, schema=None, transparent_schema_rules=False,
-                 ignore_none_values=False, allow_unknown=False,
-                 purge_unknown=False, error_handler=errors.BasicErrorHandler)
+        __init__(self, schema=None, ignore_none_values=False,
+                 allow_unknown=False, purge_unknown=False,
+                 error_handler=errors.BasicErrorHandler)
         """
 
         self.document = None
@@ -204,8 +156,8 @@ class Validator(object):
 
     def __store_config(self, args, kwargs):
         """ Assign args to kwargs and store configuration. """
-        signature = ('schema', 'transparent_schema_rules',
-                     'ignore_none_values', 'allow_unknown', 'purge_unknown')
+        signature = ('schema', 'ignore_none_values', 'allow_unknown',
+                     'purge_unknown')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -213,6 +165,8 @@ class Validator(object):
             else:
                 kwargs[p] = args[i]
         self._config = kwargs
+        """ This dictionary holds the configuration arguments that were used to
+            initialize the :class:`Validator` instance. """
 
     @classmethod
     def clear_caches(cls):
@@ -444,19 +398,6 @@ class Validator(object):
             self._schema = schema
         else:
             self._schema = DefinitionSchema(self, schema)
-
-    @property
-    def transparent_schema_rules(self):
-        """ Whether to ignore unknown rules when validating validation schemas
-            for this validator, defaults to ``False``. Type: :class:`bool` """
-        return self._config.get('transparent_schema_rules', False)
-
-    @transparent_schema_rules.setter
-    def transparent_schema_rules(self, value):
-        if isinstance(self._schema, DefinitionSchema):
-            self._schema.regenerate_validation_schema()
-            self._schema.update({})  # trigger validation
-        self._config['transparent_schema_rules'] = value
 
     # Document processing
 
@@ -953,16 +894,7 @@ class Validator(object):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
-    # TODO remove on next major release
-    def _validate_items(self, items, field, value):
-        """ {'type': ['list', 'dict'], 'validator': 'items'} """
-        if isinstance(items, Mapping):
-            self.__validate_items_schema(items, field, value)
-        elif isinstance(items, Sequence) and not isinstance(items, _str_type):
-            self.__validate_items_list(items, field, value)
-
-    # TODO rename to _validate_items on next major release
-    def __validate_items_list(self, items, field, values):
+    def _validate_items(self, items, field, values):
         """ {'type': 'list', 'validator': 'items'} """
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
@@ -974,13 +906,6 @@ class Validator(object):
             if not validator(dict((i, item) for i, item in enumerate(values)),
                              normalize=False):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
-
-    # TODO remove on next major release
-    def __validate_items_schema(self, items, field, value):
-        validator = self._get_child_validator(schema=items)
-        for item in value:
-            if not validator(item, normalize=False):
-                self._error(validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
         """ Validates value against all definitions and logs errors according
@@ -1035,6 +960,7 @@ class Validator(object):
         self.__validate_logical('oneof', definitions, field, value)
 
     def _validate_max(self, max_value, field, value):
+        """ {'nullable': False } """
         try:
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
@@ -1042,6 +968,7 @@ class Validator(object):
             pass
 
     def _validate_min(self, min_value, field, value):
+        """ {'nullable': False } """
         try:
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
@@ -1274,3 +1201,74 @@ class Validator(object):
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
+
+
+RULE_SCHEMA_SEPERATOR = \
+    "The rule's arguments are validated against this schema:"
+
+
+class InspectedValidator(type):
+    """ Metaclass for all validators """
+    def __init__(cls, *args):
+        def attributes_with_prefix(prefix):
+            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
+                     if x.startswith('_' + prefix)]
+            return tuple(rules)
+
+        super(InspectedValidator, cls).__init__(*args)
+
+        cls.types, cls.validators, cls.validation_rules = (), (), {}
+        for attribute in attributes_with_prefix('validate'):
+            if attribute.startswith('type_'):
+                cls.types += (attribute[len('type_'):],)
+            elif attribute.startswith('validator_'):
+                cls.validators += (attribute[len('validator_'):],)
+            else:
+                cls.validation_rules[attribute] = \
+                    cls.__get_rule_schema('_validate_' + attribute)
+
+        cls.validation_rules['type']['allowed'] = cls.types
+        x = cls.validation_rules['validator']['oneof']
+        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
+
+        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
+        for attribute in attributes_with_prefix('normalize'):
+            if attribute.startswith('coerce_'):
+                cls.coercers += (attribute[len('coerce_'):],)
+            elif attribute.startswith('default_setter_'):
+                cls.default_setters += (attribute[len('default_setter_'):],)
+            else:
+                cls.normalization_rules[attribute] = \
+                    cls.__get_rule_schema('_normalize_' + attribute)
+
+        for rule in ('coerce', 'rename_handler'):
+            x = cls.normalization_rules[rule]['oneof']
+            x[1]['schema']['oneof'][1]['allowed'] = \
+                x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
+            cls.default_setters
+
+        cls.rules = {}
+        cls.rules.update(cls.validation_rules)
+        cls.rules.update(cls.normalization_rules)
+
+    def __get_rule_schema(cls, method_name):
+        docstring = getattr(cls, method_name).__doc__
+        if docstring is None:
+            result = {}
+        else:
+            if RULE_SCHEMA_SEPERATOR in docstring:
+                docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
+            try:
+                result = literal_eval(docstring.strip())
+            except:
+                result = {}
+
+        if not result:
+            warn("No validation schema is defined for the arguments of rule "
+                 "'%s'" % '_'.join(method_name.split('_')[2:]))
+
+        return result
+
+
+Validator = InspectedValidator('Validator', (Validator,), {})

@@ -233,13 +233,8 @@ values:
 
 .. versionadded:: 0.10
 
-items (dict)
-------------
-.. deprecated:: 0.0.3
-   Use `schema (dict)`_ instead.
-
-items (list)
-------------
+items
+-----
 When a list, ``items`` defines a list of values allowed in a ``list`` type of
 fixed length in the given order:
 
@@ -550,6 +545,9 @@ Data type allowed for the key value. Can be one of the following names:
    * - ``boolean``
      - :class:`py2:bool`
      - :class:`py3:bool`
+   * - ``binary``
+     - :class:`py2:bytes` [#]_, :class:`py2:bytearray`
+     - :class:`py3:bytes`, :class:`py3:bytearray`
    * - ``date``
      - :class:`py2:datetime.date`
      - :class:`py3:datetime.date`
@@ -577,9 +575,6 @@ Data type allowed for the key value. Can be one of the following names:
    * - ``string``
      - :func:`py2:basestring`
      - :class:`py3:str`
-   * - ``binary``
-     - :class:`py2:str`
-     - :class:`py3:bytes`, :class:`py3:bytearry`
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -639,6 +634,8 @@ A list of types can be used to allow different values:
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
+
+.. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
 validator
 ---------
