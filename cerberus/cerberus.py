@@ -763,26 +763,6 @@ class Validator(object):
         else:
             return self.document
 
-    # TODO remove on next major release
-    def validate_update(self, document, schema=None):
-        """ Validates a Python dictionary against a validation schema. The
-        difference with :func:`validate` is that the ``required`` rule will be
-        ignored here.
-
-        :param schema: Optional validation schema. Defaults to :obj:`None`. If
-                       not provided here, the schema must have been provided at
-                       class instantiation.
-
-        :return: True if validation succeeds, False otherwise. Check the
-                 :func:`errors`-property for a list of validation errors.
-
-        .. deprecated:: 0.4.0
-           Use :func:`validate` with ``update=True`` instead.
-        """
-        warn('Validator.validate_update is deprecated. Use Validator.validate'
-             '(update=True) instead.', DeprecationWarning)
-        return self.validate(document, schema, update=True)
-
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
             value = self.document[field]
