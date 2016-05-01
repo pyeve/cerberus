@@ -15,6 +15,19 @@ TODO:
 Deprecations
 ------------
 
+Methods
+.......
+
+validate_update
+~~~~~~~~~~~~~~~
+
+The method ``validate_update`` has been removed from
+:class:`~cerberus.Validator. Instead use :meth:`~cerberus.Validator.validate`
+with the keyword-argument ``update`` set to ``True``.
+
+Rules
+.....
+
 items (for mappings)
 ~~~~~~~~~~~~~~~~~~~~
 
