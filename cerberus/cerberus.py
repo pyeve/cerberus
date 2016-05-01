@@ -540,9 +540,9 @@ class Validator(object):
             if field not in schema:
                 continue
             if isinstance(mapping[field], Mapping):
-                if 'propertyschema' in schema[field]:
-                    self.__normalize_mapping_per_propertyschema(
-                        field, mapping, schema[field]['propertyschema'])
+                if 'keyschema' in schema[field]:
+                    self.__normalize_mapping_per_keyschema(
+                        field, mapping, schema[field]['keyschema'])
                 if 'valueschema' in schema[field]:
                     self.__normalize_mapping_per_valueschema(
                         field, mapping, schema[field]['valueschema'])
@@ -555,12 +555,11 @@ class Validator(object):
                     'schema' in schema[field]:
                 self.__normalize_sequence(field, mapping, schema)
 
-    def __normalize_mapping_per_propertyschema(self, field, mapping,
-                                               property_rules):
+    def __normalize_mapping_per_keyschema(self, field, mapping, property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'propertyschema'),
+            document_crumb=field, schema_crumb=(field, 'keyschema'),
             schema=schema)
         result = validator.normalized(document, always_return_document=True)
         if validator._errors:
@@ -1015,19 +1014,19 @@ class Validator(object):
                 self._error(field, errors.NOT_NULLABLE)
                 return True
 
-    def _validate_propertyschema(self, schema, field, value):
+    def _validate_keyschema(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema_crumb=(field, 'propertyschema'),
+                schema_crumb=(field, 'keyschema'),
                 schema=dict(((k, schema) for k in value.keys())))
             if not validator(dict(((k, k) for k in value.keys())),
                              normalize=False):
                 self._drop_nodes_from_errorpaths(validator._errors,
                                                  [], [2, 4])
-                self._error(field, errors.PROPERTYSCHEMA, validator._errors)
+                self._error(field, errors.KEYSCHEMA, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
         """ {'type': 'boolean'} """

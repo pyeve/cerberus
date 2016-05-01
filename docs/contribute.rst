@@ -117,7 +117,7 @@ Source code is available at `GitHub
 .. _`continuous integration server`: https://travis-ci.org/nicolaiarocci/cerberus/
 .. _Docker: https://www.docker.com
 .. _flake8: https://flake8.readthedocs.org
-.. _pytest: http://pytest.org
+.. _pytest: https://pytest.org
 .. _squash: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
-.. _tox: http://tox.readthedocs.org
+.. _tox: https://tox.readthedocs.io
 .. _Travis-CI: https://travis-ci.org

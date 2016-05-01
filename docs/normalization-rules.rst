@@ -3,7 +3,7 @@ Normalization Rules
 
 Normalization rules are applied to fields, also in ``schema`` for mappings, as
 well when defined as a bulk operation by ``schema`` (for sequences),
-``allow_unknown``, ``propertyschema`` and ``valueschema``.  Normalization rules
+``allow_unknown``, ``keyschema`` and ``valueschema``.  Normalization rules
 in definitions for testing variants like with ``anyof`` are not processed.
 
 

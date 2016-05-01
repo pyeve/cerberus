@@ -41,7 +41,7 @@ the following properties:
   - ``value``: The value being validated.
   - ``info``: This tuple contains additional informations that were submitted
     with the error. For most errors this is actually nothing. For bulk
-    validations (e.g. with ``items`` or ``propertyschema``) this property keeps
+    validations (e.g. with ``items`` or ``keyschema``) this property keeps
     all individual errors.
     See the implementation of a rule in the source code to figure out its
     additional logging.

@@ -147,7 +147,7 @@ class DefinitionSchema(MutableMapping):
                 schema[field]['schema'] = \
                     self.expand({0: schema[field]['schema']})[0]
 
-            for rule in ('propertyschema', 'valueschema'):
+            for rule in ('keyschema', 'valueschema'):
                 if rule in schema[field]:
                     schema[field][rule] = \
                         self.expand({0: schema[field][rule]})[0]
