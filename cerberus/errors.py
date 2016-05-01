@@ -61,7 +61,7 @@ SETTING_DEFAULT_FAILED = ErrorDefinition(0x64, 'default_setter')
 ERROR_GROUP = ErrorDefinition(0x80, None)
 MAPPING_SCHEMA = ErrorDefinition(0x81, 'schema')
 SEQUENCE_SCHEMA = ErrorDefinition(0x82, 'schema')
-PROPERTYSCHEMA = ErrorDefinition(0x83, 'propertyschema')
+KEYSCHEMA = ErrorDefinition(0x83, 'keyschema')
 VALUESCHEMA = ErrorDefinition(0x84, 'valueschema')
 BAD_ITEMS = ErrorDefinition(0x8f, 'items')
 

@@ -250,6 +250,27 @@ fixed length in the given order:
 
 See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
+keyschema
+---------
+This is the counterpart to ``valueschema`` that validates the `keys` of a
+``dict``. For historical reasons it is `not` named ``keyschema``.
+
+.. doctest::
+
+    >>> schema = {'a_dict': {'type': 'dict', 'keyschema': {'type': 'string', 'regex': '[a-z]+'}}}
+    >>> document = {'a_dict': {'key': 'value'}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'a_dict': {'KEY': 'value'}}
+    >>> v.validate(document, schema)
+    False
+
+.. versionadded:: 0.9
+
+.. versionchanged:: 1.0
+   Renamed from ``propertyschema`` to ``keyschema``
+
 min, max
 --------
 Minimum and maximum value allowed for any types that implement comparison operators.
@@ -396,24 +417,6 @@ Validates if *exactly one* of the provided constraints applies. See `\*of-rules`
 
 .. versionadded:: 0.9
 
-propertyschema
---------------
-This is the counterpart to ``valueschema`` that validates the `keys` of a
-``dict``. For historical reasons it is `not` named ``keyschema``.
-
-.. doctest::
-
-    >>> schema = {'a_dict': {'type': 'dict', 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}}}
-    >>> document = {'a_dict': {'key': 'value'}}
-    >>> v.validate(document, schema)
-    True
-
-    >>> document = {'a_dict': {'KEY': 'value'}}
-    >>> v.validate(document, schema)
-    False
-
-.. versionadded:: 0.9
-
 readonly
 --------
 If ``True`` the value is readonly. Validation will fail if this field is present
@@ -492,7 +495,7 @@ constraint.
 
 .. note::
 
-    To validate *arbitrary keys* of a mapping, see `propertyschema`_, resp.
+    To validate *arbitrary keys* of a mapping, see `keyschema`_, resp.
     `valueschema`_ for validating *arbitrary values* of a mapping.
 
 schema (list)

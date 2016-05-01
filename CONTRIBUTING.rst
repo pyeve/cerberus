@@ -4,7 +4,7 @@ How to Contribute
 Contributions are welcome! Not familiar with the codebase yet? No problem!
 There are many ways to contribute to open source projects: reporting bugs,
 helping with the documentation, spreading the word and of course, adding
-new features and patches. 
+new features and patches.
 
 Getting Started
 ---------------
@@ -16,7 +16,7 @@ Making Changes
 --------------
 * Fork_ the repository on GitHub.
 * Create a topic branch from where you want to base your work.
-* This is usually the ``master`` branch. 
+* This is usually the ``master`` branch.
 * Please avoid working directly on ``master`` branch.
 * Make commits of logical units (if needed rebase your feature branch before
   submitting it).
@@ -39,9 +39,9 @@ Submitting Changes
 
 First time contributor?
 -----------------------
-It's alright. We've all been there. 
+It's alright. We've all been there.
 
-Dont' know where to start? 
+Dont' know where to start?
 --------------------------
 There are usually several TODO comments scattered around the codebase, maybe
 check them out and see if you have ideas, or can help with them. Also, check
@@ -50,7 +50,7 @@ about documentation?  I suck at english so if you're fluent with it (or notice
 any error), why not help with that? In any case, other than GitHub help_ pages,
 you might want to check this excellent `Effective Guide to Pull Requests`_
 
-.. _`the repository`: http://github.com/nicolaiarocci/cerberus
+.. _`the repository`: https://github.com/nicolaiarocci/cerberus
 .. _AUTHORS: https://github.com/nicolaiarocci/cerberus/blob/master/AUTHORS
 .. _`open issues`: https://github.com/nicolaiarocci/cerberus/issues
 .. _`new issue`: https://github.com/nicolaiarocci/cerberus/issues/new
