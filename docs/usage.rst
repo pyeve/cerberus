@@ -38,6 +38,10 @@ Alternatively, you can pass both the dictionary and the schema to the
 Which can be handy if your schema is changing through the life of the
 instance.
 
+Details about validation schemas are covered in :doc:`schemas`.
+See :doc:`validation-rules` and :doc:`normalization-rules` for an extensive
+documentation of all supported rules.
+
 Unlike other validation tools, Cerberus will not halt and raise an exception on
 the first validation issue. The whole document will always be processed, and
 ``False`` will be returned if validation failed.  You can then access the
@@ -65,57 +69,6 @@ shorthand syntax:
     True
 
 .. versionadded:: 0.4.1
-
-
-Validation Schema
------------------
-A validation schema is a mapping, usually a :class:`dict`. Schema keys are the
-keys allowed in the target dictionary. Schema values express the rules that
-must be matched by the corresponding target values.
-
-.. testcode::
-
-    schema = {'name': {'type': 'string', 'maxlength': 10}}
-
-In the example above we define a target dictionary with only one key, ``name``,
-which is expected to be a string not longer than 10 characters. Something like
-``{'name': 'john doe'}`` would validate, while something like ``{'name': 'a
-very long string'}`` or ``{'name': 99}`` would not.
-
-By default all keys in a document are optional unless the :ref:`required`-rule
-is set for a key.
-
-See :doc:`validation-rules` and :doc:`normalization-rules` for an extensive
-documentation of all supported rules.
-
-Validation schemas themselves are validated when passed to the validator or a
-new set of rules is set for a document's key. A :exc:`~cerberus.SchemaError`
-is raised when an invalid validation schema is encountered. See
-:ref:`schema-validation-schema` for a reference.
-
-However, be aware that no validation can be triggered for all changes below
-that level. You could therefore trigger a validation and catch the exception:
-
-    >>> v = Validator({'foo': {'allowed': []}})
-    >>> v.schema['foo'] = {'allowed': 'strings are no valid constraint for allowed'}
-    Traceback (most recent call last):
-      File "<input>", line 1, in <module>
-      File "cerberus/schema.py", line 99, in __setitem__
-        self.validate({key: value})
-      File "cerberus/schema.py", line 126, in validate
-        self._validate(schema)
-      File "cerberus/schema.py", line 141, in _validate
-        raise SchemaError(self.schema_validator.errors)
-    SchemaError: {'foo': {'allowed': 'must be of list type'}}
-    >>> v.schema['foo']['allowed'] = 'strings are no valid constraint for allowed'
-    >>> v.schema.validate()
-    Traceback (most recent call last):
-      File "<input>", line 1, in <module>
-      File "cerberus/schema.py", line 126, in validate
-        self._validate(schema)
-      File "cerberus/schema.py", line 141, in _validate
-        raise SchemaError(self.schema_validator.errors)
-    SchemaError: {'foo': {'allowed': 'must be of list type'}}
 
 
 .. _allowing-the-unknown:
@@ -252,38 +205,6 @@ normalized copy of a document without validating it:
     <type 'int'>
 
 .. versionadded:: 0.10
-
-
-Schema Definition Formats
--------------------------
-
-Cerberus schemas are built with vanilla Python types: ``dict``, ``list``,
-``string``, etc. Even user-defined validation rules are invoked in the schema
-by name, as a string. A useful side effect of this design is that schemas can
-be defined in a number of ways, for example with PyYAML_.
-
-.. doctest::
-
-    >>> import yaml
-    >>> schema_text = '''
-    ... name:
-    ...   type: string
-    ... age:
-    ...   type: integer
-    ...   min: 10
-    ... '''
-    >>> schema = yaml.load(schema_text)
-    >>> document = {'name': 'Little Joe', 'age': 5}
-    >>> v.validate(document, schema)
-    False
-    >>> v.errors
-    {'age': 'min value is 10'}
-
-You don't have to use YAML of course, you can use your favorite serializer.
-JSON for example. As long as there is a decoder that can produce a nested
-``dict``, you can use it to define a schema.
-
-.. _PyYAML: http://pyyaml.org
 
 
 Warnings

@@ -35,11 +35,12 @@ Table of Contents
 -----------------
 .. toctree::
 
-    Installation <install>
+    install
     Usage <usage>
-    Validation Rules <validation-rules>
-    Normalization Rules <normalization-rules>
-    Errors & Error Handling <errors>
+    schemas
+    validation-rules
+    normalization-rules
+    errors
     Extending <customize>
     Contributing <contribute>
     API <api>
