@@ -221,7 +221,7 @@ class ErrorTreeNode(MutableMapping):
 
     @property
     def tree_type(self):
-        return self.parent_node.tree_type
+        return self.tree_root.tree_type
 
     def add(self, error):
         error_path = self._path_of_(error)
