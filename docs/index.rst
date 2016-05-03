@@ -35,7 +35,7 @@ Table of Contents
 -----------------
 .. toctree::
 
-    install
+    Installation <install>
     Usage <usage>
     schemas
     validation-rules

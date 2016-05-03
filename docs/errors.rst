@@ -31,7 +31,7 @@ An error is represented as :class:`~cerberus.errors.ValidationError` that has
 the following properties:
 
   - ``document_path``: The path within the document. For flat dictionaries
-    this simply be a key's name in a tuple, for nested ones it's all traversed
+    this simply is a key's name in a tuple, for nested ones it's all traversed
     key names. Items in sequences are represented by their index.
   - ``schema_path``: The path within the schema.
   - ``code``: The unique identifier for an error. See :ref:`error-codes` for a
@@ -39,7 +39,7 @@ the following properties:
   - ``rule``: The rule that was evaluated when the error occurred.
   - ``constraint``: That rule's constraint.
   - ``value``: The value being validated.
-  - ``info``: This tuple contains additional informations that were submitted
+  - ``info``: This tuple contains additional information that were submitted
     with the error. For most errors this is actually nothing. For bulk
     validations (e.g. with ``items`` or ``keyschema``) this property keeps
     all individual errors.
@@ -55,14 +55,15 @@ instance after a processing of a document:
 
   - ``document_error_tree``: A ``dict``-like object that allows you to query
     nodes corresponding to your document. That node's errors are contained in
-    its :attr:`errors` property and are yielded when iterating over a node.
-    If no errors occurred in a node or below, :obj:`None` will be returned
-    instead.
+    its :attr:`errors` property which you can test like ``_errors`` and are
+    yielded when iterating over a node. If no errors occurred in a node or
+    below, :obj:`None` will be returned instead.
 
   - ``schema_error_tree``: Similarly for the used schema.
 
-.. versionchanged:: 0.10
-    Errors are stored as :class:`~cerberus.errors.ValidationError` in a list.
+.. versionchanged:: 1.0
+    Errors are stored as :class:`~cerberus.errors.ValidationError` in a
+    :class:`~cerberus.errors.ErrorList`.
 
 Examples
 ~~~~~~~~

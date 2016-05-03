@@ -73,7 +73,7 @@ See the source of the contributed rules for more examples.
 Custom Data Types
 -----------------
 Cerberus supports and validates several standard data types (see :ref:`type`).
-When building a custom validators you can add and validate your own data types.
+When building a custom validator you can add and validate your own data types.
 
 For example `Eve <http://python-eve.org>`_ (a tool for quickly building and
 deploying RESTful Web Services) supports a custom ``objectid`` type, which is
@@ -241,7 +241,7 @@ that are targeted for humans will use these as positional arguments when
 formatting a message with :py:meth:`str.format`. Serializing handlers will keep
 these values in a list.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 Simple custom errors
 ....................
@@ -255,7 +255,7 @@ Multiple errors
 When using child-validators, it is a convenience to submit all their errors
 ; which is a list of :class:`~cerberus.errors.ValidationError` instances.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 `Validator._get_child_validator`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -272,7 +272,7 @@ Study the source code for example usages.
 
 .. versionadded:: 0.9
 
-.. versionchanged:: 0.10
+.. versionchanged:: 1.0
     Added ``document_crumb`` and ``schema_crumb`` as optional keyword-
     arguments.
 
@@ -284,7 +284,7 @@ generation validator's document and schema that are being processed as well as
 the constraints for unknown fields via its ``root_document`` and ``root_schema``
 ``root_allow_unknown``-properties.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 `Validator.document_path` & `Validator.schema_path`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,7 +293,7 @@ These properties maintain the path of keys within the document respectively the
 schema that was traversed by possible parent-validators. Both will be used as
 base path when an error is submitted.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 `Validator.recent_error`
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -301,7 +301,7 @@ base path when an error is submitted.
 The last single error that was submitted is accessible through the
 ``recent_error``-attribute.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 `Validator.mandatory_validations` & `Validator.priority_validations`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -315,4 +315,4 @@ not.
 before any other. If the validation method or function returns ``True``, no
 further rule will be considered for that field.
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
