@@ -420,9 +420,9 @@ class TestValidation(TestBase):
 
     def test_custom_datatype(self):
         class MyValidator(Validator):
-            def _validate_type_objectid(self, field, value):
-                if not re.match('[a-f0-9]{24}', value):
-                    self._error(field, errors.BAD_TYPE)
+            def _validate_type_objectid(self, value):
+                if re.match('[a-f0-9]{24}', value):
+                    return True
 
         schema = {'test_field': {'type': 'objectid'}}
         v = MyValidator(schema)
@@ -439,9 +439,9 @@ class TestValidation(TestBase):
                 if value < min_number:
                     self._error(field, 'Below the min')
 
-            def _validate_type_number(self, field, value):
-                if not isinstance(value, int):
-                    self._error(field, errors.BAD_TYPE)
+            def _validate_type_number(self, value):
+                if isinstance(value, int):
+                    return True
 
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)
@@ -548,9 +548,9 @@ class TestValidation(TestBase):
         # test that allow_unknown schema respect custom validation rules.
         # See #66.
         class CustomValidator(Validator):
-            def _validate_type_foo(self, field, value):
-                if not value == "foo":
-                    self.error(field, "Expected a foo")
+            def _validate_type_foo(self, value):
+                if value == "foo":
+                    return True
 
         v = CustomValidator({})
         v.allow_unknown = {"type": "foo"}
@@ -1885,9 +1885,9 @@ class TestInheritance(TestBase):
                     self.working_dir = kwargs['working_dir']
                 super(InheritedValidator, self).__init__(*args, **kwargs)
 
-            def _validate_type_test(self, field, value):
-                if not self.working_dir:
-                    self._error('self.working_dir', 'is None')
+            def _validate_type_test(self, value):
+                if self.working_dir:
+                    return True
 
         self.assertIn('test', InheritedValidator.types)
         v = InheritedValidator({'test': {'type': 'list',

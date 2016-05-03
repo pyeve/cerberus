@@ -1118,82 +1118,59 @@ class Validator(object):
 
     def _validate_type(self, data_type, field, value):
         """ {'type': ['string', 'list']} """
-        def call_type_validation(_type, value):
-            # TODO refactor to a less complex code on next major release
-            # validator = getattr(self, "_validate_type_" + _type)
-            # return validator(field, value)
-
-            prev_errors = len(self._errors)
-            validator = getattr(self, "_validate_type_" +
-                                _type.replace(' ', '_'))
-            validator(field, value)
-            if len(self._errors) == prev_errors:
-                return True
-            else:
-                return False
-
-        if isinstance(data_type, _str_type):
-            if call_type_validation(data_type, value):
-                return
-        elif isinstance(data_type, Iterable):
-            # TODO simplify this when methods don't submit errors
-            # for x in data_type:
-            #     if call_type_validation(x, value):
-            #         return
-            validator = self._get_child_validator(
-                schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
-            if validator({'turing': value}):
-                return
-            else:
-                self._error(field, errors.BAD_TYPE)
-
-        return True
-
-    def _validate_type_boolean(self, field, value):
-        if not isinstance(value, bool):
+        types = [data_type] if isinstance(data_type, _str_type) else data_type
+        if any(self.__get_rule_handler('validate_type', x)(value)
+               for x in types):
+            return
+        else:
             self._error(field, errors.BAD_TYPE)
+            return True
 
-    def _validate_type_date(self, field, value):
-        if not isinstance(value, date):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_boolean(self, value):
+        if isinstance(value, bool):
+            return True
 
-    def _validate_type_datetime(self, field, value):
-        if not isinstance(value, datetime):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_date(self, value):
+        if isinstance(value, date):
+            return True
 
-    def _validate_type_dict(self, field, value):
-        if not isinstance(value, Mapping):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_datetime(self, value):
+        if isinstance(value, datetime):
+            return True
 
-    def _validate_type_float(self, field, value):
-        if not isinstance(value, float) and not isinstance(value, _int_types):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_dict(self, value):
+        if isinstance(value, Mapping):
+            return True
 
-    def _validate_type_integer(self, field, value):
-        if not isinstance(value, _int_types):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_float(self, value):
+        if isinstance(value, (float, _int_types)):
+            return True
 
-    def _validate_type_binary(self, field, value):
-        if not isinstance(value, (bytes, bytearray)):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_integer(self, value):
+        if isinstance(value, _int_types):
+            return True
 
-    def _validate_type_list(self, field, value):
-        if not isinstance(value, Sequence) or isinstance(
+    def _validate_type_binary(self, value):
+        if isinstance(value, (bytes, bytearray)):
+            return True
+
+    def _validate_type_list(self, value):
+        if isinstance(value, Sequence) and not isinstance(
                 value, _str_type):
-            self._error(field, errors.BAD_TYPE)
+            return True
 
-    def _validate_type_number(self, field, value):
-        if not isinstance(value, (_int_types, float)) \
-                or isinstance(value, bool):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_number(self, value):
+        if isinstance(value, (_int_types, float)) \
+                and not isinstance(value, bool):
+            return True
 
-    def _validate_type_set(self, field, value):
-        if not isinstance(value, set):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_set(self, value):
+        if isinstance(value, set):
+            return True
 
-    def _validate_type_string(self, field, value):
-        if not isinstance(value, _str_type):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_string(self, value):
+        if isinstance(value, _str_type):
+            return True
 
     def _validate_validator(self, validator, field, value):
         """ {'oneof': [
