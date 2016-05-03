@@ -231,7 +231,7 @@ values:
    >>> v.validate(document, schema)
    False
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 items
 -----
@@ -249,6 +249,8 @@ fixed length in the given order:
    False
 
 See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
+
+.. _keyschema-rule:
 
 keyschema
 ---------
@@ -275,7 +277,7 @@ min, max
 --------
 Minimum and maximum value allowed for any types that implement comparison operators.
 
-.. versionchanged:: 0.10
+.. versionchanged:: 1.0
   Allows any type to be compared.
 
 .. versionchanged:: 0.7
@@ -610,7 +612,7 @@ A list of types can be used to allow different values:
     fields. This allows to safely assume that field type is correct when other
     (standard or custom) rules are invoked.
 
-.. versionchanged:: 0.10
+.. versionchanged:: 1.0
    Added the ``binary`` data type.
 
 .. versionchanged:: 0.9
@@ -682,6 +684,8 @@ must have a method with that name prefixed by ``_validator_``. See
 The constraint can also be a sequence of these that will be called consecutively. ::
 
    schema = {'field': {'validator': [oddity, 'prime number']}}
+
+.. _valueschema-rule:
 
 valueschema
 -----------

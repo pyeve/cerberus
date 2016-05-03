@@ -720,7 +720,7 @@ class Validator(object):
                  the :func:`errors` property for a list of processing errors.
         :rtype: :class:`bool`
 
-        .. versionchanged:: 0.10
+        .. versionchanged:: 1.0
            Removed 'context'-argument, Validator takes care of setting it now.
            It's accessible as ``self.root_document``.
 

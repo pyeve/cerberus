@@ -36,7 +36,7 @@ is processed through that chain.
    {'01': 'foo'}
 
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 .. _purging-unknown-fields:
 
@@ -55,7 +55,7 @@ subdocuments like ``allow_unknown`` (see :ref:`allowing-the-unknown`). The defau
    >>> v.normalized({'bar': 'foo'})
    {}
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 Default Values
 --------------
@@ -90,7 +90,7 @@ string, it points to a :doc:`custom method <customize>`.
    >>> v.errors
    {'a': "default value for 'a' cannot be set: Circular dependencies of default setters."}
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 .. _type-coercion:
 
