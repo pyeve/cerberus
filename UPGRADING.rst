@@ -74,7 +74,55 @@ Note that ``propertyschema`` will *not* be handled as an alias like
  ``keyschema`` was in the ``0.9``-branch.
 
 
+Custom validators
+.................
+
+Data types
+~~~~~~~~~~
+
+Since the ``type``-rule allowed multiple arguments cerberus' type validation
+code was somewhat cumbersome as it had to deal with the circumstance that each
+type checking method would file an error though another one may not - and thus
+positively validate the constraint as a whole.
+The refactoring of the error handling allows cerberus' type validation to be
+much more lightweight and to formulate the corresponding methods in a simpler
+way.
+
+Previously such a method would test what a value *is not* and submit an error.
+Now a method tests what a value *is* to be expected and returns ``True`` in
+that case.
+
+This is the most critical part of updating your code, but still easy when your
+head is clear. Of course your code is well tested. It's essentially these
+three steps. Search, Replace and Regex may come at your service.
+
+  1. Remove the second method's argument (probably named ``field``).
+  2. Invert the logic of the conditional clauses where is tested what a value
+     is not / has not.
+    3. Replace calls to ``self._error`` below such clauses with
+       ``return True``.
+
+A method doesn't need to return ``False`` or any value when expected criteria
+are not met.
+
+Here's the change from the :ref:`documentation <new-types>` example.
+
+pre-1.0:
+
+.. code-block:: python
+
+     def _validate_type_objectid(self, field, value):
+         if not re.match('[a-f0-9]{24}', value):
+             self._error(field, errors.BAD_TYPE)
+
+1.0:
+
+.. code-block:: python
+
+     def _validate_type_objectid(self, value):
+         if re.match('[a-f0-9]{24}', value):
+             return True
+
+
+
 .. [#] compare :term:`dictionary`
-
-
-

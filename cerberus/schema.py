@@ -270,18 +270,17 @@ class SchemaValidatorMixin:
             else:
                 self.target_validator._valid_schemas.add(_hash)
 
-    def _validate_type_callable(self, field, value):
-        if not isinstance(value, Callable):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_callable(self, value):
+        if isinstance(value, Callable):
+            return True
 
-    def _validate_type_hashable(self, field, value):
-        if not isinstance(value, Hashable):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_hashable(self, value):
+        if isinstance(value, Hashable):
+            return True
 
-    def _validate_type_hashables(self, field, value):
-        self._validate_type_list(field, value)
-        for item in value:
-            self._validate_type_hashable(field, item)
+    def _validate_type_hashables(self, value):
+        if self._validate_type_list(value):
+            return all(self._validate_type_hashable(x) for x in value)
 
     def _validator_bulk_schema(self, field, value):
         if isinstance(value, _str_type):

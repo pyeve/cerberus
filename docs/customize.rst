@@ -87,17 +87,17 @@ has been implemented:
 
 .. testcode::
 
-     def _validate_type_objectid(self, field, value):
+     def _validate_type_objectid(self, value):
          """ Enables validation for `objectid` schema attribute.
-
-         :param field: field name.
          :param value: field value.
          """
-         if not re.match('[a-f0-9]{24}', value):
-             self._error(field, errors.BAD_TYPE)
+         if re.match('[a-f0-9]{24}', value):
+             return True
 
 .. versionadded:: 0.0.2
 
+.. versionchanged:: 1.0
+   The type validation logic changed, see :doc:`upgrading`.
 
 Custom Validators
 -----------------
