@@ -204,7 +204,7 @@ normalized copy of a document without validating it:
     >>> type(normalized_document['amount'])
     <type 'int'>
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 
 Warnings

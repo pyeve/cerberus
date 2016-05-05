@@ -540,9 +540,9 @@ class Validator(object):
             if field not in schema:
                 continue
             if isinstance(mapping[field], Mapping):
-                if 'propertyschema' in schema[field]:
-                    self.__normalize_mapping_per_propertyschema(
-                        field, mapping, schema[field]['propertyschema'])
+                if 'keyschema' in schema[field]:
+                    self.__normalize_mapping_per_keyschema(
+                        field, mapping, schema[field]['keyschema'])
                 if 'valueschema' in schema[field]:
                     self.__normalize_mapping_per_valueschema(
                         field, mapping, schema[field]['valueschema'])
@@ -555,12 +555,11 @@ class Validator(object):
                     'schema' in schema[field]:
                 self.__normalize_sequence(field, mapping, schema)
 
-    def __normalize_mapping_per_propertyschema(self, field, mapping,
-                                               property_rules):
+    def __normalize_mapping_per_keyschema(self, field, mapping, property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'propertyschema'),
+            document_crumb=field, schema_crumb=(field, 'keyschema'),
             schema=schema)
         result = validator.normalized(document, always_return_document=True)
         if validator._errors:
@@ -721,7 +720,7 @@ class Validator(object):
                  the :func:`errors` property for a list of processing errors.
         :rtype: :class:`bool`
 
-        .. versionchanged:: 0.10
+        .. versionchanged:: 1.0
            Removed 'context'-argument, Validator takes care of setting it now.
            It's accessible as ``self.root_document``.
 
@@ -762,26 +761,6 @@ class Validator(object):
             return None
         else:
             return self.document
-
-    # TODO remove on next major release
-    def validate_update(self, document, schema=None):
-        """ Validates a Python dictionary against a validation schema. The
-        difference with :func:`validate` is that the ``required`` rule will be
-        ignored here.
-
-        :param schema: Optional validation schema. Defaults to :obj:`None`. If
-                       not provided here, the schema must have been provided at
-                       class instantiation.
-
-        :return: True if validation succeeds, False otherwise. Check the
-                 :func:`errors`-property for a list of validation errors.
-
-        .. deprecated:: 0.4.0
-           Use :func:`validate` with ``update=True`` instead.
-        """
-        warn('Validator.validate_update is deprecated. Use Validator.validate'
-             '(update=True) instead.', DeprecationWarning)
-        return self.validate(document, schema, update=True)
 
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
@@ -1035,19 +1014,19 @@ class Validator(object):
                 self._error(field, errors.NOT_NULLABLE)
                 return True
 
-    def _validate_propertyschema(self, schema, field, value):
+    def _validate_keyschema(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema_crumb=(field, 'propertyschema'),
+                schema_crumb=(field, 'keyschema'),
                 schema=dict(((k, schema) for k in value.keys())))
             if not validator(dict(((k, k) for k in value.keys())),
                              normalize=False):
                 self._drop_nodes_from_errorpaths(validator._errors,
                                                  [], [2, 4])
-                self._error(field, errors.PROPERTYSCHEMA, validator._errors)
+                self._error(field, errors.KEYSCHEMA, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
         """ {'type': 'boolean'} """
@@ -1139,82 +1118,59 @@ class Validator(object):
 
     def _validate_type(self, data_type, field, value):
         """ {'type': ['string', 'list']} """
-        def call_type_validation(_type, value):
-            # TODO refactor to a less complex code on next major release
-            # validator = getattr(self, "_validate_type_" + _type)
-            # return validator(field, value)
-
-            prev_errors = len(self._errors)
-            validator = getattr(self, "_validate_type_" +
-                                _type.replace(' ', '_'))
-            validator(field, value)
-            if len(self._errors) == prev_errors:
-                return True
-            else:
-                return False
-
-        if isinstance(data_type, _str_type):
-            if call_type_validation(data_type, value):
-                return
-        elif isinstance(data_type, Iterable):
-            # TODO simplify this when methods don't submit errors
-            # for x in data_type:
-            #     if call_type_validation(x, value):
-            #         return
-            validator = self._get_child_validator(
-                schema={'turing': {'anyof': [{'type': x} for x in data_type]}})
-            if validator({'turing': value}):
-                return
-            else:
-                self._error(field, errors.BAD_TYPE)
-
-        return True
-
-    def _validate_type_boolean(self, field, value):
-        if not isinstance(value, bool):
+        types = [data_type] if isinstance(data_type, _str_type) else data_type
+        if any(self.__get_rule_handler('validate_type', x)(value)
+               for x in types):
+            return
+        else:
             self._error(field, errors.BAD_TYPE)
+            return True
 
-    def _validate_type_date(self, field, value):
-        if not isinstance(value, date):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_boolean(self, value):
+        if isinstance(value, bool):
+            return True
 
-    def _validate_type_datetime(self, field, value):
-        if not isinstance(value, datetime):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_date(self, value):
+        if isinstance(value, date):
+            return True
 
-    def _validate_type_dict(self, field, value):
-        if not isinstance(value, Mapping):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_datetime(self, value):
+        if isinstance(value, datetime):
+            return True
 
-    def _validate_type_float(self, field, value):
-        if not isinstance(value, float) and not isinstance(value, _int_types):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_dict(self, value):
+        if isinstance(value, Mapping):
+            return True
 
-    def _validate_type_integer(self, field, value):
-        if not isinstance(value, _int_types):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_float(self, value):
+        if isinstance(value, (float, _int_types)):
+            return True
 
-    def _validate_type_binary(self, field, value):
-        if not isinstance(value, (bytes, bytearray)):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_integer(self, value):
+        if isinstance(value, _int_types):
+            return True
 
-    def _validate_type_list(self, field, value):
-        if not isinstance(value, Sequence) or isinstance(
+    def _validate_type_binary(self, value):
+        if isinstance(value, (bytes, bytearray)):
+            return True
+
+    def _validate_type_list(self, value):
+        if isinstance(value, Sequence) and not isinstance(
                 value, _str_type):
-            self._error(field, errors.BAD_TYPE)
+            return True
 
-    def _validate_type_number(self, field, value):
-        if not isinstance(value, (_int_types, float)) \
-                or isinstance(value, bool):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_number(self, value):
+        if isinstance(value, (_int_types, float)) \
+                and not isinstance(value, bool):
+            return True
 
-    def _validate_type_set(self, field, value):
-        if not isinstance(value, set):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_set(self, value):
+        if isinstance(value, set):
+            return True
 
-    def _validate_type_string(self, field, value):
-        if not isinstance(value, _str_type):
-            self._error(field, errors.BAD_TYPE)
+    def _validate_type_string(self, value):
+        if isinstance(value, _str_type):
+            return True
 
     def _validate_validator(self, validator, field, value):
         """ {'oneof': [

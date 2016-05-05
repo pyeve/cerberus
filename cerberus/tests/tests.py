@@ -384,10 +384,10 @@ class TestValidation(TestBase):
                              ['a_dict_with_valueschema']['valueschema']
                              .descendants), 1)
 
-    def test_a_dict_with_propertyschema(self):
+    def test_a_dict_with_keyschema(self):
         self.assertSuccess(
             {
-                'a_dict_with_propertyschema': {
+                'a_dict_with_keyschema': {
                     'key': 'value'
                 }
             }
@@ -395,7 +395,7 @@ class TestValidation(TestBase):
 
         self.assertFail(
             {
-                'a_dict_with_propertyschema': {
+                'a_dict_with_keyschema': {
                     'KEY': 'value'
                 }
             }
@@ -420,9 +420,9 @@ class TestValidation(TestBase):
 
     def test_custom_datatype(self):
         class MyValidator(Validator):
-            def _validate_type_objectid(self, field, value):
-                if not re.match('[a-f0-9]{24}', value):
-                    self._error(field, errors.BAD_TYPE)
+            def _validate_type_objectid(self, value):
+                if re.match('[a-f0-9]{24}', value):
+                    return True
 
         schema = {'test_field': {'type': 'objectid'}}
         v = MyValidator(schema)
@@ -439,9 +439,9 @@ class TestValidation(TestBase):
                 if value < min_number:
                     self._error(field, 'Below the min')
 
-            def _validate_type_number(self, field, value):
-                if not isinstance(value, int):
-                    self._error(field, errors.BAD_TYPE)
+            def _validate_type_number(self, value):
+                if isinstance(value, int):
+                    return True
 
         schema = {'test_field': {'min_number': 1, 'type': 'number'}}
         v = MyValidator(schema)
@@ -548,9 +548,9 @@ class TestValidation(TestBase):
         # test that allow_unknown schema respect custom validation rules.
         # See #66.
         class CustomValidator(Validator):
-            def _validate_type_foo(self, field, value):
-                if not value == "foo":
-                    self.error(field, "Expected a foo")
+            def _validate_type_foo(self, value):
+                if value == "foo":
+                    return True
 
         v = CustomValidator({})
         v.allow_unknown = {"type": "foo"}
@@ -1387,11 +1387,10 @@ class TestNormalization(TestBase):
         expected = {'thing': {'amount': 2}}
         self.assertNormalized(document, expected, schema)
 
-    def test_coerce_in_propertyschema(self):
+    def test_coerce_in_keyschema(self):
         # https://github.com/nicolaiarocci/cerberus/issues/155
         schema = {'thing': {'type': 'dict',
-                            'propertyschema': {'coerce': int,
-                                               'type': 'integer'}}}
+                            'keyschema': {'coerce': int, 'type': 'integer'}}}
         document = {'thing': {'5': 'foo'}}
         expected = {'thing': {5: 'foo'}}
         self.assertNormalized(document, expected, schema)
@@ -1679,14 +1678,14 @@ class TestErrorHandling(TestBase):
         self.assertFalse(error.is_logic_error)
 
     def test__error_2(self):
-        v = Validator(schema={'foo': {'propertyschema': {'type': 'integer'}}})
+        v = Validator(schema={'foo': {'keyschema': {'type': 'integer'}}})
         v.document = {'foo': {'0': 'bar'}}
-        v._error('foo', errors.PROPERTYSCHEMA, ())
+        v._error('foo', errors.KEYSCHEMA, ())
         error = v._errors[0]
         self.assertEqual(error.document_path, ('foo',))
-        self.assertEqual(error.schema_path, ('foo', 'propertyschema'))
+        self.assertEqual(error.schema_path, ('foo', 'keyschema'))
         self.assertEqual(error.code, 0x83)
-        self.assertEqual(error.rule, 'propertyschema')
+        self.assertEqual(error.rule, 'keyschema')
         self.assertEqual(error.constraint, {'type': 'integer'})
         self.assertEqual(error.value, {'0': 'bar'})
         self.assertEqual(error.info, ((),))
@@ -1748,7 +1747,7 @@ class TestErrorHandling(TestBase):
             s_error_tree['foo']['anyof'][0]['type'].errors[0].value, [])
 
     def test_nested_error_paths(self):
-        schema = {'a_dict': {'propertyschema': {'type': 'integer'},
+        schema = {'a_dict': {'keyschema': {'type': 'integer'},
                              'valueschema': {'regex': '[a-z]*'}},
                   'a_list': {'schema': {'type': 'string',
                                         'oneof_regex': ['[a-z]*$', '[A-Z]*']}}}
@@ -1770,18 +1769,18 @@ class TestErrorHandling(TestBase):
         self.assertEqual(len(_det['a_dict'][2].errors), 1)
         self.assertEqual(len(_det['a_dict']['three'].errors), 2)
 
-        self.assertEqual(len(_set['a_dict']['propertyschema'].errors), 1)
+        self.assertEqual(len(_set['a_dict']['keyschema'].errors), 1)
         self.assertEqual(len(_set['a_dict']['valueschema'].errors), 1)
 
         self.assertEqual(
-            len(_set['a_dict']['propertyschema']['type'].errors), 2)
+            len(_set['a_dict']['keyschema']['type'].errors), 2)
         self.assertEqual(len(_set['a_dict']['valueschema']['regex'].errors), 2)
 
         _ref_err = ValidationError(
-            ('a_dict', 'one'), ('a_dict', 'propertyschema', 'type'),
+            ('a_dict', 'one'), ('a_dict', 'keyschema', 'type'),
             errors.BAD_TYPE.code, 'type', 'integer', 'one', ())
         self.assertEqual(_det['a_dict']['one'].errors[0], _ref_err)
-        self.assertEqual(_set['a_dict']['propertyschema']['type'].errors[0],
+        self.assertEqual(_set['a_dict']['keyschema']['type'].errors[0],
                          _ref_err)
 
         _ref_err = ValidationError(
@@ -1792,11 +1791,11 @@ class TestErrorHandling(TestBase):
             _set['a_dict']['valueschema']['regex'].errors[0], _ref_err)
 
         _ref_err = ValidationError(
-            ('a_dict', 'three'), ('a_dict', 'propertyschema', 'type'),
+            ('a_dict', 'three'), ('a_dict', 'keyschema', 'type'),
             errors.BAD_TYPE.code, 'type', 'integer', 'three', ())
         self.assertEqual(_det['a_dict']['three'].errors[0], _ref_err)
         self.assertEqual(
-            _set['a_dict']['propertyschema']['type'].errors[1], _ref_err)
+            _set['a_dict']['keyschema']['type'].errors[1], _ref_err)
 
         _ref_err = ValidationError(
             ('a_dict', 'three'), ('a_dict', 'valueschema', 'regex'),
@@ -1886,9 +1885,9 @@ class TestInheritance(TestBase):
                     self.working_dir = kwargs['working_dir']
                 super(InheritedValidator, self).__init__(*args, **kwargs)
 
-            def _validate_type_test(self, field, value):
-                if not self.working_dir:
-                    self._error('self.working_dir', 'is None')
+            def _validate_type_test(self, value):
+                if self.working_dir:
+                    return True
 
         self.assertIn('test', InheritedValidator.types)
         v = InheritedValidator({'test': {'type': 'list',

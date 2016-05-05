@@ -231,7 +231,7 @@ values:
    >>> v.validate(document, schema)
    False
 
-.. versionadded:: 0.10
+.. versionadded:: 1.0
 
 items
 -----
@@ -250,11 +250,34 @@ fixed length in the given order:
 
 See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
+.. _keyschema-rule:
+
+keyschema
+---------
+This is the counterpart to ``valueschema`` that validates the `keys` of a
+``dict``. For historical reasons it is `not` named ``keyschema``.
+
+.. doctest::
+
+    >>> schema = {'a_dict': {'type': 'dict', 'keyschema': {'type': 'string', 'regex': '[a-z]+'}}}
+    >>> document = {'a_dict': {'key': 'value'}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'a_dict': {'KEY': 'value'}}
+    >>> v.validate(document, schema)
+    False
+
+.. versionadded:: 0.9
+
+.. versionchanged:: 1.0
+   Renamed from ``propertyschema`` to ``keyschema``
+
 min, max
 --------
 Minimum and maximum value allowed for any types that implement comparison operators.
 
-.. versionchanged:: 0.10
+.. versionchanged:: 1.0
   Allows any type to be compared.
 
 .. versionchanged:: 0.7
@@ -396,24 +419,6 @@ Validates if *exactly one* of the provided constraints applies. See `\*of-rules`
 
 .. versionadded:: 0.9
 
-propertyschema
---------------
-This is the counterpart to ``valueschema`` that validates the `keys` of a
-``dict``. For historical reasons it is `not` named ``keyschema``.
-
-.. doctest::
-
-    >>> schema = {'a_dict': {'type': 'dict', 'propertyschema': {'type': 'string', 'regex': '[a-z]+'}}}
-    >>> document = {'a_dict': {'key': 'value'}}
-    >>> v.validate(document, schema)
-    True
-
-    >>> document = {'a_dict': {'KEY': 'value'}}
-    >>> v.validate(document, schema)
-    False
-
-.. versionadded:: 0.9
-
 readonly
 --------
 If ``True`` the value is readonly. Validation will fail if this field is present
@@ -492,7 +497,7 @@ constraint.
 
 .. note::
 
-    To validate *arbitrary keys* of a mapping, see `propertyschema`_, resp.
+    To validate *arbitrary keys* of a mapping, see `keyschema`_, resp.
     `valueschema`_ for validating *arbitrary values* of a mapping.
 
 schema (list)
@@ -607,7 +612,7 @@ A list of types can be used to allow different values:
     fields. This allows to safely assume that field type is correct when other
     (standard or custom) rules are invoked.
 
-.. versionchanged:: 0.10
+.. versionchanged:: 1.0
    Added the ``binary`` data type.
 
 .. versionchanged:: 0.9
@@ -679,6 +684,8 @@ must have a method with that name prefixed by ``_validator_``. See
 The constraint can also be a sequence of these that will be called consecutively. ::
 
    schema = {'field': {'validator': [oddity, 'prime number']}}
+
+.. _valueschema-rule:
 
 valueschema
 -----------

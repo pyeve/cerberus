@@ -8,6 +8,14 @@ Version 0.10
 
 Not released yet.
 
+.. warning::
+
+    This is a major release which breaks backward compatibility in several
+    ways. Don't worry, these changes are for the better. However, if you are
+    upgrading, then you should really take the time to read the list of
+    `Breaking Changes`_ and consider their impact on your codebase. For your
+    convenience, some handy `upgrade notes`_ are also available.
+
 - New: Add capability to use references in schemas (Frank Sachsenheim).
 - New: Support for binary type (Matthew Ellison).
 - New: Allow callables for 'default' schema rule (Dominik Kellner).
@@ -42,14 +50,6 @@ Not released yet.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: Support CPython 3.5 (Frank Sachsenheim).
 
-- Change: The processed root-document of is now available as 'root_document'-
-  property of the (child-)Validator (Frank Sachsenheim).
-- Change: Removed 'context'-argument from 'validate'-method as this is set
-  upon the creation of a child-validator (Frank Sachsenheim).
-- Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
-- Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
-- Change: Use warnings.warn for deprecation-warnings if available (Frank Sachsenheim).
-
 - Fix: 'number' type fails if value is boolean. Closes #144 (Frank Sachsenheim).
 - Fix: allow None in 'default' normalization rule (Damián Nohales).
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
@@ -66,6 +66,25 @@ Not released yet.
 
 - Docs: split Usage page into Usage; Validation Rules: Normalization Rules
   (Frank Sachsenheim).
+
+Breaking Changes
+~~~~~~~~~~~~~~~~
+Several relevant breaking changes have been introduced with this release. For
+the inside scoop, please see the `upgrade notes`_. 
+
+- Change: Custom validator methods: remove the second argument (Frank Sachsenheim).
+- Change: Custom validator methods: invert the logic of the conditional clauses where is tested what a value is not / has not (Frank Sachsenheim). 
+- Change: Custom validator methods: replace calls to 'self._error' with 'return True', or False, or None (Frank Sachsenheim).
+- Change: Remove 'transparent_schema_rule' in favor of docstring schema validation (Frank Sachsenheim).
+- Change: Rename 'property_schema' rule to 'keyschema' (Frank Sachsenheim).
+- Change: Replace 'validate_update' method with 'update' keywork argument (Frank Sachsenheim).
+- Change: The processed root-document of is now available as 'root_document'-
+  property of the (child-)Validator (Frank Sachsenheim).
+- Change: Removed 'context'-argument from 'validate'-method as this is set
+  upon the creation of a child-validator (Frank Sachsenheim).
+- Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
+- Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
+- Change: Use warnings.warn for deprecation-warnings if available (Frank Sachsenheim).
 
 Version 0.9.2
 -------------
@@ -304,3 +323,6 @@ Version 0.0.1
 Released on October 16 2012.
 
 First public preview release.
+
+.. _`upgrade notes`: https://github.com/nicolaiarocci/cerberus/blob/master/UPGRADING.rst
+
