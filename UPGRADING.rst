@@ -1,11 +1,10 @@
-Upgrading to cerberus 1.0
+Upgrading to Cerberus 1.0
 =========================
-
 
 Document status
 ---------------
 
-This is a draft and will be finalised with the 1.0(-RC?) release of cerberus.
+This is a draft and will be finalised with the 1.0(RC) release of Cerberus.
 
 Major Additions
 ---------------
