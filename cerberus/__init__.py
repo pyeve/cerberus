@@ -12,7 +12,7 @@ from .cerberus import Validator, DocumentError
 from .schema import rules_set_registry, schema_registry, Registry, SchemaError
 
 
-__version__ = "0.10"
+__version__ = "1.0rc"
 
 __all__ = [
     DocumentError.__name__,

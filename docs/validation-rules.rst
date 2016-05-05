@@ -410,7 +410,7 @@ implementing your own logic:
     ...     if not employee_vldtr.validate(employee):
     ...         invalid_employees_phones.append(employee)
 
-.. versionadded: 0.10
+.. versionadded: 1.0
 
 oneof
 -----
