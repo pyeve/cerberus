@@ -14,7 +14,7 @@ Not released yet.
     ways. Don't worry, these changes are for the better. However, if you are
     upgrading, then you should really take the time to read the list of
     `Breaking Changes`_ and consider their impact on your codebase. For your
-    convenience, some handy `upgrade notes`_ are also available.
+    convenience, some :doc:`upgrade notes <upgrading>` have been included.
 
 - New: Add capability to use references in schemas (Frank Sachsenheim).
 - New: Support for binary type (Matthew Ellison).
@@ -70,7 +70,7 @@ Not released yet.
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 Several relevant breaking changes have been introduced with this release. For
-the inside scoop, please see the `upgrade notes`_. 
+the inside scoop, please see the :doc:`upgrade notes <upgrading>`. 
 
 - Change: Custom validator methods: remove the second argument (Frank Sachsenheim).
 - Change: Custom validator methods: invert the logic of the conditional clauses where is tested what a value is not / has not (Frank Sachsenheim). 
@@ -324,5 +324,5 @@ Released on October 16 2012.
 
 First public preview release.
 
-.. _`upgrade notes`: https://github.com/nicolaiarocci/cerberus/blob/master/UPGRADING.rst
+.. _`upgrade notes`: upgrading
 

@@ -46,6 +46,7 @@ Table of Contents
     API <api>
     FAQ <faq>
     changelog
+    upgrading
     authors
     contact
     license
