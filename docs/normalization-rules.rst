@@ -88,7 +88,7 @@ string, it points to a :doc:`custom method <customize>`.
    >>> v.schema = {'a': {'type': 'integer', 'default_setter': lambda doc: doc['not_there']}}
    >>> v.normalized({})
    >>> v.errors
-   {'a': "default value for 'a' cannot be set: Circular dependencies of default setters."}
+   {'a': ["default value for 'a' cannot be set: Circular dependencies of default setters."]}
 
 .. versionadded:: 1.0
 

@@ -23,7 +23,7 @@ if target values are not included in the allowed list.
     >>> v.validate({'role': ['intern']})
     False
     >>> v.errors
-    {'role': "unallowed values ['intern']"}
+    {'role': ["unallowed values ['intern']"]}
 
     >>> v.schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v.validate({'role': 'supplier'})
@@ -32,7 +32,7 @@ if target values are not included in the allowed list.
     >>> v.validate({'role': 'intern'})
     False
     >>> v.errors
-    {'role': 'unallowed value intern'}
+    {'role': ['unallowed value intern']}
 
     >>> v.schema = {'a_restricted_integer': {'type': 'integer', 'allowed': [-1, 0, 1]}}
     >>> v.validate({'a_restricted_integer': -1})
@@ -41,7 +41,7 @@ if target values are not included in the allowed list.
     >>> v.validate({'a_restricted_integer': 2})
     False
     >>> v.errors
-    {'a_restricted_integer': 'unallowed value 2'}
+    {'a_restricted_integer': ['unallowed value 2']}
 
 .. versionchanged:: 0.5.1
    Added support for the ``int`` type.
@@ -78,7 +78,7 @@ target field to be validated.
    False
 
    >>> v.errors
-   {'field2': "field 'field1' is required"}
+   {'field2': ["field 'field1' is required"]}
 
 When a dictionary is provided, then not only all dependencies must be present,
 but also any of their allowed values must be matched.
@@ -96,14 +96,14 @@ but also any of their allowed values must be matched.
    >>> v.validate(document, schema)
    False
    >>> v.errors
-   {'field2': "depends on these values: {'field1': ['one', 'two']}"}
+   {'field2': ["depends on these values: {'field1': ['one', 'two']}"]}
 
    >>> # same as using a dependencies list
    >>> document = {'field2': 7}
    >>> v.validate(document, schema)
    False
    >>> v.errors
-   {'field2': "depends on these values: {'field1': ['one', 'two']}"}
+   {'field2': ["depends on these values: {'field1': ['one', 'two']}"]}
 
 
    >>> # one can also pass a single dependency value
@@ -117,7 +117,7 @@ but also any of their allowed values must be matched.
    False
 
    >>> v.errors
-   {'field2': "depends on these values: {'field1': 'one'}"}
+   {'field2': ["depends on these values: {'field1': 'one'}"]}
 
 Dependencies on sub-document fields are also supported:
 
@@ -139,7 +139,7 @@ Dependencies on sub-document fields are also supported:
    False
 
    >>> v.errors
-   {'test_field': "field 'a_dict.bar' is required"}
+   {'test_field': ["field 'a_dict.bar' is required"]}
 
 .. versionchanged:: 0.8.1 Support for sub-document fields as dependencies.
 
@@ -160,7 +160,7 @@ is empty. Defaults to ``True``.
     False
 
     >>> v.errors
-    {'name': 'empty values not allowed'}
+    {'name': ['empty values not allowed']}
 
 .. versionadded:: 0.0.3
 
@@ -315,7 +315,7 @@ control down to the field level.
    >>> v.validate({'an_integer': None})
    False
    >>> v.errors
-   {'an_integer': 'null value not allowed'}
+   {'an_integer': ['null value not allowed']}
 
 .. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
@@ -463,7 +463,7 @@ missing, unless :meth:`~cerberus.Validator.validate` is called with
     >>> v.validate(document)
     False
     >>> v.errors
-    {'name': 'required field'}
+    {'name': ['required field']}
 
     >>> v.validate(document, update=True)
     True
@@ -601,7 +601,7 @@ A list of types can be used to allow different values:
     >>> v.validate({'quotes': [1, 'Heureka!']})
     False
     >>> v.errors
-    {'quotes': {0: 'must be of string type'}}
+    {'quotes': [{0: ['must be of string type']}]}
 
 .. note::
 
@@ -672,7 +672,7 @@ Then, you can validate a value like this:
     >>> v.validate({'amount': 10})
     False
     >>> v.errors
-    {'amount': 'Must be an odd number'}
+    {'amount': ['Must be an odd number']}
 
     >>> v.validate({'amount': 9})
     True
@@ -704,7 +704,7 @@ keys, the values for all of which must validate with given schema:
     False
 
     >>> v.errors
-    {'numbers': {'an integer': 'min value is 10'}}
+    {'numbers': [{'an integer': ['min value is 10']}]}
 
 .. versionadded:: 0.7
 .. versionchanged:: 0.9

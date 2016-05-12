@@ -113,7 +113,7 @@ be defined in a number of ways, for example with PyYAML_.
     >>> v.validate(document, schema)
     False
     >>> v.errors
-    {'age': 'min value is 10'}
+    {'age': ['min value is 10']}
 
 You don't have to use YAML of course, you can use your favorite serializer.
 :mod:`json` for example. As long as there is a decoder that can produce a nested

@@ -457,24 +457,23 @@ class BasicErrorHandler(BaseErrorHandler):
         :param node: An error message or a sub-tree.
         :type node: String or dictionary.
         """
+        field = path[0]
         if len(path) == 1:
-            field = path[0]
             if field in self.tree:
-                if isinstance(self.tree[field], list):
-                    self.tree[field].append(node)
-                else:
-                    self.tree[field] = [self.tree[field], node]
+                self.tree[field].append(node)
             else:
-                self.tree[field] = node
+                self.tree[field] = [node]
         elif len(path) >= 1:
-            if path[0] in self.tree:
-                new = self.__class__(tree=copy(self.tree[path[0]]))
-                new.insert_error(path[1:], node)
-                self.tree[path[0]].update(new.tree)
+            if field not in self.tree:
+                self.tree[field] = [{}]
+            subtree = self.tree[field][-1]
+
+            if subtree:
+                new = self.__class__(tree=copy(subtree))
             else:
-                child_handler = self.__class__()
-                child_handler.insert_error(path[1:], node)
-                self.tree[path[0]] = child_handler.tree
+                new = self.__class__()
+            new.insert_error(path[1:], node)
+            subtree.update(new.tree)
 
     def insert_group_error(self, error):
         if error.is_logic_error:
@@ -495,7 +494,7 @@ class BasicErrorHandler(BaseErrorHandler):
             for child_error in error.definitions_errors[i]:
                 field = child_error.document_path[-1]
                 path = child_error.document_path[:-1] + \
-                    ('definition % s' % i, field)
+                    ('definition %s' % i, field)
                 self.insert_error(path, self.format_message(field, child_error))  # noqa
 
     def start(self, validator):
