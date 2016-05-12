@@ -411,7 +411,7 @@ class BasicErrorHandler(BaseErrorHandler):
 
                 0x81: "mapping doesn't validate subschema: {0}",
                 0x82: "one or more sequence-items don't validate: {0}",
-                0x83: "one or more properties of a mapping  don't validate: "
+                0x83: "one or more keys of a mapping  don't validate: "
                       "{0}",
                 0x84: "one or more values in a mapping don't validate: {0}",
                 0x85: "one or more sequence-items don't validate: {0}",

@@ -255,7 +255,7 @@ See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 keyschema
 ---------
 This is the counterpart to ``valueschema`` that validates the `keys` of a
-``dict``. For historical reasons it is `not` named ``keyschema``.
+``dict``.
 
 .. doctest::
 
