@@ -236,7 +236,7 @@ class Validator(object):
                 constraint = None
             else:
                 field_definitions = self._resolve_rules_set(self.schema[field])
-                if rule == 'nullable':
+                if rule in self.mandatory_validations:
                     constraint = field_definitions.get(rule, False)
                 else:
                     constraint = field_definitions[rule]
