@@ -20,8 +20,9 @@ and the dictionary.
 The following handlers are available:
 
   - :class:`~cerberus.errors.BasicErrorHandler`: This is the **default** that
-    returns a (possibly nested) dictionary. The keys refer to the document's
-    ones and the values contain an error message or a list of them.
+    returns a dictionary. The keys refer to the document's ones and the values
+    are lists containing error messages. Errors of nested fields are kept in a
+    dictionary as last item of these lists.
 
 
 Python interfaces

@@ -55,7 +55,7 @@ the first validation issue. The whole document will always be processed, and
     >>> v.validate(document, schema)
     False
     >>> v.errors
-    {'age': 'min value is 10'}
+    {'age': ['min value is 10']}
 
 A :exc:`~cerberus.DocumentError` is raised when the document is not a mapping.
 
@@ -83,7 +83,7 @@ By default only keys defined in the schema are allowed:
     >>> v.validate({'name': 'john', 'sex': 'M'}, schema)
     False
     >>> v.errors
-    {'sex': 'unknown field'}
+    {'sex': ['unknown field']}
 
 However, you can allow unknown document keys pairs by either setting
 ``allow_unknown`` to ``True``:
@@ -107,7 +107,7 @@ unknown fields will be validated against it:
     >>> v.validate({'an_unknown_field': 1})
     False
     >>> v.errors
-    {'an_unknown_field': 'must be of string type'}
+    {'an_unknown_field': ['must be of string type']}
 
 ``allow_unknown`` can also be set at initialization:
 
@@ -153,7 +153,7 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
     False
 
     >>> v.errors
-    {'an_unknown_field': 'unknown field'}
+    {'an_unknown_field': ['unknown field']}
 
 .. versionchanged:: 0.9
    ``allow_unknown`` can also be set for nested dict fields.

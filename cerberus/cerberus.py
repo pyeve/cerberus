@@ -1231,6 +1231,9 @@ class InspectedValidator(type):
         x = cls.validation_rules['validator']['oneof']
         x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
 
+        for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
+            cls.validation_rules[rule]['required'] = True
+
         cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):

@@ -45,7 +45,7 @@ class TestValidation(TestBase):
         field = 'surname'
         self.assertFail({field: 'doe'})
         self.assertError(field, (), errors.UNKNOWN_FIELD, None)
-        self.assertDictEqual(self.validator.errors, {field: 'unknown field'})
+        self.assertDictEqual(self.validator.errors, {field: ['unknown field']})
 
     def test_empty_field_definition(self):
         field = 'name'
@@ -87,7 +87,7 @@ class TestValidation(TestBase):
         v.validate({'a_readonly_number': 2})
         # it would be a list if there's more than one error; we get a dict
         # instead.
-        self.assertIn('read-only', v.errors['a_readonly_number'])
+        self.assertIn('read-only', v.errors['a_readonly_number'][0])
 
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
@@ -189,13 +189,13 @@ class TestValidation(TestBase):
         v = self.validator
         handler = errors.BasicErrorHandler
         self.assertIn(field, v.errors)
-        self.assertIn(schema_field, v.errors[field])
+        self.assertIn(schema_field, v.errors[field][-1])
         self.assertIn(handler.messages[errors.BAD_TYPE.code]
                       .format(constraint='string'),
-                      v.errors[field][schema_field])
-        self.assertIn('city', v.errors[field])
+                      v.errors[field][-1][schema_field])
+        self.assertIn('city', v.errors[field][-1])
         self.assertIn(handler.messages[errors.REQUIRED_FIELD.code],
-                      v.errors[field]['city'])
+                      v.errors[field][-1]['city'])
 
     def test_bad_valueschema(self):
         field = 'a_dict_with_valueschema'
@@ -219,7 +219,7 @@ class TestValidation(TestBase):
                                     errors.BAD_TYPE, 'integer')])
         self.assertIn(errors.BasicErrorHandler.messages[errors.BAD_TYPE.code].
                       format(constraint='integer'),
-                      self.validator.errors[field][1])
+                      self.validator.errors[field][-1][1])
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
@@ -245,11 +245,11 @@ class TestValidation(TestBase):
 
         v = self.validator
         self.assertIn(field, v.errors)
-        self.assertIn(0, v.errors[field])
-        self.assertIn('price', v.errors[field][0])
+        self.assertIn(0, v.errors[field][-1])
+        self.assertIn('price', v.errors[field][-1][0][-1])
         exp_msg = errors.BasicErrorHandler.messages[errors.BAD_TYPE.code]\
             .format(constraint='integer')
-        self.assertIn(exp_msg, v.errors[field][0]['price'])
+        self.assertIn(exp_msg, v.errors[field][-1][0][-1]['price'])
 
         value = ["not a dict"]
         self.assertFail({field: value})
@@ -329,7 +329,7 @@ class TestValidation(TestBase):
                                {'type': 'string'},
                                child_errors=exp_child_errors)
         self.assertDictEqual(self.validator.errors,
-                             {field: {1: 'must be of string type'}})
+                             {field: [{1: ['must be of string type']}]})
 
     def test_regex(self):
         field = 'a_regex_email'
@@ -451,7 +451,7 @@ class TestValidation(TestBase):
         self.assertFail({'test_field': 0}, validator=v)
         self.assertError('test_field', (), errors.CUSTOM, None,
                          ('Below the min',), v_errors=v._errors)
-        self.assertDictEqual(v.errors, {'test_field': 'Below the min'})
+        self.assertDictEqual(v.errors, {'test_field': ['Below the min']})
 
     def test_custom_validator(self):
         class MyValidator(Validator):
@@ -466,7 +466,7 @@ class TestValidation(TestBase):
         self.assertFail({'test_field': 6}, validator=v)
         self.assertError('test_field', (), errors.CUSTOM, None,
                          ('Not an odd number',), v_errors=v._errors)
-        self.assertDictEqual(v.errors, {'test_field': 'Not an odd number'})
+        self.assertDictEqual(v.errors, {'test_field': ['Not an odd number']})
 
     def test_allow_empty_strings(self):
         field = 'test'
@@ -779,7 +779,7 @@ class TestValidation(TestBase):
         self.assertFail({'name': 'ItsMe', 'age': 2}, validator=v)
         self.assertError('name', (), errors.CUSTOM, None,
                          ('must be lowercase',), v_errors=v._errors)
-        self.assertDictEqual(v.errors, {'name': 'must be lowercase'})
+        self.assertDictEqual(v.errors, {'name': ['must be lowercase']})
         self.assertSuccess({'name': 'itsme', 'age': 2}, validator=v)
 
     def test_validated(self):
@@ -1012,20 +1012,20 @@ class TestValidation(TestBase):
 
         v_errors = self.validator.errors
         self.assertIn('parts', v_errors)
-        self.assertIn(3, v_errors['parts'])
-        self.assertIn('anyof', v_errors['parts'][3])
-        self.assertEqual(v_errors['parts'][3]['anyof'],
-                         "no definitions validate")
-        self.assertIn('definition 0', v_errors['parts'][3])
+        self.assertIn(3, v_errors['parts'][-1])
+        self.assertIn('anyof', v_errors['parts'][-1][3][-1])
+        self.assertEqual(v_errors['parts'][-1][3][-1]['anyof'],
+                         ["no definitions validate"])
+        self.assertIn('definition 0', v_errors['parts'][-1][3][-1])
         self.assertEqual(
-            v_errors['parts'][3]['definition 0']['product name'],
-            "unknown field")
+            v_errors['parts'][-1][3][-1]['definition 0'][-1]['product name'],
+            ["unknown field"])
         self.assertEqual(
-            v_errors['parts'][3]['definition 1']['product name'],
-            "unknown field")
+            v_errors['parts'][-1][3][-1]['definition 1'][-1]['product name'],
+            ["unknown field"])
         self.assertEqual(
-            v_errors['parts'][4],
-            "must be of ['dict', 'string'] type")
+            v_errors['parts'][-1][4],
+            ["must be of ['dict', 'string'] type"])
 
     def test_anyof_2(self):
         # these two schema should be the same
@@ -1097,7 +1097,7 @@ class TestValidation(TestBase):
     def test_dont_type_validate_nulled_values(self):
         self.assertFail({'an_integer': None})
         self.assertDictEqual(self.validator.errors,
-                             {'an_integer': 'null value not allowed'})
+                             {'an_integer': ['null value not allowed']})
 
     def test_dependencies_error(self):
         v = self.validator
@@ -1108,7 +1108,7 @@ class TestValidation(TestBase):
         exp_msg = errors.BasicErrorHandler\
             .messages[errors.DEPENDENCIES_FIELD_VALUE.code]\
             .format(field='field2', constraint={'field1': ['one', 'two']})
-        self.assertDictEqual(v.errors, {'field2': exp_msg})
+        self.assertDictEqual(v.errors, {'field2': [exp_msg]})
 
     def test_dependencies_on_boolean_field_with_one_value(self):
         # https://github.com/nicolaiarocci/cerberus/issues/138
@@ -1220,10 +1220,10 @@ class TestValidation(TestBase):
         handler = errors.BasicErrorHandler
         self.assertDictEqual(
             self.validator.errors,
-            {'that_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
-                "'this_field'", field="that_field"),
-             'this_field': handler.messages[errors.EXCLUDES_FIELD.code].format(
-                 "'that_field', 'bazo_field'", field="this_field")})
+            {'that_field': [handler.messages[errors.EXCLUDES_FIELD.code].format(
+                "'this_field'", field="that_field")],
+             'this_field': [handler.messages[errors.EXCLUDES_FIELD.code].format(
+                 "'that_field', 'bazo_field'", field="this_field")]})
 
     def test_boolean_is_not_a_number(self):
         # https://github.com/nicolaiarocci/cerberus/issues/144
@@ -1587,7 +1587,7 @@ class TestDefinitionSchema(TestBase):
 
     def test_invalid_schema(self):
         self.assertSchemaError({}, {'foo': {'unknown': 'rule'}}, None,
-                               "{'foo': {'unknown': 'unknown rule'}}")
+                               "{'foo': [{'unknown': ['unknown rule']}]}")
 
     def test_unknown_rule(self):
         field = 'name'
@@ -1595,7 +1595,7 @@ class TestDefinitionSchema(TestBase):
         schema = {field: {rule: True, 'type': 'string'}}
         self.assertSchemaError(
             self.document, schema, None,
-            str({field: {rule: 'unknown rule'}}))
+            str({field: [{rule: ['unknown rule']}]}))
 
     def test_unknown_type(self):
         field = 'name'
@@ -1603,13 +1603,13 @@ class TestDefinitionSchema(TestBase):
         schema = {field: {'type': value}}
         self.assertSchemaError(
             self.document, schema, None,
-            str({field: {'type': 'unallowed value %s' % value}}))
+            str({field: [{'type': ['unallowed value %s' % value]}]}))
 
     def test_bad_schema_definition(self):
         field = 'name'
         schema = {field: 'this should really be a dict'}
         self.assertSchemaError(self.document, schema, None,
-                               str({field: 'must be of dict type'}))
+                               str({field: ['must be of dict type']}))
 
     def bad_of_rules(self):
         schema = {'foo': {'anyof': {'type': 'string'}}}
@@ -1848,27 +1848,26 @@ class TestErrorHandling(TestBase):
 
         _errors.append(ValidationError(
             ['foo'], ['foo'], 0x63, 'readonly', True, None, ()))
-        ref.update({'foo': handler.messages[0x63]})
+        ref.update({'foo': [handler.messages[0x63]]})
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(ValidationError(
             ['bar'], ['foo'], 0x42, 'min', 1, 2, ()))
-        ref.update({'bar': handler.messages[0x42].format(constraint=1)})
+        ref.update({'bar': [handler.messages[0x42].format(constraint=1)]})
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(ValidationError(
             ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x24, 'type', 'string',
             True, ()))
-        ref.update({'zap': {'foo': handler.messages[0x24].format(
-            constraint='string')}})
+        ref.update({'zap': [{'foo': [handler.messages[0x24].format(
+            constraint='string')]}]})
         self.assertDictEqual(handler(_errors), ref)
 
         _errors.append(ValidationError(
             ['zap', 'foo'], ['zap', 'schema', 'foo'], 0x41, 'regex',
             '^p[äe]ng$', 'boom', ()))
-        ref['zap']['foo'] = \
-            [ref['zap']['foo'],
-             handler.messages[0x41].format(constraint='^p[äe]ng$')]
+        ref['zap'][0]['foo'].append(
+            handler.messages[0x41].format(constraint='^p[äe]ng$'))
         self.assertDictEqual(handler(_errors), ref)
 
 

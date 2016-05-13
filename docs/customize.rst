@@ -55,7 +55,7 @@ matters, we can use it to validate all odd values:
     >>> v.validate({'amount': 10})
     False
     >>> v.errors
-    {'amount': 'Must be an odd number'}
+    {'amount': ['Must be an odd number']}
     >>> v.validate({'amount': 9})
     True
 
