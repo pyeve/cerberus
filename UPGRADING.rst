@@ -16,6 +16,10 @@ The inspection on and representation of errors is thoroughly overhauled and
 allows a more detailed and flexible handling. Make sure you have look on
 :doc:`errors`.
 
+Also, :attr:`~cerberus.Validator.errors` values are lists containing error
+messages. Previously, they were strings if single errors occured; lists
+otherwise. 
+
 
 Deprecations
 ------------

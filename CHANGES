@@ -72,6 +72,7 @@ Breaking Changes
 Several relevant breaking changes have been introduced with this release. For
 the inside scoop, please see the :doc:`upgrade notes <upgrading>`. 
 
+- Change: 'errors' values are lists containing error messages. Previously, they were simple strings if single errors, lists otherwise. Closes #210 (Frank Sachsenheim).
 - Change: Custom validator methods: remove the second argument (Frank Sachsenheim).
 - Change: Custom validator methods: invert the logic of the conditional clauses where is tested what a value is not / has not (Frank Sachsenheim). 
 - Change: Custom validator methods: replace calls to 'self._error' with 'return True', or False, or None (Frank Sachsenheim).
