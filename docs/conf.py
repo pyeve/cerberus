@@ -110,7 +110,6 @@ html_theme_options = {
     'logo_text_align': 'center',
     'github_user': 'nicolaiarocci',
     'github_repo': 'cerberus',
-    'github_type': 'star',
     'description': 'Python data validation library',
     'show_powered_by': False,
     #'show_related': True,
