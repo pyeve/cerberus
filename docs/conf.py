@@ -112,6 +112,7 @@ html_theme_options = {
     'github_repo': 'cerberus',
     'github_type': 'star',
     'show_powered_by': False,
+    'analytics_id': 'UA-19006041-7'
     #'description': 'Cerberus is a lightweight and extensible data validation library for Python',
     #'show_related': True,
     #'travis_button': True,
