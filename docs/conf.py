@@ -111,10 +111,9 @@ html_theme_options = {
     'github_user': 'nicolaiarocci',
     'github_repo': 'cerberus',
     'github_type': 'star',
-    'travis_button': True,
     'show_powered_by': False,
-    'analytics_id': 'UA-19006041-7'
-    #'description': 'Cerberus is a lightweight and extensible data validation library for Python',
+    'description': 'Cerberus is a lightweight and extensible data validation library for Python',
+    #'travis_button': True,
     #'show_related': True,
     #'travis_button': True,
 }
@@ -124,7 +123,7 @@ html_theme_path = [alabaster.get_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'Python data validation library'
+html_title = 'Cerberus is a lightweight and extensible data validation library for Python'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
