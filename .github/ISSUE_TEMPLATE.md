@@ -1,5 +1,15 @@
-When asking for support or reporting a bug, please post an example and make it as simple as possible.
-From your use-case throw everything out that is irrelevant for your question / isn't necessary to evoke the bug.
+This issue tracker is dedicated to bugs and features requests. 
+
+Stack Overflow is the go-to place for general questions and general how-tos. On
+SO, questions tagged with the 'cerberus' tag are actively monitored by the
+project author, users and contributors.
+
+When reporting a bug, please post an example and make it as simple as possible.
+From your use-case throw everything out that is irrelevant for your question
+/ isn't necessary to evoke the bug.
+
+Try to adhere as much as possible to the template below:
+
 
 Used Cerberus version / latest commit: ...
 
