@@ -111,8 +111,8 @@ html_theme_options = {
     'github_user': 'nicolaiarocci',
     'github_repo': 'cerberus',
     'github_type': 'star',
-    'description': 'Python data validation library',
     'show_powered_by': False,
+    #'description': 'Cerberus is a lightweight and extensible data validation library for Python',
     #'show_related': True,
     #'travis_button': True,
 }
