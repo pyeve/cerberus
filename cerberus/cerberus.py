@@ -1111,7 +1111,7 @@ class Validator(object):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
             schema=schema, allow_unknown=self.allow_unknown)
-        validator(dict(((i, v) for i, v in enumerate(value))), normalize=False)
+        validator(dict(((i, v) for i, v in enumerate(value))), update=self.update, normalize=False)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
