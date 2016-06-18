@@ -286,7 +286,7 @@ class TestValidation(TestBase):
         self.assertSuccess({'an_integer': 100,
                             'a_dict': {'address': 'adr'},
                             'a_list_of_dicts': [{'sku': 'let'}]
-                        }, update=True)
+                            }, update=True)
 
     def test_string(self):
         self.assertSuccess({'a_string': 'john doe'})
