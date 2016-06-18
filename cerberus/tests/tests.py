@@ -283,8 +283,10 @@ class TestValidation(TestBase):
         self.assertSuccess({'a_restricted_integer': -1})
 
     def test_validate_update(self):
-        self.assertSuccess({'an_integer': 100, 'a_dict': {'address': 'adr'}},
-                           update=True)
+        self.assertSuccess({'an_integer': 100,
+                            'a_dict': {'address': 'adr'},
+                            'a_list_of_dicts': [{'sku': 'let'}]
+                            }, update=True)
 
     def test_string(self):
         self.assertSuccess({'a_string': 'john doe'})

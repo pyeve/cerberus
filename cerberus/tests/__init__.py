@@ -86,7 +86,7 @@ class TestBase(unittest.TestCase):
                     'type': 'dict',
                     'schema': {
                         'sku': {'type': 'string'},
-                        'price': {'type': 'integer'},
+                        'price': {'type': 'integer', 'required': True},
                     },
                 },
             },

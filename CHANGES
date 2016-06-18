@@ -50,7 +50,10 @@ Not released yet.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: Support CPython 3.5 (Frank Sachsenheim).
 
-- Fix: 'number' type fails if value is boolean. Closes #144 (Frank Sachsenheim).
+- Fix: validate with 'update=True' does not work when required fields are in
+  a list of subdicts (Jonathan Huot).
+- Fix: 'number' type fails if value is boolean. Closes #144 (Frank
+  Sachsenheim).
 - Fix: allow None in 'default' normalization rule (Damián Nohales).
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
   #185.
