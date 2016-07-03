@@ -4,7 +4,7 @@ Cerberus |latest-version|
 
 Cerberus is a lightweight and extensible data validation library for Python.
 
-.. code-block:: pycon
+.. code-block:: python
 
     >>> v = Validator({'name': {'type': 'string'}})
     >>> v.validate({'name': 'john doe'})
