@@ -16,7 +16,7 @@ setup(
     author='Nicola Iarocci',
     author_email='nicola@nicolaiarocci.com',
     url='http://github.com/nicolaiarocci/cerberus',
-    license=open('LICENSE').read(),
+    license='ISC',
     platforms=["any"],
     packages=find_packages(),
     include_package_data=True,
