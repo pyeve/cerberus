@@ -1,7 +1,6 @@
-Cerberus
-========
-.. image:: https://secure.travis-ci.org/nicolaiarocci/cerberus.png?branch=master
-        :target: https://secure.travis-ci.org/nicolaiarocci/cerberus
+Cerberus |latest-version|
+=========================
+|build-status| |python-support| 
 
 Cerberus is a lightweight and extensible data validation library for Python.
 
@@ -59,3 +58,16 @@ Cerberus is an open source project by `Nicola Iarocci
 informations.
 
 .. _`Contribution Guidelines`: https://github.com/nicolaiarocci/cerberus/blob/master/CONTRIBUTING.rst
+
+.. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
+   :alt: Latest version on PyPI
+   :target: https://pypi.python.org/pypi/cerberus
+.. |build-status| image:: https://travis-ci.org/nicolaiarocci/cerberus.svg?branch=master
+   :alt: Build status
+   :target: https://travis-ci.org/nicolaiarocci/cerberus
+.. |python-support| image:: https://img.shields.io/pypi/pyversions/cerberus.svg
+   :target: https://pypi.python.org/pypi/cerberus
+   :alt: Python versions
+.. |license| image:: https://img.shields.io/pypi/l/cerberus.svg
+   :alt: Software license
+   :target: https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE
