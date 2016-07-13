@@ -275,6 +275,7 @@ class Validator(object):
             child_config['root_allow_unknown'] = self.allow_unknown
             child_config['root_document'] = self.document
             child_config['root_schema'] = self.schema
+
         child_validator = self.__class__(**child_config)
 
         if document_crumb is None:
@@ -719,13 +720,6 @@ class Validator(object):
         :return: ``True`` if validation succeeds, otherwise ``False``. Check
                  the :func:`errors` property for a list of processing errors.
         :rtype: :class:`bool`
-
-        .. versionchanged:: 1.0
-           Removed 'context'-argument, Validator takes care of setting it now.
-           It's accessible as ``self.root_document``.
-
-        .. versionchanged:: 0.4.0
-           Support for update mode.
         """
         self.update = update
         self._unrequired_by_excludes = set()
@@ -922,9 +916,9 @@ class Validator(object):
             schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
             validator = self._get_child_validator(document_crumb=field,
                                                   schema_crumb=(field, 'items'),  # noqa
-                                                   schema=schema)
+                                                  schema=schema)
             if not validator(dict((i, item) for i, item in enumerate(values)),
-                             normalize=False):
+                             update=self.update, normalize=False):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
@@ -944,7 +938,7 @@ class Validator(object):
             validator = self._get_child_validator(
                 schema_crumb=(field, operator, i),
                 schema={field: s})
-            if validator({field: value}, normalize=False):
+            if validator({field: value}, update=self.update, normalize=False):
                 valid_counter += 1
             else:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [3])
@@ -1199,7 +1193,7 @@ class Validator(object):
             validator = self._get_child_validator(
                 document_crumb=field, schema_crumb=schema_crumb,
                 schema=dict((k, schema) for k in value))
-            validator(value, normalize=False)
+            validator(value, update=self.update, normalize=False)
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
