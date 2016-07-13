@@ -1,4 +1,4 @@
-from .. import Validator, SchemaError, DocumentError, errors
+from cerberus import Validator, SchemaError, DocumentError, errors
 
 import sys
 if sys.version_info >= (2, 7):

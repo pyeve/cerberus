@@ -15,11 +15,11 @@ from datetime import date, datetime
 import re
 from warnings import warn
 
-from . import errors
-from .platform import _int_types, _str_type
-from .schema import schema_registry, rules_set_registry, DefinitionSchema, \
-    SchemaError
-from .utils import drop_item_from_tuple, isclass
+from cerberus import errors
+from cerberus.platform import _int_types, _str_type
+from cerberus.schema import (schema_registry, rules_set_registry,
+                             DefinitionSchema, SchemaError)
+from cerberus.utils import drop_item_from_tuple, isclass
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -848,7 +848,7 @@ class Validator(object):
             if (not isinstance(dep_values, Sequence) or
                     isinstance(dep_values, _str_type)):
                 dep_values = [dep_values]
-            context = self.document.copy()
+            context = self.document
             parts = dep_name.split('.')
             info = {}
 
@@ -1213,9 +1213,8 @@ class InspectedValidator(type):
     """ Metaclass for all validators """
     def __init__(cls, *args):
         def attributes_with_prefix(prefix):
-            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
-                     if x.startswith('_' + prefix)]
-            return tuple(rules)
+            return tuple(x.split('_', 2)[-1] for x in dir(cls)
+                         if x.startswith('_' + prefix))
 
         super(InspectedValidator, cls).__init__(*args)
 
@@ -1271,7 +1270,7 @@ class InspectedValidator(type):
 
         if not result:
             warn("No validation schema is defined for the arguments of rule "
-                 "'%s'" % '_'.join(method_name.split('_')[2:]))
+                 "'%s'" % method_name.split('_', 2)[-1])
 
         return result
 

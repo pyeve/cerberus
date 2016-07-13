@@ -2,9 +2,10 @@ from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 from copy import copy
 import json
 
-from . import errors
-from .platform import _str_type
-from .utils import cast_keys_to_strings, get_Validator_class, validator_factory
+from cerberus import errors
+from cerberus.platform import _str_type
+from cerberus.utils import (cast_keys_to_strings, get_Validator_class,
+                            validator_factory)
 
 
 def schema_hash(schema):
@@ -12,10 +13,8 @@ def schema_hash(schema):
         def default(self, o):
             return repr(o)
 
-    _hash = hash(json.dumps(cast_keys_to_strings(schema),
-                            cls=Encoder, sort_keys=True))
-
-    return _hash
+    return hash(json.dumps(cast_keys_to_strings(schema),
+                           cls=Encoder, sort_keys=True))
 
 
 class SchemaError(Exception):
@@ -314,8 +313,8 @@ class SchemaValidatorMixin:
         if isinstance(value, Callable):
             return
         if isinstance(value, _str_type):
-            if value not in self.target_validator.validators and \
-                    value not in self.target_validator.coercers:
+            if value not in self.target_validator.validators + \
+                    self.target_validator.coercers:
                 self._error(field, '%s is no valid coercer' % value)
         elif isinstance(value, Iterable):
             for handler in value:

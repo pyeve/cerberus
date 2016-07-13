@@ -2,7 +2,8 @@
 
 from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy
-from .utils import compare_paths_lt, quote_string
+
+from cerberus.utils import compare_paths_lt, quote_string
 
 
 """

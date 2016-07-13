@@ -1,6 +1,6 @@
 from collections import Mapping
 
-from .platform import _int_types, _str_type
+from cerberus.platform import _int_types, _str_type
 
 
 def cast_keys_to_strings(mapping):
@@ -32,7 +32,7 @@ def drop_item_from_tuple(t, i):
 
 def get_Validator_class():
     if 'Validator' not in globals():
-        from .cerberus import Validator
+        from cerberus.validator import Validator
     return Validator
 
 

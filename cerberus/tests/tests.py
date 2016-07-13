@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import re
 from datetime import date, datetime
 from random import choice
+import re
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
-from . import TestBase
-from .. import schema_registry, rules_set_registry, SchemaError, Validator
-from .. import errors
+
+
+from cerberus import (schema_registry, rules_set_registry, SchemaError,
+                      Validator, errors)
+from cerberus.tests import TestBase
 
 
 ValidationError = errors.ValidationError
@@ -1959,3 +1961,15 @@ class TestAssorted(TestBase):
         self.assertGreater(len(self.validator._valid_schemas), 0)
         self.validator.clear_caches()
         self.assertEqual(len(self.validator._valid_schemas), 0)
+
+
+if __name__ == '__main__':
+    import os
+    import sys
+    import unittest
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 '..', '..')))
+
+    # TODO get pytest.main() working before tackling
+    # https://github.com/nicolaiarocci/cerberus/issues/213
+    unittest.main()
