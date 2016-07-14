@@ -944,34 +944,39 @@ class Validator(object):
                 self._drop_nodes_from_errorpaths(validator._errors, [], [3])
                 _errors.extend(validator._errors)
 
-        if operator == 'anyof' and valid_counter < 1:
-            self._error(field, errors.ANYOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'allof' and valid_counter < len(definitions):
-            self._error(field, errors.ALLOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'noneof' and valid_counter > 0:
-            self._error(field, errors.NONEOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'oneof' and valid_counter != 1:
-            self._error(field, errors.ONEOF, _errors,
-                        valid_counter, len(definitions))
+        return valid_counter, _errors
 
     def _validate_anyof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'anyof'} """
-        self.__validate_logical('anyof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('anyof', definitions, field, value)
+        if valids < 1:
+            self._error(field, errors.ANYOF, _errors,
+                        valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'allof'} """
-        self.__validate_logical('allof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('allof', definitions, field, value)
+        if valids < len(definitions):
+            self._error(field, errors.ALLOF, _errors,
+                        valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'noneof'} """
-        self.__validate_logical('noneof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('noneof', definitions, field, value)
+        if valids > 0:
+            self._error(field, errors.NONEOF, _errors,
+                        valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'oneof'} """
-        self.__validate_logical('oneof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('oneof', definitions, field, value)
+        if valids != 1:
+            self._error(field, errors.ONEOF, _errors,
+                        valids, len(definitions))
 
     def _validate_max(self, max_value, field, value):
         """ {'nullable': False } """
