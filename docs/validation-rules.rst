@@ -11,8 +11,9 @@ For a full alaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
-Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
-if target values are not included in the allowed list.
+If the target value is an :term:`iterable`, all its members must be in the
+list of allowed values. Other types of target values will validate if the
+value is in that list.
 
 .. doctest::
 
