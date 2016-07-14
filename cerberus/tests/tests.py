@@ -821,12 +821,13 @@ class TestValidation(TestBase):
         # greater than or equal to 0, or greater than or equal to 10
         schema = {'prop1': {'type': 'integer',
                             'anyof': [{'min': 0}, {'min': 10}]}}
-        doc = {'prop1': 10}
-        self.assertSuccess(doc, schema)
-        doc = {'prop1': 5}
-        self.assertSuccess(doc, schema)
-        doc = {'prop1': -1}
-        self.assertFail(doc, schema)
+        self.assertSuccess({'prop1': 10}, schema)
+        self.assertNotIn('type', schema['prop1']['anyof'][0])
+        self.assertNotIn('type', schema['prop1']['anyof'][1])
+        self.assertNotIn('allow_unknown', schema['prop1']['anyof'][0])
+        self.assertNotIn('allow_unknown', schema['prop1']['anyof'][1])
+        self.assertSuccess({'prop1': 5}, schema)
+        self.assertFail({'prop1': -1}, schema)
         exp_child_errors = [
             (('prop1',), ('prop1', 'anyof', 0, 'min'), errors.MIN_VALUE, 0),
             (('prop1',), ('prop1', 'anyof', 1, 'min'), errors.MIN_VALUE, 10)
@@ -1272,6 +1273,20 @@ class TestValidation(TestBase):
         self.assertEqual(len(_errors), 1)
         self.assertError('foo', ('foo', 'type'), errors.BAD_TYPE, 'string',
                          v_errors=_errors)
+
+    def test_dependencies_in_oneof(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/241
+        schema = {'a': {'type': 'integer',
+                        'oneof': [
+                            {'allowed': [1], 'dependencies': 'b'},
+                            {'allowed': [2], 'dependencies': 'c'}
+                        ]},
+                  'b': {},
+                  'c': {}}
+        self.assertSuccess({'a': 1, 'b': 'foo'}, schema)
+        self.assertSuccess({'a': 2, 'c': 'bar'}, schema)
+        self.assertFail({'a': 1, 'c': 'foo'}, schema)
+        self.assertFail({'a': 2, 'b': 'bar'}, schema)
 
 
 class TestNormalization(TestBase):

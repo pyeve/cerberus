@@ -794,7 +794,7 @@ class Validator(object):
             if validate_rule(rule):
                 return
 
-        rules = set(definitions.keys())
+        rules = set(definitions)
         rules |= set(self.mandatory_validations)
         rules -= set(prior_rules + ('allow_unknown', 'required'))
         rules -= set(self.normalization_rules)
@@ -924,21 +924,21 @@ class Validator(object):
     def __validate_logical(self, operator, definitions, field, value):
         """ Validates value against all definitions and logs errors according
             to the operator. """
-        if isinstance(definitions, Mapping):
-            definitions = [definitions]
-
         valid_counter = 0
         _errors = []
 
         for i, definition in enumerate(definitions):
-            s = self.schema[field].copy()
-            del s[operator]
-            s.update(definition)
+            schema = {field: definition.copy()}
+            for rule in ('allow_unknown', 'type'):
+                if rule not in schema[field] and rule in self.schema[field]:
+                    schema[field][rule] = self.schema[field][rule]
+            if 'allow_unknown' not in schema:
+                schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(
                 schema_crumb=(field, operator, i),
-                schema={field: s})
-            if validator({field: value}, update=self.update, normalize=False):
+                schema=schema, allow_unknown=True)
+            if validator(self.document, update=self.update, normalize=False):
                 valid_counter += 1
             else:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [3])
