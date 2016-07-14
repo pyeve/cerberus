@@ -914,7 +914,7 @@ class Validator(object):
             validator = self._get_child_validator(document_crumb=field,
                                                   schema_crumb=(field, 'items'),  # noqa
                                                   schema=schema)
-            if not validator(dict((i, item) for i, item in enumerate(values)),
+            if not validator(dict((i, value) for i, value in enumerate(values)),
                              update=self.update, normalize=False):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
