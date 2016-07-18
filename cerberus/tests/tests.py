@@ -1025,15 +1025,13 @@ class TestValidation(TestBase):
         self.assertIn('parts', v_errors)
         self.assertIn(3, v_errors['parts'][-1])
         self.assertIn('anyof', v_errors['parts'][-1][3][-1])
-        self.assertEqual(v_errors['parts'][-1][3][-1]['anyof'],
-                         ["no definitions validate"])
-        self.assertIn('definition 0', v_errors['parts'][-1][3][-1])
-        self.assertEqual(
-            v_errors['parts'][-1][3][-1]['definition 0'][-1]['product name'],
-            ["unknown field"])
-        self.assertEqual(
-            v_errors['parts'][-1][3][-1]['definition 1'][-1]['product name'],
-            ["unknown field"])
+        self.assertEqual(v_errors['parts'][-1][3][-1]['anyof'][0],
+                         "no definitions validate")
+        scope = v_errors['parts'][-1][3][-1]['anyof'][-1]
+        self.assertIn('anyof definition 0', scope)
+        self.assertIn('anyof definition 1', scope)
+        self.assertEqual(scope['anyof definition 0'], ["unknown field"])
+        self.assertEqual(scope['anyof definition 1'], ["unknown field"])
         self.assertEqual(
             v_errors['parts'][-1][4],
             ["must be of ['dict', 'string'] type"])
@@ -1894,6 +1892,28 @@ class TestErrorHandling(TestBase):
         ref['zap'][0]['foo'].append(
             handler.messages[0x41].format(constraint='^p[äe]ng$'))
         self.assertDictEqual(handler(_errors), ref)
+
+    def test_basic_error_of_errors(self):
+        schema = {'foo': {'oneof': [
+            {'type': 'integer'},
+            {'type': 'string'}
+        ]}}
+        validator = Validator(schema)
+        document = {'foo': 23.42}
+        self.assertFalse(validator(document))
+        error = ('foo', ('foo', 'oneof'), errors.ONEOF,
+                 schema['foo']['oneof'], ())
+        child_errors = [
+            (error[0], error[1] + (0, 'type'), errors.BAD_TYPE, 'integer'),
+            (error[0], error[1] + (1, 'type'), errors.BAD_TYPE, 'string')
+        ]
+        self.assertChildErrors(*error, child_errors=child_errors,
+                               v_errors=validator._errors)
+        self.assertDictEqual(validator.errors, {'foo': [{'oneof': [
+            errors.BasicErrorHandler.messages[0x92],
+            {'oneof definition 0': ['must be of integer type'],
+             'oneof definition 1': ['must be of string type']}
+        ]}]})
 
 
 class TestBackwardCompatibility(TestBase):

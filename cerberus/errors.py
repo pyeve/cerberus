@@ -3,7 +3,8 @@
 from __future__ import absolute_import
 
 from collections import defaultdict, namedtuple, MutableMapping
-from copy import copy
+from copy import copy, deepcopy
+from pprint import pformat
 
 from cerberus.utils import compare_paths_lt, quote_string
 
@@ -158,6 +159,14 @@ class ValidationError:
             i = error.schema_path[len(self.schema_path)]
             result[i].append(error)
         return result
+
+    @property
+    def field(self):
+        """ Field of the contextual mapping, possibly :obj:`None`. """
+        if self.document_path:
+            return self.document_path[-1]
+        else:
+            return None
 
     @property
     def is_group_error(self):
@@ -432,17 +441,19 @@ class BasicErrorHandler(BaseErrorHandler):
         if errors is not None:
             self.clear()
             self.extend(errors)
-        return self.tree
+        return self.pretty_tree
+
+    def __str__(self):
+        return pformat(self.pretty_tree)
 
     def add(self, error):
-        if error.code not in self.messages and not error.is_group_error:
-            return
+        if error.is_logic_error:
+            self.insert_logic_error(error)
         elif error.is_group_error:
             self.insert_group_error(error)
-        else:
-            field = error.document_path[-1] if error.document_path else None
+        elif error.code in self.messages:
             self.insert_error(error.document_path,
-                              self.format_message(field, error))
+                              self.format_message(error.field, error))
 
     def clear(self):
         self.tree = {}
@@ -463,9 +474,10 @@ class BasicErrorHandler(BaseErrorHandler):
         field = path[0]
         if len(path) == 1:
             if field in self.tree:
-                self.tree[field].append(node)
+                subtree = self.tree[field].pop()
+                self.tree[field] += [node, subtree]
             else:
-                self.tree[field] = [node]
+                self.tree[field] = [node, {}]
         elif len(path) >= 1:
             if field not in self.tree:
                 self.tree[field] = [{}]
@@ -479,26 +491,49 @@ class BasicErrorHandler(BaseErrorHandler):
             subtree.update(new.tree)
 
     def insert_group_error(self, error):
-        if error.is_logic_error:
-            self.insert_logic_error(error)
-
         for error in error.child_errors:
-            if error.is_group_error:
+            if error.is_logic_error:
+                self.insert_logic_error(error)
+            elif error.is_group_error:
                 self.insert_group_error(error)
             else:
-                field = error.document_path[-1] if error.document_path else None
                 self.insert_error(error.document_path,
-                                  self.format_message(field, error))
+                                  self.format_message(error.field, error))
 
     def insert_logic_error(self, error):
         path = error.document_path + (error.rule, )
-        self.insert_error(path, self.format_message(None, error))
+        field = error.field
+
+        self.insert_error(path, self.format_message(field, error))
+
         for i in error.definitions_errors:
-            for child_error in error.definitions_errors[i]:
-                field = child_error.document_path[-1]
-                path = child_error.document_path[:-1] + \
-                    ('definition %s' % i, field)
-                self.insert_error(path, self.format_message(field, child_error))  # noqa
+            child_errors = error.definitions_errors[i]
+            if not child_errors:
+                continue
+            nodename = '%s definition %s' % (error.rule, i)
+            for child_error in child_errors:
+                if child_error.is_logic_error:
+                    raise NotImplemented
+                elif child_error.is_group_error:
+                    raise NotImplemented
+                else:
+                    self.insert_error(path + (nodename,),
+                                      self.format_message(field, child_error))
+
+    @property
+    def pretty_tree(self):
+        pretty = deepcopy(self.tree)
+        for field in pretty:
+            self._purge_empty_dicts(pretty[field])
+        return pretty
+
+    def _purge_empty_dicts(self, error_list):
+        subtree = error_list[-1]
+        if not error_list[-1]:
+            error_list.pop()
+        else:
+            for key in subtree:
+                self._purge_empty_dicts(subtree[key])
 
     def start(self, validator):
         self.clear()
