@@ -1209,6 +1209,11 @@ RULE_SCHEMA_SEPERATOR = \
 
 class InspectedValidator(type):
     """ Metaclass for all validators """
+    def __new__(cls, *args):
+        if '__doc__' not in args[2]:
+            args[2].update({'__doc__': args[1][0].__doc__})
+        return super(InspectedValidator, cls).__new__(cls, *args)
+
     def __init__(cls, *args):
         def attributes_with_prefix(prefix):
             return tuple(x.split('_', 2)[-1] for x in dir(cls)

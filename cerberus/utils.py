@@ -41,6 +41,8 @@ def get_Validator_class():
 
 def validator_factory(name, mixin=None, class_dict={}):
     """ Dynamically create a :class:`~cerberus.Validator` subclass.
+        Docstrings of mixin-classes will be added to the resulting
+        class' one if ``__doc__`` is not in :obj:`class_dict`.
 
     :param name: The name of the new class.
     :type name: :class:`str`
@@ -58,6 +60,10 @@ def validator_factory(name, mixin=None, class_dict={}):
         bases = (Validator,) + mixin
     else:
         bases = (Validator, mixin)
+
+    docstrings = [x.__doc__ for x in bases if x.__doc__]
+    if len(docstrings) > 1 and '__doc__' not in class_dict:
+        class_dict.update({'__doc__': '\n'.join(docstrings)})
 
     return type(name, bases, class_dict)
 

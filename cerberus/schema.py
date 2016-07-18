@@ -226,6 +226,8 @@ class SchemaValidationSchema(UnvalidatedSchema):
 
 
 class SchemaValidatorMixin:
+    """ This validator is extended to validate schemas passed to a Cerberus
+        validator. """
     @property
     def known_rules_set_refs(self):
         return self._config.get('known_rules_set_refs', ())

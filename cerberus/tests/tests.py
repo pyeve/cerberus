@@ -2003,6 +2003,8 @@ class TestAssorted(TestBase):
         self.validator.clear_caches()
         self.assertEqual(len(self.validator._valid_schemas), 0)
 
+    def test_docstring(self):
+        self.assertTrue(Validator.__doc__)
 
 
 if __name__ == '__main__':
