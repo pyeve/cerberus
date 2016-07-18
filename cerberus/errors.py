@@ -1,5 +1,7 @@
 """ This module contains the error-related constants and classes. """
 
+from __future__ import absolute_import
+
 from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy
 

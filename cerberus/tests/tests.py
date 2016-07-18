@@ -6,10 +6,16 @@ import re
 from string import ascii_lowercase
 from tempfile import NamedTemporaryFile
 
+if __name__ == '__main__':
+    import os
+    import sys
+    import unittest  # TODO pytest
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 '..', '..')))
 
 from cerberus import (schema_registry, rules_set_registry, SchemaError,
-                      Validator, errors)
-from cerberus.tests import TestBase
+                      Validator, errors)  # noqa
+from cerberus.tests import TestBase  # noqa
 
 
 ValidationError = errors.ValidationError
@@ -1978,13 +1984,8 @@ class TestAssorted(TestBase):
         self.assertEqual(len(self.validator._valid_schemas), 0)
 
 
-if __name__ == '__main__':
-    import os
-    import sys
-    import unittest
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 '..', '..')))
 
+if __name__ == '__main__':
     # TODO get pytest.main() working before tackling
     # https://github.com/nicolaiarocci/cerberus/issues/213
     unittest.main()

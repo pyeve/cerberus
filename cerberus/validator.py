@@ -8,6 +8,8 @@
     Full documentation is available at http://python-cerberus.org
 """
 
+from __future__ import absolute_import
+
 from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
@@ -83,7 +85,7 @@ class Validator(object):
                           initialization of the error handler.
                           Default: :class:`~cerberus.errors.BasicErrorHandler`.
     :type error_handler: class or instance based on
-                         :class:`~erberus.errors.BaseErrorHandler>` or
+                         :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
     """  # noqa
 
@@ -203,7 +205,7 @@ class Validator(object):
 
                      - the invalid field's name
 
-                     - the error-reference, see :mod:`errors`
+                     - the error-reference, see :mod:`cerberus.errors`
 
                      - arbitrary, supplemental information about the error
 
@@ -298,7 +300,7 @@ class Validator(object):
         methodname = '_{0}_{1}'.format(domain, rule.replace(' ', '_'))
         return getattr(self, methodname, None)
 
-    def _drop_nodes_from_errorpaths(self, errors, dp_items, sp_items):
+    def _drop_nodes_from_errorpaths(self, _errors, dp_items, sp_items):
         """ Removes nodes by index from an errorpath, relatively to the
             basepaths of self.
 
@@ -309,7 +311,7 @@ class Validator(object):
         """
         dp_basedepth = len(self.document_path)
         sp_basedepth = len(self.schema_path)
-        for error in errors:
+        for error in _errors:
             for i in sorted(dp_items, reverse=True):
                 error.document_path = \
                     drop_item_from_tuple(error.document_path, dp_basedepth + i)
@@ -922,7 +924,7 @@ class Validator(object):
         """ Validates value against all definitions and logs errors according
             to the operator. """
         valid_counter = 0
-        _errors = []
+        _errors = errors.ErrorList()
 
         for i, definition in enumerate(definitions):
             schema = {field: definition.copy()}
@@ -1261,7 +1263,7 @@ class InspectedValidator(type):
                 docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
             try:
                 result = literal_eval(docstring.strip())
-            except:
+            except Exception:
                 result = {}
 
         if not result:

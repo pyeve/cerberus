@@ -8,6 +8,8 @@
 
 """
 
+from __future__ import absolute_import
+
 from cerberus.validator import Validator, DocumentError
 from cerberus.schema import (rules_set_registry, schema_registry, Registry,
                              SchemaError)

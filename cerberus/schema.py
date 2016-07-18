@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 from copy import copy
 import json
@@ -51,7 +53,7 @@ class DefinitionSchema(MutableMapping):
         if not isinstance(schema, Mapping):
             try:
                 schema = dict(schema)
-            except:
+            except Exception:
                 raise SchemaError(
                     errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
 
@@ -71,8 +73,8 @@ class DefinitionSchema(MutableMapping):
             del _new_schema[key]
         except ValueError:
             raise SchemaError("Schema has no field '%s' defined" % key)
-        except:
-            raise
+        except Exception as e:
+            raise e
         else:
             del self.schema[key]
 
@@ -100,7 +102,7 @@ class DefinitionSchema(MutableMapping):
         try:
             schema = self._expand_logical_shortcuts(schema)
             schema = self._expand_subschemas(schema)
-        except:
+        except Exception:
             pass
         return schema
 
@@ -168,8 +170,8 @@ class DefinitionSchema(MutableMapping):
         except ValueError:
             raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE
                               .format(schema))
-        except:
-            raise
+        except Exception as e:
+            raise e
         else:
             self.schema = _new_schema
 
@@ -250,7 +252,7 @@ class SchemaValidatorMixin:
         """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
-    def _validate_logical(self, rule, none, value):
+    def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
         validator = self._get_child_validator(
             document_crumb=rule,
