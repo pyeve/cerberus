@@ -8,6 +8,8 @@
     Full documentation is available at http://python-cerberus.org
 """
 
+from __future__ import absolute_import
+
 from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
@@ -15,11 +17,11 @@ from datetime import date, datetime
 import re
 from warnings import warn
 
-from . import errors
-from .platform import _int_types, _str_type
-from .schema import schema_registry, rules_set_registry, DefinitionSchema, \
-    SchemaError
-from .utils import drop_item_from_tuple, isclass
+from cerberus import errors
+from cerberus.platform import _int_types, _str_type
+from cerberus.schema import (schema_registry, rules_set_registry,
+                             DefinitionSchema, SchemaError)
+from cerberus.utils import drop_item_from_tuple, isclass
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -83,7 +85,7 @@ class Validator(object):
                           initialization of the error handler.
                           Default: :class:`~cerberus.errors.BasicErrorHandler`.
     :type error_handler: class or instance based on
-                         :class:`~erberus.errors.BaseErrorHandler>` or
+                         :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
     """  # noqa
 
@@ -203,7 +205,7 @@ class Validator(object):
 
                      - the invalid field's name
 
-                     - the error-reference, see :mod:`errors`
+                     - the error-reference, see :mod:`cerberus.errors`
 
                      - arbitrary, supplemental information about the error
 
@@ -275,6 +277,7 @@ class Validator(object):
             child_config['root_allow_unknown'] = self.allow_unknown
             child_config['root_document'] = self.document
             child_config['root_schema'] = self.schema
+
         child_validator = self.__class__(**child_config)
 
         if document_crumb is None:
@@ -297,7 +300,7 @@ class Validator(object):
         methodname = '_{0}_{1}'.format(domain, rule.replace(' ', '_'))
         return getattr(self, methodname, None)
 
-    def _drop_nodes_from_errorpaths(self, errors, dp_items, sp_items):
+    def _drop_nodes_from_errorpaths(self, _errors, dp_items, sp_items):
         """ Removes nodes by index from an errorpath, relatively to the
             basepaths of self.
 
@@ -308,7 +311,7 @@ class Validator(object):
         """
         dp_basedepth = len(self.document_path)
         sp_basedepth = len(self.schema_path)
-        for error in errors:
+        for error in _errors:
             for i in sorted(dp_items, reverse=True):
                 error.document_path = \
                     drop_item_from_tuple(error.document_path, dp_basedepth + i)
@@ -719,13 +722,6 @@ class Validator(object):
         :return: ``True`` if validation succeeds, otherwise ``False``. Check
                  the :func:`errors` property for a list of processing errors.
         :rtype: :class:`bool`
-
-        .. versionchanged:: 1.0
-           Removed 'context'-argument, Validator takes care of setting it now.
-           It's accessible as ``self.root_document``.
-
-        .. versionchanged:: 0.4.0
-           Support for update mode.
         """
         self.update = update
         self._unrequired_by_excludes = set()
@@ -800,7 +796,7 @@ class Validator(object):
             if validate_rule(rule):
                 return
 
-        rules = set(definitions.keys())
+        rules = set(definitions)
         rules |= set(self.mandatory_validations)
         rules -= set(prior_rules + ('allow_unknown', 'required'))
         rules -= set(self.normalization_rules)
@@ -817,14 +813,11 @@ class Validator(object):
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': 'list'} """
-        if isinstance(value, _str_type):
-            if value not in allowed_values:
-                self._error(field, errors.UNALLOWED_VALUE, value)
-        elif isinstance(value, Sequence) and not isinstance(value, _str_type):
+        if isinstance(value, Iterable) and not isinstance(value, _str_type):
             unallowed = set(value) - set(allowed_values)
             if unallowed:
                 self._error(field, errors.UNALLOWED_VALUES, list(unallowed))
-        elif isinstance(value, int):
+        else:
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
@@ -848,7 +841,7 @@ class Validator(object):
             if (not isinstance(dep_values, Sequence) or
                     isinstance(dep_values, _str_type)):
                 dep_values = [dep_values]
-            context = self.document.copy()
+            context = self.document
             parts = dep_name.split('.')
             info = {}
 
@@ -922,62 +915,67 @@ class Validator(object):
             schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
             validator = self._get_child_validator(document_crumb=field,
                                                   schema_crumb=(field, 'items'),  # noqa
-                                                   schema=schema)
-            if not validator(dict((i, item) for i, item in enumerate(values)),
-                             normalize=False):
+                                                  schema=schema)
+            if not validator(dict((i, value) for i, value in enumerate(values)),
+                             update=self.update, normalize=False):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
         """ Validates value against all definitions and logs errors according
             to the operator. """
-        if isinstance(definitions, Mapping):
-            definitions = [definitions]
-
         valid_counter = 0
-        _errors = []
+        _errors = errors.ErrorList()
 
         for i, definition in enumerate(definitions):
-            s = self.schema[field].copy()
-            del s[operator]
-            s.update(definition)
+            schema = {field: definition.copy()}
+            for rule in ('allow_unknown', 'type'):
+                if rule not in schema[field] and rule in self.schema[field]:
+                    schema[field][rule] = self.schema[field][rule]
+            if 'allow_unknown' not in schema:
+                schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(
                 schema_crumb=(field, operator, i),
-                schema={field: s})
-            if validator({field: value}, normalize=False):
+                schema=schema, allow_unknown=True)
+            if validator(self.document, update=self.update, normalize=False):
                 valid_counter += 1
             else:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [3])
                 _errors.extend(validator._errors)
 
-        if operator == 'anyof' and valid_counter < 1:
-            self._error(field, errors.ANYOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'allof' and valid_counter < len(definitions):
-            self._error(field, errors.ALLOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'noneof' and valid_counter > 0:
-            self._error(field, errors.NONEOF, _errors,
-                        valid_counter, len(definitions))
-        elif operator == 'oneof' and valid_counter != 1:
-            self._error(field, errors.ONEOF, _errors,
-                        valid_counter, len(definitions))
+        return valid_counter, _errors
 
     def _validate_anyof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'anyof'} """
-        self.__validate_logical('anyof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('anyof', definitions, field, value)
+        if valids < 1:
+            self._error(field, errors.ANYOF, _errors,
+                        valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'allof'} """
-        self.__validate_logical('allof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('allof', definitions, field, value)
+        if valids < len(definitions):
+            self._error(field, errors.ALLOF, _errors,
+                        valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'noneof'} """
-        self.__validate_logical('noneof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('noneof', definitions, field, value)
+        if valids > 0:
+            self._error(field, errors.NONEOF, _errors,
+                        valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'oneof'} """
-        self.__validate_logical('oneof', definitions, field, value)
+        valids, _errors = \
+            self.__validate_logical('oneof', definitions, field, value)
+        if valids != 1:
+            self._error(field, errors.ONEOF, _errors,
+                        valids, len(definitions))
 
     def _validate_max(self, max_value, field, value):
         """ {'nullable': False } """
@@ -1199,7 +1197,7 @@ class Validator(object):
             validator = self._get_child_validator(
                 document_crumb=field, schema_crumb=schema_crumb,
                 schema=dict((k, schema) for k in value))
-            validator(value, normalize=False)
+            validator(value, update=self.update, normalize=False)
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
@@ -1211,11 +1209,15 @@ RULE_SCHEMA_SEPERATOR = \
 
 class InspectedValidator(type):
     """ Metaclass for all validators """
+    def __new__(cls, *args):
+        if '__doc__' not in args[2]:
+            args[2].update({'__doc__': args[1][0].__doc__})
+        return super(InspectedValidator, cls).__new__(cls, *args)
+
     def __init__(cls, *args):
         def attributes_with_prefix(prefix):
-            rules = ['_'.join(x.split('_')[2:]) for x in dir(cls)
-                     if x.startswith('_' + prefix)]
-            return tuple(rules)
+            return tuple(x.split('_', 2)[-1] for x in dir(cls)
+                         if x.startswith('_' + prefix))
 
         super(InspectedValidator, cls).__init__(*args)
 
@@ -1266,12 +1268,12 @@ class InspectedValidator(type):
                 docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
             try:
                 result = literal_eval(docstring.strip())
-            except:
+            except Exception:
                 result = {}
 
         if not result:
             warn("No validation schema is defined for the arguments of rule "
-                 "'%s'" % '_'.join(method_name.split('_')[2:]))
+                 "'%s'" % method_name.split('_', 2)[-1])
 
         return result
 

@@ -11,8 +11,9 @@ For a full alaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
-Allowed values for ``string``, ``list`` and ``int`` types. Validation will fail
-if target values are not included in the allowed list.
+If the target value is an :term:`iterable`, all its members must be in the
+list of allowed values. Other types of target values will validate if the
+value is in that list.
 
 .. doctest::
 
@@ -48,14 +49,12 @@ if target values are not included in the allowed list.
 
 allof
 -----
-
 Validates if *all* of the provided constraints validates the field. See `\*of-rules`_ for details.
 
 .. versionadded:: 0.9
 
 anyof
 -----
-
 Validates if *any* of the provided constraints validates the field. See `\*of-rules`_ for details.
 
 .. versionadded:: 0.9
@@ -119,7 +118,8 @@ but also any of their allowed values must be matched.
    >>> v.errors
    {'field2': ["depends on these values: {'field1': 'one'}"]}
 
-Dependencies on sub-document fields are also supported:
+Declaring dependencies on sub-document fields with dot-notation is also
+supported:
 
 .. doctest::
 
@@ -150,7 +150,8 @@ Dependencies on sub-document fields are also supported:
 empty
 -----
 Only applies to string fields. If ``False`` validation will fail if the value
-is empty. Defaults to ``True``.
+is empty. Setting it to ``True`` manually is pointless as it behaves like
+omitting the rule at all.
 
 .. doctest::
 
@@ -235,8 +236,9 @@ values:
 
 items
 -----
-When a list, ``items`` defines a list of values allowed in a ``list`` type of
-fixed length in the given order:
+Validates the items of any iterable against a sequence of rules that must
+validate each index-correspondent item. The items will only be evaluated if
+the given iterable's size matches the definition's.
 
 .. doctest::
 
@@ -254,8 +256,7 @@ See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
 keyschema
 ---------
-This is the counterpart to ``valueschema`` that validates the `keys` of a
-``dict``.
+Validation schema for all keys of a :term:`mapping`.
 
 .. doctest::
 
@@ -689,8 +690,7 @@ The constraint can also be a sequence of these that will be called consecutively
 
 valueschema
 -----------
-Validation schema for all values of a ``dict``. The ``dict`` can have arbitrary
-keys, the values for all of which must validate with given schema:
+Validation schema for all values of a :term:`mapping`.
 
 .. doctest::
 

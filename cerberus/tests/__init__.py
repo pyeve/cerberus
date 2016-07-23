@@ -1,4 +1,4 @@
-from .. import Validator, SchemaError, DocumentError, errors
+from cerberus import Validator, SchemaError, DocumentError, errors
 
 import sys
 if sys.version_info >= (2, 7):
@@ -192,8 +192,8 @@ class TestBase(unittest.TestCase):
                     self.assertEqual(v_error.info, info)
             except AssertionError:
                 pass
-            except:
-                raise
+            except Exception as e:
+                raise e
             else:
                 in_v_errors = True
                 index = i
@@ -225,8 +225,8 @@ class TestBase(unittest.TestCase):
             self.assertError(*args, **kwargs)
         except AssertionError:
             pass
-        except:
-            raise
+        except Exception as e:
+            raise e
         else:
             raise AssertionError('An unexpected error occurred.')
 

@@ -1,10 +1,13 @@
+from __future__ import absolute_import
+
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 from copy import copy
 import json
 
-from . import errors
-from .platform import _str_type
-from .utils import cast_keys_to_strings, get_Validator_class, validator_factory
+from cerberus import errors
+from cerberus.platform import _str_type
+from cerberus.utils import (cast_keys_to_strings, get_Validator_class,
+                            validator_factory)
 
 
 def schema_hash(schema):
@@ -12,10 +15,8 @@ def schema_hash(schema):
         def default(self, o):
             return repr(o)
 
-    _hash = hash(json.dumps(cast_keys_to_strings(schema),
-                            cls=Encoder, sort_keys=True))
-
-    return _hash
+    return hash(json.dumps(cast_keys_to_strings(schema),
+                           cls=Encoder, sort_keys=True))
 
 
 class SchemaError(Exception):
@@ -52,7 +53,7 @@ class DefinitionSchema(MutableMapping):
         if not isinstance(schema, Mapping):
             try:
                 schema = dict(schema)
-            except:
+            except Exception:
                 raise SchemaError(
                     errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
 
@@ -72,8 +73,8 @@ class DefinitionSchema(MutableMapping):
             del _new_schema[key]
         except ValueError:
             raise SchemaError("Schema has no field '%s' defined" % key)
-        except:
-            raise
+        except Exception as e:
+            raise e
         else:
             del self.schema[key]
 
@@ -101,7 +102,7 @@ class DefinitionSchema(MutableMapping):
         try:
             schema = self._expand_logical_shortcuts(schema)
             schema = self._expand_subschemas(schema)
-        except:
+        except Exception:
             pass
         return schema
 
@@ -169,8 +170,8 @@ class DefinitionSchema(MutableMapping):
         except ValueError:
             raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE
                               .format(schema))
-        except:
-            raise
+        except Exception as e:
+            raise e
         else:
             self.schema = _new_schema
 
@@ -225,6 +226,8 @@ class SchemaValidationSchema(UnvalidatedSchema):
 
 
 class SchemaValidatorMixin:
+    """ This validator is extended to validate schemas passed to a Cerberus
+        validator. """
     @property
     def known_rules_set_refs(self):
         return self._config.get('known_rules_set_refs', ())
@@ -251,7 +254,7 @@ class SchemaValidatorMixin:
         """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
-    def _validate_logical(self, rule, none, value):
+    def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
         validator = self._get_child_validator(
             document_crumb=rule,
@@ -314,8 +317,8 @@ class SchemaValidatorMixin:
         if isinstance(value, Callable):
             return
         if isinstance(value, _str_type):
-            if value not in self.target_validator.validators and \
-                    value not in self.target_validator.coercers:
+            if value not in self.target_validator.validators + \
+                    self.target_validator.coercers:
                 self._error(field, '%s is no valid coercer' % value)
         elif isinstance(value, Iterable):
             for handler in value:

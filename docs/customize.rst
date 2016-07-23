@@ -178,6 +178,11 @@ To make use of additional contextual information in a sub-class of
                 self.additional_context = kwargs['additional_context']
             super(MyValidator, self).__init__(*args, **kwargs)
 
+        # alternatively define a property
+        @property
+        def additional_context(self):
+            return self._config.get('additional_context', 'bar')
+
         def _validate_type_foo(self, field, value):
             make_use_of(self.additional_context)
 
@@ -186,6 +191,11 @@ This ensures that the additional context will be available in
 validation.
 
 .. versionadded:: 0.9
+
+There's a function :func:`~cerberus.utils.validator_factory` to get a
+:class:`Validator` mutant with concatenated docstrings.
+
+.. versionadded:: 1.0
 
 
 Relevant `Validator`-attributes
