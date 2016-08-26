@@ -1580,6 +1580,26 @@ class TestNormalization(TestBase):
                                      always_return_document=True),
             document)
 
+    def test_issue_250(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/211
+        schema = {
+            'list': {
+                'type': 'list',
+                'schema': {
+                    'type': 'dict',
+                    'allow_unknown': True,
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': {'is_a': 'mapping'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('list', ('list', 'type'),
+                         errors.BAD_TYPE, schema['list']['type'],
+                         v_errors=_errors)
+
 
 class TestDefinitionSchema(TestBase):
     def test_empty_schema(self):

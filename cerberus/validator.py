@@ -542,7 +542,9 @@ class Validator(object):
         for field in mapping:
             if field not in schema:
                 continue
-            if isinstance(mapping[field], Mapping):
+            # TODO: This check conflates validation and normalization
+            if isinstance(mapping[field], Mapping) and \
+                    not schema[field].get('type') == 'list':
                 if 'keyschema' in schema[field]:
                     self.__normalize_mapping_per_keyschema(
                         field, mapping, schema[field]['keyschema'])
