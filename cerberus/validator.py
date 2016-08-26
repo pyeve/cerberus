@@ -543,8 +543,7 @@ class Validator(object):
             if field not in schema:
                 continue
             # TODO: This check conflates validation and normalization
-            if isinstance(mapping[field], Mapping) and \
-                    not schema[field].get('type') == 'list':
+            if isinstance(mapping[field], Mapping):
                 if 'keyschema' in schema[field]:
                     self.__normalize_mapping_per_keyschema(
                         field, mapping, schema[field]['keyschema'])
@@ -553,7 +552,11 @@ class Validator(object):
                         field, mapping, schema[field]['valueschema'])
                 if set(schema[field]) & set(('allow_unknown', 'purge_unknown',
                                              'schema')):
-                    self.__normalize_mapping_per_schema(field, mapping, schema)
+                    try:
+                        self.__normalize_mapping_per_schema(
+                            field, mapping, schema)
+                    except _SchemaRuleTypeError:
+                        pass
             elif isinstance(mapping[field], _str_type):
                 continue
             elif isinstance(mapping[field], Sequence) and \
@@ -664,8 +667,11 @@ class Validator(object):
     def __normalize_default_fields(self, mapping, schema):
         fields = [x for x in schema if x not in mapping or
                   mapping[x] is None and not schema[x].get('nullable', False)]
-
-        for field in [x for x in fields if 'default' in schema[x]]:
+        try:
+            fields_with_default = [x for x in fields if 'default' in schema[x]]
+        except TypeError:
+            raise _SchemaRuleTypeError
+        for field in fields_with_default:
             self._normalize_default(mapping, schema, field)
 
         known_fields_states = set()

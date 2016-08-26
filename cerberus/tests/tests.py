@@ -1600,6 +1600,38 @@ class TestNormalization(TestBase):
                          errors.BAD_TYPE, schema['list']['type'],
                          v_errors=_errors)
 
+    def test_issue_250_no_type_pass_on_list(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/211
+        schema = {
+            'list': {
+                'schema': {
+                    'allow_unknown': True,
+                    'type': 'dict',
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': [{'a': 'known', 'b': 'unknown'}]}
+        self.assertNormalized(document, document, schema)
+
+    def test_issue_250_no_type_fail_on_dict(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/211
+        schema = {
+            'list': {
+                'schema': {
+                    'allow_unknown': True,
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': {'a': 'something'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('list', ('list', 'schema'),
+                         errors.BAD_TYPE_FOR_SCHEMA, schema['list']['schema'],
+                         v_errors=_errors)
+
 
 class TestDefinitionSchema(TestBase):
     def test_empty_schema(self):
