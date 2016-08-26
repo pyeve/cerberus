@@ -1580,6 +1580,36 @@ class TestNormalization(TestBase):
                                      always_return_document=True),
             document)
 
+    def test_allow_unknown_with_of_rules(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/251
+        schema = {
+            'test': {
+                'oneof': [
+                    {
+                        'type': 'dict',
+                        'allow_unknown': True,
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                    {
+                        'type': 'dict',
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                ]
+            }
+        }
+        # check regression and that allow unknown does not cause any different
+        # than expected behaviour for one-of.
+        document = {'test': {'known': 's'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('test', ('test', 'oneof'),
+                         errors.ONEOF, schema['test']['oneof'],
+                         v_errors=_errors)
+        # check that allow_unknown is actually applied
+        document = {'test': {'known': 's', 'unknown': 'asd'}}
+        self.assertNormalized(document, document, schema)
+
 
 class TestDefinitionSchema(TestBase):
     def test_empty_schema(self):
