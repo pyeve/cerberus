@@ -50,6 +50,8 @@ Not released yet.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: Support CPython 3.5 (Frank Sachsenheim).
 
+- Fix: unexpected TypeError when using allow_unknown in a schema defining
+  a list of dicts (Davis Kirkendall). Closes #250.
 - Fix: validate with 'update=True' does not work when required fields are in
   a list of subdicts (Jonathan Huot).
 - Fix: 'number' type fails if value is boolean. Closes #144 (Frank
