@@ -1580,6 +1580,71 @@ class TestNormalization(TestBase):
                                      always_return_document=True),
             document)
 
+    def test_issue_250(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/250
+        schema = {
+            'list': {
+                'type': 'list',
+                'schema': {
+                    'type': 'dict',
+                    'allow_unknown': True,
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': {'is_a': 'mapping'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('list', ('list', 'type'),
+                         errors.BAD_TYPE, schema['list']['type'],
+                         v_errors=_errors)
+
+    def test_issue_250_no_type_pass_on_list(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/250
+        schema = {
+            'list': {
+                'schema': {
+                    'allow_unknown': True,
+                    'type': 'dict',
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': [{'a': 'known', 'b': 'unknown'}]}
+        self.assertNormalized(document, document, schema)
+
+    def test_issue_250_no_type_fail_on_dict(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/250
+        schema = {
+            'list': {
+                'schema': {
+                    'allow_unknown': True,
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': {'a': {'a': 'known'}}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('list', ('list', 'schema'),
+                         errors.BAD_TYPE_FOR_SCHEMA, schema['list']['schema'],
+                         v_errors=_errors)
+
+    def test_issue_250_no_type_fail_pass_on_other(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/250
+        schema = {
+            'list': {
+                'schema': {
+                    'allow_unknown': True,
+                    'schema': {'a': {'type': 'string'}}
+                }
+            }
+        }
+        document = {'list': 1}
+        self.assertNormalized(document, document, schema)
+
 
 class TestDefinitionSchema(TestBase):
     def test_empty_schema(self):
