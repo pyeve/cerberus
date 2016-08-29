@@ -606,13 +606,14 @@ A list of types can be used to allow different values:
 
 .. note::
 
-    While the ``type`` is not required to be set at all, it is not encouraged to
-    leave it unset especially when using more complex rules such as ``schema``.
-    If you decide you still don't want to set an explicit type, rules such as
-    ``schema`` are only applied to values where the rules can actually be used
-    (such as `'dict'` and `'list'`). Also, the the case of ``schema``, cerberus
-    will try to decide depending on what the ``schema`` rule looks like if a
-    `'list'` or a `'dict'` is required.
+    While the ``type`` rule is not required to be set at all, it is not
+    encouraged to leave it unset especially when using more complex rules such
+    as ``schema``. If you decide you still don't want to set an explicit type,
+    rules such as ``schema`` are only applied to values where the rules can
+    actually be used (such as ``dict`` and ``list``). Also, in the case of
+    ``schema``, cerberus will try to decide if a ``list`` or a ``dict`` type
+    rule is more appropriate and infer it depending on what the ``schema`` rule
+    looks like.
 
 .. note::
 
