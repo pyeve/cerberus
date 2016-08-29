@@ -1298,6 +1298,37 @@ class TestValidation(TestBase):
         self.assertFail({'a': 1, 'c': 'foo'}, schema)
         self.assertFail({'a': 2, 'b': 'bar'}, schema)
 
+    def test_allow_unknown_with_oneof_rules(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/251
+        schema = {
+            'test': {
+                'oneof': [
+                    {
+                        'type': 'dict',
+                        'allow_unknown': True,
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                    {
+                        'type': 'dict',
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                ]
+            }
+        }
+        # check regression and that allow unknown does not cause any different
+        # than expected behaviour for one-of.
+        document = {'test': {'known': 's'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('test', ('test', 'oneof'),
+                         errors.ONEOF, schema['test']['oneof'],
+                         v_errors=_errors)
+        self.assertEqual(len(_errors[0].child_errors), 0)
+        # check that allow_unknown is actually applied
+        document = {'test': {'known': 's', 'unknown': 'asd'}}
+        self.assertSuccess(document, schema)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
