@@ -50,6 +50,8 @@ Not released yet.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: Support CPython 3.5 (Frank Sachsenheim).
 
+- Fix: 'allow_unknown' inside *of rule is ignored. Closes #251 (Davis
+  Kirkendall).
 - Fix: unexpected TypeError when using allow_unknown in a schema defining
   a list of dicts (Davis Kirkendall). Closes #250.
 - Fix: validate with 'update=True' does not work when required fields are in
