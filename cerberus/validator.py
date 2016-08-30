@@ -939,7 +939,7 @@ class Validator(object):
             for rule in ('allow_unknown', 'type'):
                 if rule not in schema[field] and rule in self.schema[field]:
                     schema[field][rule] = self.schema[field][rule]
-            if 'allow_unknown' not in schema:
+            if 'allow_unknown' not in schema[field]:
                 schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(

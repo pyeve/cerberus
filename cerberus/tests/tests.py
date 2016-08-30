@@ -162,7 +162,8 @@ class TestValidation(TestBase):
             max_value = self.schema[field]['max']
             value = max_value + inc
             self.assertFail({field: value})
-            self.assertError(field, (field, 'max'), errors.MAX_VALUE, max_value)
+            self.assertError(field, (field, 'max'), errors.MAX_VALUE,
+                             max_value)
 
         field = 'an_integer'
         assert_bad_max_value(field, 1)
@@ -176,7 +177,8 @@ class TestValidation(TestBase):
             min_value = self.schema[field]['min']
             value = min_value - inc
             self.assertFail({field: value})
-            self.assertError(field, (field, 'min'), errors.MIN_VALUE, min_value)
+            self.assertError(field, (field, 'min'), errors.MIN_VALUE,
+                             min_value)
 
         field = 'an_integer'
         assert_bad_min_value(field, 1)
@@ -247,9 +249,10 @@ class TestValidation(TestBase):
         self.assertFail({field: value})
         exp_child_errors = [((field, 0, 'price'),
                             (field, 'schema', 'schema', 'price', 'type'),
-                            errors.BAD_TYPE, 'integer')]
-        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                               subschema, child_errors=exp_child_errors)
+                             errors.BAD_TYPE, 'integer')]
+        self.assertChildErrors(field, (field, 'schema'),
+                               errors.SEQUENCE_SCHEMA, subschema,
+                               child_errors=exp_child_errors)
 
         v = self.validator
         self.assertIn(field, v.errors)
@@ -263,8 +266,9 @@ class TestValidation(TestBase):
         self.assertFail({field: value})
         exp_child_errors = [((field, 0), (field, 'schema', 'type'),
                              errors.BAD_TYPE, 'dict', ())]
-        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                               subschema, child_errors=exp_child_errors)
+        self.assertChildErrors(field, (field, 'schema'),
+                               errors.SEQUENCE_SCHEMA, subschema,
+                               child_errors=exp_child_errors)
 
     def test_array_unallowed(self):
         field = 'an_array'
@@ -335,8 +339,8 @@ class TestValidation(TestBase):
         self.assertFail({field: ['foo', 23]})
         exp_child_errors = [((field, 1), (field, 'schema', 'type'),
                              errors.BAD_TYPE, 'string')]
-        self.assertChildErrors(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                               {'type': 'string'},
+        self.assertChildErrors(field, (field, 'schema'),
+                               errors.SEQUENCE_SCHEMA, {'type': 'string'},
                                child_errors=exp_child_errors)
         self.assertDictEqual(self.validator.errors,
                              {field: [{1: ['must be of string type']}]})
@@ -1229,9 +1233,11 @@ class TestValidation(TestBase):
         handler = errors.BasicErrorHandler
         self.assertDictEqual(
             self.validator.errors,
-            {'that_field': [handler.messages[errors.EXCLUDES_FIELD.code].format(
-                "'this_field'", field="that_field")],
-             'this_field': [handler.messages[errors.EXCLUDES_FIELD.code].format(
+            {'that_field':
+             [handler.messages[errors.EXCLUDES_FIELD.code].format(
+                 "'this_field'", field="that_field")],
+             'this_field':
+             [handler.messages[errors.EXCLUDES_FIELD.code].format(
                  "'that_field', 'bazo_field'", field="this_field")]})
 
     def test_boolean_is_not_a_number(self):
@@ -1292,6 +1298,37 @@ class TestValidation(TestBase):
         self.assertFail({'a': 1, 'c': 'foo'}, schema)
         self.assertFail({'a': 2, 'b': 'bar'}, schema)
 
+    def test_allow_unknown_with_oneof_rules(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/251
+        schema = {
+            'test': {
+                'oneof': [
+                    {
+                        'type': 'dict',
+                        'allow_unknown': True,
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                    {
+                        'type': 'dict',
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                ]
+            }
+        }
+        # check regression and that allow unknown does not cause any different
+        # than expected behaviour for one-of.
+        document = {'test': {'known': 's'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('test', ('test', 'oneof'),
+                         errors.ONEOF, schema['test']['oneof'],
+                         v_errors=_errors)
+        self.assertEqual(len(_errors[0].child_errors), 0)
+        # check that allow_unknown is actually applied
+        document = {'test': {'known': 's', 'unknown': 'asd'}}
+        self.assertSuccess(document, schema)
+
 
 class TestNormalization(TestBase):
     def test_coerce(self):
@@ -1323,8 +1360,8 @@ class TestNormalization(TestBase):
         v = Validator(schema)
         self.assertFail({'amount': 'not_a_number'}, validator=v)
         v._errors[0].info = ()
-        self.assertError('amount', ('amount', 'coerce'), errors.COERCION_FAILED,
-                         int, v_errors=v._errors)
+        self.assertError('amount', ('amount', 'coerce'),
+                         errors.COERCION_FAILED, int, v_errors=v._errors)
 
     def test_coerce_catches_TypeError(self):
         schema = {
@@ -1644,6 +1681,35 @@ class TestNormalization(TestBase):
         }
         document = {'list': 1}
         self.assertNormalized(document, document, schema)
+
+    def test_allow_unknown_with_of_rules(self):
+        # https://github.com/nicolaiarocci/cerberus/issues/251
+        schema = {
+            'test': {
+                'oneof': [
+                    {
+                        'type': 'dict',
+                        'allow_unknown': True,
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                    {
+                        'type': 'dict',
+                        'schema': {'known': {'type': 'string'}}
+                    },
+                ]
+            }
+        }
+        # check regression and that allow unknown does not cause any different
+        # than expected behaviour for one-of.
+        document = {'test': {'known': 's'}}
+        self.validator(document, schema)
+        _errors = self.validator._errors
+        self.assertEqual(len(_errors), 1)
+        self.assertError('test', ('test', 'oneof'),
+                         errors.ONEOF, schema['test']['oneof'],
+                         v_errors=_errors)
+        # check that allow_unknown is actually applied
+        document = {'test': {'known': 's', 'unknown': 'asd'}}
 
 
 class TestDefinitionSchema(TestBase):
@@ -2058,8 +2124,8 @@ class TestRegistries(TestBase):
         schema = {'foo': 'booleans'}
         self.validator.schema = schema
         self.assertEqual('booleans', self.validator.schema['foo'])
-        self.assertEqual('boolean',
-                         rules_set_registry._storage['booleans']['valueschema'])
+        self.assertEqual(
+            'boolean', rules_set_registry._storage['booleans']['valueschema'])
 
 
 class TestAssorted(TestBase):
