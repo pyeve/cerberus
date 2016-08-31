@@ -71,6 +71,7 @@ Not released yet.
   Redkovich)
 - Fix: Add missing deprecation-warnings (Frank Sachsenheim).
 
+- Docs: clarify read-only rule. Closes #127.
 - Docs: split Usage page into Usage; Validation Rules: Normalization Rules
   (Frank Sachsenheim).
 
