@@ -201,7 +201,7 @@ class ErrorTreeNode(MutableMapping):
     def __init__(self, path, parent_node):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
-        self.path = path[:len(self.parent_node.path) + 1]
+        self.path = path[:self.parent_node.depth + 1]
         self.errors = ErrorList()
         self.descendants = {}
 
@@ -246,7 +246,7 @@ class ErrorTreeNode(MutableMapping):
             self[key].errors.append(error)
             self[key].errors.sort()
             if error.is_group_error:
-                for child_error in error.info[0]:
+                for child_error in error.child_errors:
                     self.tree_root += child_error
         else:
             self[key] += error
@@ -262,7 +262,7 @@ class ErrorTree(ErrorTreeNode):
         self.parent_node = None
         self.tree_root = self
         self.path = ()
-        self.errors = []
+        self.errors = ErrorList()
         self.descendants = {}
         for error in errors:
             self += error
@@ -300,7 +300,7 @@ class ErrorTree(ErrorTreeNode):
         for key in path:
             context = context[key]
             if context is None:
-                return None
+                break
         return context
 
 
