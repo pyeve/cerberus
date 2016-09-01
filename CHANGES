@@ -3,6 +3,13 @@ Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 1.0.1
+-------------
+
+Released on September 1, 2016.
+
+- Fix: bump trove classifier to Production/Stable (5).
+
 Version 1.0
 -----------
 
