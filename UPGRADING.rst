@@ -1,11 +1,6 @@
 Upgrading to Cerberus 1.0
 =========================
 
-Document status
----------------
-
-This is a draft and will be finalised with the 1.0(RC) release of Cerberus.
-
 Major Additions
 ---------------
 
@@ -16,8 +11,10 @@ The inspection on and representation of errors is thoroughly overhauled and
 allows a more detailed and flexible handling. Make sure you have look on
 :doc:`errors`.
 
-Also, :attr:`~cerberus.Validator.errors` values are lists containing error
-messages. Previously, they were strings if single errors occured; lists
+Also, :attr:`~cerberus.Validator.errors` (as provided by the default 
+:class:`~cerberus.errors.BasicErrorHandler`) values are lists containing 
+error messages, and possibly a ``dict`` as last item containing nested errors.
+Previously, they were strings if single errors per field occured; lists 
 otherwise. 
 
 
