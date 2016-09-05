@@ -201,11 +201,11 @@ class TestValidation(TestBase):
         assert field in v.errors
         assert schema_field in v.errors[field][-1]
         assert handler.messages[errors.BAD_TYPE.code] \
-                      .format(constraint='string') in \
-                      v.errors[field][-1][schema_field]
+            .format(constraint='string') in \
+            v.errors[field][-1][schema_field]
         assert 'city' in v.errors[field][-1]
         assert handler.messages[errors.REQUIRED_FIELD.code] in \
-                      v.errors[field][-1]['city']
+            v.errors[field][-1]['city']
 
     def test_bad_valueschema(self):
         field = 'a_dict_with_valueschema'
@@ -228,8 +228,8 @@ class TestValidation(TestBase):
                                    ((field, 1), (field, 'items', 1, 'type'),
                                     errors.BAD_TYPE, 'integer')])
         assert errors.BasicErrorHandler.messages[errors.BAD_TYPE.code]. \
-                      format(constraint='integer') in \
-                      self.validator.errors[field][-1][1]
+            format(constraint='integer') in \
+            self.validator.errors[field][-1][1]
 
         value = ['a string', 10, 'an extra item']
         self.assertFail({field: value})
@@ -343,7 +343,7 @@ class TestValidation(TestBase):
                                errors.SEQUENCE_SCHEMA, {'type': 'string'},
                                child_errors=exp_child_errors)
         assert self.validator.errors == \
-                             {field: [{1: ['must be of string type']}]}
+            {field: [{1: ['must be of string type']}]}
 
     def test_regex(self):
         field = 'a_regex_email'
@@ -392,11 +392,10 @@ class TestValidation(TestBase):
                 (('a_dict_with_valueschema', 'a string'),
                  ('a_dict_with_valueschema', 'valueschema', 'type'),
                  errors.BAD_TYPE, 'integer')])
-        assert 'valueschema' in self.validator.schema_error_tree \
-                      ['a_dict_with_valueschema']
-        assert len(self.validator.schema_error_tree
-                             ['a_dict_with_valueschema']['valueschema']
-                             .descendants) == 1
+        assert 'valueschema' in \
+            self.validator.schema_error_tree['a_dict_with_valueschema']
+        v = self.validator.schema_error_tree
+        assert len(v['a_dict_with_valueschema']['valueschema'].descendants) == 1
 
     def test_a_dict_with_keyschema(self):
         self.assertSuccess(
@@ -1030,7 +1029,7 @@ class TestValidation(TestBase):
         assert 3 in v_errors['parts'][-1]
         assert 'anyof' in v_errors['parts'][-1][3][-1]
         assert v_errors['parts'][-1][3][-1]['anyof'][0] == \
-                         "no definitions validate"
+            "no definitions validate"
         scope = v_errors['parts'][-1][3][-1]['anyof'][-1]
         assert 'anyof definition 0' in scope
         assert 'anyof definition 1' in scope
@@ -1109,7 +1108,7 @@ class TestValidation(TestBase):
     def test_dont_type_validate_nulled_values(self):
         self.assertFail({'an_integer': None})
         assert self.validator.errors == \
-                             {'an_integer': ['null value not allowed']}
+            {'an_integer': ['null value not allowed']}
 
     def test_dependencies_error(self):
         v = self.validator
@@ -1608,10 +1607,9 @@ class TestNormalization(TestBase):
         schema = {'data': {'type': 'list',
                            'schema': {'type': 'integer', 'coerce': int}}}
         document = {'data': ['q']}
-        assert self.validator.validated(document, schema) == \
-                         None
+        assert self.validator.validated(document, schema) is None
         assert self.validator.validated(document, schema,
-                                     always_return_document=True) == \
+                                        always_return_document=True) == \
             document
 
     def test_issue_250(self):
@@ -1721,8 +1719,7 @@ class TestDefinitionSchema(TestBase):
             Validator(schema)
         except SchemaError as e:
             assert str(e) == \
-                             errors.SCHEMA_ERROR_DEFINITION_TYPE \
-                             .format(schema)
+                errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema)
         else:
             self.fail('SchemaError not raised')
 
@@ -1796,20 +1793,19 @@ class TestDefinitionSchema(TestBase):
 
         max_cache_size = 200
         assert cache_size < max_cache_size, \
-                        "There's an unexpected high amount of cached valid " \
-                        "definition schemas. Unless you added further tests, " \
-                        "there are good chances that something is wrong. " \
-                        "If you added tests with new schemas, you can try to " \
-                        "adjust the variable `max_cache_size` according to " \
-                        "the added schemas."
+            "There's an unexpected high amount of cached valid " \
+            "definition schemas. Unless you added further tests, " \
+            "there are good chances that something is wrong. " \
+            "If you added tests with new schemas, you can try to " \
+            "adjust the variable `max_cache_size` according to " \
+            "the added schemas."
 
     def test_expansion_in_nested_schema(self):
         schema = {'detroit':
                   {'schema': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
         v = Validator(schema)
         assert v.schema['detroit']['schema'] == \
-                             {'anyof': [{'regex': '^Aladdin'},
-                                        {'regex': 'Sane$'}]}
+            {'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]}
 
 
 class TestErrorHandling(TestBase):
@@ -1876,7 +1872,7 @@ class TestErrorHandling(TestBase):
         assert 'type' in s_error_tree['foo']['schema']['bar']
         assert s_error_tree['foo']['schema']['bar']['type'].errors[0].value == 0
         assert s_error_tree.fetch_errors_from(
-                ('foo', 'schema', 'bar', 'type'))[0].value == 0
+            ('foo', 'schema', 'bar', 'type'))[0].value == 0
 
     def test_error_tree_2(self):
         schema = {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
@@ -1926,8 +1922,7 @@ class TestErrorHandling(TestBase):
             ('a_dict', 'one'), ('a_dict', 'keyschema', 'type'),
             errors.BAD_TYPE.code, 'type', 'integer', 'one', ())
         assert _det['a_dict']['one'].errors[0] == _ref_err
-        assert _set['a_dict']['keyschema']['type'].errors[0] == \
-                         _ref_err
+        assert _set['a_dict']['keyschema']['type'].errors[0] == _ref_err
 
         _ref_err = ValidationError(
             ('a_dict', 2), ('a_dict', 'valueschema', 'regex'),
@@ -1973,13 +1968,15 @@ class TestErrorHandling(TestBase):
             ('a_list', 2), ('a_list', 'schema', 'oneof', 0, 'regex'),
             errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
         assert _det['a_list'][2].errors[1] == _ref_err
-        assert _set['a_list']['schema']['oneof'][0]['regex'].errors[0] == _ref_err
+        assert _set['a_list']['schema']['oneof'][0]['regex'].errors[0] == \
+            _ref_err
 
         _ref_err = ValidationError(
             ('a_list', 2), ('a_list', 'schema', 'oneof', 1, 'regex'),
             errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
         assert _det['a_list'][2].errors[2] == _ref_err
-        assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == _ref_err
+        assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == \
+            _ref_err
 
     def test_basic_error_handler(self):
         handler = errors.BasicErrorHandler()
@@ -2109,7 +2106,8 @@ class TestRegistries(TestBase):
         schema = {'foo': 'booleans'}
         self.validator.schema = schema
         assert 'booleans' == self.validator.schema['foo']
-        assert 'boolean' == rules_set_registry._storage['booleans']['valueschema']
+        s = rules_set_registry._storage['booleans']['valueschema']
+        assert 'boolean' == s
 
 
 class TestAssorted(TestBase):
