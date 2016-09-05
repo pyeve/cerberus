@@ -166,8 +166,7 @@ class TestBase(unittest.TestCase):
         """ Tests whether a validation succeeds. """
         if validator is None:
             validator = self.validator
-        assert validator(document, schema, update), \
-                        validator.errors
+        assert validator(document, schema, update), validator.errors
 
     def assertError(self, d_path, s_path, error, constraint, info=(),
                     v_errors=None):
