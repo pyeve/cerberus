@@ -3,6 +3,12 @@ Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Unreleased
+------------
+
+- Convert ``self.assert`` method calls to plain ``assert`` calls supported by
+  pytest. Addresses #213 (Bruno Oliveira).
+
 Version 1.0.1
 -------------
 
