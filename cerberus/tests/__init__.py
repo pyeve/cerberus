@@ -149,7 +149,7 @@ class TestBase(unittest.TestCase):
             validator(document, schema)
         except known_exception as e:
             if msg is not None:
-                self.assertEqual(str(e), msg)
+                assert str(e) == msg
         except Exception as e:  # noqa
             self.fail("'%s' raised, expected %s." % (e, known_exception))
         else:
@@ -159,15 +159,14 @@ class TestBase(unittest.TestCase):
         """ Tests whether a validation fails. """
         if validator is None:
             validator = self.validator
-        self.assertFalse(validator(document, schema, update))
+        assert not validator(document, schema, update)
 
     def assertSuccess(self, document, schema=None, validator=None,
                       update=False):
         """ Tests whether a validation succeeds. """
         if validator is None:
             validator = self.validator
-        self.assertTrue(validator(document, schema, update),
-                        validator.errors)
+        assert validator(document, schema, update), validator.errors
 
     def assertError(self, d_path, s_path, error, constraint, info=(),
                     v_errors=None):
@@ -183,13 +182,13 @@ class TestBase(unittest.TestCase):
         for i, v_error in enumerate(v_errors):
             assert isinstance(v_error, errors.ValidationError)
             try:
-                self.assertEqual(v_error.document_path, d_path)
-                self.assertEqual(v_error.schema_path, s_path)
-                self.assertEqual(v_error.code, error.code)
-                self.assertEqual(v_error.rule, error.rule)
-                self.assertEqual(v_error.constraint, constraint)
+                assert v_error.document_path == d_path
+                assert v_error.schema_path == s_path
+                assert v_error.code == error.code
+                assert v_error.rule == error.rule
+                assert v_error.constraint == constraint
                 if not v_error.is_group_error:
-                    self.assertEqual(v_error.info, info)
+                    assert v_error.info == info
             except AssertionError:
                 pass
             except Exception as e:
@@ -249,4 +248,4 @@ class TestBase(unittest.TestCase):
             validator = self.validator
 
         self.assertSuccess(document, schema, validator)
-        self.assertDictEqual(validator.document, expected)
+        assert validator.document == expected
