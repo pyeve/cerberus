@@ -513,9 +513,9 @@ class BasicErrorHandler(BaseErrorHandler):
             nodename = '%s definition %s' % (error.rule, i)
             for child_error in child_errors:
                 if child_error.is_logic_error:
-                    raise NotImplemented
+                    raise NotImplementedError
                 elif child_error.is_group_error:
-                    raise NotImplemented
+                    raise NotImplementedError
                 else:
                     self.insert_error(path + (nodename,),
                                       self.format_message(field, child_error))
