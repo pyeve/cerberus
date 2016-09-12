@@ -225,7 +225,7 @@ class SchemaValidationSchema(UnvalidatedSchema):
                        'type': 'dict'}
 
 
-class SchemaValidatorMixin:
+class SchemaValidatorMixin(object):
     """ This validator is extended to validate schemas passed to a Cerberus
         validator. """
     @property
@@ -359,7 +359,7 @@ class SchemaValidatorMixin:
 ####
 
 
-class Registry:
+class Registry(object):
     """ A registry to store and retrieve schemas and parts of it by a name
     that can be used in validation schemas.
 
