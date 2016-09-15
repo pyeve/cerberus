@@ -6,6 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Unreleased
 ------------
 
+- Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W. Weber).
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
   pytest. Addresses #213 (Bruno Oliveira).
 
