@@ -161,6 +161,32 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
 .. versionchanged:: 0.8
    ``allow_unknown`` can also be set to a validation schema.
 
+Filter rules
+------------
+You can filter the rules to be processed by a ``Validator``-instance by
+providing a function returning either ``True`` or ``False`` given a rule name.
+
+.. doctest::
+
+   >>> schema = {'name': {'type': 'string', 'maxlength': 10}}
+   >>> v.rule_filter = lambda f: f != 'maxlength'
+   >>> v.validate({'name': 'Johanna-Maria'}, schema)
+   True
+
+Regardless of the ``rule_filter``, the ``Validator`` always recurses down
+subdocuments:
+
+.. doctest::
+
+   >>> schema = {'entries': {'type': 'list', 'schema': {'type': 'integer', 'max': 10}}}
+   >>> v.rule_filter = lambda f: f == 'type'
+   >>> v.validate({'entries': [10, 20, 30]}, schema)
+   True
+
+   >>> schema = {'entries': {'type': 'list', 'schema': {'type': 'integer', 'max': 10}}}
+   >>> v.rule_filter = lambda f: f in ('type', 'max')
+   >>> v.validate({'entries': [10, 20, 30]}, schema)
+   False
 
 Fetching Processed Documents
 ----------------------------
