@@ -97,6 +97,35 @@ class TestValidation(TestBase):
         # instead.
         assert 'read-only' in v.errors['a_readonly_number'][0]
 
+    def test_readonly_field_with_default_value(self):
+        schema = {
+            'created': {
+                'type': 'string',
+                'readonly': True,
+                'default': 'today'
+            }
+        }
+        self.assertSuccess({}, schema)
+        self.assertFail({'created': 'tomorrow'}, schema)
+        self.assertFail({'created': 'today'}, schema)
+
+    def test_nested_readonly_field_with_default_value(self):
+        schema = {
+            'some_field': {
+                'type': 'dict',
+                'schema': {
+                    'created': {
+                        'type': 'string',
+                        'readonly': True,
+                        'default': 'today'
+                    }
+                }
+            }
+        }
+        self.assertSuccess({'some_field': {}}, schema)
+        self.assertFail({'some_field': {'created': 'tomorrow'}}, schema)
+        self.assertFail({'some_field': {'created': 'today'}}, schema)
+
     def test_not_a_string(self):
         self.assertBadType('a_string', 'string', 1)
 

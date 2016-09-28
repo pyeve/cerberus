@@ -37,6 +37,15 @@ def dummy_for_rule_validation(rule_constraints):
     return f
 
 
+def true(*args, **kwargs):
+    """ Return true ignoring all arguments.
+
+    It is used as default value of :attr:`~cerberus.Validator.rule_filter`.
+    We don't use a lambda function because the debug output is nicer when
+    using a named function. """
+    return True
+
+
 class DocumentError(Exception):
     """ Raised when the target document is missing or has the wrong format """
     pass
@@ -87,16 +96,24 @@ class Validator(object):
     :type error_handler: class or instance based on
                          :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
+    :param rule_filter: See :attr:`~cerberus.Validator.rule_filter`.
+                        Defaults to ``lambda f: True``.
+    :type rule_filter: :class:`function`
     """  # noqa
 
     mandatory_validations = ('nullable', )
     """ Rules that are evaluated on any field, regardless whether defined in
         the schema or not.
         Type: :class:`tuple` """
-    priority_validations = ('nullable', 'readonly', 'type')
+    preceding_normalization_validations = ('readonly', )
+    """ Rules that will be processed before normalization. If any of these
+        fail, no further normalization or validation will be done. """
+    priority_validations = ('nullable', 'type')
     """ Rules that will be processed in that order before any other and abort
         validation of a document's field if return ``True``.
         Type: :class:`tuple` """
+    recursing_rules = ('schema', 'items', 'keyschema', 'valueschema')
+    """ Rules that will create child validators to process subdocuments. """
     _valid_schemas = set()
     """ A :class:`set` of hashed validation schemas that are legit for a
         particular ``Validator`` class. """
@@ -142,6 +159,7 @@ class Validator(object):
         self.__store_config(args, kwargs)
         self.schema = kwargs.get('schema', None)
         self.allow_unknown = kwargs.get('allow_unknown', False)
+        self.rule_filter = kwargs.get('rule_filter', true)
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
@@ -410,6 +428,18 @@ class Validator(object):
         self._config['rules_set_registry'] = registry
 
     @property
+    def rule_filter(self):
+        """ A function which returns ``True`` if the rule should be processed.
+            Rules in :attr:`~cerberus.Validator.recursing_rules` are always
+            processed, but will not fail on their own if the filter function
+            returns ``False`` for them. """
+        return self._config.get('rule_filter', true)
+
+    @rule_filter.setter
+    def rule_filter(self, rule_filter):
+        self._config['rule_filter'] = rule_filter
+
+    @property
     def root_schema(self):
         """ The :attr:`~cerberus.Validator.schema` attribute of the
             first level ancestor of a child validator. """
@@ -494,8 +524,12 @@ class Validator(object):
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
-        self.__normalize_default_fields(mapping, schema)
-        self._normalize_coerce(mapping, schema)
+        if self.rule_filter('default'):
+            self.__normalize_default_fields(mapping, schema)
+        if self.rule_filter('default_setter'):
+            self.__normalize_default_setter_fields(mapping, schema)
+        if self.rule_filter('coerce'):
+            self._normalize_coerce(mapping, schema)
         self.__normalize_containers(mapping, schema)
         return mapping
 
@@ -643,7 +677,7 @@ class Validator(object):
 
     def _normalize_rename(self, mapping, schema, field):
         """ {'type': 'hashable'} """
-        if 'rename' in schema[field]:
+        if self.rule_filter('rename') and 'rename' in schema[field]:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
 
@@ -655,7 +689,8 @@ class Validator(object):
                                       {'type': 'string'}]}},
                 {'type': 'string'}
                 ]} """
-        if 'rename_handler' not in schema[field]:
+        if not self.rule_filter('rename_handler') or \
+           'rename_handler' not in schema[field]:
             return
         new_name = self.__normalize_coerce(
             schema[field]['rename_handler'], field, field,
@@ -674,6 +709,9 @@ class Validator(object):
         for field in fields_with_default:
             self._normalize_default(mapping, schema, field)
 
+    def __normalize_default_setter_fields(self, mapping, schema):
+        fields = [x for x in schema if x not in mapping or
+                  mapping[x] is None and not schema[x].get('nullable', False)]
         known_fields_states = set()
         fields = [x for x in fields if 'default_setter' in schema[x]]
         while fields:
@@ -735,9 +773,41 @@ class Validator(object):
         self._unrequired_by_excludes = set()
 
         self.__init_processing(document, schema)
-        if normalize:
-            self.__normalize_mapping(self.document, self.schema)
 
+        if normalize:
+            self.__process_rules_preceding_normalization()
+            if not bool(self._errors):
+                self.__normalize_mapping(self.document, self.schema)
+            if not bool(self._errors):
+                self.__process_rules_following_normalization()
+        else:
+            self.__process_all_rules()
+
+        self.error_handler.end(self)
+
+        return not bool(self._errors)
+
+    __call__ = validate
+
+    def __process_rules_preceding_normalization(self):
+        rule_filter = lambda f: f in self.preceding_normalization_validations \
+            and self.rule_filter(f)
+        validator = self._get_child_validator(rule_filter=rule_filter,
+                                              allow_unknown=True)
+        if not validator(self.document, self.schema, normalize=False,
+                         update=self.update):
+            self._error(validator._errors)
+
+    def __process_rules_following_normalization(self):
+        rule_filter = \
+            lambda f: f not in self.preceding_normalization_validations and \
+            self.rule_filter(f)
+        validator = self._get_child_validator(rule_filter=rule_filter)
+        if not validator(self.document, self.schema, normalize=False,
+                         update=self.update):
+            self._error(validator._errors)
+
+    def __process_all_rules(self):
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
                 continue
@@ -746,15 +816,8 @@ class Validator(object):
                 self.__validate_definitions(definitions, field)
             else:
                 self.__validate_unknown_fields(field)
-
-        if not self.update:
+        if not self.update and self.rule_filter('required'):
             self.__validate_required_fields(self.document)
-
-        self.error_handler.end(self)
-
-        return not bool(self._errors)
-
-    __call__ = validate
 
     def validated(self, *args, **kwargs):
         """ Wrapper around :func:`validate` that returns the normalized and
@@ -800,7 +863,7 @@ class Validator(object):
         prior_rules = tuple((x for x in self.priority_validations
                              if x in definitions or
                              x in self.mandatory_validations))
-        for rule in prior_rules:
+        for rule in filter(self.rule_filter, prior_rules):
             if validate_rule(rule):
                 return
 
@@ -808,7 +871,14 @@ class Validator(object):
         rules |= set(self.mandatory_validations)
         rules -= set(prior_rules + ('allow_unknown', 'required'))
         rules -= set(self.normalization_rules)
-        for rule in rules:
+        rules -= set(self.recursing_rules)
+        for rule in filter(self.rule_filter, rules):
+            try:
+                validate_rule(rule)
+            except _SchemaRuleTypeError:
+                break
+
+        for rule in (x for x in self.recursing_rules if x in definitions):
             try:
                 validate_rule(rule)
             except _SchemaRuleTypeError:
@@ -917,9 +987,9 @@ class Validator(object):
 
     def _validate_items(self, items, field, values):
         """ {'type': 'list', 'validator': 'items'} """
-        if len(items) != len(values):
+        if self.rule_filter('items') and len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
-        else:
+        elif isinstance(values, list):
             schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
             validator = self._get_child_validator(document_crumb=field,
                                                   schema_crumb=(field, 'items'),  # noqa
