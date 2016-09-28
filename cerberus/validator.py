@@ -105,7 +105,10 @@ class Validator(object):
     """ Rules that are evaluated on any field, regardless whether defined in
         the schema or not.
         Type: :class:`tuple` """
-    priority_validations = ('nullable', 'readonly', 'type')
+    preceding_normalization_validations = ('readonly', )
+    """ Rules that will be processed before normalization. If any of these
+        fail, no further normalization or validation will be done. """
+    priority_validations = ('nullable', 'type')
     """ Rules that will be processed in that order before any other and abort
         validation of a document's field if return ``True``.
         Type: :class:`tuple` """
@@ -770,9 +773,41 @@ class Validator(object):
         self._unrequired_by_excludes = set()
 
         self.__init_processing(document, schema)
-        if normalize:
-            self.__normalize_mapping(self.document, self.schema)
 
+        if normalize:
+            self.__process_rules_preceding_normalization()
+            if not bool(self._errors):
+                self.__normalize_mapping(self.document, self.schema)
+            if not bool(self._errors):
+                self.__process_rules_following_normalization()
+        else:
+            self.__process_all_rules()
+
+        self.error_handler.end(self)
+
+        return not bool(self._errors)
+
+    __call__ = validate
+
+    def __process_rules_preceding_normalization(self):
+        rule_filter = lambda f: f in self.preceding_normalization_validations \
+            and self.rule_filter(f)
+        validator = self._get_child_validator(rule_filter=rule_filter,
+                                              allow_unknown=True)
+        if not validator(self.document, self.schema, normalize=False,
+                         update=self.update):
+            self._error(validator._errors)
+
+    def __process_rules_following_normalization(self):
+        rule_filter = \
+            lambda f: f not in self.preceding_normalization_validations and \
+            self.rule_filter(f)
+        validator = self._get_child_validator(rule_filter=rule_filter)
+        if not validator(self.document, self.schema, normalize=False,
+                         update=self.update):
+            self._error(validator._errors)
+
+    def __process_all_rules(self):
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
                 continue
@@ -781,15 +816,8 @@ class Validator(object):
                 self.__validate_definitions(definitions, field)
             else:
                 self.__validate_unknown_fields(field)
-
         if not self.update and self.rule_filter('required'):
             self.__validate_required_fields(self.document)
-
-        self.error_handler.end(self)
-
-        return not bool(self._errors)
-
-    __call__ = validate
 
     def validated(self, *args, **kwargs):
         """ Wrapper around :func:`validate` that returns the normalized and
