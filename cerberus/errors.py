@@ -86,7 +86,7 @@ SCHEMA_ERROR_MISSING = "validation schema missing"
 """ Error representations """
 
 
-class ValidationError:
+class ValidationError(object):
     """ A simple class to store and query basic error information. """
     def __init__(self, document_path, schema_path, code, rule, constraint,
                  value, info):
@@ -201,7 +201,7 @@ class ErrorTreeNode(MutableMapping):
     def __init__(self, path, parent_node):
         self.parent_node = parent_node
         self.tree_root = self.parent_node.tree_root
-        self.path = path[:self.parent_node.depth+1]
+        self.path = path[:self.parent_node.depth + 1]
         self.errors = ErrorList()
         self.descendants = {}
 
@@ -316,7 +316,7 @@ class SchemaErrorTree(ErrorTree):
     tree_type = 'schema'
 
 
-class BaseErrorHandler:
+class BaseErrorHandler(object):
     """ Base class for all error handlers.
         Subclasses are identified as error-handlers with an instance-test. """
     def __init__(self, *args, **kwargs):
@@ -513,9 +513,9 @@ class BasicErrorHandler(BaseErrorHandler):
             nodename = '%s definition %s' % (error.rule, i)
             for child_error in child_errors:
                 if child_error.is_logic_error:
-                    raise NotImplemented
+                    raise NotImplementedError
                 elif child_error.is_group_error:
-                    raise NotImplemented
+                    raise NotImplementedError
                 else:
                     self.insert_error(path + (nodename,),
                                       self.format_message(field, child_error))

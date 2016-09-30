@@ -15,7 +15,7 @@ from cerberus.schema import (rules_set_registry, schema_registry, Registry,
                              SchemaError)
 
 
-__version__ = "1.0rc"
+__version__ = "1.0.2"
 
 __all__ = [
     DocumentError.__name__,
