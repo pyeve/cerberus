@@ -8,6 +8,10 @@ DESCRIPTION = ("Lightweight, extensible schema and data validation tool for "
 LONG_DESCRIPTION = open('README.rst').read()
 VERSION = __import__('cerberus').__version__
 
+needs_pytest = set(('pytest', 'test', 'ptr')) & set(sys.argv)
+setup_requires = ['pytest-runner'] if needs_pytest else []
+
+
 setup(
     name='Cerberus',
     version=VERSION,
@@ -20,7 +24,8 @@ setup(
     platforms=["any"],
     packages=find_packages(),
     include_package_data=True,
-    tests_require=['unittest2'] if sys.version_info < (2, 7) else [],
+    setup_requires=setup_requires,
+    tests_require=['pytest'],
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=['validation', 'schema', 'dictionaries'],
