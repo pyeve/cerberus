@@ -1,39 +1,41 @@
+# -*- coding: utf-8 -*-
+
 from cerberus import Validator
-from cerberus.tests import TestBase
+from cerberus.tests import assert_success
 
 
-class TestInheritance(TestBase):
-    def test_contextual_data_preservation(self):
+def test_contextual_data_preservation():
 
-        class InheritedValidator(Validator):
-            def __init__(self, *args, **kwargs):
-                if 'working_dir' in kwargs:
-                    self.working_dir = kwargs['working_dir']
-                super(InheritedValidator, self).__init__(*args, **kwargs)
+    class InheritedValidator(Validator):
+        def __init__(self, *args, **kwargs):
+            if 'working_dir' in kwargs:
+                self.working_dir = kwargs['working_dir']
+            super(InheritedValidator, self).__init__(*args, **kwargs)
 
-            def _validate_type_test(self, value):
-                if self.working_dir:
-                    return True
+        def _validate_type_test(self, value):
+            if self.working_dir:
+                return True
 
-        assert 'test' in InheritedValidator.types
-        v = InheritedValidator({'test': {'type': 'list',
-                                         'schema': {'type': 'test'}}},
-                               working_dir='/tmp')
-        self.assertSuccess({'test': ['foo']}, validator=v)
+    assert 'test' in InheritedValidator.types
+    v = InheritedValidator({'test': {'type': 'list',
+                                     'schema': {'type': 'test'}}},
+                           working_dir='/tmp')
+    assert_success({'test': ['foo']}, validator=v)
 
-    def test_docstring_parsing(self):
-        class CustomValidator(Validator):
-            def _validate_foo(self, argument, field, value):
-                """ {'type': 'zap'} """
-                pass
 
-            def _validate_bar(self, value):
-                """ Test the barreness of a value.
+def test_docstring_parsing():
+    class CustomValidator(Validator):
+        def _validate_foo(self, argument, field, value):
+            """ {'type': 'zap'} """
+            pass
 
-                The rule's arguments are validated against this schema:
-                    {'type': 'boolean'}
-                """
-                pass
+        def _validate_bar(self, value):
+            """ Test the barreness of a value.
 
-        assert 'foo' in CustomValidator.validation_rules
-        assert 'bar' in CustomValidator.validation_rules
+            The rule's arguments are validated against this schema:
+                {'type': 'boolean'}
+            """
+            pass
+
+    assert 'foo' in CustomValidator.validation_rules
+    assert 'bar' in CustomValidator.validation_rules
