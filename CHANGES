@@ -8,6 +8,7 @@ Unreleased
 
 - Fix: Consistently use new style classes (Dominik Kellner).
 - Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W. Weber).
+- Completely switch to py.test. Closes #213 (Frank Sachsenheim).
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
   pytest. Addresses #213 (Bruno Oliveira).
 
