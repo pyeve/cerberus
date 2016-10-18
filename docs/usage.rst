@@ -165,6 +165,17 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
 Fetching Processed Documents
 ----------------------------
 
+The normalization and coercion are performed on the copy of the original
+document and the result document is available via ``document``-property.
+
+.. doctest::
+
+   >>> v.schema = {'amount': {'type': 'integer', 'coerce': int}}
+   >>> v.validate({'amount': '1'})
+   True
+   >>> v.document
+   {'amount': 1}
+
 Beside the ``document``-property a ``Validator``-instance has shorthand methods
 to process a document and fetch its processed result.
 
