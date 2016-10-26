@@ -149,9 +149,9 @@ supported:
 
 empty
 -----
-Only applies to string fields. If ``False`` validation will fail if the value
-is empty. Setting it to ``True`` manually is pointless as it behaves like
-omitting the rule at all.
+If ``False`` validation of an :term:`iterable` value will fail if it is empty.
+Setting it to ``True`` manually is pointless as it behaves like omitting the
+rule at all.
 
 .. doctest::
 

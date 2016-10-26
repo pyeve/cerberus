@@ -879,7 +879,7 @@ class Validator(object):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        if isinstance(value, _str_type) and len(value) == 0 and not empty:
+        if isinstance(value, Iterable) and len(value) == 0 and not empty:
             self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excludes, field, value):
