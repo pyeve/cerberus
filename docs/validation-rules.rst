@@ -447,7 +447,8 @@ expression. It is only tested on string values.
     {'email': ["value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"]}
 
 For details on regular expression syntax, see the documentation on the standard
-library's :mod:`re`-module.
+library's :mod:`re`-module. Mind that you can set flags as part of the
+expression, look for ``(?aiLmsux)`` in that document.
 
 .. versionadded:: 0.7
 
