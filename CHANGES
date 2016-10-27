@@ -6,13 +6,20 @@ Here you can see the full list of changes between each Cerberus release.
 Unreleased
 ------------
 
+- New: Allow applying of ``empty`` rule to sequences and mappings. Closes #270
+  (Frank Sachsenheim).
+
+- Fix: Creating custom Validator instance with ``_validator_*`` method raises
+  ``SchemaError``. Closes #265 (Frank Sachsenheim).
 - Fix: Consistently use new style classes (Dominik Kellner).
-- Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W. Weber).
+- Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W.
+  Weber).
 
 - Completely switch to py.test. Closes #213 (Frank Sachsenheim).
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
   pytest. Addresses #213 (Bruno Oliveira).
 
+- Docs: Add note concerning regex flags. Closes #173 (Frank Sachsenheim).
 - Docs: Explain that normalization and coercion are performed on a copy of the
   original document (Sergey Leshchenko).
 

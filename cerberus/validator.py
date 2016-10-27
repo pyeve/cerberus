@@ -169,7 +169,8 @@ class Validator(object):
                 kwargs[p] = args[i]
         self._config = kwargs
         """ This dictionary holds the configuration arguments that were used to
-            initialize the :class:`Validator` instance. """
+            initialize the :class:`Validator` instance except the
+            ``error_handler``. """
 
     @classmethod
     def clear_caches(cls):
@@ -878,7 +879,7 @@ class Validator(object):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        if isinstance(value, _str_type) and len(value) == 0 and not empty:
+        if isinstance(value, Iterable) and len(value) == 0 and not empty:
             self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excludes, field, value):
@@ -1229,17 +1230,16 @@ class InspectedValidator(type):
 
         super(InspectedValidator, cls).__init__(*args)
 
-        cls.types, cls.validators, cls.validation_rules = (), (), {}
+        cls.types, cls.validation_rules = (), {}
         for attribute in attributes_with_prefix('validate'):
             if attribute.startswith('type_'):
                 cls.types += (attribute[len('type_'):],)
-            elif attribute.startswith('validator_'):
-                cls.validators += (attribute[len('validator_'):],)
             else:
                 cls.validation_rules[attribute] = \
                     cls.__get_rule_schema('_validate_' + attribute)
-
         cls.validation_rules['type']['allowed'] = cls.types
+
+        cls.validators = tuple(x for x in attributes_with_prefix('validator'))
         x = cls.validation_rules['validator']['oneof']
         x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
 

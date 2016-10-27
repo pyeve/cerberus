@@ -149,9 +149,9 @@ supported:
 
 empty
 -----
-Only applies to string fields. If ``False`` validation will fail if the value
-is empty. Setting it to ``True`` manually is pointless as it behaves like
-omitting the rule at all.
+If ``False`` validation of an :term:`iterable` value will fail if it is empty.
+Setting it to ``True`` manually is pointless as it behaves like omitting the
+rule at all.
 
 .. doctest::
 
@@ -447,7 +447,8 @@ expression. It is only tested on string values.
     {'email': ["value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"]}
 
 For details on regular expression syntax, see the documentation on the standard
-library's :mod:`re`-module.
+library's :mod:`re`-module. Mind that you can set flags as part of the
+expression, look for ``(?aiLmsux)`` in that document.
 
 .. versionadded:: 0.7
 

@@ -67,7 +67,8 @@ def assert_success(document, schema=None, validator=None, update=False):
         validator = Validator(sample_schema)
     result = validator(document, schema, update)
     assert isinstance(result, bool)
-    assert result
+    if not result:
+        raise AssertionError(validator.errors)
 
 
 def assert_has_error(_errors, d_path, s_path, error_def, constraint, info=()):

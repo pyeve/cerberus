@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from cerberus import Validator
-from cerberus.tests import assert_success
+from cerberus import errors
+from cerberus.tests import assert_fail, assert_success
 
 
 def test_contextual_data_preservation():
@@ -39,3 +40,16 @@ def test_docstring_parsing():
 
     assert 'foo' in CustomValidator.validation_rules
     assert 'bar' in CustomValidator.validation_rules
+
+
+def test_issue_265():
+    class MyValidator(Validator):
+        def _validator_oddity(self, field, value):
+            if not value & 1:
+                self._error(field, "Must be an odd number")
+
+    v = MyValidator(schema={'amount': {'validator': 'oddity'}})
+    assert_success(document={'amount': 1}, validator=v)
+    assert_fail(document={'amount': 2}, validator=v,
+                error=('amount', (), errors.CUSTOM, None,
+                       ('Must be an odd number',)))

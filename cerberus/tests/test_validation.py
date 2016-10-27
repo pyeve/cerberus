@@ -5,6 +5,8 @@ from datetime import datetime, date
 from random import choice
 from string import ascii_lowercase
 
+from pytest import mark
+
 from cerberus import errors, Validator
 from cerberus.tests import \
     (assert_bad_type, assert_fail, assert_has_error, assert_not_has_error,
@@ -500,15 +502,20 @@ def test_custom_validator():
     assert validator.errors == {'test_field': ['Not an odd number']}
 
 
-def test_allow_empty_strings():
+@mark.parametrize('value, _type',
+                  (('', 'string'), ((), 'list'), ({}, 'dict'), ([], 'list')))
+def test_empty_values(value, _type):
     field = 'test'
-    schema = {field: {'type': 'string'}}
-    document = {field: ''}
+    schema = {field: {'type': _type}}
+    document = {field: value}
+
     assert_success(document, schema)
+
     schema[field]['empty'] = False
     assert_fail(document, schema,
                 error=(field, (field, 'empty'),
                        errors.EMPTY_NOT_ALLOWED, False))
+
     schema[field]['empty'] = True
     assert_success(document, schema)
 
