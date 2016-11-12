@@ -84,6 +84,66 @@ def test_readonly_field_first_rule():
     assert 'read-only' in v.errors['a_readonly_number'][0]
 
 
+def test_readonly_field_with_default_value():
+    schema = {
+        'created': {
+            'type': 'string',
+            'readonly': True,
+            'default': 'today'
+        },
+        'modified': {
+            'type': 'string',
+            'readonly': True,
+            'default_setter': lambda d: d['created']
+        }
+    }
+    assert_success({}, schema)
+    expected_errors = [('created', ('created', 'readonly'),
+                        errors.READONLY_FIELD,
+                        schema['created']['readonly']),
+                       ('modified', ('modified', 'readonly'),
+                        errors.READONLY_FIELD,
+                        schema['modified']['readonly'])]
+    assert_fail({'created': 'tomorrow', 'modified': 'today'},
+                schema, errors=expected_errors)
+    assert_fail({'created': 'today', 'modified': 'today'},
+                schema, errors=expected_errors)
+
+
+def test_nested_readonly_field_with_default_value():
+    schema = {
+        'some_field': {
+            'type': 'dict',
+            'schema': {
+                'created': {
+                    'type': 'string',
+                    'readonly': True,
+                    'default': 'today'
+                },
+                'modified': {
+                    'type': 'string',
+                    'readonly': True,
+                    'default_setter': lambda d: d['created']
+                }
+            }
+        }
+    }
+    assert_success({'some_field': {}}, schema)
+    expected_errors = [
+        (('some_field', 'created'),
+         ('some_field', 'schema', 'created', 'readonly'),
+         errors.READONLY_FIELD,
+         schema['some_field']['schema']['created']['readonly']),
+        (('some_field', 'modified'),
+         ('some_field', 'schema', 'modified', 'readonly'),
+         errors.READONLY_FIELD,
+         schema['some_field']['schema']['modified']['readonly'])]
+    assert_fail({'some_field': {'created': 'tomorrow', 'modified': 'now'}},
+                schema, errors=expected_errors)
+    assert_fail({'some_field': {'created': 'today', 'modified': 'today'}},
+                schema, errors=expected_errors)
+
+
 def test_not_a_string():
     assert_bad_type('a_string', 'string', 1)
 
