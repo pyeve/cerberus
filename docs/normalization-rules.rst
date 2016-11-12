@@ -57,6 +57,8 @@ subdocuments like ``allow_unknown`` (see :ref:`allowing-the-unknown`). The defau
 
 .. versionadded:: 1.0
 
+.. _default-values:
+
 Default Values
 --------------
 You can set default values for missing fields in the document by using the ``default`` rule.
@@ -89,6 +91,14 @@ string, it points to a :doc:`custom method <customize>`.
    >>> v.normalized({})
    >>> v.errors
    {'a': ["default value for 'a' cannot be set: Circular dependencies of default setters."]}
+
+You can even use both ``default`` and :ref:`readonly` on the same field. This
+will create a field that cannot be assigned a value manually but it will be
+automatically supplied with a default value by Cerberus. Of course the same
+applies for ``default_setter``.
+
+.. versionchanged:: 1.0.2
+   Can be used in conjunction with :ref:`readonly`.
 
 .. versionadded:: 1.0
 

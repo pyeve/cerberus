@@ -378,6 +378,15 @@ class Validator(object):
         return self._config.get('is_child', False)
 
     @property
+    def is_normalized(self):
+        """ ``True`` if the document is already normalized. """
+        return self._config.get('is_normalized', False)
+
+    @is_normalized.setter
+    def is_normalized(self, value):
+        self._config['is_normalized'] = value
+
+    @property
     def purge_unknown(self):
         """ If ``True`` unknown fields will be deleted from the document
             unless a validation is called with disabled normalization.
@@ -495,6 +504,10 @@ class Validator(object):
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
+        # Check `readonly` fields before applying default values because
+        # a field's schema definition might contain both `readonly` and
+        # `default`.
+        self.__validate_readonly_fields(mapping, schema)
         self.__normalize_default_fields(mapping, schema)
         self._normalize_coerce(mapping, schema)
         self.__normalize_containers(mapping, schema)
@@ -665,6 +678,12 @@ class Validator(object):
             mapping[new_name] = mapping[field]
             del mapping[field]
 
+    def __validate_readonly_fields(self, mapping, schema):
+        for field in (x for x in schema if x in mapping and
+                      self._resolve_rules_set(schema[x]).get('readonly')):
+            self._validate_readonly(schema[field]['readonly'], field,
+                                    mapping[field])
+
     def __normalize_default_fields(self, mapping, schema):
         fields = [x for x in schema if x not in mapping or
                   mapping[x] is None and not schema[x].get('nullable', False)]
@@ -738,6 +757,7 @@ class Validator(object):
         self.__init_processing(document, schema)
         if normalize:
             self.__normalize_mapping(self.document, self.schema)
+            self.is_normalized = True
 
         for field in self.document:
             if self.ignore_none_values and self.document[field] is None:
@@ -1038,8 +1058,17 @@ class Validator(object):
     def _validate_readonly(self, readonly, field, value):
         """ {'type': 'boolean'} """
         if readonly:
-            self._error(field, errors.READONLY_FIELD)
-            return True
+            if not self.is_normalized:
+                self._error(field, errors.READONLY_FIELD)
+                return True
+            # If the document was normalized (and therefore already been
+            # checked for readonly fields), we still have to return True
+            # if an error was filed.
+            has_error = errors.READONLY_FIELD in \
+                self.document_error_tree.fetch_errors_from(
+                    self.document_path + (field,))
+            if self.is_normalized and has_error:
+                return True
 
     def _validate_regex(self, pattern, field, value):
         """ {'type': 'string'} """
