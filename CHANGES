@@ -9,6 +9,8 @@ Unreleased
 - New: Allow applying of ``empty`` rule to sequences and mappings. Closes #270
   (Frank Sachsenheim).
 
+- Fix: ``readonly`` conflicts with ``default`` rule. Closes #268 (Dominik
+  Kellner).
 - Fix: Creating custom Validator instance with ``_validator_*`` method raises
   ``SchemaError``. Closes #265 (Frank Sachsenheim).
 - Fix: Consistently use new style classes (Dominik Kellner).
