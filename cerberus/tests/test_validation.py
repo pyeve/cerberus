@@ -987,6 +987,26 @@ def test_allof():
     assert_fail(doc, schema)
 
 
+def test_unicode_allowed():
+    # issue 280
+    doc = {'letters': u'♄εℓł☺'}
+
+    schema = {'letters': {'type': 'string', 'allowed': ['a', 'b', 'c']}}
+    assert_fail(doc, schema)
+
+    schema = {'letters': {'type': 'string', 'allowed': [u'♄εℓł☺']}}
+    assert_success(doc, schema)
+
+    # tested value is Unicode
+    # on Python2 this is failure as 'allowed' is encoded with file coding
+    # on Python3 this is success as 'allowed' is a py3 str
+    schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
+    assert_fail(doc, schema)
+
+    doc = {'letters': '♄εℓł☺'}
+    assert_success(doc, schema)
+
+
 def test_oneof():
     # prop1 can only only be:
     # - greater than 10

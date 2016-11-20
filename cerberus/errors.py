@@ -1,3 +1,4 @@
+# -*-: coding utf-8 -*-
 """ This module contains the error-related constants and classes. """
 
 from __future__ import absolute_import
@@ -459,9 +460,15 @@ class BasicErrorHandler(BaseErrorHandler):
         self.tree = {}
 
     def format_message(self, field, error):
-        return self.messages[error.code]\
-            .format(*error.info, constraint=error.constraint,
-                    field=field, value=error.value)
+        message = self.messages[error.code]
+        try:
+            if isinstance(error.value, unicode):
+                message = unicode(message)
+        except NameError:
+            pass
+
+        return message.format(*error.info, constraint=error.constraint,
+                              field=field, value=error.value)
 
     def insert_error(self, path, node):
         """ Adds an error or sub-tree to :attr:tree.
