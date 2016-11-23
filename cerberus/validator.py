@@ -865,7 +865,8 @@ class Validator(object):
                 self.schema_path + (field, 'dependencies')) is not None:
             return True
         else:
-            if 'required' in self.schema[field] and self.schema[field]['required']:
+            if ('required' in self.schema[field] and
+                    self.schema[field]['required']):
                 self._unrequired_by_dependencies.add(field)
 
     def __validate_dependencies_mapping(self, dependencies, field):
