@@ -142,6 +142,7 @@ class Validator(object):
         self.__store_config(args, kwargs)
         self.schema = kwargs.get('schema', None)
         self.allow_unknown = kwargs.get('allow_unknown', False)
+        self._unrequired_by_dependencies = set()
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
@@ -863,6 +864,9 @@ class Validator(object):
         if self.document_error_tree.fetch_node_from(
                 self.schema_path + (field, 'dependencies')) is not None:
             return True
+        else:
+            if 'required' in self.schema[field] and self.schema[field]['required']:
+                self._unrequired_by_dependencies.add(field)
 
     def __validate_dependencies_mapping(self, dependencies, field):
         validated_deps = 0
@@ -1102,6 +1106,7 @@ class Validator(object):
         missing = required - set(field for field in document
                                  if document.get(field) is not None or
                                  not self.ignore_none_values)
+        missing -= self._unrequired_by_dependencies
 
         for field in missing:
             self._error(field, errors.REQUIRED_FIELD)
