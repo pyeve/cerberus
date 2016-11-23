@@ -127,10 +127,7 @@ a method as ``rename_handler``. The method name must be prefixed with
             self.multiplier = multiplier
 
         def _normalize_coerce_multiply(self, value):
-            try:
-                return value * self.multiplier
-            except Exception as e:
-                self._error(field, errors.COERCION_FAILED, e)
+            return value * self.multiplier
 
 .. doctest::
 
