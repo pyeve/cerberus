@@ -21,6 +21,7 @@ Unreleased
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
   pytest. Addresses #213 (Bruno Oliveira).
 
+- DOcs: Fix custom coerces documentation. Closes #285 (gilbsgilbs).
 - Docs: Add note concerning regex flags. Closes #173 (Frank Sachsenheim).
 - Docs: Explain that normalization and coercion are performed on a copy of the
   original document (Sergey Leshchenko).
