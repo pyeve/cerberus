@@ -45,3 +45,9 @@ def test_references_remain_unresolved(validator):
     assert 'booleans' == validator.schema['foo']
     s = rules_set_registry._storage['booleans']['valueschema']
     assert 'boolean' == s
+
+
+def test_rules_registry_with_anyof_type(validator):
+    rules_set_registry.add('string_or_integer', {'anyof_type': ['string', 'integer']})
+    schema = {'soi': 'string_or_integer'}
+    assert_success({'soi': 'hello'}, schema)
