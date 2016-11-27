@@ -47,7 +47,14 @@ def test_references_remain_unresolved(validator):
     assert 'boolean' == s
 
 
-def test_rules_registry_with_anyof_type(validator):
-    rules_set_registry.add('string_or_integer', {'anyof_type': ['string', 'integer']})
+def test_rules_registry_with_anyof_type():
+    rules_set_registry.add('string_or_integer',
+                           {'anyof_type': ['string', 'integer']})
     schema = {'soi': 'string_or_integer'}
     assert_success({'soi': 'hello'}, schema)
+
+
+def test_schema_registry_with_anyof_type():
+    schema_registry.add('soi_id', {'id': {'anyof_type': ['string', 'integer']}})
+    schema = {'soi': {'schema': 'soi_id'}}
+    assert_success({'soi': {'id': 'hello'}}, schema)
