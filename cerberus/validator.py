@@ -1241,7 +1241,7 @@ class Validator(object):
                 self._error(field, errors.VALUESCHEMA, validator._errors)
 
 
-RULE_SCHEMA_SEPERATOR = \
+RULE_SCHEMA_SEPARATOR = \
     "The rule's arguments are validated against this schema:"
 
 
@@ -1301,8 +1301,8 @@ class InspectedValidator(type):
         if docstring is None:
             result = {}
         else:
-            if RULE_SCHEMA_SEPERATOR in docstring:
-                docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
+            if RULE_SCHEMA_SEPARATOR in docstring:
+                docstring = docstring.split(RULE_SCHEMA_SEPARATOR)[1]
             try:
                 result = literal_eval(docstring.strip())
             except Exception:
