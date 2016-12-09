@@ -9,6 +9,7 @@ Unreleased
 - New: Allow applying of ``empty`` rule to sequences and mappings. Closes #270
   (Frank Sachsenheim).
 
+- Fix: Spelling error in RULE_SCHEMA_SEPARATOR constant (Antoine Lubineau)
 - Fix: Expand schemas and rules sets when added to a registry. Closes #284
   (Frank Sachsenheim)
 - Fix: ``readonly`` conflicts with ``default`` rule. Closes #268 (Dominik
