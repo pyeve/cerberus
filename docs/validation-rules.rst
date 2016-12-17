@@ -520,9 +520,8 @@ expression, look for ``(?aiLmsux)`` in that document.
 
 required
 --------
-If ``True`` the key/value pair is mandatory. Validation will fail when it is
-missing, unless :meth:`~cerberus.Validator.validate` is called with
-``update=True``:
+If ``True`` the field is mandatory. Validation will fail when it is missing,
+unless :meth:`~cerberus.Validator.validate` is called with ``update=True``:
 
 .. doctest::
 
@@ -540,9 +539,7 @@ missing, unless :meth:`~cerberus.Validator.validate` is called with
 
    String fields with empty values will still be validated, even when
    ``required`` is set to ``True``. If you don't want to accept empty values,
-   see the empty_ rule. Also, if dependencies_ are declared for the field, its
-   ``required`` rule will only be validated if all dependencies are
-   included with the document.
+   see the empty_ rule.
 
 .. note::
    The evaluation of this rule does not consider any constraints defined with
