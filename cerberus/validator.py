@@ -1104,9 +1104,7 @@ class Validator(object):
     _validate_required = dummy_for_rule_validation(""" {'type': 'boolean'} """)
 
     def __validate_required_fields(self, document):
-        """ Validates that required fields are not missing. If dependencies
-            are precised then validate 'required' only if all dependencies
-            are validated.
+        """ Validates that required fields are not missing.
 
         :param document: The document being validated.
         """
