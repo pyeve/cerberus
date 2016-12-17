@@ -489,7 +489,7 @@ might be provided by the datastore, but should not writable.
 
 .. versionchanged:: 1.0.2
    Can be used in conjunction with ``default`` and ``default_setter``,
-   see :ref:`Default Values <default-values>`.
+   see :ref:`default-values`.
 
 regex
 -----
