@@ -231,8 +231,8 @@ into a new instance of :class:`~cerberus.errors.ValidationError`.
 Full disclosure
 ...............
 In order to be able to gain complete insight into the context of an error at a
-later point, you need to call :meth:`~cerberus._error` with two mandatory
-arguments:
+later point, you need to call :meth:`~cerberus.Validator._error` with two
+mandatory arguments:
 
   - the field where the error occurred
   - an instance of a :class:`~cerberus.errors.ErrorDefinition`

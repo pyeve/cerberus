@@ -11,11 +11,11 @@ The inspection on and representation of errors is thoroughly overhauled and
 allows a more detailed and flexible handling. Make sure you have look on
 :doc:`errors`.
 
-Also, :attr:`~cerberus.Validator.errors` (as provided by the default 
-:class:`~cerberus.errors.BasicErrorHandler`) values are lists containing 
+Also, :attr:`~cerberus.Validator.errors` (as provided by the default
+:class:`~cerberus.errors.BasicErrorHandler`) values are lists containing
 error messages, and possibly a ``dict`` as last item containing nested errors.
-Previously, they were strings if single errors per field occured; lists 
-otherwise. 
+Previously, they were strings if single errors per field occured; lists
+otherwise.
 
 
 Deprecations
@@ -99,8 +99,8 @@ three steps. Search, Replace and Regex may come at your service.
   1. Remove the second method's argument (probably named ``field``).
   2. Invert the logic of the conditional clauses where is tested what a value
      is not / has not.
-    3. Replace calls to ``self._error`` below such clauses with
-       ``return True``.
+  3. Replace calls to ``self._error`` below such clauses with
+     ``return True``.
 
 A method doesn't need to return ``False`` or any value when expected criteria
 are not met.
