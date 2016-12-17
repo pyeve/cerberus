@@ -323,6 +323,36 @@ class Validator(object):
                 self._drop_nodes_from_errorpaths(error.child_errors,
                                                  dp_items, sp_items)
 
+    def _lookup_field(self, path):
+        """ Searches for a field as defined by path. This method is used by the
+            ``dependency`` evaluation logic.
+
+        :param path: Path elements are separated by a ``.``. A leading ``^``
+                     indicates that the path relates to the document root,
+                     otherwise it relates to the currently evaluated document,
+                     which is possibly a subdocument.
+                     The sequence ``^^`` at the start will be interpreted as a
+                     literal ``^``.
+        :type path: :class:`str`
+        :returns: Either the found field name and its value or :obj:`None` for
+                  both.
+        :rtype: A two-value :class:`tuple`.
+        """
+        if path.startswith('^'):
+            path = path[1:]
+            context = self.document if path.startswith('^') \
+                else self.root_document
+        else:
+            context = self.document
+
+        parts = path.split('.')
+        for part in parts:
+            context = context.get(part)
+            if context is None:
+                return None, None
+
+        return parts[-1], context
+
     def _resolve_rules_set(self, rules_set):
         if isinstance(rules_set, Mapping):
             return rules_set
@@ -865,37 +895,27 @@ class Validator(object):
             return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
-        validated_deps = 0
-        for dep_name, dep_values in dependencies.items():
-            if (not isinstance(dep_values, Sequence) or
-                    isinstance(dep_values, _str_type)):
-                dep_values = [dep_values]
-            context = self.document
-            parts = dep_name.split('.')
-            info = {}
+        validated_dependencies_counter = 0
+        error_info = {}
+        for dependency_name, dependency_values in dependencies.items():
+            if (not isinstance(dependency_values, Sequence) or
+                    isinstance(dependency_values, _str_type)):
+                dependency_values = [dependency_values]
 
-            for part in parts:
-                if part in context:
-                    context = context[part]
-                    if context in dep_values:
-                        validated_deps += 1
-                    else:
-                        info.update({dep_name: context})
+            wanted_field, wanted_field_value = \
+                self._lookup_field(dependency_name)
+            if wanted_field_value in dependency_values:
+                validated_dependencies_counter += 1
+            else:
+                error_info.update({dependency_name: wanted_field_value})
 
-        if validated_deps != len(dependencies):
-            self._error(field, errors.DEPENDENCIES_FIELD_VALUE, info)
+        if validated_dependencies_counter != len(dependencies):
+            self._error(field, errors.DEPENDENCIES_FIELD_VALUE, error_info)
 
     def __validate_dependencies_sequence(self, dependencies, field):
         for dependency in dependencies:
-
-            context = self.document.copy()
-            parts = dependency.split('.')
-
-            for part in parts:
-                if part in context:
-                    context = context[part]
-                else:
-                    self._error(field, errors.DEPENDENCIES_FIELD, dependency)
+            if self._lookup_field(dependency)[0] is None:
+                self._error(field, errors.DEPENDENCIES_FIELD, dependency)
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """

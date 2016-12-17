@@ -7,7 +7,7 @@ Validator Class
 .. autoclass:: cerberus.Validator
   :members: allow_unknown, clear_caches, document, document_error_tree,
             document_path, _error, error_handler, _errors, errors,
-            _get_child_validator, ignore_none_values, is_child,
+            _get_child_validator, ignore_none_values, is_child, _lookup_field,
             mandatory_validations, normalized, priority_validations,
             purge_unknown, recent_error, root_allow_unknown, root_document,
             root_schema, rules_set_registry, schema, schema_error_tree,
