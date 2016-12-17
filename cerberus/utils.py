@@ -1,19 +1,8 @@
 from __future__ import absolute_import
 
-from collections import Mapping
+from collections import Mapping, Sequence
 
 from cerberus.platform import _int_types, _str_type
-
-
-def cast_keys_to_strings(mapping):
-    result = {}
-    for key in mapping:
-        if isinstance(mapping[key], Mapping):
-            value = cast_keys_to_strings(mapping[key])
-        else:
-            value = mapping[key]
-        result[str(type(key)) + str(key)] = value
-    return result
 
 
 def compare_paths_lt(x, y):
@@ -37,6 +26,44 @@ def get_Validator_class():
     if 'Validator' not in globals():
         from cerberus.validator import Validator
     return Validator
+
+
+def mapping_hash(schema):
+    return hash(mapping_to_frozenset(schema))
+
+
+def mapping_to_frozenset(mapping):
+    """ Be aware that this treats any sequence type with the equal members as
+        equal. As it is used to identify equality of schemas, this can be
+        considered okay as definitions are semantically equal regardless the
+        container type. """
+    mapping = mapping.copy()
+    for key, value in mapping.items():
+        if isinstance(value, Mapping):
+            mapping[key] = mapping_to_frozenset(value)
+        elif isinstance(value, Sequence):
+            value = list(value)
+            for i, item in enumerate(value):
+                if isinstance(item, Mapping):
+                    value[i] = mapping_to_frozenset(item)
+            mapping[key] = tuple(value)
+    return frozenset(mapping.items())
+
+
+def isclass(obj):
+    try:
+        issubclass(obj, object)
+    except TypeError:
+        return False
+    else:
+        return True
+
+
+def quote_string(value):
+    if isinstance(value, _str_type):
+        return '"%s"' % value
+    else:
+        return value
 
 
 def validator_factory(name, mixin=None, class_dict={}):
@@ -66,19 +93,3 @@ def validator_factory(name, mixin=None, class_dict={}):
         class_dict.update({'__doc__': '\n'.join(docstrings)})
 
     return type(name, bases, class_dict)
-
-
-def isclass(obj):
-    try:
-        issubclass(obj, object)
-    except TypeError:
-        return False
-    else:
-        return True
-
-
-def quote_string(value):
-    if isinstance(value, _str_type):
-        return '"%s"' % value
-    else:
-        return value
