@@ -654,7 +654,7 @@ class Validator(object):
 
     def __normalize_sequence(self, field, mapping, schema):
         schema = dict(((k, schema[field]['schema'])
-                      for k in range(len(mapping[field]))))
+                       for k in range(len(mapping[field]))))
         document = dict((k, v) for k, v in enumerate(mapping[field]))
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
@@ -933,7 +933,7 @@ class Validator(object):
             self._unrequired_by_excludes.add(field)
         for exclude in excludes:
             if (exclude in self.schema and
-               'required' in self.schema[exclude] and
+                'required' in self.schema[exclude] and
                     self.schema[exclude]['required']):
 
                 self._unrequired_by_excludes.add(exclude)
@@ -1046,12 +1046,12 @@ class Validator(object):
     def _validate_maxlength(self, max_length, field, value):
         """ {'type': 'integer'} """
         if isinstance(value, Iterable) and len(value) > max_length:
-                self._error(field, errors.MAX_LENGTH, len(value))
+            self._error(field, errors.MAX_LENGTH, len(value))
 
     def _validate_minlength(self, min_length, field, value):
         """ {'type': 'integer'} """
         if isinstance(value, Iterable) and len(value) < min_length:
-                self._error(field, errors.MIN_LENGTH, len(value))
+            self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
