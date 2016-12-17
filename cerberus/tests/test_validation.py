@@ -832,6 +832,18 @@ def test_dependencies_dict_with_subodcuments_fields():
                 schema)
 
 
+def test_root_relative_dependencies():
+    # https://github.com/nicolaiarocci/cerberus/issues/288
+    schema = {'package': {'allow_unknown': True,
+                          'schema': {'version': {'dependencies': '^repo'}}},
+              'repo': {}}
+    assert_fail({'package': {'repo': 'somewhere', 'version': 0}}, schema,
+                error=(('package', 'version'),
+                       ('package', 'schema', 'version', 'dependencies'),
+                       errors.DEPENDENCIES_FIELD, '^repo', ('^repo',)))
+    assert_success({'repo': 'somewhere', 'package': {'version': 1}}, schema)
+
+
 def test_dependencies_errors():
     v = Validator({'field1': {'required': False},
                    'field2': {'required': True,
