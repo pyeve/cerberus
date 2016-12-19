@@ -2,21 +2,10 @@ from __future__ import absolute_import
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 from copy import copy
-import json
 
 from cerberus import errors
 from cerberus.platform import _str_type
-from cerberus.utils import (cast_keys_to_strings, get_Validator_class,
-                            validator_factory)
-
-
-def schema_hash(schema):
-    class Encoder(json.JSONEncoder):
-        def default(self, o):
-            return repr(o)
-
-    return hash(json.dumps(cast_keys_to_strings(schema),
-                           cls=Encoder, sort_keys=True))
+from cerberus.utils import get_Validator_class, validator_factory, mapping_hash
 
 
 class SchemaError(Exception):
@@ -184,7 +173,7 @@ class DefinitionSchema(MutableMapping):
     def validate(self, schema=None):
         if schema is None:
             schema = self.schema
-        _hash = schema_hash(schema)
+        _hash = mapping_hash(schema)
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
             self.validator._valid_schemas.add(_hash)
@@ -266,7 +255,7 @@ class SchemaValidatorMixin(object):
         )
 
         for constraints in value:
-            _hash = schema_hash({'turing': constraints})
+            _hash = mapping_hash({'turing': constraints})
             if _hash in self.target_validator._valid_schemas:
                 continue
 
@@ -302,7 +291,7 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = schema_hash({'turing': value})
+        _hash = mapping_hash({'turing': value})
         if _hash in self.target_validator._valid_schemas:
             return
 
@@ -345,7 +334,7 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = schema_hash(value)
+        _hash = mapping_hash(value)
         if _hash in self.target_validator._valid_schemas:
             return
 
