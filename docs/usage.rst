@@ -213,7 +213,7 @@ normalized copy of a document without validating it:
     >>> document = {'model': 'consumerism', 'amount': '1'}
     >>> normalized_document = v.normalized(document, schema)
     >>> type(normalized_document['amount'])
-    <type 'int'>
+    <class 'int'>
 
 .. versionadded:: 1.0
 

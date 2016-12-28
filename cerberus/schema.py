@@ -2,21 +2,10 @@ from __future__ import absolute_import
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
 from copy import copy
-import json
 
 from cerberus import errors
 from cerberus.platform import _str_type
-from cerberus.utils import (cast_keys_to_strings, get_Validator_class,
-                            validator_factory)
-
-
-def schema_hash(schema):
-    class Encoder(json.JSONEncoder):
-        def default(self, o):
-            return repr(o)
-
-    return hash(json.dumps(cast_keys_to_strings(schema),
-                           cls=Encoder, sort_keys=True))
+from cerberus.utils import get_Validator_class, validator_factory, mapping_hash
 
 
 class SchemaError(Exception):
@@ -98,15 +87,17 @@ class DefinitionSchema(MutableMapping):
     def __str__(self):
         return str(self.schema)
 
-    def expand(self, schema):
+    @classmethod
+    def expand(cls, schema):
         try:
-            schema = self._expand_logical_shortcuts(schema)
-            schema = self._expand_subschemas(schema)
+            schema = cls._expand_logical_shortcuts(schema)
+            schema = cls._expand_subschemas(schema)
         except Exception:
             pass
         return schema
 
-    def _expand_logical_shortcuts(self, schema):
+    @classmethod
+    def _expand_logical_shortcuts(cls, schema):
         """ Expand agglutinated rules in a definition-schema.
 
         :param schema: The schema-definition to expand.
@@ -125,7 +116,8 @@ class DefinitionSchema(MutableMapping):
                 del schema[field][of_rule]
         return schema
 
-    def _expand_subschemas(self, schema):
+    @classmethod
+    def _expand_subschemas(cls, schema):
         def has_schema_rule():
             return isinstance(schema[field], Mapping) and \
                 'schema' in schema[field]
@@ -143,21 +135,21 @@ class DefinitionSchema(MutableMapping):
             if not has_schema_rule():
                 pass
             elif has_mapping_schema():
-                schema[field]['schema'] = self.expand(schema[field]['schema'])
+                schema[field]['schema'] = cls.expand(schema[field]['schema'])
             else:  # assumes schema-constraints for a sequence
                 schema[field]['schema'] = \
-                    self.expand({0: schema[field]['schema']})[0]
+                    cls.expand({0: schema[field]['schema']})[0]
 
             for rule in ('keyschema', 'valueschema'):
                 if rule in schema[field]:
                     schema[field][rule] = \
-                        self.expand({0: schema[field][rule]})[0]
+                        cls.expand({0: schema[field][rule]})[0]
 
             for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
                 if rule in schema[field]:
                     new_rules_definition = []
                     for item in schema[field][rule]:
-                        new_rules_definition.append(self.expand({0: item})[0])
+                        new_rules_definition.append(cls.expand({0: item})[0])
                     schema[field][rule] = new_rules_definition
         return schema
 
@@ -181,7 +173,7 @@ class DefinitionSchema(MutableMapping):
     def validate(self, schema=None):
         if schema is None:
             schema = self.schema
-        _hash = schema_hash(schema)
+        _hash = mapping_hash(schema)
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
             self.validator._valid_schemas.add(_hash)
@@ -263,7 +255,7 @@ class SchemaValidatorMixin(object):
         )
 
         for constraints in value:
-            _hash = schema_hash({'turing': constraints})
+            _hash = mapping_hash({'turing': constraints})
             if _hash in self.target_validator._valid_schemas:
                 continue
 
@@ -299,7 +291,7 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = schema_hash({'turing': value})
+        _hash = mapping_hash({'turing': value})
         if _hash in self.target_validator._valid_schemas:
             return
 
@@ -342,7 +334,7 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = schema_hash(value)
+        _hash = mapping_hash(value)
         if _hash in self.target_validator._valid_schemas:
             return
 
@@ -363,7 +355,7 @@ class Registry(object):
     """ A registry to store and retrieve schemas and parts of it by a name
     that can be used in validation schemas.
 
-    :param definitions: Optional, initial defintions.
+    :param definitions: Optional, initial definitions.
     :type definitions: any :term:`mapping` """
 
     def __init__(self, definitions={}):
@@ -371,7 +363,7 @@ class Registry(object):
         self.extend(definitions)
 
     def add(self, name, definition):
-        """ Register a definition to the registry. Existing defintions are
+        """ Register a definition to the registry. Existing definitions are
         replaced silently.
 
         :param name: The name which can be used as reference in a validation
@@ -379,7 +371,7 @@ class Registry(object):
         :type name: :class:`str`
         :param definition: The definition.
         :type definition: any :term:`mapping` """
-        self._storage[name] = definition
+        self._storage[name] = self._expand_definition(definition)
 
     def all(self):
         """ Returns a :class:`dict` with all registered definitions mapped to
@@ -387,23 +379,23 @@ class Registry(object):
         return self._storage
 
     def extend(self, definitions):
-        """ Add several defintions at once. Existing defintions are
+        """ Add several definitions at once. Existing definitions are
         replaced silently.
 
-        :param definitions: The names and defintions.
+        :param definitions: The names and definitions.
         :type definitions: a :term:`mapping` or an :term:`iterable` with
                            two-value :class:`tuple` s """
         for name, definition in dict(definitions).items():
             self.add(name, definition)
 
     def clear(self):
-        """ Purge all defintions in the registry. """
+        """ Purge all definitions in the registry. """
         self._storage.clear()
 
     def get(self, name, default=None):
-        """ Retrieve a defintion from the registry.
+        """ Retrieve a definition from the registry.
 
-        :param name: The reference that points to the defintion.
+        :param name: The reference that points to the definition.
         :type name: :class:`str`
         :param default: Return value if the reference isn't registered. """
         return self._storage.get(name, default)
@@ -411,10 +403,22 @@ class Registry(object):
     def remove(self, *names):
         """ Unregister definitions from the registry.
 
-        :param names: The names of the defintions that are to be
+        :param names: The names of the definitions that are to be
                       unregistered. """
         for name in names:
             self._storage.pop(name, None)
 
 
-schema_registry, rules_set_registry = Registry(), Registry()
+class SchemaRegistry(Registry):
+    @classmethod
+    def _expand_definition(cls, definition):
+        return DefinitionSchema.expand(definition)
+
+
+class RulesSetRegistry(Registry):
+    @classmethod
+    def _expand_definition(cls, definition):
+        return DefinitionSchema.expand({0: definition})[0]
+
+
+schema_registry, rules_set_registry = SchemaRegistry(), RulesSetRegistry()

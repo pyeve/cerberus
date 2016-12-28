@@ -59,15 +59,17 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 .. versionadded:: 0.9
 
+.. _dependencies:
+
 dependencies
 ------------
-This rule allows for either a single field, a list or dict of dependencies.
-When a list is provided, all listed fields must be present in order for the
-target field to be validated.
+This rule allows to define either a single field name, a sequence of field
+names or a :term:`mapping` of field names and a sequence of allowed values as
+required in the document if the field defined upon is present in the document.
 
 .. doctest::
 
-   >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': ['field1']}}
+   >>> schema = {'field1': {'required': False}, 'field2': {'required': False, 'dependencies': 'field1'}}
    >>> document = {'field1': 7}
    >>> v.validate(document, schema)
    True
@@ -79,7 +81,26 @@ target field to be validated.
    >>> v.errors
    {'field2': ["field 'field1' is required"]}
 
-When a dictionary is provided, then not only all dependencies must be present,
+
+When multiple field names are defined as dependencies, all of these must be
+present in order for the target field to be validated.
+
+.. doctest::
+
+   >>> schema = {'field1': {'required': False}, 'field2': {'required': False},
+   ...           'field3': {'required': False, 'dependencies': ['field1', 'field2']}}
+   >>> document = {'field1': 7, 'field2': 11, 'field3': 13}
+   >>> v.validate(document, schema)
+   True
+
+   >>> document = {'field2': 11, 'field3': 13}
+   >>> v.validate(document, schema)
+   False
+
+   >>> v.errors
+   {'field3': ["field 'field1' is required"]}
+
+When a mapping is provided, not only all dependencies must be present,
 but also any of their allowed values must be matched.
 
 .. doctest::
@@ -118,7 +139,7 @@ but also any of their allowed values must be matched.
    >>> v.errors
    {'field2': ["depends on these values: {'field1': 'one'}"]}
 
-Declaring dependencies on sub-document fields with dot-notation is also
+Declaring dependencies on subdocument fields with dot-notation is also
 supported:
 
 .. doctest::
@@ -140,6 +161,43 @@ supported:
 
    >>> v.errors
    {'test_field': ["field 'a_dict.bar' is required"]}
+
+When a subdocument is processed the lookup for a field in question starts at
+the level of that document. In order to address the processed document as
+root level, the declaration has to start with a ``^``. An occurance of two
+initial carets (``^^``) is interpreted as a literal, single ``^`` with no
+special meaning.
+
+.. doctest::
+
+   >>> schema = {
+   ...   'test_field': {},
+   ...   'a_dict': {
+   ...     'type': 'dict',
+   ...     'schema': {
+   ...       'foo': {'type': 'string'},
+   ...       'bar': {'type': 'string', 'dependencies': '^test_field'}
+   ...     }
+   ...   }
+   ... }
+
+   >>> document = {'a_dict': {'bar': 'bar'}}
+   >>> v.validate(document, schema)
+   False
+
+   >>> v.errors
+   {'a_dict': [{'bar': ["field '^test_field' is required"]}]}
+
+.. note::
+   If you want to extend semantics of the dot-notation, you can
+   :doc:`override <customize>` the :meth:`~cerberus.Validator._lookup_field`
+   method.
+
+.. note::
+   The evaluation of this rule does not consider any constraints defined with
+   the :ref:`required` rule.
+
+.. versionchanged:: 1.0.2 Support for absolute addressing with ``^``.
 
 .. versionchanged:: 0.8.1 Support for sub-document fields as dependencies.
 
@@ -431,7 +489,7 @@ might be provided by the datastore, but should not writable.
 
 .. versionchanged:: 1.0.2
    Can be used in conjunction with ``default`` and ``default_setter``,
-   see :ref:`Default Values <default-values>`.
+   see :ref:`default-values`.
 
 regex
 -----
@@ -462,9 +520,8 @@ expression, look for ``(?aiLmsux)`` in that document.
 
 required
 --------
-If ``True`` the key/value pair is mandatory. Validation will fail when it is
-missing, unless :meth:`~cerberus.Validator.validate` is called with
-``update=True``:
+If ``True`` the field is mandatory. Validation will fail when it is missing,
+unless :meth:`~cerberus.Validator.validate` is called with ``update=True``:
 
 .. doctest::
 
@@ -482,9 +539,11 @@ missing, unless :meth:`~cerberus.Validator.validate` is called with
 
    String fields with empty values will still be validated, even when
    ``required`` is set to ``True``. If you don't want to accept empty values,
-   see the empty_ rule. Also, if dependencies_ are declared for the field, its
-   ``required`` rule will only be validated if all dependencies are
-   included with the document.
+   see the empty_ rule.
+
+.. note::
+   The evaluation of this rule does not consider any constraints defined with
+   the :ref:`dependencies` rule.
 
 .. versionchanged:: 0.8
    Check field dependencies.

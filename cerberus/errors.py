@@ -10,8 +10,9 @@ from pprint import pformat
 from cerberus.utils import compare_paths_lt, quote_string
 
 
+ErrorDefinition = namedtuple('cerberus_error', 'code, rule')
 """
-Error definition constants
+Error definition class
 
 Each distinguishable error is defined as a two-value-tuple that holds
 a *unique* error id as integer and the rule as string that can cause it.
@@ -20,7 +21,6 @@ The names do not contain a common prefix as they are supposed to be referenced
 within the module namespace, e.g. errors.CUSTOM
 """
 
-ErrorDefinition = namedtuple('cerberus_error', 'code, rule')
 
 # custom
 CUSTOM = ErrorDefinition(0x00, None)

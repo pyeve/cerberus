@@ -323,6 +323,36 @@ class Validator(object):
                 self._drop_nodes_from_errorpaths(error.child_errors,
                                                  dp_items, sp_items)
 
+    def _lookup_field(self, path):
+        """ Searches for a field as defined by path. This method is used by the
+            ``dependency`` evaluation logic.
+
+        :param path: Path elements are separated by a ``.``. A leading ``^``
+                     indicates that the path relates to the document root,
+                     otherwise it relates to the currently evaluated document,
+                     which is possibly a subdocument.
+                     The sequence ``^^`` at the start will be interpreted as a
+                     literal ``^``.
+        :type path: :class:`str`
+        :returns: Either the found field name and its value or :obj:`None` for
+                  both.
+        :rtype: A two-value :class:`tuple`.
+        """
+        if path.startswith('^'):
+            path = path[1:]
+            context = self.document if path.startswith('^') \
+                else self.root_document
+        else:
+            context = self.document
+
+        parts = path.split('.')
+        for part in parts:
+            context = context.get(part)
+            if context is None:
+                return None, None
+
+        return parts[-1], context
+
     def _resolve_rules_set(self, rules_set):
         if isinstance(rules_set, Mapping):
             return rules_set
@@ -624,7 +654,7 @@ class Validator(object):
 
     def __normalize_sequence(self, field, mapping, schema):
         schema = dict(((k, schema[field]['schema'])
-                      for k in range(len(mapping[field]))))
+                       for k in range(len(mapping[field]))))
         document = dict((k, v) for k, v in enumerate(mapping[field]))
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
@@ -778,8 +808,9 @@ class Validator(object):
     __call__ = validate
 
     def validated(self, *args, **kwargs):
-        """ Wrapper around :func:`validate` that returns the normalized and
-            validated document or :obj:`None` if validation failed. """
+        """ Wrapper around :meth:`~cerberus.Validator.validate` that returns
+            the normalized and validated document or :obj:`None` if validation
+            failed. """
         always_return_document = kwargs.pop('always_return_document', False)
         self.validate(*args, **kwargs)
         if self._errors and not always_return_document:
@@ -865,37 +896,27 @@ class Validator(object):
             return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
-        validated_deps = 0
-        for dep_name, dep_values in dependencies.items():
-            if (not isinstance(dep_values, Sequence) or
-                    isinstance(dep_values, _str_type)):
-                dep_values = [dep_values]
-            context = self.document
-            parts = dep_name.split('.')
-            info = {}
+        validated_dependencies_counter = 0
+        error_info = {}
+        for dependency_name, dependency_values in dependencies.items():
+            if (not isinstance(dependency_values, Sequence) or
+                    isinstance(dependency_values, _str_type)):
+                dependency_values = [dependency_values]
 
-            for part in parts:
-                if part in context:
-                    context = context[part]
-                    if context in dep_values:
-                        validated_deps += 1
-                    else:
-                        info.update({dep_name: context})
+            wanted_field, wanted_field_value = \
+                self._lookup_field(dependency_name)
+            if wanted_field_value in dependency_values:
+                validated_dependencies_counter += 1
+            else:
+                error_info.update({dependency_name: wanted_field_value})
 
-        if validated_deps != len(dependencies):
-            self._error(field, errors.DEPENDENCIES_FIELD_VALUE, info)
+        if validated_dependencies_counter != len(dependencies):
+            self._error(field, errors.DEPENDENCIES_FIELD_VALUE, error_info)
 
     def __validate_dependencies_sequence(self, dependencies, field):
         for dependency in dependencies:
-
-            context = self.document.copy()
-            parts = dependency.split('.')
-
-            for part in parts:
-                if part in context:
-                    context = context[part]
-                else:
-                    self._error(field, errors.DEPENDENCIES_FIELD, dependency)
+            if self._lookup_field(dependency)[0] is None:
+                self._error(field, errors.DEPENDENCIES_FIELD, dependency)
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
@@ -912,7 +933,7 @@ class Validator(object):
             self._unrequired_by_excludes.add(field)
         for exclude in excludes:
             if (exclude in self.schema and
-               'required' in self.schema[exclude] and
+                'required' in self.schema[exclude] and
                     self.schema[exclude]['required']):
 
                 self._unrequired_by_excludes.add(exclude)
@@ -1025,12 +1046,12 @@ class Validator(object):
     def _validate_maxlength(self, max_length, field, value):
         """ {'type': 'integer'} """
         if isinstance(value, Iterable) and len(value) > max_length:
-                self._error(field, errors.MAX_LENGTH, len(value))
+            self._error(field, errors.MAX_LENGTH, len(value))
 
     def _validate_minlength(self, min_length, field, value):
         """ {'type': 'integer'} """
         if isinstance(value, Iterable) and len(value) < min_length:
-                self._error(field, errors.MIN_LENGTH, len(value))
+            self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
@@ -1083,9 +1104,7 @@ class Validator(object):
     _validate_required = dummy_for_rule_validation(""" {'type': 'boolean'} """)
 
     def __validate_required_fields(self, document):
-        """ Validates that required fields are not missing. If dependencies
-            are precised then validate 'required' only if all dependencies
-            are validated.
+        """ Validates that required fields are not missing.
 
         :param document: The document being validated.
         """
@@ -1241,7 +1260,7 @@ class Validator(object):
                 self._error(field, errors.VALUESCHEMA, validator._errors)
 
 
-RULE_SCHEMA_SEPERATOR = \
+RULE_SCHEMA_SEPARATOR = \
     "The rule's arguments are validated against this schema:"
 
 
@@ -1301,8 +1320,8 @@ class InspectedValidator(type):
         if docstring is None:
             result = {}
         else:
-            if RULE_SCHEMA_SEPERATOR in docstring:
-                docstring = docstring.split(RULE_SCHEMA_SEPERATOR)[1]
+            if RULE_SCHEMA_SEPARATOR in docstring:
+                docstring = docstring.split(RULE_SCHEMA_SEPARATOR)[1]
             try:
                 result = literal_eval(docstring.strip())
             except Exception:
