@@ -531,9 +531,12 @@ class Validator(object):
             return self.document
 
     def __normalize_mapping(self, mapping, schema):
-        schema = self._resolve_schema(schema)
+        if isinstance(schema, _str_type):
+            schema = self._resolve_schema(schema)
+        schema = schema.copy()
         for field in schema:
             schema[field] = self._resolve_rules_set(schema[field])
+
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown:
             self._normalize_purge_unknown(mapping, schema)
