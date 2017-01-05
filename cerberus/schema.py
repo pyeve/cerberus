@@ -87,6 +87,9 @@ class DefinitionSchema(MutableMapping):
     def __str__(self):
         return str(self.schema)
 
+    def copy(self):
+        return self.__class__(self.validator, self.schema.copy())
+
     @classmethod
     def expand(cls, schema):
         try:

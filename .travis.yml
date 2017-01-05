@@ -7,8 +7,7 @@ python:
   - 3.3
   - 3.4
   - 3.5
-  #- 3.6
-  - 3.6-dev
+  - 3.6
   - pypy
   #- pypy3
 install: travis_retry pip install tox-travis

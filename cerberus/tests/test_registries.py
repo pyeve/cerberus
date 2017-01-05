@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from cerberus import schema_registry, rules_set_registry, Validator
-from cerberus.tests import assert_fail, assert_success
+from cerberus.tests import assert_fail, assert_normalized, assert_success
 
 
 def test_schema_registry_simple():
@@ -43,8 +43,7 @@ def test_references_remain_unresolved(validator):
                                ('booleans', {'valueschema': 'boolean'})))
     validator.schema = {'foo': 'booleans'}
     assert 'booleans' == validator.schema['foo']
-    s = rules_set_registry._storage['booleans']['valueschema']
-    assert 'boolean' == s
+    assert 'boolean' == rules_set_registry._storage['booleans']['valueschema']
 
 
 def test_rules_registry_with_anyof_type():
@@ -58,3 +57,13 @@ def test_schema_registry_with_anyof_type():
     schema_registry.add('soi_id', {'id': {'anyof_type': ['string', 'integer']}})
     schema = {'soi': {'schema': 'soi_id'}}
     assert_success({'soi': {'id': 'hello'}}, schema)
+
+
+def test_normalization_with_rules_set():
+    # https://github.com/nicolaiarocci/cerberus/issues/283
+    rules_set_registry.add('foo', {'default': 42})
+    assert_normalized({}, {'bar': 42}, {'bar': 'foo'})
+    rules_set_registry.add('foo', {'default_setter': lambda _: 42})
+    assert_normalized({}, {'bar': 42}, {'bar': 'foo'})
+    rules_set_registry.add('foo', {'type': 'integer', 'nullable': True})
+    assert_success({'bar': None}, {'bar': 'foo'})
