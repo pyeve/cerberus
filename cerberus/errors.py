@@ -7,6 +7,7 @@ from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy, deepcopy
 from pprint import pformat
 
+from cerberus.platform import py2_error_unicode_fix
 from cerberus.utils import compare_paths_lt, quote_string
 
 
@@ -447,6 +448,7 @@ class BasicErrorHandler(BaseErrorHandler):
     def __str__(self):
         return pformat(self.pretty_tree)
 
+    @py2_error_unicode_fix
     def add(self, error):
         if error.is_logic_error:
             self.insert_logic_error(error)
@@ -460,15 +462,9 @@ class BasicErrorHandler(BaseErrorHandler):
         self.tree = {}
 
     def format_message(self, field, error):
-        message = self.messages[error.code]
-        try:
-            if isinstance(error.value, unicode):
-                message = unicode(message)
-        except NameError:
-            pass
-
-        return message.format(*error.info, constraint=error.constraint,
-                              field=field, value=error.value)
+        return self.messages[error.code].format(
+            *error.info, constraint=error.constraint,
+            field=field, value=error.value)
 
     def insert_error(self, path, node):
         """ Adds an error or sub-tree to :attr:tree.
