@@ -5,9 +5,10 @@ from __future__ import absolute_import
 
 from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy, deepcopy
+from functools import wraps
 from pprint import pformat
 
-from cerberus.platform import py2_error_unicode_fix
+from cerberus.platform import PYTHON_VERSION
 from cerberus.utils import compare_paths_lt, quote_string
 
 
@@ -390,6 +391,33 @@ class ToyErrorHandler(BaseErrorHandler):
         pass
 
 
+def encode_unicode(f):
+    """Cerberus error messages expect regular binary strings.
+    If unicode is used in a ValidationError message can't be printed.
+
+    This decorator ensures that if legacy Python is used unicode
+    strings are encoded before passing to a function.
+    """
+    @wraps(f)
+    def wrapped(obj, error):
+
+        def _encode(value):
+            """Helper encoding unicode strings into binary utf-8"""
+            if isinstance(value, unicode):  # noqa: F821
+                return value.encode('utf-8')
+            return value
+
+        error = copy(error)
+        error.document_path = _encode(error.document_path)
+        error.schema_path = _encode(error.schema_path)
+        error.constraint = _encode(error.constraint)
+        error.value = _encode(error.value)
+        error.info = _encode(error.info)
+        return f(obj, error)
+
+    return wrapped if PYTHON_VERSION < 3 else f
+
+
 class BasicErrorHandler(BaseErrorHandler):
     """ Models cerberus' legacy. Returns a :class:`dict`. """
     messages = {0x00: "{0}",
@@ -448,7 +476,7 @@ class BasicErrorHandler(BaseErrorHandler):
     def __str__(self):
         return pformat(self.pretty_tree)
 
-    @py2_error_unicode_fix
+    @encode_unicode
     def add(self, error):
         if error.is_logic_error:
             self.insert_logic_error(error)
