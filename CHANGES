@@ -12,6 +12,8 @@ Unreleased
 - New: Allow applying of ``empty`` rule to sequences and mappings. Closes #270
   (Frank Sachsenheim).
 
+- Fix: Better handling of unicode in ``allowed`` rule (Michael Klich). Closes
+  #280.
 - Fix: Rules sets with normalization rules fail. Closes #283 (Frank
   Sachsenheim).
 - Fix: Spelling error in RULE_SCHEMA_SEPARATOR constant (Antoine Lubineau)
