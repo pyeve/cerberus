@@ -3,8 +3,10 @@ Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
-Unreleased
-------------
+Version 1.1
+-----------
+
+Released on January 25, 2017.
 
 - New: Python 3.6 support (Frank Sachsenheim)
 - New: Users can implement their own semantics in Validator._lookup_field
