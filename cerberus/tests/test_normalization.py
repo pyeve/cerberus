@@ -123,7 +123,7 @@ def test_issue_147_nested_dict():
 
 
 def test_coerce_in_valueschema():
-    # https://github.com/nicolaiarocci/cerberus/issues/155
+    # https://github.com/pyeve/cerberus/issues/155
     schema = {'thing': {'type': 'dict',
                         'valueschema': {'coerce': int,
                                         'type': 'integer'}}}
@@ -133,7 +133,7 @@ def test_coerce_in_valueschema():
 
 
 def test_coerce_in_keyschema():
-    # https://github.com/nicolaiarocci/cerberus/issues/155
+    # https://github.com/pyeve/cerberus/issues/155
     schema = {'thing': {'type': 'dict',
                         'keyschema': {'coerce': int, 'type': 'integer'}}}
     document = {'thing': {'5': 'foo'}}
@@ -142,7 +142,7 @@ def test_coerce_in_keyschema():
 
 
 def test_coercion_of_sequence_items(validator):
-    # https://github.com/nicolaiarocci/cerberus/issues/161
+    # https://github.com/pyeve/cerberus/issues/161
     schema = {'a_list': {'type': 'list', 'schema': {'type': 'float',
                                                     'coerce': float}}}
     document = {'a_list': [3, 4, 5]}
@@ -314,7 +314,7 @@ def test_coerce_chain_aborts(validator):
 
 
 def test_coerce_non_digit_in_sequence(validator):
-    # https://github.com/nicolaiarocci/cerberus/issues/211
+    # https://github.com/pyeve/cerberus/issues/211
     schema = {'data': {'type': 'list',
                        'schema': {'type': 'integer', 'coerce': int}}}
     document = {'data': ['q']}
@@ -324,7 +324,7 @@ def test_coerce_non_digit_in_sequence(validator):
 
 
 def test_issue_250():
-    # https://github.com/nicolaiarocci/cerberus/issues/250
+    # https://github.com/pyeve/cerberus/issues/250
     schema = {
         'list': {
             'type': 'list',
@@ -342,7 +342,7 @@ def test_issue_250():
 
 
 def test_issue_250_no_type_pass_on_list():
-    # https://github.com/nicolaiarocci/cerberus/issues/250
+    # https://github.com/pyeve/cerberus/issues/250
     schema = {
         'list': {
             'schema': {
@@ -357,7 +357,7 @@ def test_issue_250_no_type_pass_on_list():
 
 
 def test_issue_250_no_type_fail_on_dict():
-    # https://github.com/nicolaiarocci/cerberus/issues/250
+    # https://github.com/pyeve/cerberus/issues/250
     schema = {
         'list': {
             'schema': {
@@ -373,7 +373,7 @@ def test_issue_250_no_type_fail_on_dict():
 
 
 def test_issue_250_no_type_fail_pass_on_other():
-    # https://github.com/nicolaiarocci/cerberus/issues/250
+    # https://github.com/pyeve/cerberus/issues/250
     schema = {
         'list': {
             'schema': {
@@ -387,7 +387,7 @@ def test_issue_250_no_type_fail_pass_on_other():
 
 
 def test_allow_unknown_with_of_rules():
-    # https://github.com/nicolaiarocci/cerberus/issues/251
+    # https://github.com/pyeve/cerberus/issues/251
     schema = {
         'test': {
             'oneof': [

@@ -60,7 +60,7 @@ def test_schema_registry_with_anyof_type():
 
 
 def test_normalization_with_rules_set():
-    # https://github.com/nicolaiarocci/cerberus/issues/283
+    # https://github.com/pyeve/cerberus/issues/283
     rules_set_registry.add('foo', {'default': 42})
     assert_normalized({}, {'bar': 42}, {'bar': 'foo'})
     rules_set_registry.add('foo', {'default_setter': lambda _: 42})

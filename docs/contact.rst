@@ -30,7 +30,7 @@ does require a (free and easy to set up) GitHub account.
 GitHub repository
 -----------------
 Of course the best way to track the development of Cerberus is through the
-`GitHub repo <https://github.com/nicolaiarocci/cerberus>`_.
+`GitHub repo <https://github.com/pyeve/cerberus>`_.
 
 .. _`mailing list`: https://groups.google.com/forum/#!forum/python-eve
-.. _`issues`: https://github.com/nicolaiarocci/cerberus/issues
+.. _`issues`: https://github.com/pyeve/cerberus/issues

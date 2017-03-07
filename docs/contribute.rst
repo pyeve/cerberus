@@ -112,9 +112,9 @@ test links and sample-code in the documentation.
 Source Code
 -----------
 Source code is available at `GitHub
-<https://github.com/nicolaiarocci/cerberus>`_.
+<https://github.com/pyeve/cerberus>`_.
 
-.. _`continuous integration server`: https://travis-ci.org/nicolaiarocci/cerberus/
+.. _`continuous integration server`: https://travis-ci.org/pyeve/cerberus/
 .. _Docker: https://www.docker.com
 .. _flake8: https://flake8.readthedocs.org
 .. _pytest: https://pytest.org

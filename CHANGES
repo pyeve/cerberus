@@ -156,7 +156,7 @@ Released on July 7 2015
   dependencies. This changes the previous behaviour whereas a required field
   with dependencies would only be reported as missing if all dependencies were
   met. A missing required field will always be reported. Also see the
-  discussion in https://github.com/nicolaiarocci/eve/pull/665.
+  discussion in https://github.com/pyeve/eve/pull/665.
 
 Version 0.9
 -----------

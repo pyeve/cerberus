@@ -16,7 +16,7 @@ to do is:
 Development Version
 -------------------
 Cerberus is actively developed on GitHub, where the code is `always available
-<https://github.com/nicolaiarocci/cerberus>`_. If you want to work with the
+<https://github.com/pyeve/cerberus>`_. If you want to work with the
 development version, there are two ways: you can either let `pip` pull
 in the development version, or you can tell it to operate on a git checkout.
 Either way, virtualenv is recommended.
@@ -25,7 +25,7 @@ Get the git checkout in a new virtualenv and run in development mode.
 
 .. code-block:: console
 
-    $ git clone http://github.com/nicolaiarocci/cerberus.git
+    $ git clone http://github.com/pyeve/cerberus.git
     Initialized empty Git repository in ~/dev/cerberus.git/
     $ cd cerberus
     $ virtualenv venv --distribute
@@ -50,7 +50,7 @@ To just get the development version without git, do this instead:
     $ . venv/bin/activate
     New python executable in venv/bin/python
     Installing distribute............done.
-    $ pip install git+git://github.com/nicolaiarocci/cerberus.git
+    $ pip install git+git://github.com/pyeve/cerberus.git
     ...
     Cleaning up...
 

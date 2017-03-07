@@ -627,14 +627,14 @@ def test_unknown_keys():
 
 
 def test_unknown_key_dict(validator):
-    # https://github.com/nicolaiarocci/cerberus/issues/177
+    # https://github.com/pyeve/cerberus/issues/177
     validator.allow_unknown = True
     document = {'a_dict': {'foo': 'foo_value', 'bar': 25}}
     assert_success(document, {}, validator=validator)
 
 
 def test_unknown_key_list(validator):
-    # https://github.com/nicolaiarocci/cerberus/issues/177
+    # https://github.com/pyeve/cerberus/issues/177
     validator.allow_unknown = True
     document = {'a_dict': ['foo', 'bar']}
     assert_success(document, {}, validator=validator)
@@ -642,7 +642,7 @@ def test_unknown_key_list(validator):
 
 def test_unknown_keys_list_of_dicts(validator):
     # test that allow_unknown is honored even for subdicts in lists.
-    # https://github.com/nicolaiarocci/cerberus/issues/67.
+    # https://github.com/pyeve/cerberus/issues/67.
     validator.allow_unknown = True
     document = {'a_list_of_dicts': [{'sku': 'YZ069', 'price': 25,
                                      'extra': True}]}
@@ -651,7 +651,7 @@ def test_unknown_keys_list_of_dicts(validator):
 
 def test_unknown_keys_retain_custom_rules():
     # test that allow_unknown schema respect custom validation rules.
-    # https://github.com/nicolaiarocci/cerberus/issues/#66.
+    # https://github.com/pyeve/cerberus/issues/#66.
     class CustomValidator(Validator):
         def _validate_type_foo(self, value):
             if value == "foo":
@@ -834,7 +834,7 @@ def test_dependencies_dict_with_subodcuments_fields():
 
 
 def test_root_relative_dependencies():
-    # https://github.com/nicolaiarocci/cerberus/issues/288
+    # https://github.com/pyeve/cerberus/issues/288
     schema = {'package': {'allow_unknown': True,
                           'schema': {'version': {'dependencies': '^repo'}}},
               'repo': {}}
@@ -866,8 +866,8 @@ def test_options_passed_to_nested_validators(validator):
 def test_self_root_document():
     """ Make sure self.root_document is always the root document.
     See:
-    * https://github.com/nicolaiarocci/cerberus/pull/42
-    * https://github.com/nicolaiarocci/eve/issues/295
+    * https://github.com/pyeve/cerberus/pull/42
+    * https://github.com/pyeve/eve/issues/295
     """
 
     class MyValidator(Validator):
@@ -1286,7 +1286,7 @@ def test_dependencies_error(validator):
 
 
 def test_dependencies_on_boolean_field_with_one_value():
-    # https://github.com/nicolaiarocci/cerberus/issues/138
+    # https://github.com/pyeve/cerberus/issues/138
     schema = {'deleted': {'type': 'boolean'},
               'text': {'dependencies': {'deleted': False}}}
     try:
@@ -1304,7 +1304,7 @@ def test_dependencies_on_boolean_field_with_one_value():
 
 
 def test_dependencies_on_boolean_field_with_value_in_list():
-    # https://github.com/nicolaiarocci/cerberus/issues/138
+    # https://github.com/pyeve/cerberus/issues/138
     schema = {'deleted': {'type': 'boolean'},
               'text': {'dependencies': {'deleted': [False]}}}
 
@@ -1395,7 +1395,7 @@ def test_bad_excludes_fields(validator):
 
 
 def test_boolean_is_not_a_number():
-    # https://github.com/nicolaiarocci/cerberus/issues/144
+    # https://github.com/pyeve/cerberus/issues/144
     assert_fail({'value': True}, {'value': {'type': 'number'}})
 
 
@@ -1440,7 +1440,7 @@ def test_type_error_aborts_validation():
 
 
 def test_dependencies_in_oneof():
-    # https://github.com/nicolaiarocci/cerberus/issues/241
+    # https://github.com/pyeve/cerberus/issues/241
     schema = {'a': {'type': 'integer',
                     'oneof': [
                         {'allowed': [1], 'dependencies': 'b'},
@@ -1455,7 +1455,7 @@ def test_dependencies_in_oneof():
 
 
 def test_allow_unknown_with_oneof_rules(validator):
-    # https://github.com/nicolaiarocci/cerberus/issues/251
+    # https://github.com/pyeve/cerberus/issues/251
     schema = {
         'test': {
             'oneof': [

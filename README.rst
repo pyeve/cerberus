@@ -54,20 +54,20 @@ Copyright
 ---------
 Cerberus is an open source project by `Nicola Iarocci
 <http://nicolaiarocci.com>`_. See the original `LICENSE
-<https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE>`_ for more
+<https://github.com/pyeve/cerberus/blob/master/LICENSE>`_ for more
 informations.
 
-.. _`Contribution Guidelines`: https://github.com/nicolaiarocci/cerberus/blob/master/CONTRIBUTING.rst
+.. _`Contribution Guidelines`: https://github.com/pyeve/cerberus/blob/master/CONTRIBUTING.rst
 
 .. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
    :alt: Latest version on PyPI
    :target: https://pypi.python.org/pypi/cerberus
-.. |build-status| image:: https://travis-ci.org/nicolaiarocci/cerberus.svg?branch=master
+.. |build-status| image:: https://travis-ci.org/pyeve/cerberus.svg?branch=master
    :alt: Build status
-   :target: https://travis-ci.org/nicolaiarocci/cerberus
+   :target: https://travis-ci.org/pyeve/cerberus
 .. |python-support| image:: https://img.shields.io/pypi/pyversions/cerberus.svg
    :target: https://pypi.python.org/pypi/cerberus
    :alt: Python versions
 .. |license| image:: https://img.shields.io/pypi/l/cerberus.svg
    :alt: Software license
-   :target: https://github.com/nicolaiarocci/cerberus/blob/master/LICENSE
+   :target: https://github.com/pyeve/cerberus/blob/master/LICENSE
