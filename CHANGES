@@ -226,7 +226,7 @@ Released on Jan 7 2015.
 
 - 'dependencies' also supports dependency values.
 - 'allow_unknown' can also be set to a validation schema, in which case unknown
-  fields will be validated against it. Closes nicolaiarocci/eve#405.
+  fields will be validated against it. Closes pyeve/eve#405.
 - New function-based custom validation mode (Luo Peng).
 - Fields with empty definitions in schema were reported as non-existent. Now
   they are considered as valid, whatever their value is (Jaroslav Semančík).
