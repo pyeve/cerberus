@@ -17,6 +17,18 @@ is designed to be non-blocking and easily extensible, allowing for custom
 validation. It has no dependancies and is thoroughly tested under Python 2.6,
 Python 2.7, Python 3.3, Python 3.4, Python 3.5, Python 3.6, PyPy and PyPy3.
 
+Funding
+-------
+Cerberus is a open source, collaboratively funded project. If you run
+a business and are using Cerberus in a revenue-generating product, it would
+make business sense to sponsor its development: it ensures the project that
+your product relies on stays healthy and actively maintained. Individual users
+are also welcome to make a recurring pledge or a one time donation if Cerberus
+has helped you in your work or personal projects. 
+
+Every single sign-up makes a significant impact towards making Eve possible. To
+learn more, check out our `funding page`_.
+
 Documentation
 -------------
 Complete documentation is available at http://docs.python-cerberus.org
