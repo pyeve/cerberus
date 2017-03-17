@@ -666,8 +666,7 @@ class Validator(object):
             document_crumb=field, schema_crumb=(field, 'schema'),
             schema=schema)
         result = validator.normalized(document, always_return_document=True)
-        for i in result:
-            mapping[field][i] = result[i]
+        mapping[field] = type(mapping[field])(result.values())
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
