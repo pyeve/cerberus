@@ -412,3 +412,22 @@ def test_allow_unknown_with_of_rules():
     # check that allow_unknown is actually applied
     document = {'test': {'known': 's', 'unknown': 'asd'}}
     assert_success(document, schema)
+
+
+def test_271_normalising_tuples():
+    # https://github.com/pyeve/cerberus/issues/271
+    schema = {
+        'my_field': {
+            'type': 'list',
+            'schema': {'type': 'string'}
+        }
+    }
+    document_success = {'my_field': ('foo', 'bar')}
+    assert_success(document_success, schema)
+
+    document_fail = {'my_field': (1, 2)}
+    assert_fail(document_fail, schema)
+
+    normalized = Validator(schema).normalized(document_success)
+    assert normalized['my_field'][0] == 'foo'
+    assert normalized['my_field'][1] == 'bar'
