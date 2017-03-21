@@ -3,6 +3,14 @@ Changelog
 
 Here you can see the full list of changes between each Cerberus release.
 
+Version 1.2
+-----------
+
+Not released yet.
+
+- Fix: Error when setting fields as tuples instead of lists. Closes #271
+  (Sebastian Rajo).
+
 Version 1.1
 -----------
 
