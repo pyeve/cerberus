@@ -134,7 +134,7 @@ class ValidationError(object):
                "constraint={constraint}," \
                "value={value}," \
                "info={info} )"\
-               .format(class_name=self.__class__.__name__, memptr=hex(id(self)),  # noqa
+               .format(class_name=self.__class__.__name__, memptr=hex(id(self)),  # noqa: E501
                        document_path=self.document_path,
                        schema_path=self.schema_path,
                        code=hex(self.code),
