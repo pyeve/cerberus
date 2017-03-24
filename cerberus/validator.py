@@ -655,6 +655,10 @@ class Validator(object):
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field],
                                               always_return_document=True)
+        value_type = type(mapping[field])
+        result_value = validator.normalized(mapping[field],
+                                            always_return_document=True)
+        mapping[field] = value_type(result_value)
         if validator._errors:
             self._error(validator._errors)
 
@@ -665,8 +669,9 @@ class Validator(object):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
             schema=schema)
+        value_type = type(mapping[field])
         result = validator.normalized(document, always_return_document=True)
-        mapping[field] = type(mapping[field])(result.values())
+        mapping[field] = value_type(result.values())
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
