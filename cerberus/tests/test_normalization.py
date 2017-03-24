@@ -431,3 +431,9 @@ def test_271_normalising_tuples():
     normalized = Validator(schema).normalized(document_success)
     assert normalized['my_field'][0] == 'foo'
     assert normalized['my_field'][1] == 'bar'
+
+
+def test_allow_unknown_wo_schema():
+    # https://github.com/pyeve/cerberus/issues/302
+    v = Validator({'a': {'type': 'dict', 'allow_unknown': True}})
+    v({'a': {}})

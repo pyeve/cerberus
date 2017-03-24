@@ -650,7 +650,7 @@ class Validator(object):
     def __normalize_mapping_per_schema(self, field, mapping, schema):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema[field]['schema'],
+            schema=schema[field].get('schema', {}),
             allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
             purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
         mapping[field] = validator.normalized(mapping[field],
