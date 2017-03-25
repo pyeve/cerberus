@@ -419,15 +419,19 @@ def test_271_normalising_tuples():
     schema = {
         'my_field': {
             'type': 'list',
-            'schema': {'type': 'string'}
+            'schema': {'type': ('string', 'number', 'dict')}
         }
     }
-    document_success = {'my_field': ('foo', 'bar')}
-    assert_success(document_success, schema)
+    document = {'my_field': ('foo', 'bar', 42, 'albert',
+                             'kandinsky', {'items': 23})}
+    assert_success(document, schema)
 
-    document_fail = {'my_field': (1, 2)}
-    assert_fail(document_fail, schema)
+    normalized = Validator(schema).normalized(document)
+    assert normalized['my_field'] == ('foo', 'bar', 42, 'albert',
+                                      'kandinsky', {'items': 23})
 
-    normalized = Validator(schema).normalized(document_success)
-    assert normalized['my_field'][0] == 'foo'
-    assert normalized['my_field'][1] == 'bar'
+
+def test_allow_unknown_wo_schema():
+    # https://github.com/pyeve/cerberus/issues/302
+    v = Validator({'a': {'type': 'dict', 'allow_unknown': True}})
+    v({'a': {}})

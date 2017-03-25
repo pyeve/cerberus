@@ -87,7 +87,7 @@ class Validator(object):
     :type error_handler: class or instance based on
                          :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
-    """  # noqa
+    """  # noqa: E501
 
     mandatory_validations = ('nullable', )
     """ Rules that are evaluated on any field, regardless whether defined in
@@ -650,11 +650,13 @@ class Validator(object):
     def __normalize_mapping_per_schema(self, field, mapping, schema):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema[field]['schema'],
-            allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa
-            purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa
-        mapping[field] = validator.normalized(mapping[field],
-                                              always_return_document=True)
+            schema=schema[field].get('schema', {}),
+            allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa: E501
+            purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa: E501
+        value_type = type(mapping[field])
+        result_value = validator.normalized(mapping[field],
+                                            always_return_document=True)
+        mapping[field] = value_type(result_value)
         if validator._errors:
             self._error(validator._errors)
 
@@ -665,8 +667,9 @@ class Validator(object):
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
             schema=schema)
+        value_type = type(mapping[field])
         result = validator.normalized(document, always_return_document=True)
-        mapping[field] = type(mapping[field])(result.values())
+        mapping[field] = value_type(result.values())
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
@@ -967,9 +970,9 @@ class Validator(object):
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
-            schema = dict((i, definition) for i, definition in enumerate(items))  # noqa
+            schema = dict((i, definition) for i, definition in enumerate(items))  # noqa: E501
             validator = self._get_child_validator(document_crumb=field,
-                                                  schema_crumb=(field, 'items'),  # noqa
+                                                  schema_crumb=(field, 'items'),  # noqa: E501
                                                   schema=schema)
             if not validator(dict((i, value) for i, value in enumerate(values)),
                              update=self.update, normalize=False):
