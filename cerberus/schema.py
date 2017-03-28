@@ -212,6 +212,11 @@ class UnvalidatedSchema(DefinitionSchema):
     def validate(self, schema):
         pass
 
+    def copy(self):
+        # Override ancestor's copy, because
+        # UnvalidatedSchema does not have .validator:
+        return self.__class__(self.schema.copy())
+
 
 class SchemaValidationSchema(UnvalidatedSchema):
     def __init__(self, validator):
