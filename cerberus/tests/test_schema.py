@@ -3,6 +3,7 @@
 import pytest
 
 from cerberus import Validator, errors, SchemaError
+from cerberus.schema import UnvalidatedSchema
 from cerberus.tests import assert_schema_error
 
 
@@ -97,3 +98,9 @@ def test_expansion_in_nested_schema():
     v = Validator(schema)
     assert (v.schema['detroit']['schema'] ==
             {'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]})
+
+
+def test_unvalidated_schema_can_be_copied():
+    schema = UnvalidatedSchema()
+    schema_copy = schema.copy()
+    assert schema_copy == schema
