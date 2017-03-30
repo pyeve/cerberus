@@ -65,7 +65,9 @@ def test_schema_validation_can_be_disabled_in_schema_setter():
         def schema(self, schema):
             if schema is None:
                 self._schema = None
-            elif self.is_child or isinstance(schema, cerberus.schema.DefinitionSchema):
+            elif self.is_child:
+                self._schema = schema
+            elif isinstance(schema, cerberus.schema.DefinitionSchema):
                 self._schema = schema
             else:
                 self._schema = cerberus.schema.UnvalidatedSchema(schema)
