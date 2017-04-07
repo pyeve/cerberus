@@ -8,6 +8,7 @@ Version 1.2
 
 Not released yet.
 
+- Override ``UnvalidatedSchema.copy`` (Peter Demin).
 - Fix: README link (Gabriel Wainer).
 - Fix: Regression: allow_unknown causes dictionary validation to fail with
   a KeyError. Closes #302 (Frank Sachsenheim)
