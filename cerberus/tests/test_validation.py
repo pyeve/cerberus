@@ -808,6 +808,30 @@ def test_dependencies_dict_with_required_field():
     assert_success({'foo': 'bar', 'bar': 'foo'}, schema)
 
 
+def test_dependencies_field_satisfy_nullable_field():
+    # https://github.com/pyeve/cerberus/issues/305
+    schema = {
+        'foo': {'required': False, 'nullable': True},
+        'bar': {'required': False, 'dependencies': 'foo'}
+    }
+
+    assert_success({'foo': None, 'bar': 1}, schema)
+    assert_success({'foo': None}, schema)
+    assert_fail({'bar': 1}, schema)
+
+
+def test_dependencies_field_with_mutually_dependent_nullable_fields():
+    schema = {
+        'foo': {'required': False, 'dependencies': 'bar', 'nullable': True},
+        'bar': {'required': False, 'dependencies': 'foo', 'nullable': True}
+    }
+    assert_success({'foo': None, 'bar': None}, schema)
+    assert_success({'foo': 1, 'bar': 1}, schema)
+    assert_success({'foo': None, 'bar': 1}, schema)
+    assert_fail({'foo': None}, schema)
+    assert_fail({'foo': 1}, schema)
+
+
 def test_dependencies_dict_with_subodcuments_fields():
     schema = {
         'test_field': {'dependencies': {'a_dict.foo': ['foo', 'bar'],

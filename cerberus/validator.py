@@ -93,7 +93,7 @@ class Validator(object):
     """ Rules that are evaluated on any field, regardless whether defined in
         the schema or not.
         Type: :class:`tuple` """
-    priority_validations = ('nullable', 'readonly', 'type')
+    priority_validations = ('dependencies', 'nullable', 'readonly', 'type')
     """ Rules that will be processed in that order before any other and abort
         validation of a document's field if return ``True``.
         Type: :class:`tuple` """
@@ -347,9 +347,9 @@ class Validator(object):
 
         parts = path.split('.')
         for part in parts:
-            context = context.get(part)
-            if context is None:
+            if part not in context:
                 return None, None
+            context = context[part]
 
         return parts[-1], context
 
@@ -898,10 +898,6 @@ class Validator(object):
             self.__validate_dependencies_sequence(dependencies, field)
         elif isinstance(dependencies, Mapping):
             self.__validate_dependencies_mapping(dependencies, field)
-
-        if self.document_error_tree.fetch_node_from(
-                self.schema_path + (field, 'dependencies')) is not None:
-            return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
         validated_dependencies_counter = 0

@@ -14,6 +14,7 @@ Not released yet.
   a KeyError. Closes #302 (Frank Sachsenheim)
 - Fix: Error when setting fields as tuples instead of lists. Closes #271
   (Sebastian Rajo).
+- Fix: Dependency was not considered satisfied if it has a null value. Closes #305.
 
 Version 1.1
 -----------
