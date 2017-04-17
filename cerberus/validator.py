@@ -240,7 +240,8 @@ class Validator(object):
             else:
                 field_definitions = self._resolve_rules_set(self.schema[field])
                 if rule == 'nullable':
-                    constraint = field_definitions.get(rule, False)
+                    constraint = field_definitions.get(rule,
+                                                       self.ignore_none_values)
                 else:
                     constraint = field_definitions[rule]
 
@@ -347,9 +348,9 @@ class Validator(object):
 
         parts = path.split('.')
         for part in parts:
-            context = context.get(part)
-            if context is None:
+            if part not in context:
                 return None, None
+            context = context.get(part)
 
         return parts[-1], context
 
@@ -842,7 +843,7 @@ class Validator(object):
         else:
             self._error(field, errors.UNKNOWN_FIELD)
 
-    # Remember to keep the validations method below this line
+    # Remember to keep the validation methods below this line
     # sorted alphabetically
 
     def __validate_definitions(self, definitions, field):
@@ -892,7 +893,7 @@ class Validator(object):
     def _validate_dependencies(self, dependencies, field, value):
         """ {'type': ['dict', 'hashable', 'hashables']} """
         if isinstance(dependencies, _str_type):
-            dependencies = [dependencies]
+            dependencies = (dependencies,)
 
         if isinstance(dependencies, Sequence):
             self.__validate_dependencies_sequence(dependencies, field)
