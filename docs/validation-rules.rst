@@ -355,10 +355,10 @@ Validates if *none* of the provided constraints validates the field. See `\*of-r
 
 nullable
 --------
-If ``True`` the field value can be set to :obj:`None`. It is essentially the
-functionality of the :attr:`~cerberus.Validator.ignore_none_values` property
-of a :class:`~cerberus.Validator` instance, but allowing for more fine grained
-control down to the field level.
+If ``True`` the field value is allowed to be :obj:`None`. The rule will be
+checked on every field, regardless it's defined or not. The rule's constraint
+defaults to the :attr:`~cerberus.Validator.ignore_none_values` property of a
+:class:`~cerberus.Validator` instance if not defined in the schema.
 
 .. doctest::
 
