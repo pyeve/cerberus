@@ -8,6 +8,8 @@ Version 1.2
 
 Not released yet.
 
+- Fix: A dependency is not considered satisfied if it has a null value (Frank
+  Sachsenheim). Closes #305.
 - Override ``UnvalidatedSchema.copy`` (Peter Demin).
 - Fix: README link (Gabriel Wainer).
 - Fix: Regression: allow_unknown causes dictionary validation to fail with
