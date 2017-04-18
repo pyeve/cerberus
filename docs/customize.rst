@@ -310,16 +310,24 @@ The last single error that was submitted is accessible through the
 
 .. versionadded:: 1.0
 
-`Validator.mandatory_validations` & `Validator.priority_validations`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`Validator.mandatory_validations`, `Validator.priority_validations` & `Validator._remaining_rules`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can override these class properties if you want to adjust the validation
-logic for each field validation.
+You can use these class properties and instance instance property if you want
+to adjust the validation logic for each field validation.
 ``mandatory_validations`` is a tuple that contains rules that will be validated
 for each field, regardless if the rule is defined for a field in a schema or
 not.
 ``priority_validations`` is a tuple of ordered rules that will be validated
-before any other. If the validation method or function returns ``True``, no
-further rule will be considered for that field.
+before any other.
+``_remaining_rules`` is a list that is populated under consideration of these
+and keeps track of the rules that are next in line to be evaluated. Thus it can
+be manipulated by rule handlers to change the remaining validation for the
+current field.
+Preferably you would call :meth:`~cerberus.Validator._drop_remaining_rules`
+to remove particular rules or all at once.
 
 .. versionadded:: 1.0
+
+.. versionchanged:: 1.2
+    Added ``_remaining_rules`` for extended leverage.
