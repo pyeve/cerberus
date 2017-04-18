@@ -357,8 +357,7 @@ nullable
 --------
 If ``True`` the field value is allowed to be :obj:`None`. The rule will be
 checked on every field, regardless it's defined or not. The rule's constraint
-defaults to the :attr:`~cerberus.Validator.ignore_none_values` property of a
-:class:`~cerberus.Validator` instance if not defined in the schema.
+defaults ``False``.
 
 .. doctest::
 

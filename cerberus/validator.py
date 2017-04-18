@@ -98,8 +98,8 @@ class Validator(object):
         validation of a document's field if return ``True``.
         Type: :class:`tuple` """
     _valid_schemas = set()
-    """ A :class:`set` of hashed validation schemas that are legit for a
-        particular ``Validator`` class. """
+    """ A :class:`set` of hashed derived from validation schemas that are 
+        legit for a particular ``Validator`` class. """
 
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
@@ -240,8 +240,7 @@ class Validator(object):
             else:
                 field_definitions = self._resolve_rules_set(self.schema[field])
                 if rule == 'nullable':
-                    constraint = field_definitions.get(rule,
-                                                       self.ignore_none_values)
+                    constraint = field_definitions.get(rule, False)
                 else:
                     constraint = field_definitions[rule]
 
@@ -1070,6 +1069,7 @@ class Validator(object):
             else:
                 self._error(field, errors.NOT_NULLABLE)
                 return True
+        return False
 
     def _validate_keyschema(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
