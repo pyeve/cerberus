@@ -865,6 +865,7 @@ def test_dependencies_errors():
                 error=('field2', ('field2', 'dependencies'),
                        errors.DEPENDENCIES_FIELD_VALUE,
                        {'field1': ['one', 'two']}, ({'field1': 'three'},)))
+    assert_success({'field1': 'three'}, validator=v)
 
 
 def test_options_passed_to_nested_validators(validator):
