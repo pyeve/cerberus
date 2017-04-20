@@ -89,17 +89,16 @@ class Validator(object):
                          :class:`tuple`
     """  # noqa: E501
 
-    mandatory_validations = ('nullable', )
+    mandatory_validations = ('nullable',)
     """ Rules that are evaluated on any field, regardless whether defined in
         the schema or not.
         Type: :class:`tuple` """
     priority_validations = ('nullable', 'readonly', 'type')
-    """ Rules that will be processed in that order before any other and abort
-        validation of a document's field if return ``True``.
+    """ Rules that will be processed in that order before any other.
         Type: :class:`tuple` """
     _valid_schemas = set()
-    """ A :class:`set` of hashed validation schemas that are legit for a
-        particular ``Validator`` class. """
+    """ A :class:`set` of hashes derived from validation schemas that are
+        legit for a particular ``Validator`` class. """
 
     def __init__(self, *args, **kwargs):
         """ The arguments will be treated as with this signature:
@@ -142,6 +141,10 @@ class Validator(object):
         self.__store_config(args, kwargs)
         self.schema = kwargs.get('schema', None)
         self.allow_unknown = kwargs.get('allow_unknown', False)
+        self._remaining_rules = []
+        """ Keeps track of the rules that are next in line to be evaluated
+            during the validation of a field.
+            Type: :class:`list` """
 
     def __init_error_handler(self, kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
@@ -240,8 +243,7 @@ class Validator(object):
             else:
                 field_definitions = self._resolve_rules_set(self.schema[field])
                 if rule == 'nullable':
-                    constraint = field_definitions.get(rule,
-                                                       self.ignore_none_values)
+                    constraint = field_definitions.get(rule, False)
                 else:
                     constraint = field_definitions[rule]
 
@@ -504,6 +506,20 @@ class Validator(object):
             raise DocumentError(
                 errors.DOCUMENT_FORMAT.format(document))
         self.error_handler.start(self)
+
+    def _drop_remaining_rules(self, *rules):
+        """ Drops rules from the queue of the rules that still need to be
+            evaluated for the currently processed field.
+            If no arguments are given, the whole queue is emptied.
+        """
+        if rules:
+            for rule in rules:
+                try:
+                    self._remaining_rules.remove(rule)
+                except ValueError:
+                    pass
+        else:
+            self._remaining_rules = []
 
     # # Normalizing
 
@@ -843,9 +859,6 @@ class Validator(object):
         else:
             self._error(field, errors.UNKNOWN_FIELD)
 
-    # Remember to keep the validation methods below this line
-    # sorted alphabetically
-
     def __validate_definitions(self, definitions, field):
         """ Validate a field's value against its defined rules. """
 
@@ -857,23 +870,30 @@ class Validator(object):
         definitions = self._resolve_rules_set(definitions)
         value = self.document[field]
 
-        """ _validate_-methods must return True to abort validation. """
-        prior_rules = tuple((x for x in self.priority_validations
-                             if x in definitions or
-                             x in self.mandatory_validations))
-        for rule in prior_rules:
-            if validate_rule(rule):
-                return
+        rules_queue = [x for x in self.priority_validations
+                       if x in definitions or x in self.mandatory_validations]
+        rules_queue.extend(x for x in self.mandatory_validations
+                           if x not in rules_queue)
+        rules_queue.extend(x for x in definitions
+                           if x not in rules_queue and
+                           x not in self.normalization_rules and
+                           x not in ('allow_unknown', 'required'))
+        self._remaining_rules = rules_queue
 
-        rules = set(definitions)
-        rules |= set(self.mandatory_validations)
-        rules -= set(prior_rules + ('allow_unknown', 'required'))
-        rules -= set(self.normalization_rules)
-        for rule in rules:
+        while self._remaining_rules:
+            rule = self._remaining_rules.pop(0)
             try:
-                validate_rule(rule)
+                result = validate_rule(rule)
+                # TODO remove on next breaking release
+                if result:
+                    break
             except _SchemaRuleTypeError:
                 break
+
+        self._drop_remaining_rules()
+
+    # Remember to keep the validation methods below this line
+    # sorted alphabetically
 
     _validate_allow_unknown = dummy_for_rule_validation(
         """ {'oneof': [{'type': 'boolean'},
@@ -1065,11 +1085,12 @@ class Validator(object):
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
         if value is None:
-            if nullable:
-                return True
-            else:
+            if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
-                return True
+            self._drop_remaining_rules(
+                'empty', 'forbidden', 'items', 'keyschema', 'min', 'max',
+                'minlength', 'maxlength', 'regex', 'schema', 'type',
+                'valueschema')
 
     def _validate_keyschema(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
@@ -1090,7 +1111,6 @@ class Validator(object):
         if readonly:
             if not self.is_normalized:
                 self._error(field, errors.READONLY_FIELD)
-                return True
             # If the document was normalized (and therefore already been
             # checked for readonly fields), we still have to return True
             # if an error was filed.
@@ -1098,7 +1118,7 @@ class Validator(object):
                 self.document_error_tree.fetch_errors_from(
                     self.document_path + (field,))
             if self.is_normalized and has_error:
-                return True
+                self._drop_remaining_rules()
 
     def _validate_regex(self, pattern, field, value):
         """ {'type': 'string'} """
@@ -1185,12 +1205,10 @@ class Validator(object):
     def _validate_type(self, data_type, field, value):
         """ {'type': ['string', 'list']} """
         types = [data_type] if isinstance(data_type, _str_type) else data_type
-        if any(self.__get_rule_handler('validate_type', x)(value)
-               for x in types):
-            return
-        else:
+        if not any(self.__get_rule_handler('validate_type', x)(value)
+                   for x in types):
             self._error(field, errors.BAD_TYPE)
-            return True
+            self._drop_remaining_rules()
 
     def _validate_type_boolean(self, value):
         if isinstance(value, bool):

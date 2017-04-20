@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from pytest import mark
+
 from cerberus.tests import assert_fail, assert_success
 
 
@@ -13,21 +15,15 @@ def test_docstring(validator):
     assert validator.__doc__
 
 
-# Test that tesing with the sample schema works as expected
+# Test that testing with the sample schema works as expected
 # as there might be rules with side-effects in it
 
-def _test_that_test_fails(test, *args):
+@mark.parametrize('test,document', ((assert_fail, {'an_integer': 60}),
+                                    (assert_success, {'an_integer': 110})))
+def test_that_test_fails(test, document):
     try:
-        test(*args)
+        test(document)
     except AssertionError:
         pass
     else:
         raise AssertionError("test didn't fail")
-
-
-def test_fail():
-    _test_that_test_fails(assert_fail, {'an_integer': 60})
-
-
-def test_success():
-    _test_that_test_fails(assert_success, {'an_integer': 110})
