@@ -579,20 +579,23 @@ class Validator(object):
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
                 mapping[field] = self.__normalize_coerce(
-                    schema[field]['coerce'], field, mapping[field], error)
+                    schema[field]['coerce'], field, mapping[field],
+                    schema[field].get('nullable', False), error)
             elif isinstance(self.allow_unknown, Mapping) and \
                     'coerce' in self.allow_unknown:
                 mapping[field] = self.__normalize_coerce(
-                    self.allow_unknown['coerce'], field, mapping[field], error)
+                    self.allow_unknown['coerce'], field, mapping[field],
+                    self.allow_unknown.get('nullable', False), error)
 
-    def __normalize_coerce(self, processor, field, value, error):
+    def __normalize_coerce(self, processor, field, value, nullable, error):
         if isinstance(processor, _str_type):
             processor = self.__get_rule_handler('normalize_coerce', processor)
 
         elif isinstance(processor, Iterable):
             result = value
             for p in processor:
-                result = self.__normalize_coerce(p, field, result, error)
+                result = self.__normalize_coerce(p, field, result,
+                                                 nullable, error)
                 if errors.COERCION_FAILED in \
                     self.document_error_tree.fetch_errors_from(
                         self.document_path + (field,)):
@@ -602,7 +605,8 @@ class Validator(object):
         try:
             return processor(value)
         except Exception as e:
-            self._error(field, error, str(e))
+            if not nullable and e is not TypeError:
+                self._error(field, error, str(e))
             return value
 
     def __normalize_containers(self, mapping, schema):
@@ -728,7 +732,7 @@ class Validator(object):
             return
         new_name = self.__normalize_coerce(
             schema[field]['rename_handler'], field, field,
-            errors.RENAMING_FAILED)
+            False, errors.RENAMING_FAILED)
         if new_name != field:
             mapping[new_name] = mapping[field]
             del mapping[field]
