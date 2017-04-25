@@ -8,6 +8,7 @@ Version 1.2
 
 Not released yet.
 
+- Fix: ``coerce`` ignores ``nullable: True``. Closes #269 (Frank Sachsenheim).
 - Fix: A dependency is not considered satisfied if it has a null value (Frank
   Sachsenheim). Closes #305.
 - Override ``UnvalidatedSchema.copy`` (Peter Demin).
