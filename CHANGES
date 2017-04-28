@@ -6,7 +6,9 @@ Here you can see the full list of changes between each Cerberus release.
 Version 1.2
 -----------
 
-Eve and Cerberus are now collaboratively funded projects, see: https://nicolaiarocci.com/eve-and-cerberus-funding-campaign/
+Eve and Cerberus are now collaboratively funded projects, 
+see: https://nicolaiarocci.com/eve-and-cerberus-funding-campaign/
+
 Not released yet.
 
 - Fix: ``coerce`` ignores ``nullable: True``. Closes #269 (Frank Sachsenheim).
