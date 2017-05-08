@@ -9,7 +9,7 @@ python:
   - 3.5
   - 3.6
   - pypy
-  #- pypy3
+  - pypy3
 install: travis_retry pip install tox-travis
 script:
   - tox
