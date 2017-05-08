@@ -3,15 +3,12 @@ FROM funkyfuture/nest-of-serpents
 ENTRYPOINT tox
 WORKDIR /src
 
-RUN pyp install flake8 pytest tox PyYAML Sphinx \
+RUN pip3.6 install flake8 pytest tox PyYAML Sphinx \
  && mkdir /home/tox \
  && mv /root/.cache /home/tox/
 
-# this will be set to the user's id who's running a script that uses this
-# image in order to have file-ownerships on the host-system
-# at some point there should be native Docker-implementation for this
-ENV TOX_USER_ID=1000
-RUN useradd --uid=$TOX_USER_ID -m tox \
+ARG uid
+RUN useradd --uid=$uid -m tox \
  && chown -R tox.tox /home/tox/.cache
 
 ADD . .
