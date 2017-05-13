@@ -145,6 +145,13 @@ def test_nested_readonly_field_with_default_value():
                 schema, errors=expected_errors)
 
 
+def test_repeated_readonly(validator):
+    # https://github.com/pyeve/cerberus/issues/311
+    validator.schema = {'id': {'readonly': True}}
+    assert_fail({'id': 0}, validator=validator)
+    assert_fail({'id': 0}, validator=validator)
+
+
 def test_not_a_string():
     assert_bad_type('a_string', 'string', 1)
 

@@ -2,9 +2,7 @@
 
 cd "$(dirname ${0})"
 
-sed -i -e 's,^ENV TOX_USER_ID=.*\$,ENV TOX_USER_ID='"${UID}"',g' Dockerfile
-
-docker build -t cerberus-tox . && \
+docker build -t cerberus-tox --build-arg uid=$(id -u) . && \
 if [ -d ".tox" ]; then
     docker run --rm --entrypoint="tox" -v "$(pwd)/.tox:/src/.tox" cerberus-tox "${@}"
 else
