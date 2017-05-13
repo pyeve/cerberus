@@ -11,6 +11,8 @@ see: https://nicolaiarocci.com/eve-and-cerberus-funding-campaign/
 
 Not released yet.
 
+- Fix: ``readonly`` works properly just in the first validation. Closes #311
+  (Frank Sachsenheim).
 - Fix: ``coerce`` ignores ``nullable: True``. Closes #269 (Frank Sachsenheim).
 - Fix: A dependency is not considered satisfied if it has a null value (Frank
   Sachsenheim). Closes #305.
@@ -20,6 +22,7 @@ Not released yet.
   a KeyError. Closes #302 (Frank Sachsenheim)
 - Fix: Error when setting fields as tuples instead of lists. Closes #271
   (Sebastian Rajo).
+- CI: Reactivate testing on PyPy3 (Frank Sachsenheim).
 
 Version 1.1
 -----------
