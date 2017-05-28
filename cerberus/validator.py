@@ -785,12 +785,17 @@ class Validator(object):
                 {'type': 'callable'},
                 {'type': 'string'}
                 ]} """
+        import inspect
         if 'default_setter' in schema[field]:
             setter = schema[field]['default_setter']
             if isinstance(setter, _str_type):
                 setter = self.__get_rule_handler('normalize_default_setter',
                                                  setter)
-            mapping[field] = setter(mapping)
+            argspec = inspect.getfullargspec(setter)
+            if 'field' in argspec.args or 'field' in argspec.kwonlyargs:
+                mapping[field] = setter(mapping, field=field)
+            else:
+                mapping[field] = setter(mapping)
 
     # # Validating
 
