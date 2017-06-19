@@ -67,3 +67,13 @@ def test_normalization_with_rules_set():
     assert_normalized({}, {'bar': 42}, {'bar': 'foo'})
     rules_set_registry.add('foo', {'type': 'integer', 'nullable': True})
     assert_success({'bar': None}, {'bar': 'foo'})
+
+
+def test_rules_set_with_dict_field():
+    rules_set_registry.add('rule', {'type': 'integer'})
+    assert_success({'bar': 1, 'a_dict': {'foo': 1}},
+                   {'bar': 'rule', 'a_dict': {'type': 'dict', 'schema':
+                                              {'foo': {'type': 'integer'}}}})
+    assert_success({'bar': 1, 'a_dict': {'foo': 1}},
+                   {'bar': 'rule', 'a_dict': {'type': 'dict', 'schema':
+                                              {'foo': 'rule'}}})
