@@ -479,6 +479,10 @@ class BasicErrorHandler(BaseErrorHandler):
 
     @encode_unicode
     def add(self, error):
+        # Make sure the original error is not altered with
+        # error paths specific to the handler.
+        error = deepcopy(error)
+
         self.rewrite_error_path(error)
 
         if error.is_logic_error:
