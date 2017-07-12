@@ -7,7 +7,9 @@ This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
 when validating a mapping in order to set the
 :attr:`~cerberus.Validator.allow_unknown` property of the validator for the
 subdocument.
-For a full alaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
+This rule has precedence over ``purge_unknown``
+(see :ref:`purging-unknown-fields`).
+For a full elaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
