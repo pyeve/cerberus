@@ -47,7 +47,7 @@ some specific tests. For example, if a test suite fails in Python 3.4:
 
 .. code-block:: console
 
-    # From the project folder
+    $ # From the project folder
     $ tox -e py34
 
 Have a look at ``/tox.ini`` for the available test environments and their workings.
@@ -58,7 +58,7 @@ You also choose to run the whole test suite using pytest_:
 
 .. code-block:: console
 
-    # Run the whole test suite
+    $ # Run the whole test suite
     $ py.test
 
 Using Docker
@@ -70,7 +70,7 @@ to ``tox``:
 
 .. code-block:: console
 
-    # in the project's root directory
+    $ # in the project's root directory
     $ ./run-docker-tests -e pypy3 -e doctest
 
 You can run the script without any arguments to test the project exactly as
@@ -86,14 +86,14 @@ documentation framework and a theme:
 
 .. code-block:: console
 
-    # in the project's root directory
+    $ # in the project's root directory
     $ pip install -r requirements-docs.txt
 
 The HTML build is triggered with:
 
 .. code-block:: console
 
-    # in 'docs'-folder
+    $ # in 'docs'-folder
     $ make html
 
 The result can be accessed by opening ``docs/_build/html/index.html``.
