@@ -107,11 +107,11 @@ applies for ``default_setter``.
 Value Coercion
 --------------
 Coercion allows you to apply a callable (given as object or the name of a
-:doc:`custom normalization method <customize>`) to a value before the document
+:ref:`custom coercion method <custom-coercer>`) to a value before the document
 is validated. The return value of the callable replaces the new value in the
 document. This can be used to convert values or sanitize data before it is
-validated.  If the constraint is an iterable, the value is processed through
-that chain.
+validated.  If the constraint is an iterable of callables and names, the value
+is processed through that chain of coercers.
 
 .. doctest::
 
@@ -125,8 +125,8 @@ that chain.
    >>> v.document
    {'amount': 1}
 
-   >>> to_bool = lambda v: v.lower() in ['true', '1']
-   >>> v.schema = {'flag': {'type': 'boolean', 'coerce': to_bool}}
+   >>> to_bool = lambda v: v.lower() in ('true', '1')
+   >>> v.schema = {'flag': {'type': 'boolean', 'coerce': (str, to_bool)}}
    >>> v.validate({'flag': 'true'})
    True
    >>> v.document
