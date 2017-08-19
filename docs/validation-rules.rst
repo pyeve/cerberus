@@ -648,6 +648,10 @@ Data type allowed for the key value. Can be one of the following names:
    * - ``string``
      - :func:`py2:basestring`
      - :class:`py3:str`
+   * - ``decimal``
+     - :class:`py2:decimal.Decimal() (or bson.decimal128.Decimal128() if available)`
+     - :class:`py3:decimal.Decimal() (or bson.decimal128.Decimal128() if available)`
+
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -690,6 +694,9 @@ A list of types can be used to allow different values:
     rules on the field will be skipped and validation will continue on other
     fields. This allows to safely assume that field type is correct when other
     (standard or custom) rules are invoked.
+
+.. versionchanged:: 1.2
+   Added the ``decimal`` data type to support decimal module.
 
 .. versionchanged:: 1.0
    Added the ``binary`` data type.

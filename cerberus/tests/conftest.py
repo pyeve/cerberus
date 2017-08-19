@@ -62,6 +62,9 @@ sample_schema = {
         'min': 1,
         'max': 100,
     },
+    'a_decimal': {
+        'type': 'decimal',
+    },
     'a_set': {
         'type': 'set',
     },

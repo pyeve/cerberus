@@ -14,6 +14,7 @@ from ast import literal_eval
 from collections import Hashable, Iterable, Mapping, Sequence
 from copy import copy
 from datetime import date, datetime
+import decimal
 import re
 from warnings import warn
 
@@ -22,6 +23,14 @@ from cerberus.platform import _int_types, _str_type
 from cerberus.schema import (schema_registry, rules_set_registry,
                              DefinitionSchema, SchemaError)
 from cerberus.utils import drop_item_from_tuple, isclass
+
+DECIMAL_TYPES = (decimal.Decimal,)
+try:
+    from bson import decimal128
+except ImportError:
+    pass
+else:
+    DECIMAL_TYPES += (decimal128.Decimal128,)
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -1216,6 +1225,10 @@ class Validator(object):
             self._error(field, errors.BAD_TYPE)
             self._drop_remaining_rules()
 
+    def _validate_type_binary(self, value):
+        if isinstance(value, (bytes, bytearray)):
+            return True
+
     def _validate_type_boolean(self, value):
         if isinstance(value, bool):
             return True
@@ -1228,6 +1241,10 @@ class Validator(object):
         if isinstance(value, datetime):
             return True
 
+    def _validate_type_decimal(self, value):
+        if isinstance(value, DECIMAL_TYPES):
+            return True
+
     def _validate_type_dict(self, value):
         if isinstance(value, Mapping):
             return True
@@ -1238,10 +1255,6 @@ class Validator(object):
 
     def _validate_type_integer(self, value):
         if isinstance(value, _int_types):
-            return True
-
-    def _validate_type_binary(self, value):
-        if isinstance(value, (bytes, bytearray)):
             return True
 
     def _validate_type_list(self, value):

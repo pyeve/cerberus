@@ -11,6 +11,7 @@ VERSION = __import__('cerberus').__version__
 needs_pytest = set(('pytest', 'test', 'ptr')) & set(sys.argv)
 setup_requires = ['pytest-runner'] if needs_pytest else []
 
+setup_requires.append('pymongo')
 
 setup(
     name='Cerberus',
@@ -25,7 +26,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     setup_requires=setup_requires,
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pymongo'],
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=['validation', 'schema', 'dictionaries'],

@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
+
+from bson import decimal128
+from datetime import datetime, date
+import decimal
+from random import choice
 import re
 import sys
-from datetime import datetime, date
-from random import choice
 from string import ascii_lowercase
 
 from pytest import mark
 
 from cerberus import errors, Validator
+from cerberus.platform import PYTHON_VERSION
 from cerberus.tests import \
     (assert_bad_type, assert_fail, assert_has_error, assert_not_has_error,
      assert_success, assert_document_error)
@@ -163,6 +167,14 @@ def test_not_a_binary():
 
 def test_not_a_integer():
     assert_bad_type('an_integer', 'integer', "i'm not an integer")
+
+
+def test_not_a_decimal():
+    assert_bad_type('a_decimal', 'decimal', "i'm not an decimal")
+    assert_bad_type('a_decimal', 'decimal', ".34.235.12")
+    assert_bad_type('a_decimal', 'decimal', "34.2")
+    assert_bad_type('a_decimal', 'decimal', 34.2)
+    assert_bad_type('a_decimal', 'decimal', 34)
 
 
 def test_not_a_boolean():
@@ -391,6 +403,18 @@ def test_string_allowed():
 
 def test_integer():
     assert_success({'an_integer': 50})
+
+
+def test_decimal():
+    # Module decimal does not accept integer or float for version 2.6
+    if PYTHON_VERSION != 2.6:
+        assert_success({'a_decimal': decimal.Decimal(50)})
+        assert_success({'a_decimal': decimal.Decimal(50.0)})
+    assert_success({'a_decimal': decimal.Decimal("50")})
+    assert_success({'a_decimal': decimal.Decimal("50.0")})
+    # I need to check this specificity for MongoDb data-type
+    assert_success({'a_decimal': decimal128.Decimal128("50")})
+    assert_success({'a_decimal': decimal128.Decimal128("50.0")})
 
 
 def test_boolean():
@@ -905,8 +929,8 @@ def test_self_root_document():
     class MyValidator(Validator):
         def _validate_root_doc(self, root_doc, field, value):
             """ {'type': 'boolean'} """
-            if ('sub' not in self.root_document or
-                    len(self.root_document['sub']) != 2):
+            if 'sub' not in self.root_document or \
+                    len(self.root_document['sub']) != 2:
                 self._error(field, 'self.context is not the root doc!')
 
     schema = {
@@ -960,15 +984,15 @@ def test_anyof():
     assert_success(doc, schema)
 
     # prop1 must be either a number between 0 and 10 or 100 and 110
-    schema = {'prop1': {'anyof':
-                        [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
+    schema = {'prop1': {'anyof': [{'min': 0, 'max': 10},
+                                  {'min': 100, 'max': 110}]}}
     doc = {'prop1': 105}
 
     assert_success(doc, schema)
 
     # prop1 must be either a number between 0 and 10 or 100 and 110
-    schema = {'prop1': {'anyof':
-                        [{'min': 0, 'max': 10}, {'min': 100, 'max': 110}]}}
+    schema = {'prop1': {'anyof': [{'min': 0, 'max': 10},
+                                  {'min': 100, 'max': 110}]}}
     doc = {'prop1': 50}
 
     assert_fail(doc, schema)
