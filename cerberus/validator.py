@@ -21,7 +21,8 @@ from cerberus import errors
 from cerberus.platform import _int_types, _str_type
 from cerberus.schema import (schema_registry, rules_set_registry,
                              DefinitionSchema, SchemaError)
-from cerberus.utils import drop_item_from_tuple, isclass
+from cerberus.utils import (drop_item_from_tuple, isclass,
+                            readonly_classproperty, TypeDefinition)
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -96,6 +97,32 @@ class Validator(object):
     priority_validations = ('nullable', 'readonly', 'type')
     """ Rules that will be processed in that order before any other.
         Type: :class:`tuple` """
+    types_mapping = {
+        'binary':
+            TypeDefinition('binary', (bytes, bytearray), ()),
+        'boolean':
+            TypeDefinition('boolean', (bool,), ()),
+        'date':
+            TypeDefinition('date', (date,), ()),
+        'datetime':
+            TypeDefinition('datetime', (datetime,), ()),
+        'dict':
+            TypeDefinition('dict', (Mapping,), ()),
+        'float':
+            TypeDefinition('float', (float, _int_types), ()),
+        'integer':
+            TypeDefinition('integer', (_int_types,), ()),
+        'list':
+            TypeDefinition('list', (Sequence,), (_str_type,)),
+        'number':
+            TypeDefinition('number', (_int_types, float), (bool,)),
+        'set':
+            TypeDefinition('set', (set,), ()),
+        'string':
+            TypeDefinition('string', (_str_type), ())
+    }
+    """ This mapping holds all available constraints for the type rule and
+        their assigned :class:`~cerberus.TypeDefinition`. """
     _valid_schemas = set()
     """ A :class:`set` of hashes derived from validation schemas that are
         legit for a particular ``Validator`` class. """
@@ -477,12 +504,27 @@ class Validator(object):
     @property
     def schema_registry(self):
         """ The registry that holds referenced schemas.
-        Type: :class:`~cerberus.Registry` """
+            Type: :class:`~cerberus.Registry` """
         return self._config.get('schema_registry', schema_registry)
 
     @schema_registry.setter
     def schema_registry(self, registry):
         self._config['schema_registry'] = registry
+
+    # FIXME the returned method has the correct docstring, but doesn't appear
+    #       in the API docs
+    @readonly_classproperty
+    def types(cls):
+        """ The constraints that can be used for the 'type' rule.
+            Type: A tuple of strings. """
+        redundant_types = \
+            set(cls.types_mapping) & set(cls._types_from_methods)
+        if redundant_types:
+            warn("These types are defined both with a method and in the"
+                 "'types_mapping' property of this validator: %s"
+                 % redundant_types)
+
+        return tuple(cls.types_mapping) + cls._types_from_methods
 
     # Document processing
 
@@ -917,7 +959,8 @@ class Validator(object):
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
     def _validate_dependencies(self, dependencies, field, value):
-        """ {'type': ['dict', 'hashable', 'hashables']} """
+        """ {'type': ('dict', 'hashable', 'list'),
+             'validator': 'dependencies'} """
         if isinstance(dependencies, _str_type):
             dependencies = (dependencies,)
 
@@ -959,7 +1002,8 @@ class Validator(object):
             self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excludes, field, value):
-        """ {'type': ['hashable', 'hashables']} """
+        """ {'type': ('hashable', 'list'),
+             'schema': {'type': 'hashable'}} """
         if isinstance(excludes, Hashable):
             excludes = [excludes]
 
@@ -1209,58 +1253,35 @@ class Validator(object):
             self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
-        """ {'type': ['string', 'list']} """
-        types = [data_type] if isinstance(data_type, _str_type) else data_type
-        if not any(self.__get_rule_handler('validate_type', x)(value)
-                   for x in types):
-            self._error(field, errors.BAD_TYPE)
-            self._drop_remaining_rules()
+        """ {'type': ['string', 'list'],
+             'validator': 'type'} """
+        if not data_type:
+            return
 
-    def _validate_type_boolean(self, value):
-        if isinstance(value, bool):
-            return True
+        types = (data_type,) if isinstance(data_type, _str_type) else data_type
 
-    def _validate_type_date(self, value):
-        if isinstance(value, date):
-            return True
+        for _type in types:
+            # TODO remove this block on next major release
+            # this implementation still supports custom type validation methods
+            type_definition = self.types_mapping.get(_type)
+            if type_definition is not None:
+                matched = isinstance(value, type_definition.included_types) \
+                          and not isinstance(value, type_definition.excluded_types)
+            else:
+                type_handler = self.__get_rule_handler('validate_type', _type)
+                matched = type_handler(value)
+            if matched:
+                return
 
-    def _validate_type_datetime(self, value):
-        if isinstance(value, datetime):
-            return True
+                # TODO uncomment this block on next major release
+                # if _validate_type_* methods were deprecated:
+                # type_definition = self.types_mapping[_type]
+                # if isinstance(value, type_definition.included_types) \
+                #         and not isinstance(value, type_definition.excluded_types):
+                #     return
 
-    def _validate_type_dict(self, value):
-        if isinstance(value, Mapping):
-            return True
-
-    def _validate_type_float(self, value):
-        if isinstance(value, (float, _int_types)):
-            return True
-
-    def _validate_type_integer(self, value):
-        if isinstance(value, _int_types):
-            return True
-
-    def _validate_type_binary(self, value):
-        if isinstance(value, (bytes, bytearray)):
-            return True
-
-    def _validate_type_list(self, value):
-        if isinstance(value, Sequence) and not isinstance(
-                value, _str_type):
-            return True
-
-    def _validate_type_number(self, value):
-        if isinstance(value, (_int_types, float)) \
-                and not isinstance(value, bool):
-            return True
-
-    def _validate_type_set(self, value):
-        if isinstance(value, set):
-            return True
-
-    def _validate_type_string(self, value):
-        if isinstance(value, _str_type):
-            return True
+        self._error(field, errors.BAD_TYPE)
+        self._drop_remaining_rules()
 
     def _validate_validator(self, validator, field, value):
         """ {'oneof': [
@@ -1311,14 +1332,20 @@ class InspectedValidator(type):
 
         super(InspectedValidator, cls).__init__(*args)
 
-        cls.types, cls.validation_rules = (), {}
+        cls._types_from_methods, cls.validation_rules = (), {}
         for attribute in attributes_with_prefix('validate'):
+            # TODO remove inspection of type test methods in next major release
             if attribute.startswith('type_'):
-                cls.types += (attribute[len('type_'):],)
+                cls._types_from_methods += (attribute[len('type_'):],)
             else:
                 cls.validation_rules[attribute] = \
                     cls.__get_rule_schema('_validate_' + attribute)
-        cls.validation_rules['type']['allowed'] = cls.types
+
+        # TODO remove on next major release
+        if cls._types_from_methods:
+            warn("Methods for type testing are deprecated, use TypeDefinition "
+                 "and the 'types_mapping'-property of a Validator-instance "
+                 "instead.", DeprecationWarning)
 
         cls.validators = tuple(x for x in attributes_with_prefix('validator'))
         x = cls.validation_rules['validator']['oneof']
