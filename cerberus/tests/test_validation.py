@@ -539,6 +539,7 @@ def test_custom_datatype_rule():
             if value < min_number:
                 self._error(field, 'Below the min')
 
+        # TODO replace with TypeDefintion in next major release
         def _validate_type_number(self, value):
             if isinstance(value, int):
                 return True

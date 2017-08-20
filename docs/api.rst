@@ -12,7 +12,8 @@ Validator Class
             priority_validations, purge_unknown, recent_error,
             _remaining_rules, root_allow_unknown, root_document, root_schema,
             rules_set_registry, schema, schema_error_tree, schema_path,
-            schema_registry, _valid_schemas, validate, validated
+            schema_registry, types, types_mapping, _valid_schemas, validate,
+            validated
 
 
 Rules Set & Schema Registry
@@ -20,6 +21,12 @@ Rules Set & Schema Registry
 
 .. autoclass:: cerberus.Registry
   :members:
+
+
+Type Definitions
+----------------
+
+.. autoclass:: cerberus.TypeDefinition
 
 
 Error Handlers
@@ -36,6 +43,8 @@ Error Handlers
 Python Error Representations
 ----------------------------
 
+.. autoclass:: cerberus.errors.ErrorDefinition
+
 .. autoclass:: cerberus.errors.ValidationError
   :members:
 
@@ -47,6 +56,9 @@ Error Codes
 These errors are used as :attr:`~cerberus.errors.ValidationError.code`.
 
 .. include:: includes/error-codes.rst
+
+Error Containers
+~~~~~~~~~~~~~~~~
 
 .. autoclass:: cerberus.errors.ErrorList
 

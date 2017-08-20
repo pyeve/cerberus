@@ -12,15 +12,13 @@ from cerberus.platform import PYTHON_VERSION
 from cerberus.utils import compare_paths_lt, quote_string
 
 
-ErrorDefinition = namedtuple('cerberus_error', 'code, rule')
+ErrorDefinition = namedtuple('ErrorDefinition', 'code, rule')
 """
-Error definition class
-
-Each distinguishable error is defined as a two-value-tuple that holds
-a *unique* error id as integer and the rule as string that can cause it.
-The attributes are accessible as properties ``id`` and ``rule``.
-The names do not contain a common prefix as they are supposed to be referenced
-within the module namespace, e.g. errors.CUSTOM
+This class is used to define possible errors. Each distinguishable error is
+defined by a *unique* error ``code`` as integer and the ``rule`` that can
+cause it as string.
+The instances' names do not contain a common prefix as they are supposed to be
+referenced within the module namespace, e.g. ``errors.CUSTOM``.
 """
 
 
