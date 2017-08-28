@@ -113,6 +113,8 @@ prefix ``_validator_`` will be called with the field and value as argument:
             self._error(field, "Must be an odd number")
 
 
+.. _custom-coercer:
+
 Custom Coercers
 ---------------
 You can also define custom methods that return a ``coerce`` d value or point to

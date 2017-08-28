@@ -11,6 +11,7 @@ see: https://www.patreon.com/nicolaiarocci
 
 Not released yet.
 
+- Fix: API reference lacks generated content. Closes #281 (Frank Sachsenheim).
 - Fix: ``readonly`` works properly just in the first validation. Closes #311
   (Frank Sachsenheim).
 - Fix: ``coerce`` ignores ``nullable: True``. Closes #269 (Frank Sachsenheim).

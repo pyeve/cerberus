@@ -29,7 +29,7 @@ class DefinitionSchema(MutableMapping):
         :param validator: An instance of Validator-(sub-)class that uses this
                           schema.
         :param schema: A definition-schema as ``dict``. Defaults to an empty
-                      one.
+                       one.
         """
         if not isinstance(validator, get_Validator_class()):
             raise RuntimeError('validator argument must be a Validator-'

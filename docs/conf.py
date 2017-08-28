@@ -11,14 +11,17 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import importlib.util
+from pathlib import Path
+
 import alabaster
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
-sys.path.append(os.path.abspath('..'))
+
+module_spec = importlib.util.spec_from_file_location(
+    'generate_includes', str(Path(__file__).parent / 'includes' / 'generate.py'))
+_module = importlib.util.module_from_spec(module_spec)
+module_spec.loader.exec_module(_module)
+
 
 # -- General configuration -----------------------------------------------------
 
