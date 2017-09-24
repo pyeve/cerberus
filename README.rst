@@ -14,7 +14,7 @@ Features
 --------
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be non-blocking and easily extensible, allowing for custom
-validation. It has no dependancies and is thoroughly tested under Python 2.6,
+validation. It has no dependencies and is thoroughly tested under Python 2.6,
 Python 2.7, Python 3.3, Python 3.4, Python 3.5, Python 3.6, PyPy and PyPy3.
 
 Funding
