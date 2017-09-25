@@ -11,6 +11,8 @@ see: https://www.patreon.com/nicolaiarocci
 
 Not released yet.
 
+- New: Support for Types Definitions, which allow quick types check on the fly
+  (Frank Sachsenheim).
 - Fix: API reference lacks generated content. Closes #281 (Frank Sachsenheim).
 - Fix: ``readonly`` works properly just in the first validation. Closes #311
   (Frank Sachsenheim).
