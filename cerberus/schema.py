@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
-from collections import Callable, Hashable, Iterable, Mapping, MutableMapping
+from collections import (Callable, Hashable, Iterable, Mapping,
+                         MutableMapping, Sequence)
 from copy import copy
 
 from cerberus import errors
 from cerberus.platform import _str_type
-from cerberus.utils import get_Validator_class, validator_factory, mapping_hash
+from cerberus.utils import (get_Validator_class, validator_factory,
+                            mapping_hash, TypeDefinition)
 
 
 class SchemaError(Exception):
@@ -22,6 +24,13 @@ class DefinitionSchema(MutableMapping):
             global SchemaValidator
             SchemaValidator = validator_factory('SchemaValidator',
                                                 SchemaValidatorMixin)
+            types_mapping = SchemaValidator.types_mapping.copy()
+            types_mapping.update({
+                'callable': TypeDefinition('callable', (Callable,), ()),
+                'hashable': TypeDefinition('hashable', (Hashable,), ())
+            })
+            SchemaValidator.types_mapping = types_mapping
+
         return super(DefinitionSchema, cls).__new__(cls)
 
     def __init__(self, validator, schema={}):
@@ -273,18 +282,6 @@ class SchemaValidatorMixin(object):
             else:
                 self.target_validator._valid_schemas.add(_hash)
 
-    def _validate_type_callable(self, value):
-        if isinstance(value, Callable):
-            return True
-
-    def _validate_type_hashable(self, value):
-        if isinstance(value, Hashable):
-            return True
-
-    def _validate_type_hashables(self, value):
-        if self._validate_type_list(value):
-            return all(self._validate_type_hashable(x) for x in value)
-
     def _validator_bulk_schema(self, field, value):
         if isinstance(value, _str_type):
             if value in self.known_rules_set_refs:
@@ -312,6 +309,22 @@ class SchemaValidatorMixin(object):
             self._error(validator._errors)
         else:
             self.target_validator._valid_schemas.add(_hash)
+
+    def _validator_dependencies(self, field, value):
+        if isinstance(value, _str_type):
+            pass
+        elif isinstance(value, Mapping):
+            validator = self._get_child_validator(
+                document_crumb=field,
+                schema={'valueschema': {'type': 'list'}},
+                allow_unknown=True
+            )
+            if not validator(value, normalize=False):
+                self._error(validator._errors)
+        elif isinstance(value, Sequence):
+            if not all(isinstance(x, Hashable) for x in value):
+                path = self.document_path + (field,)
+                self._error(path, 'All dependencies must be a hashable type.')
 
     def _validator_handler(self, field, value):
         if isinstance(value, Callable):
@@ -355,6 +368,15 @@ class SchemaValidatorMixin(object):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
+    def _validator_type(self, field, value):
+        value = (value,) if isinstance(value, _str_type) else value
+        invalid_constraints = ()
+        for constraint in value:
+            if constraint not in self.target_validator.types:
+                invalid_constraints += (constraint,)
+        if invalid_constraints:
+            path = self.document_path + (field,)
+            self._error(path, 'Unsupported types: %s' % invalid_constraints)
 
 ####
 

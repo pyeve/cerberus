@@ -10,9 +10,10 @@
 
 from __future__ import absolute_import
 
-from cerberus.validator import Validator, DocumentError
+from cerberus.validator import DocumentError, Validator
 from cerberus.schema import (rules_set_registry, schema_registry, Registry,
                              SchemaError)
+from cerberus.utils import TypeDefinition
 
 
 __version__ = "1.1"
@@ -21,6 +22,7 @@ __all__ = [
     DocumentError.__name__,
     Registry.__name__,
     SchemaError.__name__,
+    TypeDefinition.__name__,
     Validator.__name__,
     'schema_registry',
     'rules_set_registry'

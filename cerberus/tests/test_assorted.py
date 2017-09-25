@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from decimal import Decimal
+
 from pytest import mark
 
+from cerberus import TypeDefinition, Validator
 from cerberus.tests import assert_fail, assert_success
 
 
@@ -27,3 +30,19 @@ def test_that_test_fails(test, document):
         pass
     else:
         raise AssertionError("test didn't fail")
+
+
+def test_dynamic_types():
+    decimal_type = TypeDefinition('decimal', (Decimal,), ())
+    document = {'measurement': Decimal(0)}
+    schema = {'measurement': {'type': 'decimal'}}
+
+    validator = Validator()
+    validator.types_mapping['decimal'] = decimal_type
+    assert_success(document, schema, validator)
+
+    class MyValidator(Validator):
+        types_mapping = Validator.types_mapping.copy()
+        types_mapping['decimal'] = decimal_type
+    validator = MyValidator()
+    assert_success(document, schema, validator)

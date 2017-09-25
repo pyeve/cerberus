@@ -75,29 +75,44 @@ Custom Data Types
 Cerberus supports and validates several standard data types (see :ref:`type`).
 When building a custom validator you can add and validate your own data types.
 
-For example `Eve <http://python-eve.org>`_ (a tool for quickly building and
-deploying RESTful Web Services) supports a custom ``objectid`` type, which is
-used to validate that field values conform to the BSON/MongoDB ``ObjectId``
-format.
-
-You extend the supported set of data types by adding
-a ``_validate_type_<typename>`` method to your own :class:`~cerberus.Validator`
-subclass. This snippet, directly from Eve source, shows how the ``objectid``
-has been implemented:
+Additional types can be added on the fly by assigning a
+:class:`~cerberus.TypeDefinition` to the designated type name in
+:attr:`~cerberus.Validator.types_mapping`:
 
 .. testcode::
 
-     def _validate_type_objectid(self, value):
-         """ Enables validation for `objectid` schema attribute.
-         :param value: field value.
-         """
-         if re.match('[a-f0-9]{24}', value):
-             return True
+    from decimal import Decimal
+
+    decimal_type = cerberus.TypeDefinition('decimal', (Decimal,), ())
+
+    Validator.types_mapping['decimal'] = decimal_type
+
+.. caution::
+
+    As the ``types_mapping`` property is a mutable type, any change to its
+    items on an instance will affect its class.
+
+They can also be defined for subclasses of :class:`~cerberus.Validator`:
+
+.. testcode::
+
+    from decimal import Decimal
+
+    decimal_type = cerberus.TypeDefinition('decimal', (Decimal,), ())
+
+    class CustomValidator(Validator):
+        types_mapping = Validator.types_mapping.copy()
+        types_mapping['decimal'] = decimal_type
+
 
 .. versionadded:: 0.0.2
 
 .. versionchanged:: 1.0
    The type validation logic changed, see :doc:`upgrading`.
+
+.. versionchanged:: 1.2
+   Added the :attr:`~cerberus.Validator.types_mapping` property and marked
+   methods for testing types as deprecated.
 
 Custom Validators
 -----------------

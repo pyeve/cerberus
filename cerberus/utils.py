@@ -1,8 +1,21 @@
 from __future__ import absolute_import
 
-from collections import Mapping, Sequence
+from collections import Mapping, namedtuple, Sequence
 
 from cerberus.platform import _int_types, _str_type
+
+
+TypeDefinition = namedtuple('TypeDefinition',
+                            'name,included_types,excluded_types')
+"""
+This class is used to define types that can be used as value in the
+:attr:`~cerberus.Validator.types_mapping` property.
+The ``name`` should be descriptive and match the key it is going to be assigned
+to.
+A value that is validated against such definition must be an instance of any of
+the types contained in ``included_types`` and must not match any of the types
+contained in ``excluded_types``.
+"""
 
 
 def compare_paths_lt(x, y):
@@ -64,6 +77,17 @@ def quote_string(value):
         return '"%s"' % value
     else:
         return value
+
+
+class readonly_classproperty(property):
+    def __get__(self, instance, owner):
+        return super(readonly_classproperty, self).__get__(owner)
+
+    def __set__(self, instance, value):
+        raise RuntimeError('This is a readonly class property.')
+
+    def __delete__(self, instance):
+        raise RuntimeError('This is a readonly class property.')
 
 
 def validator_factory(name, mixin=None, class_dict={}):
