@@ -48,6 +48,8 @@ After renaming, unknown fields will be purged if the
 You can set the property per keyword-argument upon initialization or as rule for
 subdocuments like ``allow_unknown`` (see :ref:`allowing-the-unknown`). The default is
 ``False``.
+If a subdocument includes an ``allow_unknown`` rule then unknown fields
+will not be purged on that subdocument.
 
 .. doctest::
 

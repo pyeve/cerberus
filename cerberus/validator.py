@@ -599,7 +599,7 @@ class Validator(object):
             schema[field] = self._resolve_rules_set(schema[field])
 
         self.__normalize_rename_fields(mapping, schema)
-        if self.purge_unknown:
+        if self.purge_unknown and not self.allow_unknown:
             self._normalize_purge_unknown(mapping, schema)
         # Check `readonly` fields before applying default values because
         # a field's schema definition might contain both `readonly` and

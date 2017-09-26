@@ -441,3 +441,29 @@ def test_allow_unknown_wo_schema():
     # https://github.com/pyeve/cerberus/issues/302
     v = Validator({'a': {'type': 'dict', 'allow_unknown': True}})
     v({'a': {}})
+
+
+def test_allow_unknown_with_purge_unknown():
+    validator = Validator(purge_unknown=True)
+    schema = {'foo': {'type': 'dict', 'allow_unknown': True}}
+    document = {'foo': {'bar': True}, 'bar': 'foo'}
+    expected = {'foo': {'bar': True}}
+    assert_normalized(document, expected, schema, validator)
+
+
+def test_allow_unknown_with_purge_unknown_subdocument():
+    validator = Validator(purge_unknown=True)
+    schema = {
+        'foo': {
+            'type': 'dict',
+            'schema': {
+                'bar': {
+                    'type': 'string'
+                }
+            },
+            'allow_unknown': True
+        }
+    }
+    document = {'foo': {'bar': 'baz', 'corge': False}, 'thud': 'xyzzy'}
+    expected = {'foo': {'bar': 'baz', 'corge': False}}
+    assert_normalized(document, expected, schema, validator)
