@@ -13,6 +13,8 @@ Not released yet.
 
 - New: Support for Types Definitions, which allow quick types check on the fly
   (Frank Sachsenheim).
+- Fix: Make ``purge_unknown`` and ``allow_unknown`` play nice together. Closes
+  #324 (Audric Schiltknecht).
 - Fix: API reference lacks generated content. Closes #281 (Frank Sachsenheim).
 - Fix: ``readonly`` works properly just in the first validation. Closes #311
   (Frank Sachsenheim).
