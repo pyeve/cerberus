@@ -185,7 +185,8 @@ class DefinitionSchema(MutableMapping):
     def validate(self, schema=None):
         if schema is None:
             schema = self.schema
-        _hash = mapping_hash(schema)
+        _hash = (mapping_hash(schema),
+                 mapping_hash(self.validator.types_mapping))
         if _hash not in self.validator._valid_schemas:
             self._validate(schema)
             self.validator._valid_schemas.add(_hash)
@@ -272,7 +273,8 @@ class SchemaValidatorMixin(object):
         )
 
         for constraints in value:
-            _hash = mapping_hash({'turing': constraints})
+            _hash = (mapping_hash({'turing': constraints}),
+                     mapping_hash(self.target_validator.types_mapping))
             if _hash in self.target_validator._valid_schemas:
                 continue
 
@@ -296,7 +298,8 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = mapping_hash({'turing': value})
+        _hash = (mapping_hash({'turing': value}),
+                 mapping_hash(self.target_validator.types_mapping))
         if _hash in self.target_validator._valid_schemas:
             return
 
@@ -355,7 +358,8 @@ class SchemaValidatorMixin(object):
             else:
                 value = definition
 
-        _hash = mapping_hash(value)
+        _hash = (mapping_hash(value),
+                 mapping_hash(self.target_validator.types_mapping))
         if _hash in self.target_validator._valid_schemas:
             return
 
