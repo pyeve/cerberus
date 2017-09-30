@@ -476,31 +476,41 @@ class BasicErrorHandler(BaseErrorHandler):
     def __str__(self):
         return pformat(self.pretty_tree)
 
+    @property
+    def pretty_tree(self):
+        pretty = deepcopy(self.tree)
+        for field in pretty:
+            self._purge_empty_dicts(pretty[field])
+        return pretty
+
     @encode_unicode
     def add(self, error):
         # Make sure the original error is not altered with
         # error paths specific to the handler.
         error = deepcopy(error)
 
-        self.rewrite_error_path(error)
+        self._rewrite_error_path(error)
 
         if error.is_logic_error:
-            self.insert_logic_error(error)
+            self._insert_logic_error(error)
         elif error.is_group_error:
-            self.insert_group_error(error)
+            self._insert_group_error(error)
         elif error.code in self.messages:
-            self.insert_error(error.document_path,
-                              self.format_message(error.field, error))
+            self._insert_error(error.document_path,
+                               self._format_message(error.field, error))
 
     def clear(self):
         self.tree = {}
 
-    def format_message(self, field, error):
+    def start(self, validator):
+        self.clear()
+
+    def _format_message(self, field, error):
         return self.messages[error.code].format(
             *error.info, constraint=error.constraint,
             field=field, value=error.value)
 
-    def insert_error(self, path, node):
+    def _insert_error(self, path, node):
         """ Adds an error or sub-tree to :attr:tree.
 
         :param path: Path to the error.
@@ -524,78 +534,33 @@ class BasicErrorHandler(BaseErrorHandler):
                 new = self.__class__(tree=copy(subtree))
             else:
                 new = self.__class__()
-            new.insert_error(path[1:], node)
+            new._insert_error(path[1:], node)
             subtree.update(new.tree)
 
-    def insert_group_error(self, error):
-        for error in error.child_errors:
-            if error.is_logic_error:
-                self.insert_logic_error(error)
-            elif error.is_group_error:
-                self.insert_group_error(error)
-            else:
-                self.insert_error(error.document_path,
-                                  self.format_message(error.field, error))
-
-    def insert_logic_error(self, error):
-        field = error.field
-        self.insert_error(error.document_path,
-                          self.format_message(field, error))
-
-        for child_errors in error.definitions_errors.values():
-            if not child_errors:
-                continue
-
-            for child_error in child_errors:
-                if child_error.is_logic_error:
-                    self.insert_logic_error(child_error)
-                elif child_error.is_group_error:
-                    self.insert_group_error(child_error)
-                else:
-                    self.insert_error(child_error.document_path,
-                                      self.format_message(field, child_error))
-
-    def rewrite_error_path(self, error, offset=0):
-        """
-        Recursively rewrites the error path to correctly represent logic errors
-        """
-        if error.is_logic_error:
-            self.rewrite_logic_error_path(error, offset)
-        elif error.is_group_error:
-            self.rewrite_group_error_path(error, offset)
-
-    def rewrite_group_error_path(self, error, offset=0):
-        child_start = len(error.document_path) - offset
-
+    def _insert_group_error(self, error):
         for child_error in error.child_errors:
-            relative_path = child_error.document_path[child_start:]
-            child_error.document_path = error.document_path + relative_path
+            if child_error.is_logic_error:
+                self._insert_logic_error(child_error)
+            elif child_error.is_group_error:
+                self._insert_group_error(child_error)
+            else:
+                self._insert_error(child_error.document_path,
+                                   self._format_message(child_error.field, child_error))
 
-            self.rewrite_error_path(child_error, offset)
+    def _insert_logic_error(self, error):
+        field = error.field
+        self._insert_error(error.document_path,
+                           self._format_message(field, error))
 
-    def rewrite_logic_error_path(self, error, offset=0):
-        error.document_path = error.document_path
-        child_start = len(error.document_path) - offset
-
-        for i, child_errors in error.definitions_errors.items():
-            if not child_errors:
-                continue
-
-            nodename = '%s definition %s' % (error.rule, i)
-            path = error.document_path + (nodename,)
-
-            for child_error in child_errors:
-                rel_path = child_error.document_path[child_start:]
-                child_error.document_path = path + rel_path
-
-                self.rewrite_error_path(child_error, offset + 2)
-
-    @property
-    def pretty_tree(self):
-        pretty = deepcopy(self.tree)
-        for field in pretty:
-            self._purge_empty_dicts(pretty[field])
-        return pretty
+        for definition_errors in error.definitions_errors.values():
+            for child_error in definition_errors:
+                if child_error.is_logic_error:
+                    self._insert_logic_error(child_error)
+                elif child_error.is_group_error:
+                    self._insert_group_error(child_error)
+                else:
+                    self._insert_error(child_error.document_path,
+                                       self._format_message(field, child_error))
 
     def _purge_empty_dicts(self, error_list):
         subtree = error_list[-1]
@@ -605,8 +570,40 @@ class BasicErrorHandler(BaseErrorHandler):
             for key in subtree:
                 self._purge_empty_dicts(subtree[key])
 
-    def start(self, validator):
-        self.clear()
+    def _rewrite_error_path(self, error, offset=0):
+        """
+        Recursively rewrites the error path to correctly represent logic errors
+        """
+        if error.is_logic_error:
+            self._rewrite_logic_error_path(error, offset)
+        elif error.is_group_error:
+            self._rewrite_group_error_path(error, offset)
+
+    def _rewrite_group_error_path(self, error, offset=0):
+        child_start = len(error.document_path) - offset
+
+        for child_error in error.child_errors:
+            relative_path = child_error.document_path[child_start:]
+            child_error.document_path = error.document_path + relative_path
+
+            self._rewrite_error_path(child_error, offset)
+
+    def _rewrite_logic_error_path(self, error, offset=0):
+        error.document_path = error.document_path
+        child_start = len(error.document_path) - offset
+
+        for i, definition_errors in error.definitions_errors.items():
+            if not definition_errors:
+                continue
+
+            nodename = '%s definition %s' % (error.rule, i)
+            path = error.document_path + (nodename,)
+
+            for child_error in definition_errors:
+                rel_path = child_error.document_path[child_start:]
+                child_error.document_path = path + rel_path
+
+                self._rewrite_error_path(child_error, offset + 2)
 
 
 class SchemaErrorHandler(BasicErrorHandler):
