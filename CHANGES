@@ -28,6 +28,8 @@ Not released yet.
 - Fix: Error when setting fields as tuples instead of lists. Closes #271
   (Sebastian Rajo).
 - CI: Reactivate testing on PyPy3 (Frank Sachsenheim).
+- New: Correctly handle nested logic and group errors. Closes #278 #299
+  (Kornelijus Survila).
 
 Version 1.1
 -----------

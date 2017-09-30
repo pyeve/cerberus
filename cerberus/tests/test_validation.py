@@ -1222,8 +1222,8 @@ def test_anyof_schema(validator):
     scope = v_errors['parts'][-1][3][-1]['anyof'][-1]
     assert 'anyof definition 0' in scope
     assert 'anyof definition 1' in scope
-    assert scope['anyof definition 0'] == ["unknown field"]
-    assert scope['anyof definition 1'] == ["unknown field"]
+    assert scope['anyof definition 0'] == [{"product name": ["unknown field"]}]
+    assert scope['anyof definition 1'] == [{"product name": ["unknown field"]}]
     assert v_errors['parts'][-1][4] == ["must be of ['dict', 'string'] type"]
 
 
@@ -1275,6 +1275,39 @@ def test_nested_oneof_type():
               {'valueschema': {'oneof_type': ['string', 'integer']}}}
     assert_success({'nested_oneof_type': {'foo': 'a'}}, schema)
     assert_success({'nested_oneof_type': {'bar': 3}}, schema)
+
+
+def test_nested_oneofs(validator):
+    validator.schema = {'abc': {
+        'type': 'dict',
+        'oneof_schema': [
+            {'foo': {
+                'type': 'dict',
+                'schema': {'bar': {'oneof_type': ['integer', 'float']}}
+            }},
+            {'baz': {'type': 'string'}}
+        ]}}
+
+    document = {'abc': {'foo': {'bar': 'bad'}}}
+
+    expected_errors = {
+        'abc': [
+            {'oneof': [
+                'none or more than one rule validate',
+                {'oneof definition 0': [
+                    {'foo': [{'bar': [
+                        {'oneof': [
+                            'none or more than one rule validate',
+                            {'oneof definition 0': ['must be of integer type'],
+                             'oneof definition 1': ['must be of float type']}
+                        ]}]}]}],
+                 'oneof definition 1': [{'foo': ['unknown field']}]}]
+             }
+        ]
+    }
+
+    assert_fail(document, validator=validator)
+    assert validator.errors == expected_errors
 
 
 def test_no_of_validation_if_type_fails(validator):

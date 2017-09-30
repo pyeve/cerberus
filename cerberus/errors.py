@@ -479,6 +479,12 @@ class BasicErrorHandler(BaseErrorHandler):
 
     @encode_unicode
     def add(self, error):
+        # Make sure the original error is not altered with
+        # error paths specific to the handler.
+        error = deepcopy(error)
+
+        self.rewrite_error_path(error)
+
         if error.is_logic_error:
             self.insert_logic_error(error)
         elif error.is_group_error:
@@ -533,24 +539,57 @@ class BasicErrorHandler(BaseErrorHandler):
                                   self.format_message(error.field, error))
 
     def insert_logic_error(self, error):
-        path = error.document_path + (error.rule, )
         field = error.field
+        self.insert_error(error.document_path,
+                          self.format_message(field, error))
 
-        self.insert_error(path, self.format_message(field, error))
-
-        for i in error.definitions_errors:
-            child_errors = error.definitions_errors[i]
+        for child_errors in error.definitions_errors.values():
             if not child_errors:
                 continue
-            nodename = '%s definition %s' % (error.rule, i)
+
             for child_error in child_errors:
                 if child_error.is_logic_error:
-                    raise NotImplementedError
+                    self.insert_logic_error(child_error)
                 elif child_error.is_group_error:
-                    raise NotImplementedError
+                    self.insert_group_error(child_error)
                 else:
-                    self.insert_error(path + (nodename,),
+                    self.insert_error(child_error.document_path,
                                       self.format_message(field, child_error))
+
+    def rewrite_error_path(self, error, offset=0):
+        """
+        Recursively rewrites the error path to correctly represent logic errors
+        """
+        if error.is_logic_error:
+            self.rewrite_logic_error_path(error, offset)
+        elif error.is_group_error:
+            self.rewrite_group_error_path(error, offset)
+
+    def rewrite_group_error_path(self, error, offset=0):
+        child_start = len(error.document_path) - offset
+
+        for child_error in error.child_errors:
+            relative_path = child_error.document_path[child_start:]
+            child_error.document_path = error.document_path + relative_path
+
+            self.rewrite_error_path(child_error, offset)
+
+    def rewrite_logic_error_path(self, error, offset=0):
+        error.document_path = error.document_path + (error.rule, )
+        child_start = len(error.document_path) - offset - 1
+
+        for i, child_errors in error.definitions_errors.items():
+            if not child_errors:
+                continue
+
+            nodename = '%s definition %s' % (error.rule, i)
+            path = error.document_path + (nodename,)
+
+            for child_error in child_errors:
+                rel_path = child_error.document_path[child_start:]
+                child_error.document_path = path + rel_path
+
+                self.rewrite_error_path(child_error, offset + 2)
 
     @property
     def pretty_tree(self):
