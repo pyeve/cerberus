@@ -1190,7 +1190,7 @@ def test_anyof_schema(validator):
     schema = {'parts': {'type': 'list', 'schema': valid_item}}
     document = {'parts': [{'model number': 'MX-009', 'count': 100},
                           {'serial number': '898-001'},
-                           'misc']}
+                          'misc']}
 
     # document is valid. each entry in 'parts' matches a type or schema
     assert_success(document, schema, validator=validator)
@@ -1225,7 +1225,7 @@ def test_anyof_schema(validator):
     v_errors = validator.errors
     assert 'parts' in v_errors
     assert 3 in v_errors['parts'][-1]
-    assert v_errors['parts'][-1][3][0] == "not any definition validates"
+    assert v_errors['parts'][-1][3][0] == "no definitions validate"
     scope = v_errors['parts'][-1][3][-1]
     assert 'anyof definition 0' in scope
     assert 'anyof definition 1' in scope
@@ -1305,7 +1305,7 @@ def test_nested_oneofs(validator):
                     'none or more than one rule validate',
                     {'oneof definition 0': ['must be of integer type'],
                      'oneof definition 1': ['must be of float type']}
-                    ]}]}],
+                ]}]}],
              'oneof definition 1': [{'foo': ['unknown field']}]}
         ]
     }

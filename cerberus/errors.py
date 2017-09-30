@@ -545,7 +545,8 @@ class BasicErrorHandler(BaseErrorHandler):
                 self._insert_group_error(child_error)
             else:
                 self._insert_error(child_error.document_path,
-                                   self._format_message(child_error.field, child_error))
+                                   self._format_message(child_error.field,
+                                                        child_error))
 
     def _insert_logic_error(self, error):
         field = error.field
@@ -589,7 +590,6 @@ class BasicErrorHandler(BaseErrorHandler):
             self._rewrite_error_path(child_error, offset)
 
     def _rewrite_logic_error_path(self, error, offset=0):
-        error.document_path = error.document_path
         child_start = len(error.document_path) - offset
 
         for i, definition_errors in error.definitions_errors.items():
@@ -603,7 +603,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 rel_path = child_error.document_path[child_start:]
                 child_error.document_path = path + rel_path
 
-                self._rewrite_error_path(child_error, offset + 2)
+                self._rewrite_error_path(child_error, offset + 1)
 
 
 class SchemaErrorHandler(BasicErrorHandler):
