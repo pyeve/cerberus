@@ -227,6 +227,5 @@ def test_basic_error_of_errors(validator):
         'foo': [errors.BasicErrorHandler.messages[0x92],
                 {'oneof definition 0': ['must be of integer type'],
                  'oneof definition 1': ['must be of string type']}
-               ]
+                ]
     }
-
