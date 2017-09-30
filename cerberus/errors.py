@@ -417,7 +417,10 @@ def encode_unicode(f):
 
 
 class BasicErrorHandler(BaseErrorHandler):
-    """ Models cerberus' legacy. Returns a :class:`dict`. """
+    """ Models cerberus' legacy. Returns a :class:`dict`. When mangled
+        through :class:`str` a pretty-formatted representation of that
+        tree is returned.
+    """
     messages = {0x00: "{0}",
 
                 0x01: "document is missing",
