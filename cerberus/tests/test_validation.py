@@ -589,6 +589,12 @@ def test_empty_values(value, _type):
     assert_success(document, schema)
 
 
+def test_empty_skips_regex(validator):
+    schema = {'foo': {'empty': True, 'regex': r'\d?\d\.\d\d',
+                      'type': 'string'}}
+    assert validator({'foo': ''}, schema)
+
+
 def test_ignore_none_values():
     field = 'test'
     schema = {field: {'type': 'string', 'empty': False, 'required': False}}

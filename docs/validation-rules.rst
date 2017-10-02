@@ -209,9 +209,13 @@ special meaning.
 
 empty
 -----
-If ``False`` validation of an :term:`iterable` value will fail if it is empty.
-Setting it to ``True`` manually is pointless as it behaves like omitting the
-rule at all.
+If constrained with ``False`` validation of an :term:`iterable` value will fail
+if it is empty.
+Per default the emptiness of a field isn't checked and is therefore allowed
+when the rule isn't defined. But defining it with the constraint ``True`` will
+skip the possibly defined rules ``allowed``, ``forbidden``, ``items``,
+``minlength``, ``maxlength``, ``regex`` and ``validator`` for that field when
+the value is considered empty.
 
 .. doctest::
 
