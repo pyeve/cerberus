@@ -159,6 +159,8 @@ class DefinitionSchema(MutableMapping):
 
             for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
                 if rule in schema[field]:
+                    if not isinstance(schema[field][rule], Sequence):
+                        continue
                     new_rules_definition = []
                     for item in schema[field][rule]:
                         new_rules_definition.append(cls.expand({0: item})[0])
@@ -266,6 +268,10 @@ class SchemaValidatorMixin(object):
 
     def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
+        if not isinstance(value, Sequence):
+            self._error(field, errors.BAD_TYPE)
+            return
+
         validator = self._get_child_validator(
             document_crumb=rule,
             schema=self.root_allow_unknown['schema'],

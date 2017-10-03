@@ -48,7 +48,7 @@ def test_bad_schema_definition(validator):
         validator.schema = {field: 'this should really be a dict'}
 
 
-def bad_of_rules():
+def test_bad_of_rules():
     schema = {'foo': {'anyof': {'type': 'string'}}}
     assert_schema_error({}, schema)
 

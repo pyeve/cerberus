@@ -12,18 +12,19 @@ from cerberus import errors, Validator
 from cerberus.tests import \
     (assert_bad_type, assert_fail, assert_has_error, assert_not_has_error,
      assert_success, assert_document_error)
+from cerberus.tests.conftest import sample_schema
 
 
 def test_empty_document():
-    assert_document_error(None, None, None,
+    assert_document_error(None, sample_schema, None,
                           errors.DOCUMENT_MISSING)
 
 
 def test_bad_document_type():
     document = "not a dict"
     assert_document_error(
-        document, None, None, errors.DOCUMENT_FORMAT.format(
-            document)
+        document, sample_schema, None,
+        errors.DOCUMENT_FORMAT.format(document)
     )
 
 
