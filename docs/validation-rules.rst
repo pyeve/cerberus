@@ -351,7 +351,8 @@ Minimum and maximum length allowed for iterables.
 noneof
 ------
 
-Validates if *none* of the provided constraints validates the field. See `\*of-rules`_ for details.
+Validates if *none* of the provided constraints validates the field. See
+`\*of-rules`_ for details.
 
 .. versionadded:: 0.9
 
@@ -384,8 +385,8 @@ defaults ``False``.
 \*of-rules
 ----------
 
-These rules allow you to list multiple sets of rules to validate against. The
-field will be considered valid if it validates against the set in the list
+These rules allow you to define different sets of rules to validate against.
+The field will be considered valid if it validates against the set in the list
 according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 
 ==========  ====================================================================
@@ -395,8 +396,8 @@ according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 ``oneof``   Validates if *exactly one* of the provided constraints applies.
 ==========  ====================================================================
 
-For example, to verify that a property is a number between 0 and 10 or 100 and
-110, you could do the following:
+For example, to verify that a field's value is a number between 0 and 10 or 100
+and 110, you could do the following:
 
 .. doctest::
 
@@ -419,8 +420,8 @@ For example, to verify that a property is a number between 0 and 10 or 100 and
     >>> v.errors   # doctest: +SKIP
     {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
 
-The ``anyof`` rule works by creating a new instance of a schema for each item
-in the list. The above schema is equivalent to creating two separate schemas:
+The ``anyof`` rule tests each rules set in the list. Hence, the above schema is
+equivalent to creating two separate schemas:
 
 .. doctest::
 
@@ -438,6 +439,11 @@ in the list. The above schema is equivalent to creating two separate schemas:
     >>> document = {'prop1': 55}
     >>> v.validate(document, schema1) or v.validate(document, schema2)
     False
+
+.. attention::
+
+    :doc:`Normalization rules <normalization-rules>` cannot be defined within
+    these rule sets.
 
 .. versionadded:: 0.9
 

@@ -53,6 +53,11 @@ def test_bad_of_rules():
     assert_schema_error({}, schema)
 
 
+def test_normalization_rules_are_invalid_in_of_rules():
+    schema = {0: {'anyof': [{'coerce': lambda x: x}]}}
+    assert_schema_error({}, schema)
+
+
 def test_anyof_allof_schema_validate():
     # make sure schema with 'anyof' and 'allof' constraints are checked
     # correctly
@@ -83,7 +88,7 @@ def test_validated_schema_cache():
     v = Validator({'foozifix': {'coerce': int}})
     assert len(v._valid_schemas) == cache_size
 
-    max_cache_size = 140
+    max_cache_size = 141
     assert cache_size <= max_cache_size, \
         "There's an unexpected high amount (%s) of cached valid " \
         "definition schemas. Unless you added further tests, " \
