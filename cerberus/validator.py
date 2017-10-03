@@ -1269,19 +1269,19 @@ class BareValidator(object):
             type_definition = self.types_mapping.get(_type)
             if type_definition is not None:
                 matched = isinstance(value, type_definition.included_types) \
-                          and not isinstance(value, type_definition.excluded_types)
+                    and not isinstance(value, type_definition.excluded_types)
             else:
                 type_handler = self.__get_rule_handler('validate_type', _type)
                 matched = type_handler(value)
             if matched:
                 return
 
-                # TODO uncomment this block on next major release
-                # if _validate_type_* methods were deprecated:
-                # type_definition = self.types_mapping[_type]
-                # if isinstance(value, type_definition.included_types) \
-                #         and not isinstance(value, type_definition.excluded_types):
-                #     return
+            # TODO uncomment this block on next major release
+            #      when _validate_type_* methods were deprecated:
+            # type_definition = self.types_mapping[_type]
+            # if isinstance(value, type_definition.included_types) \
+            #         and not isinstance(value, type_definition.excluded_types):  # noqa 501
+            #     return
 
         self._error(field, errors.BAD_TYPE)
         self._drop_remaining_rules()
