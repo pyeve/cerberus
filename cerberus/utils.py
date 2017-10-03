@@ -90,30 +90,30 @@ class readonly_classproperty(property):
         raise RuntimeError('This is a readonly class property.')
 
 
-def validator_factory(name, mixin=None, class_dict={}):
+def validator_factory(name, bases=None, namespace={}):
     """ Dynamically create a :class:`~cerberus.Validator` subclass.
         Docstrings of mixin-classes will be added to the resulting
-        class' one if ``__doc__`` is not in :obj:`class_dict`.
+        class' one if ``__doc__`` is not in :obj:`namespace`.
 
     :param name: The name of the new class.
     :type name: :class:`str`
-    :param mixin: Class(es) with mixin-methods.
-    :type mixin: :class:`tuple` of or a single :term:`class`
-    :param class_dict: Attributes for the new class.
-    :type class_dict: :class:`dict`
+    :param bases: Class(es) with additional and overriding attributes.
+    :type bases: :class:`tuple` of or a single :term:`class`
+    :param namespace: Attributes for the new class.
+    :type namespace: :class:`dict`
     :return: The created class.
     """
     Validator = get_Validator_class()
 
-    if mixin is None:
+    if bases is None:
         bases = (Validator,)
-    elif isinstance(mixin, tuple):
-        bases = (Validator,) + mixin
+    elif isinstance(bases, tuple):
+        bases += (Validator,)
     else:
-        bases = (Validator, mixin)
+        bases = (bases, Validator)
 
     docstrings = [x.__doc__ for x in bases if x.__doc__]
-    if len(docstrings) > 1 and '__doc__' not in class_dict:
-        class_dict.update({'__doc__': '\n'.join(docstrings)})
+    if len(docstrings) > 1 and '__doc__' not in namespace:
+        namespace.update({'__doc__': '\n'.join(docstrings)})
 
-    return type(name, bases, class_dict)
+    return type(name, bases, namespace)

@@ -49,7 +49,7 @@ class _SchemaRuleTypeError(Exception):
     pass
 
 
-class Validator(object):
+class BareValidator(object):
     """ Validator class. Normalizes and/or validates any mapping against a
     validation-schema which is provided as an argument at class instantiation
     or upon calling the :meth:`~cerberus.Validator.validate`,
@@ -173,7 +173,10 @@ class Validator(object):
             during the validation of a field.
             Type: :class:`list` """
 
-    def __init_error_handler(self, kwargs):
+        super(BareValidator, self).__init__()
+
+    @staticmethod
+    def __init_error_handler(kwargs):
         error_handler = kwargs.pop('error_handler', errors.BasicErrorHandler)
         if isinstance(error_handler, tuple):
             error_handler, eh_config = error_handler
@@ -1394,4 +1397,4 @@ class InspectedValidator(type):
         return result
 
 
-Validator = InspectedValidator('Validator', (Validator,), {})
+Validator = InspectedValidator('Validator', (BareValidator,), {})
