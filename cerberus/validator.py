@@ -94,7 +94,7 @@ class BareValidator(object):
     """ Rules that are evaluated on any field, regardless whether defined in
         the schema or not.
         Type: :class:`tuple` """
-    priority_validations = ('nullable', 'readonly', 'type')
+    priority_validations = ('nullable', 'readonly', 'type', 'empty')
     """ Rules that will be processed in that order before any other.
         Type: :class:`tuple` """
     types_mapping = {
@@ -1001,8 +1001,12 @@ class BareValidator(object):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        if isinstance(value, Iterable) and len(value) == 0 and not empty:
-            self._error(field, errors.EMPTY_NOT_ALLOWED)
+        if isinstance(value, Iterable) and len(value) == 0:
+            self._drop_remaining_rules(
+                'allowed', 'forbidden', 'items', 'minlength', 'maxlength',
+                'regex', 'validator')
+            if not empty:
+                self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excludes, field, value):
         """ {'type': ('hashable', 'list'),

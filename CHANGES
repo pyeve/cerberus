@@ -13,6 +13,8 @@ Not released yet.
 
 - New: Support for Types Definitions, which allow quick types check on the fly
   (Frank Sachsenheim).
+- Fix: Need to drop some rules when ``empty`` is allowed. Closes #326 (Frank
+  Sachsenheim).
 - Fix: typo in README (Christian Hogan).
 - Fix: Make ``purge_unknown`` and ``allow_unknown`` play nice together. Closes
   #324 (Audric Schiltknecht).
