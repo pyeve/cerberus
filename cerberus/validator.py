@@ -332,7 +332,11 @@ class BareValidator(object):
 
     def __get_rule_handler(self, domain, rule):
         methodname = '_{0}_{1}'.format(domain, rule.replace(' ', '_'))
-        return getattr(self, methodname, None)
+        result = getattr(self, methodname, None)
+        if result is None:
+            raise RuntimeError("There's no handler for '{}' in the '{}' "
+                               "domain.".format(rule, domain))
+        return result
 
     def _drop_nodes_from_errorpaths(self, _errors, dp_items, sp_items):
         """ Removes nodes by index from an errorpath, relatively to the
@@ -915,8 +919,7 @@ class BareValidator(object):
 
         def validate_rule(rule):
             validator = self.__get_rule_handler('validate', rule)
-            if validator:
-                return validator(definitions.get(rule, None), field, value)
+            return validator(definitions.get(rule, None), field, value)
 
         definitions = self._resolve_rules_set(definitions)
         value = self.document[field]
