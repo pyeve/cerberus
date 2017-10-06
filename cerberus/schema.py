@@ -159,6 +159,8 @@ class DefinitionSchema(MutableMapping):
 
             for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
                 if rule in schema[field]:
+                    if not isinstance(schema[field][rule], Sequence):
+                        continue
                     new_rules_definition = []
                     for item in schema[field][rule]:
                         new_rules_definition.append(cls.expand({0: item})[0])
@@ -240,6 +242,7 @@ class SchemaValidatorMixin(object):
         validator. """
     @property
     def known_rules_set_refs(self):
+        """ The encountered references to rules set registry items. """
         return self._config.get('known_rules_set_refs', ())
 
     @known_rules_set_refs.setter
@@ -248,6 +251,7 @@ class SchemaValidatorMixin(object):
 
     @property
     def known_schema_refs(self):
+        """ The encountered references to schema registry items. """
         return self._config.get('known_schema_refs', ())
 
     @known_schema_refs.setter
@@ -266,11 +270,13 @@ class SchemaValidatorMixin(object):
 
     def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
+        if not isinstance(value, Sequence):
+            self._error(field, errors.BAD_TYPE)
+            return
+
         validator = self._get_child_validator(
-            document_crumb=rule,
-            schema=self.root_allow_unknown['schema'],
-            allow_unknown=self.root_allow_unknown['allow_unknown']
-        )
+            document_crumb=rule, allow_unknown=False,
+            schema=self.target_validator.validation_rules)
 
         for constraints in value:
             _hash = (mapping_hash({'turing': constraints}),
@@ -285,6 +291,7 @@ class SchemaValidatorMixin(object):
                 self.target_validator._valid_schemas.add(_hash)
 
     def _validator_bulk_schema(self, field, value):
+        # resolve schema registry reference
         if isinstance(value, _str_type):
             if value in self.known_rules_set_refs:
                 return
@@ -292,8 +299,7 @@ class SchemaValidatorMixin(object):
                 self.known_rules_set_refs += (value,)
             definition = self.target_validator.rules_set_registry.get(value)
             if definition is None:
-                path = self.document_path + (field,)
-                self._error(path, 'Rules set definition %s not found.' % value)
+                self._error(field, 'Rules set definition %s not found.' % value)
                 return
             else:
                 value = definition
@@ -304,9 +310,8 @@ class SchemaValidatorMixin(object):
             return
 
         validator = self._get_child_validator(
-            document_crumb=field,
-            schema=self.root_allow_unknown['schema'],
-            allow_unknown=self.root_allow_unknown['allow_unknown'])
+            document_crumb=field, allow_unknown=False,
+            schema=self.target_validator.rules)
         validator(value, normalize=False)
         if validator._errors:
             self._error(validator._errors)

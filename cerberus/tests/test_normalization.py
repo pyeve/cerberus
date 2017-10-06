@@ -14,11 +14,27 @@ def test_coerce():
     assert_normalized(document, expected, schema)
 
 
-def test_coerce_in_subschema():
+def test_coerce_in_dictschema():
     schema = {'thing': {'type': 'dict',
                         'schema': {'amount': {'coerce': int}}}}
     document = {'thing': {'amount': '2'}}
     expected = {'thing': {'amount': 2}}
+    assert_normalized(document, expected, schema)
+
+
+def test_coerce_in_listschema():
+    schema = {'things': {'type': 'list',
+                         'schema': {'coerce': int}}}
+    document = {'things': ['1', '2', '3']}
+    expected = {'things': [1, 2, 3]}
+    assert_normalized(document, expected, schema)
+
+
+def test_coerce_in_dictschema_in_listschema():
+    item_schema = {'type': 'dict', 'schema': {'amount': {'coerce': int}}}
+    schema = {'things': {'type': 'list', 'schema': item_schema}}
+    document = {'things': [{'amount': '2'}]}
+    expected = {'things': [{'amount': 2}]}
     assert_normalized(document, expected, schema)
 
 

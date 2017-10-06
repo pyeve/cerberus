@@ -11,7 +11,7 @@ def assert_exception(exception, document={}, schema=None, validator=None,
     """ Tests whether a specific exception is raised. Optionally also tests
         whether the exception message is as expected. """
     if validator is None:
-        validator = Validator(sample_schema)
+        validator = Validator()
     if msg is None:
         with pytest.raises(exception) as excinfo:
             validator(document, schema)
