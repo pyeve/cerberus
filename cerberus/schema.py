@@ -10,6 +10,10 @@ from cerberus.utils import (get_Validator_class, validator_factory,
                             mapping_hash, TypeDefinition)
 
 
+class _Abort(Exception):
+    pass
+
+
 class SchemaError(Exception):
     """ Raised when the validation schema is missing, has the wrong format or
         contains errors. """
@@ -350,40 +354,47 @@ class SchemaValidatorMixin(object):
             self._validator_bulk_schema((field, i), schema)
 
     def _validator_schema(self, field, value):
-        if isinstance(value, _str_type):
-            if value in self.known_schema_refs:
-                return
-            else:
-                self.known_schema_refs += (value,)
-            definition = self.target_validator.schema_registry.get(value)
-            if definition is None:
-                path = self.document_path + (field,)
-                self._error(path, 'Schema definition %s not found.' % value)
-                return
-            else:
-                value = definition
+        try:
+            value = self._handle_schema_reference_for_validator(field, value)
+        except _Abort:
+            return
 
         _hash = (mapping_hash(value),
                  mapping_hash(self.target_validator.types_mapping))
         if _hash in self.target_validator._valid_schemas:
             return
 
-        expanded_value = {}
-        for k, v in value.items():
-            if isinstance(v, _str_type):
-                expanded_value[k] = \
-                    self.target_validator.rules_set_registry.get(v)
-            else:
-                expanded_value[k] = v
-
         validator = self._get_child_validator(
             document_crumb=field,
             schema=None, allow_unknown=self.root_allow_unknown)
-        validator(expanded_value, normalize=False)
+        validator(self._expand_rules_set_refs(value), normalize=False)
         if validator._errors:
             self._error(validator._errors)
         else:
             self.target_validator._valid_schemas.add(_hash)
+
+    def _handle_schema_reference_for_validator(self, field, value):
+        if not isinstance(value, _str_type):
+            return value
+        if value in self.known_schema_refs:
+            raise _Abort
+
+        self.known_schema_refs += (value,)
+        definition = self.target_validator.schema_registry.get(value)
+        if definition is None:
+            path = self.document_path + (field,)
+            self._error(path, 'Schema definition {} not found.'.format(value))
+            raise _Abort
+        return definition
+
+    def _expand_rules_set_refs(self, schema):
+        result = {}
+        for k, v in schema.items():
+            if isinstance(v, _str_type):
+                result[k] = self.target_validator.rules_set_registry.get(v)
+            else:
+                result[k] = v
+        return result
 
     def _validator_type(self, field, value):
         value = (value,) if isinstance(value, _str_type) else value
