@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from cerberus import schema_registry, rules_set_registry, Validator
-from cerberus.tests import assert_fail, assert_normalized, assert_success
+from cerberus.tests import (assert_fail, assert_normalized,
+                            assert_schema_error, assert_success)
 
 
 def test_schema_registry_simple():
@@ -70,10 +71,12 @@ def test_normalization_with_rules_set():
 
 
 def test_rules_set_with_dict_field():
+    document = {'a_dict': {'foo': 1}}
+    schema = {'a_dict': {'type': 'dict', 'schema': {'foo': 'rule'}}}
+
+    # the schema's not yet added to the valid ones, so test the faulty first
+    rules_set_registry.add('rule', {'tüpe': 'integer'})
+    assert_schema_error(document, schema)
+
     rules_set_registry.add('rule', {'type': 'integer'})
-    assert_success({'bar': 1, 'a_dict': {'foo': 1}},
-                   {'bar': 'rule', 'a_dict': {'type': 'dict', 'schema':
-                                              {'foo': {'type': 'integer'}}}})
-    assert_success({'bar': 1, 'a_dict': {'foo': 1}},
-                   {'bar': 'rule', 'a_dict': {'type': 'dict', 'schema':
-                                              {'foo': 'rule'}}})
+    assert_success(document, schema)

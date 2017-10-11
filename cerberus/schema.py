@@ -368,10 +368,18 @@ class SchemaValidatorMixin(object):
         if _hash in self.target_validator._valid_schemas:
             return
 
+        expanded_value = {}
+        for k, v in value.items():
+            if isinstance(v, _str_type):
+                expanded_value[k] = \
+                    self.target_validator.rules_set_registry.get(v)
+            else:
+                expanded_value[k] = v
+
         validator = self._get_child_validator(
             document_crumb=field,
             schema=None, allow_unknown=self.root_allow_unknown)
-        validator(value, normalize=False)
+        validator(expanded_value, normalize=False)
         if validator._errors:
             self._error(validator._errors)
         else:
