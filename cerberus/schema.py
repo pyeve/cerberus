@@ -425,6 +425,10 @@ class Registry(object):
         their name. """
         return self._storage
 
+    def clear(self):
+        """ Purge all definitions in the registry. """
+        self._storage.clear()
+
     def extend(self, definitions):
         """ Add several definitions at once. Existing definitions are
         replaced silently.
@@ -434,10 +438,6 @@ class Registry(object):
                            two-value :class:`tuple` s """
         for name, definition in dict(definitions).items():
             self.add(name, definition)
-
-    def clear(self):
-        """ Purge all definitions in the registry. """
-        self._storage.clear()
 
     def get(self, name, default=None):
         """ Retrieve a definition from the registry.
