@@ -13,6 +13,7 @@ Not released yet.
 
 - New: Support for Types Definitions, which allow quick types check on the fly
   (Frank Sachsenheim).
+- Fix: Schema registries do not work on dict fields. Closes #318.
 - Fix: Need to drop some rules when ``empty`` is allowed. Closes #326 (Frank
   Sachsenheim).
 - Fix: typo in README (Christian Hogan).
