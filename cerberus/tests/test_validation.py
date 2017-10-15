@@ -1221,12 +1221,12 @@ def test_anyof_schema(validator):
     assert_not_has_error(_errors, ('parts', 4), ('parts', 'schema', 'anyof'),
                          errors.ANYOF, valid_parts)
 
+    # tests errors.BasicErrorHandler's tree representation
     v_errors = validator.errors
     assert 'parts' in v_errors
     assert 3 in v_errors['parts'][-1]
-    assert 'anyof' in v_errors['parts'][-1][3][-1]
-    assert v_errors['parts'][-1][3][-1]['anyof'][0] == "no definitions validate"
-    scope = v_errors['parts'][-1][3][-1]['anyof'][-1]
+    assert v_errors['parts'][-1][3][0] == "no definitions validate"
+    scope = v_errors['parts'][-1][3][-1]
     assert 'anyof definition 0' in scope
     assert 'anyof definition 1' in scope
     assert scope['anyof definition 0'] == [{"product name": ["unknown field"]}]
@@ -1299,17 +1299,14 @@ def test_nested_oneofs(validator):
 
     expected_errors = {
         'abc': [
-            {'oneof': [
-                'none or more than one rule validate',
-                {'oneof definition 0': [
-                    {'foo': [{'bar': [
-                        {'oneof': [
-                            'none or more than one rule validate',
-                            {'oneof definition 0': ['must be of integer type'],
-                             'oneof definition 1': ['must be of float type']}
-                        ]}]}]}],
-                 'oneof definition 1': [{'foo': ['unknown field']}]}]
-             }
+            'none or more than one rule validate',
+            {'oneof definition 0': [
+                {'foo': [{'bar': [
+                    'none or more than one rule validate',
+                    {'oneof definition 0': ['must be of integer type'],
+                     'oneof definition 1': ['must be of float type']}
+                ]}]}],
+             'oneof definition 1': [{'foo': ['unknown field']}]}
         ]
     }
 

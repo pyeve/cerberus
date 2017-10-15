@@ -223,8 +223,9 @@ def test_basic_error_of_errors(validator):
     ]
     assert_fail(document, schema, validator=validator,
                 error=error, child_errors=child_errors)
-    assert validator.errors == {'foo': [{'oneof': [
-        errors.BasicErrorHandler.messages[0x92],
-        {'oneof definition 0': ['must be of integer type'],
-         'oneof definition 1': ['must be of string type']}
-    ]}]}
+    assert validator.errors == {
+        'foo': [errors.BasicErrorHandler.messages[0x92],
+                {'oneof definition 0': ['must be of integer type'],
+                 'oneof definition 1': ['must be of string type']}
+                ]
+    }

@@ -422,7 +422,9 @@ and 110, you could do the following:
     >>> v.validate(document, schema)
     False
     >>> v.errors   # doctest: +SKIP
-    {'prop1': {'anyof': 'no definitions validated', 'definition 1': 'min value is 100', 'definition 0': 'max value is 10'}}
+    {'prop1': ['no definitions validate',
+               {'anyof definition 0': ['max value is 10'],
+                'anyof definition 1': ['min value is 100']}]}
 
 The ``anyof`` rule tests each rules set in the list. Hence, the above schema is
 equivalent to creating two separate schemas:
