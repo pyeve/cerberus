@@ -185,6 +185,30 @@ def test_nested_error_paths(validator):
     assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == _ref_err
 
 
+def test_queries():
+    schema = {'foo': {'type': 'dict',
+                      'schema':
+                          {'bar': {'type': 'number'}}}}
+    document = {'foo': {'bar': 'zero'}}
+    validator = Validator(schema)
+    validator(document)
+
+    assert 'foo' in validator.document_error_tree
+    assert 'bar' in validator.document_error_tree['foo']
+    assert 'foo' in validator.schema_error_tree
+    assert 'schema' in validator.schema_error_tree['foo']
+
+    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo'].errors
+    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo']
+    assert errors.BAD_TYPE in validator.document_error_tree['foo']['bar']
+    assert errors.MAPPING_SCHEMA in validator.schema_error_tree['foo']['schema']
+    assert errors.BAD_TYPE in \
+        validator.schema_error_tree['foo']['schema']['bar']['type']
+
+    assert (validator.document_error_tree['foo'][errors.MAPPING_SCHEMA]
+            .child_errors[0].code == errors.BAD_TYPE.code)
+
+
 def test_basic_error_handler():
     handler = errors.BasicErrorHandler()
     _errors, ref = [], {}

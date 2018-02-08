@@ -187,8 +187,9 @@ class ValidationError(object):
 
 
 class ErrorList(list):
-    """ A list for :class:`~cerberus.errrors.ValidationError` instances that
-        can be queried with the ``in`` keyword for a particular error code. """
+    """ A list for :class:`~cerberus.errors.ValidationError` instances that
+        can be queried with the ``in`` keyword for a particular
+        :class:`~cerberus.errors.ErrorDefinition`. """
     def __contains__(self, error_definition):
         for code in (x.code for x in self):
             if code == error_definition.code:
@@ -210,6 +211,12 @@ class ErrorTreeNode(MutableMapping):
         self.add(error)
         return self
 
+    def __contains__(self, item):
+        if isinstance(item, ErrorDefinition):
+            return item in self.errors
+        else:
+            return item in self.descendants
+
     def __delitem__(self, key):
         del self.descendants[key]
 
@@ -217,10 +224,18 @@ class ErrorTreeNode(MutableMapping):
         return iter(self.errors)
 
     def __getitem__(self, item):
-        return self.descendants.get(item)
+        if isinstance(item, ErrorDefinition):
+            for error in self.errors:
+                if item.code == error.code:
+                    return error
+        else:
+            return self.descendants.get(item)
 
     def __len__(self):
         return len(self.errors)
+
+    def __repr__(self):
+        return self.__str__()
 
     def __setitem__(self, key, value):
         self.descendants[key] = value
