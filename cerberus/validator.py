@@ -1245,7 +1245,7 @@ class BareValidator(object):
                                               allow_unknown=allow_unknown)
         try:
             if not validator(value, update=self.update, normalize=False):
-                self._error(validator._errors)
+                self._error(field, errors.MAPPING_SCHEMA, validator._errors)
         except _SchemaRuleTypeError:
             self._error(field, errors.BAD_TYPE_FOR_SCHEMA)
             raise
