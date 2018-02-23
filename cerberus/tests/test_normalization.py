@@ -30,6 +30,15 @@ def test_coerce_in_listschema():
     assert_normalized(document, expected, schema)
 
 
+def test_coerce_in_listitems():
+    schema = {'things': {'type': 'list',
+                         'items': [{'coerce': int},
+                                   {'coerce': str}]}}
+    document = {'things': ['1', 2]}
+    expected = {'things': [1, '2']}
+    assert_normalized(document, expected, schema)
+
+
 def test_coerce_in_dictschema_in_listschema():
     item_schema = {'type': 'dict', 'schema': {'amount': {'coerce': int}}}
     schema = {'things': {'type': 'list', 'schema': item_schema}}
@@ -56,11 +65,31 @@ def test_coerce_catches_ValueError():
                      errors.COERCION_FAILED, int)
 
 
+def test_coerce_in_listitems_catches_ValueError():
+    schema = {'things': {'type': 'list',
+                         'items': [{'coerce': int}, {'coerce': str}]}}
+    document = {'things': ['not_a_number', 2]}
+    _errors = assert_fail(document, schema)
+    _errors[0].info = ()  # ignore exception message here
+    assert_has_error(_errors, ('things', 0), ('things', 'items', 'coerce'),
+                     errors.COERCION_FAILED, int)
+
+
 def test_coerce_catches_TypeError():
     schema = {'name': {'coerce': str.lower}}
     _errors = assert_fail({'name': 1234}, schema)
     _errors[0].info = ()  # ignore exception message here
     assert_has_error(_errors, 'name', ('name', 'coerce'),
+                     errors.COERCION_FAILED, str.lower)
+
+
+def test_coerce_in_listitems_catches_TypeError():
+    schema = {'things': {'type': 'list',
+                         'items': [{'coerce': int}, {'coerce': str.lower}]}}
+    document = {'things': ['1', 2]}
+    _errors = assert_fail(document, schema)
+    _errors[0].info = ()  # ignore exception message here
+    assert_has_error(_errors, ('things', 1), ('things', 'items', 'coerce'),
                      errors.COERCION_FAILED, str.lower)
 
 
