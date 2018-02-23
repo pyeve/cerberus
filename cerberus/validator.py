@@ -686,9 +686,11 @@ class BareValidator(object):
                         pass
             elif isinstance(mapping[field], _str_type):
                 continue
-            elif isinstance(mapping[field], Sequence) and \
-                    'schema' in schema[field]:
-                self.__normalize_sequence(field, mapping, schema)
+            elif isinstance(mapping[field], Sequence):
+                if 'schema' in schema[field]:
+                    self.__normalize_sequence(field, mapping, schema)
+                elif 'items' in schema[field]:
+                    self.__normalize_items(field, mapping, schema)
 
     def __normalize_mapping_per_keyschema(self, field, mapping, property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
@@ -743,6 +745,19 @@ class BareValidator(object):
         document = dict((k, v) for k, v in enumerate(mapping[field]))
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=schema)
+        value_type = type(mapping[field])
+        result = validator.normalized(document, always_return_document=True)
+        mapping[field] = value_type(result.values())
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+            self._error(validator._errors)
+
+    def __normalize_items(self, field, mapping, schema):
+        schema = dict(((k, v) for k, v in enumerate(schema[field]['items'])))
+        document = dict((k, v) for k, v in enumerate(mapping[field]))
+        validator = self._get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'items'),
             schema=schema)
         value_type = type(mapping[field])
         result = validator.normalized(document, always_return_document=True)
