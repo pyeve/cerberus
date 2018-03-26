@@ -11,6 +11,14 @@ see: https://www.patreon.com/nicolaiarocci
 
 Not released yet.
 
+- Fix: Simplify the tests with Docker by using a volume for tox environments
+  (Frank Sachsenheim)
+- New: docs: Add note that normalization cannot be applied within an *of-rule
+  (Frank Sachsenheim)
+- New: Add the ability to query for a type of error in an error tree (Frank
+  Sachsenheim)
+- New: Add errors.MAPPING_SCHEMA on errors within subdocuments (Frank
+  Sachsenheim)
 - New: Support for Types Definitions, which allow quick types check on the fly
   (Frank Sachsenheim).
 - Fix: Schema registries do not work on dict fields. Closes #318.
