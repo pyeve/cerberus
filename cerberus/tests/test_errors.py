@@ -57,16 +57,21 @@ def test__error_3():
     assert error.is_logic_error
 
 
-def test_error_tree_1(validator):
+def test_error_tree_from_subschema(validator):
     schema = {'foo': {'schema': {'bar': {'type': 'string'}}}}
     document = {'foo': {'bar': 0}}
     assert_fail(document, schema, validator=validator)
     d_error_tree = validator.document_error_tree
     s_error_tree = validator.schema_error_tree
+
     assert 'foo' in d_error_tree
+
+    assert len(d_error_tree['foo'].errors) == 1, d_error_tree['foo']
+    assert d_error_tree['foo'].errors[0].code == errors.MAPPING_SCHEMA.code
     assert 'bar' in d_error_tree['foo']
     assert d_error_tree['foo']['bar'].errors[0].value == 0
     assert d_error_tree.fetch_errors_from(('foo', 'bar'))[0].value == 0
+
     assert 'foo' in s_error_tree
     assert 'schema' in s_error_tree['foo']
     assert 'bar' in s_error_tree['foo']['schema']
@@ -76,7 +81,7 @@ def test_error_tree_1(validator):
         ('foo', 'schema', 'bar', 'type'))[0].value == 0
 
 
-def test_error_tree_2(validator):
+def test_error_tree_from_anyof(validator):
     schema = {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
     document = {'foo': []}
     assert_fail(document, schema, validator=validator)
@@ -178,6 +183,30 @@ def test_nested_error_paths(validator):
         errors.REGEX_MISMATCH.code, 'regex', '[a-z]*$', 'abC', ())
     assert _det['a_list'][2].errors[2] == _ref_err
     assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == _ref_err
+
+
+def test_queries():
+    schema = {'foo': {'type': 'dict',
+                      'schema':
+                          {'bar': {'type': 'number'}}}}
+    document = {'foo': {'bar': 'zero'}}
+    validator = Validator(schema)
+    validator(document)
+
+    assert 'foo' in validator.document_error_tree
+    assert 'bar' in validator.document_error_tree['foo']
+    assert 'foo' in validator.schema_error_tree
+    assert 'schema' in validator.schema_error_tree['foo']
+
+    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo'].errors
+    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo']
+    assert errors.BAD_TYPE in validator.document_error_tree['foo']['bar']
+    assert errors.MAPPING_SCHEMA in validator.schema_error_tree['foo']['schema']
+    assert errors.BAD_TYPE in \
+        validator.schema_error_tree['foo']['schema']['bar']['type']
+
+    assert (validator.document_error_tree['foo'][errors.MAPPING_SCHEMA]
+            .child_errors[0].code == errors.BAD_TYPE.code)
 
 
 def test_basic_error_handler():

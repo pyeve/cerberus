@@ -75,8 +75,8 @@ to ``tox``:
 
 You can run the script without any arguments to test the project exactly as
 `Continuous Integration`_ does without having to setup anything.
-If there's a directoy ``.tox`` in the project-folder it will be used to store
-and access cached virtual environments and test-logs.
+The ``tox`` environments are preserved in a volume named ``cerberus-tox``, just
+remove it with ``docker volume rm`` to clean them.
 
 Building the HTML-documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

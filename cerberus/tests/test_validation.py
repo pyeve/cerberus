@@ -9,9 +9,10 @@ from string import ascii_lowercase
 from pytest import mark
 
 from cerberus import errors, Validator
-from cerberus.tests import \
-    (assert_bad_type, assert_fail, assert_has_error, assert_not_has_error,
-     assert_success, assert_document_error)
+from cerberus.tests import (
+    assert_bad_type, assert_document_error, assert_fail, assert_has_error,
+    assert_not_has_error, assert_success
+)
 from cerberus.tests.conftest import sample_schema
 
 
@@ -257,24 +258,33 @@ def test_bad_min_value(schema):
     assert_bad_min_value(field, 1)
 
 
-def test_bad_schema(validator):
+def test_bad_schema():
     field = 'a_dict'
-    schema_field = 'address'
-    value = {schema_field: 34}
+    subschema_field = 'address'
+    schema = {field: {'type': 'dict',
+                      'schema': {subschema_field: {'type': 'string'},
+                                 'city': {'type': 'string', 'required': True}}
+                      }}
+    document = {field: {subschema_field: 34}}
+    validator = Validator(schema)
+
     assert_fail(
-        {field: value}, validator=validator,
-        errors=[
-            ((field, schema_field), (field, 'schema', schema_field, 'type'),
+        document, validator=validator,
+        error=(field, (field, 'schema'), errors.MAPPING_SCHEMA,
+               validator.schema['a_dict']['schema']),
+        child_errors=[
+            ((field, subschema_field),
+             (field, 'schema', subschema_field, 'type'),
              errors.BAD_TYPE, 'string'),
             ((field, 'city'), (field, 'schema', 'city', 'required'),
-             errors.REQUIRED_FIELD, True)
-        ])
+             errors.REQUIRED_FIELD, True)]
+    )
 
     handler = errors.BasicErrorHandler
     assert field in validator.errors
-    assert schema_field in validator.errors[field][-1]
+    assert subschema_field in validator.errors[field][-1]
     assert handler.messages[errors.BAD_TYPE.code].format(constraint='string') \
-        in validator.errors[field][-1][schema_field]
+        in validator.errors[field][-1][subschema_field]
     assert 'city' in validator.errors[field][-1]
     assert (handler.messages[errors.REQUIRED_FIELD.code]
             in validator.errors[field][-1]['city'])
@@ -318,18 +328,21 @@ def test_bad_list_of_integers():
     assert_fail({field: value})
 
 
-def test_bad_list_of_dicts(schema, validator):
+def test_bad_list_of_dicts():
     field = 'a_list_of_dicts'
-    subschema = schema['a_list_of_dicts']['schema']
-
+    map_schema = {'sku': {'type': 'string'},
+                  'price': {'type': 'integer', 'required': True}}
+    seq_schema = {'type': 'dict', 'schema': map_schema}
+    schema = {field: {'type': 'list', 'schema': seq_schema}}
+    validator = Validator(schema)
     value = [{'sku': 'KT123', 'price': '100'}]
-    exp_child_errors = [((field, 0, 'price'),
-                         (field, 'schema', 'schema', 'price', 'type'),
-                         errors.BAD_TYPE, 'integer')]
-    assert_fail({field: value}, validator=validator,
+    document = {field: value}
+
+    assert_fail(document, validator=validator,
                 error=(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                       subschema),
-                child_errors=exp_child_errors)
+                       seq_schema),
+                child_errors=[((field, 0), (field, 'schema', 'schema'),
+                               errors.MAPPING_SCHEMA, map_schema)])
 
     assert field in validator.errors
     assert 0 in validator.errors[field][-1]
@@ -343,7 +356,7 @@ def test_bad_list_of_dicts(schema, validator):
                          errors.BAD_TYPE, 'dict', ())]
     assert_fail({field: value},
                 error=(field, (field, 'schema'), errors.SEQUENCE_SCHEMA,
-                       subschema),
+                       seq_schema),
                 child_errors=exp_child_errors)
 
 
@@ -463,15 +476,20 @@ def test_a_list_of_integers():
     assert_success({'a_list_of_integers': [99, 100]})
 
 
-def test_a_dict():
+def test_a_dict(schema):
     assert_success({'a_dict': {'address': 'i live here',
                                'city': 'in my own town'}})
-    assert_fail({'a_dict': {'address': 8545}}, errors=[
-        (('a_dict', 'address'), ('a_dict', 'schema', 'address', 'type'),
-         errors.BAD_TYPE, 'string'),
-        (('a_dict', 'city'), ('a_dict', 'schema', 'city', 'required'),
-         errors.REQUIRED_FIELD, True)
-    ])
+    assert_fail(
+        {'a_dict': {'address': 8545}},
+        error=('a_dict', ('a_dict', 'schema'), errors.MAPPING_SCHEMA,
+               schema['a_dict']['schema']),
+        child_errors=[(('a_dict', 'address'),
+                       ('a_dict', 'schema', 'address', 'type'),
+                       errors.BAD_TYPE, 'string'),
+                      (('a_dict', 'city'),
+                       ('a_dict', 'schema', 'city', 'required'),
+                       errors.REQUIRED_FIELD, True)]
+    )
 
 
 def test_a_dict_with_valueschema(validator):
@@ -875,13 +893,19 @@ def test_dependencies_dict_with_subdocuments_fields():
 
 def test_root_relative_dependencies():
     # https://github.com/pyeve/cerberus/issues/288
-    schema = {'package': {'allow_unknown': True,
-                          'schema': {'version': {'dependencies': '^repo'}}},
+    subschema = {'version': {'dependencies': '^repo'}}
+    schema = {'package': {'allow_unknown': True, 'schema': subschema},
               'repo': {}}
-    assert_fail({'package': {'repo': 'somewhere', 'version': 0}}, schema,
-                error=(('package', 'version'),
-                       ('package', 'schema', 'version', 'dependencies'),
-                       errors.DEPENDENCIES_FIELD, '^repo', ('^repo',)))
+    assert_fail(
+        {'package': {'repo': 'somewhere', 'version': 0}}, schema,
+        error=('package', ('package', 'schema'),
+               errors.MAPPING_SCHEMA, subschema),
+        child_errors=[(
+            ('package', 'version'),
+            ('package', 'schema', 'version', 'dependencies'),
+            errors.DEPENDENCIES_FIELD, '^repo', ('^repo',)
+        )]
+    )
     assert_success({'repo': 'somewhere', 'package': {'version': 1}}, schema)
 
 

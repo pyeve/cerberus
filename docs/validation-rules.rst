@@ -400,6 +400,11 @@ according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 ``oneof``   Validates if *exactly one* of the provided constraints applies.
 ==========  ====================================================================
 
+.. note::
+
+    :doc:`Normalization <normalization-rules>` cannot be used in the rule sets
+    within the constraints of these rules.
+
 For example, to verify that a field's value is a number between 0 and 10 or 100
 and 110, you could do the following:
 

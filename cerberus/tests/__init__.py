@@ -44,7 +44,10 @@ def assert_fail(document, schema=None, validator=None, update=False,
     actual_errors = validator._errors
 
     assert not (error is not None and errors is not None)
-    assert not (errors is not None and child_errors is not None)
+    assert not (errors is not None and child_errors is not None), (
+        'child_errors can only be tested in '
+        'conjunction with the error parameter'
+    )
     assert not (child_errors is not None and error is None)
     if error is not None:
         assert len(actual_errors) == 1

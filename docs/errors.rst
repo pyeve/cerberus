@@ -51,16 +51,23 @@ the following properties:
 You can access the errors per these properties of a :class:`~cerberus.Validator`
 instance after a processing of a document:
 
-  - ``_errors``: This list holds all submitted errors. It is not intended to
-    manipulate errors directly via this attribute. You can test if at least one
-    error with a specific error definition is ``in`` that list.
+  - ``_errors``: This :class:`~cerberus.errors.ErrorsList` instance  holds all
+    submitted errors. It is not intended to manipulate errors directly via this
+    attribute. You can test if at least one error with a specific error
+    definition is ``in`` that list.
 
   - ``document_error_tree``: A ``dict``-like object that allows you to query
-    nodes corresponding to your document. That node's errors are contained in
-    its :attr:`errors` property which you can test like ``_errors`` and are
-    yielded when iterating over a node. If no errors occurred in a node or
+    nodes corresponding to your document.
+    The subscript notation on a node allows to fetch either a specific error
+    that matches the given :class:`~cerberus.errors.ErrorDefinition` or a child
+    node with the given key.
+    If there's no matching error respectively no errors occurred in a node or
     below, :obj:`None` will be returned instead.
-
+    A node can also be tested with the ``in`` operator with either an
+    :class:`~cerberus.errors.ErrorDefinition` or a possible child node's key.
+    A node's errors are contained in its :attr:`errors` property which is also
+    an :class:`~cerberus.errors.ErrorsList`. Its members are yielded when
+    iterating over a node.
   - ``schema_error_tree``: Similarly for the used schema.
 
 .. versionchanged:: 1.0
@@ -79,6 +86,11 @@ Examples
     >>> cerberus.errors.BAD_TYPE in v._errors
     True
     >>> v.document_error_tree['cats'].errors == v.schema_error_tree['cats']['type'].errors
+    True
+    >>> cerberus.errors.BAD_TYPE in v.document_error_tree['cats']
+    True
+    >>> v.document_error_tree['cats'][cerberus.errors.BAD_TYPE] \
+    ...     == v.document_error_tree['cats'].errors[0]
     True
     >>> error = v.document_error_tree['cats'].errors[0]
     >>> error.document_path
