@@ -11,7 +11,15 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import importlib.util
+import sys
+
+if sys.version_info < (3, 6):
+    raise RuntimeError(
+        'Requires Python 3.6 or later, running on %s atm.'
+        % '.'.join(sys.version_info)
+    )
+
+import importlib
 from pathlib import Path
 
 import alabaster
