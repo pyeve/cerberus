@@ -26,7 +26,7 @@ import alabaster
 
 
 module_spec = importlib.util.spec_from_file_location(
-    'generate_includes', str(Path(__file__).parent / 'includes' / 'generate.py'))
+    'generate_includes', Path(__file__).parent / 'includes' / 'generate.py')
 _module = importlib.util.module_from_spec(module_spec)
 module_spec.loader.exec_module(_module)
 
@@ -38,14 +38,14 @@ module_spec.loader.exec_module(_module)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = (
+extensions = [
     'alabaster',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-)
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
