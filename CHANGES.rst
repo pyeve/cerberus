@@ -1,47 +1,52 @@
-Changelog
-=========
+Cerberus changelog
+==================
 
 Here you can see the full list of changes between each Cerberus release.
 
 Version 1.2
 -----------
 
-Eve and Cerberus are now collaboratively funded projects, 
+Eve and Cerberus are now collaboratively funded projects,
 see: https://www.patreon.com/nicolaiarocci
 
 Not released yet.
 
-- Fix: Simplify the tests with Docker by using a volume for tox environments
+
+- New: docs: Add note that normalization cannot be applied within an *of-rule.
   (Frank Sachsenheim)
-- New: docs: Add note that normalization cannot be applied within an *of-rule
+- New: Add the ability to query for a type of error in an error tree.
   (Frank Sachsenheim)
-- New: Add the ability to query for a type of error in an error tree (Frank
-  Sachsenheim)
-- New: Add errors.MAPPING_SCHEMA on errors within subdocuments (Frank
-  Sachsenheim)
+- New: Add errors.MAPPING_SCHEMA on errors within subdocuments.
+  (Frank Sachsenheim)
 - New: Support for Types Definitions, which allow quick types check on the fly
   (Frank Sachsenheim).
-- Fix: Schema registries do not work on dict fields. Closes #318.
-- Fix: Need to drop some rules when ``empty`` is allowed. Closes #326 (Frank
-  Sachsenheim).
+
+- Fix: Simplify the tests with Docker by using a volume for tox environments.
+  (Frank Sachsenheim)
+- Fix: Schema registries do not work on dict fields.
+  Closes :issue:`318`. (Frank Sachsenheim)
+- Fix: Need to drop some rules when ``empty`` is allowed.
+  Closes :issue:`326`. (Frank Sachsenheim)
 - Fix: typo in README (Christian Hogan).
-- Fix: Make ``purge_unknown`` and ``allow_unknown`` play nice together. Closes
-  #324 (Audric Schiltknecht).
-- Fix: API reference lacks generated content. Closes #281 (Frank Sachsenheim).
-- Fix: ``readonly`` works properly just in the first validation. Closes #311
-  (Frank Sachsenheim).
-- Fix: ``coerce`` ignores ``nullable: True``. Closes #269 (Frank Sachsenheim).
-- Fix: A dependency is not considered satisfied if it has a null value (Frank
-  Sachsenheim). Closes #305.
+- Fix: Make ``purge_unknown`` and ``allow_unknown`` play nice together.
+  Closes :issue:`324`. (Audric Schiltknecht)
+- Fix: API reference lacks generated content.
+  Closes :issue:`281`. (Frank Sachsenheim)
+- Fix: ``readonly`` works properly just in the first validation.
+  Closes :issue:`311`. (Frank Sachsenheim)
+- Fix: ``coerce`` ignores ``nullable: True``.
+  Closes :issue:`269`. (Frank Sachsenheim)
+- Fix: A dependency is not considered satisfied if it has a null value.
+  Closes :issue:`305`. (Frank Sachsenheim)
 - Override ``UnvalidatedSchema.copy`` (Peter Demin).
-- Fix: README link (Gabriel Wainer).
+- Fix: README link. (Gabriel Wainer)
 - Fix: Regression: allow_unknown causes dictionary validation to fail with
-  a KeyError. Closes #302 (Frank Sachsenheim)
-- Fix: Error when setting fields as tuples instead of lists. Closes #271
-  (Sebastian Rajo).
-- CI: Reactivate testing on PyPy3 (Frank Sachsenheim).
-- New: Correctly handle nested logic and group errors. Closes #278 #299
-  (Kornelijus Survila).
+  a KeyError. Closes :issue:`302`. (Frank Sachsenheim)
+- Fix: Error when setting fields as tuples instead of lists.
+  Closes :issue:`271`. (Sebastian Rajo)
+- Fix: Correctly handle nested logic and group errors.
+  Closes :issue:`278` and :issue:`299`. (Kornelijus Survila)
+- CI: Reactivate testing on PyPy3. (Frank Sachsenheim)
 
 Version 1.1
 -----------
@@ -51,32 +56,32 @@ Released on January 25, 2017.
 - New: Python 3.6 support (Frank Sachsenheim)
 - New: Users can implement their own semantics in Validator._lookup_field
   (Frank Sachsenheim).
-- New: Allow applying of ``empty`` rule to sequences and mappings. Closes #270
-  (Frank Sachsenheim).
+- New: Allow applying of ``empty`` rule to sequences and mappings.
+  Closes :issue:`270`. (Frank Sachsenheim)
 
-- Fix: Better handling of unicode in ``allowed`` rule (Michael Klich). Closes
-  #280.
-- Fix: Rules sets with normalization rules fail. Closes #283 (Frank
-  Sachsenheim).
+- Fix: Better handling of unicode in ``allowed`` rule.
+  Closes :issue:`280`. (Michael Klich)
+- Fix: Rules sets with normalization rules fail.
+  Closes :issue:`283`. (Frank Sachsenheim)
 - Fix: Spelling error in RULE_SCHEMA_SEPARATOR constant (Antoine Lubineau)
-- Fix: Expand schemas and rules sets when added to a registry. Closes #284
+- Fix: Expand schemas and rules sets when added to a registry. Closes :issue:`284`
   (Frank Sachsenheim)
-- Fix: ``readonly`` conflicts with ``default`` rule. Closes #268 (Dominik
+- Fix: ``readonly`` conflicts with ``default`` rule. Closes :issue:`268` (Dominik
   Kellner).
 - Fix: Creating custom Validator instance with ``_validator_*`` method raises
-  ``SchemaError``. Closes #265 (Frank Sachsenheim).
+  ``SchemaError``. Closes :issue:`265` (Frank Sachsenheim).
 - Fix: Consistently use new style classes (Dominik Kellner).
 - Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W.
   Weber).
 
-- Completely switch to py.test. Closes #213 (Frank Sachsenheim).
+- Completely switch to py.test. Closes :issue:`213` (Frank Sachsenheim).
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
-  pytest. Addresses #213 (Bruno Oliveira).
+  pytest. Addresses :issue:`213` (Bruno Oliveira).
 
 - Docs: Clarifications concerning dependencies and unique rules (Frank
   Sachsenheim)
-- Docs: Fix custom coerces documentation. Closes #285 (gilbsgilbs).
-- Docs: Add note concerning regex flags. Closes #173 (Frank Sachsenheim).
+- Docs: Fix custom coerces documentation. Closes :issue:`285` (gilbsgilbs).
+- Docs: Add note concerning regex flags. Closes :issue:`173` (Frank Sachsenheim).
 - Docs: Explain that normalization and coercion are performed on a copy of the
   original document (Sergey Leshchenko).
 
@@ -104,24 +109,25 @@ Released on September 1, 2016.
 - New: Support for binary type (Matthew Ellison).
 - New: Allow callables for 'default' schema rule (Dominik Kellner).
 - New: Support arbitrary types with 'max' and 'min' (Frank Sachsenheim).
-- New: Support any iterable with 'minlength' and 'maxlength'. Closes #158 (Frank Sachsenheim).
-- New: 'default' normalization rule. Closes #131 (Damián Nohales).
-- New: 'excludes' rule (calve). Addresses #132.
+- New: Support any iterable with 'minlength' and 'maxlength'.
+  Closes :issue:`158`. (Frank Sachsenheim)
+- New: 'default' normalization rule. Closes :issue:`131` (Damián Nohales).
+- New: 'excludes' rule (calve). Addresses :issue:`132`.
 - New: 'forbidden' rule (Frank Sachsenheim).
 - New: 'rename'-rule renames a field to a given value during normalization
   (Frank Sachsenheim).
 - New: 'rename_handler'-rule that takes an callable that renames unknown
   fields (Frank Sachsenheim).
-- New: 'Validator.purge_unknown'-property and conditional purging of unknown fields
-  (Frank Sachsenheim).
+- New: 'Validator.purge_unknown'-property and conditional purging of unknown
+  fields (Frank Sachsenheim).
 - New: 'coerce', 'rename_handler' and 'validator' can use class-methods (Frank
   Sachsenheim).
 - New: '*of'-rules can be extended by concatenating another rule (Frank
   Sachsenheim).
 - New: Allows various error output with error handlers (Frank Sachsenheim).
 - New: Available rules etc. of a Validator-instance are accessible as
-  'validation_rules', 'normalization_rules', 'types', 'validators' and 'coercer'
-  -property (Frank Sachsenheim).
+  'validation_rules', 'normalization_rules', 'types', 'validators' and
+  'coercer' -property (Frank Sachsenheim).
 - New: Custom rule's method docstrings can contain an expression to validate
   constraints for that rule when a schema is validated (Frank Sachsenheim).
 - New: 'Validator.root_schema' complements 'Validator.root_document' (Frank
@@ -134,50 +140,60 @@ Released on September 1, 2016.
 - New: Add testing with Docker (Frank Sachsenheim).
 - New: Support CPython 3.5 (Frank Sachsenheim).
 
-- Fix: 'allow_unknown' inside *of rule is ignored. Closes #251 (Davis
-  Kirkendall).
+- Fix: 'allow_unknown' inside *of rule is ignored.
+  Closes :issue:`251`. (Davis Kirkendall)
 - Fix: unexpected TypeError when using allow_unknown in a schema defining
-  a list of dicts (Davis Kirkendall). Closes #250.
+  a list of dicts. Closes :issue:`250`. (Davis Kirkendall)
 - Fix: validate with 'update=True' does not work when required fields are in
   a list of subdicts (Jonathan Huot).
-- Fix: 'number' type fails if value is boolean. Closes #144 (Frank
-  Sachsenheim).
+- Fix: 'number' type fails if value is boolean.
+  Closes :issue:`144`. (Frank Sachsenheim).
 - Fix: allow None in 'default' normalization rule (Damián Nohales).
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
-  #185.
+  :issue:`185`.
 - Fix: normalization not working for valueschema and propertyschema. Closes
-  #155 (Frank Sachsenheim).
-- Fix: 'coerce' on List elements produces unexpected results Closes #161 (Frank
-  Sachsenheim).
-- Fix: 'coerce'-constraints are validated (Frank Sachsenheim).
-- Fix: Unknown fields are normalized (Frank Sachsenheim).
-- Fix: Dependency on boolean field now works as expected. Addresses #138 (Roman
-  Redkovich)
-- Fix: Add missing deprecation-warnings (Frank Sachsenheim).
+  :issue:`155` (Frank Sachsenheim).
+- Fix: 'coerce' on List elements produces unexpected results.
+  Closes :issue:`161`. (Frank Sachsenheim)
+- Fix: 'coerce'-constraints are validated. (Frank Sachsenheim)
+- Fix: Unknown fields are normalized. (Frank Sachsenheim)
+- Fix: Dependency on boolean field now works as expected.
+  Addresses :issue:`138`. (Roman Redkovich)
+- Fix: Add missing deprecation-warnings. (Frank Sachsenheim)
 
-- Docs: clarify read-only rule. Closes #127.
-- Docs: split Usage page into Usage; Validation Rules: Normalization Rules
-  (Frank Sachsenheim).
+- Docs: clarify read-only rule. Closes :issue:`127`.
+- Docs: split Usage page into Usage; Validation Rules: Normalization Rules.
+  (Frank Sachsenheim)
 
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 Several relevant breaking changes have been introduced with this release. For
-the inside scoop, please see the :doc:`upgrade notes <upgrading>`. 
+the inside scoop, please see the :doc:`upgrade notes <upgrading>`.
 
-- Change: 'errors' values are lists containing error messages. Previously, they were simple strings if single errors, lists otherwise. Closes #210 (Frank Sachsenheim).
-- Change: Custom validator methods: remove the second argument (Frank Sachsenheim).
-- Change: Custom validator methods: invert the logic of the conditional clauses where is tested what a value is not / has not (Frank Sachsenheim). 
-- Change: Custom validator methods: replace calls to 'self._error' with 'return True', or False, or None (Frank Sachsenheim).
-- Change: Remove 'transparent_schema_rule' in favor of docstring schema validation (Frank Sachsenheim).
-- Change: Rename 'property_schema' rule to 'keyschema' (Frank Sachsenheim).
-- Change: Replace 'validate_update' method with 'update' keywork argument (Frank Sachsenheim).
+- Change: 'errors' values are lists containing error messages. Previously, they
+  were simple strings if single errors, lists otherwise.
+  Closes :issue:`210`. (Frank Sachsenheim)
+- Change: Custom validator methods: remove the second argument.
+  (Frank Sachsenheim)
+- Change: Custom validator methods: invert the logic of the conditional clauses
+  where is tested what a value is not / has not. (Frank Sachsenheim)
+- Change: Custom validator methods: replace calls to 'self._error' with
+  'return True', or False, or None. (Frank Sachsenheim)
+- Change: Remove 'transparent_schema_rule' in favor of docstring schema
+  validation. (Frank Sachsenheim)
+- Change: Rename 'property_schema' rule to 'keyschema'. (Frank Sachsenheim)
+- Change: Replace 'validate_update' method with 'update' keywork argument.
+  (Frank Sachsenheim)
 - Change: The processed root-document of is now available as 'root_document'-
-  property of the (child-)Validator (Frank Sachsenheim).
+  property of the (child-)Validator. (Frank Sachsenheim)
 - Change: Removed 'context'-argument from 'validate'-method as this is set
   upon the creation of a child-validator (Frank Sachsenheim).
-- Change: 'ValidationError'-exception renamed to 'DocumentError' (Frank Sachsenheim).
-- Change: Consolidated all schema-related error-messages' names (Frank Sachsenheim).
-- Change: Use warnings.warn for deprecation-warnings if available (Frank Sachsenheim).
+- Change: 'ValidationError'-exception renamed to 'DocumentError'.
+  (Frank Sachsenheim)
+- Change: Consolidated all schema-related error-messages' names.
+  (Frank Sachsenheim)
+- Change: Use warnings.warn for deprecation-warnings if available.
+  (Frank Sachsenheim)
 
 Version 0.9.2
 -------------
@@ -218,8 +234,8 @@ Codename: 'Mastrolindo'.
 - New: Added 'propertyschema' validation rule (Frank Sachsenheim).
 
 - Change: Use 'str.format' in error messages so if someone wants to override
-  them does not get an exception if arguments are not passed. Closes #105
-  (Brett).
+  them does not get an exception if arguments are not passed.
+  Closes :issue:`105`. (Brett)
 - Change: 'keyschema' renamed to 'valueschema', print a deprecation warning
   (Frank Sachsenheim).
 - Change: 'type' can also be a list of types (Frank Sachsenheim).
@@ -236,8 +252,8 @@ Codename: 'Mastrolindo'.
   Sachsenheim).
 - Fix: ignore 'keyschema' when not a mapping (Frank Sachsenheim).
 - Fix: ignore 'schema' when not a sequence (Frank Sachsenheim).
-- Fix: allow_unknown can also be set for nested dicts. Closes #75 (Tobias
-  Betz).
+- Fix: allow_unknown can also be set for nested dicts.
+  Closes :issue:`75`. (Tobias Betz)
 - Fix: raise SchemaError when an unallowed 'type' is used in conjunction with
   'schema' rule (Tobias Betz).
 
@@ -250,13 +266,15 @@ Version 0.8.1
 
 Released on Mar 16 2015.
 
-- Fix: dependency on a sub-document field does not work. Closes #64.
+- Fix: dependency on a sub-document field does not work. Closes :issue:`64`.
 - Fix: readonly validation should happen before any other validation.
-  Closes #63.
-- Fix: allow_unknown does not apply to sub-dictionaries in a list. Closes #67.
+  Closes :issue:`63`.
+- Fix: allow_unknown does not apply to sub-dictionaries in a list.
+  Closes :issue:`67`.
 - Fix: two tests being ignored because of name typo.
-- Fix: update mode does not ignore required fields in subdocuments. Closes #72.
-- Fix: allow_unknown does not respect custom rules. Closes #66.
+- Fix: update mode does not ignore required fields in subdocuments.
+  Closes :issue:`72`.
+- Fix: allow_unknown does not respect custom rules. Closes :issue:`66`.
 - Fix: typo in docstrings (Riccardo).
 
 Version 0.8
@@ -266,15 +284,15 @@ Released on Jan 7 2015.
 
 - 'dependencies' also supports dependency values.
 - 'allow_unknown' can also be set to a validation schema, in which case unknown
-  fields will be validated against it. Closes pyeve/eve#405.
+  fields will be validated against it. Closes pyeve/eve:issue:`405`.
 - New function-based custom validation mode (Luo Peng).
 - Fields with empty definitions in schema were reported as non-existent. Now
   they are considered as valid, whatever their value is (Jaroslav Semančík).
 - If dependencies are precised for a 'required' field, then the presence of the
   field is only validated if all dependencies are present (Trong Hieu HA).
-- Documentation typo (Nikita Vlaznev #55).
+- Documentation typo (Nikita Vlaznev :issue:`55`).
 - [CI] Add travis_retry to pip install in case of network issues (Helgi Þormar
-  Þorbjörnsson #49)
+  Þorbjörnsson :issue:`49`)
 
 Version 0.7.2
 -------------
@@ -290,12 +308,12 @@ Released on Jun 17 2014.
 
 - Validation schemas are now validated up-front. When you pass a Schema to the
   Validator it will be validated against the supported ruleset (Paul Weaver).
-  Closes #39.
+  Closes :issue:`39`.
 - Custom validators also have access to a special 'self.document' variable that
   allows validation of a field to happen in context of the rest of the document
   (Josh Villbrandt).
 - Validator options like 'allow_unknown' and 'ignore_none_values' are now taken
-  into consideration when validating sub-dictionaries. Closes #40.
+  into consideration when validating sub-dictionaries. Closes :issue:`40`.
 
 Version 0.7
 -----------
@@ -306,12 +324,12 @@ Released on May 16 2014.
 - tox support.
 - Added 'dependencies' validation rule (Lujeni).
 - Added 'keyschema' validation rule (Florian Rathgeber).
-- Added 'regex' validation rule. Closes #29.
-- Added 'set' as a core data type. Closes #31.
+- Added 'regex' validation rule. Closes :issue:`29`.
+- Added 'set' as a core data type. Closes :issue:`31`.
 - Not-nullable fields are validated independetly of their type definition
   (Jaroslav Semančík).
-- Python trove classifiers added to setup.py. Closes #32.
-- 'min' and 'max' now apply to floats and numbers too. Closes #30.
+- Python trove classifiers added to setup.py. Closes :issue:`32`.
+- 'min' and 'max' now apply to floats and numbers too. Closes :issue:`30`.
 
 Version 0.6
 -----------
@@ -343,13 +361,13 @@ Version 0.4.0
 Released on September 24 2013.
 
 - 'validate_update' is deprecated and will be removed with next release. Use
-  'validate' with 'update=True' instead. Closes #21.
+  'validate' with 'update=True' instead. Closes :issue:`21`.
 - Fixed a minor encoding issue which made installing on Windows/Python3
-  impossible. Closes #19 (Arsh Singh).
+  impossible. Closes :issue:`19` (Arsh Singh).
 - Fix documentation typo (Daniele Pizzolli).
 - 'type' validation is always performed first (only exception being
   'nullable'). On failure, subsequent rules on the same field are skipped.
-  Closes #18.
+  Closes :issue:`18`.
 
 Version 0.3.0
 -------------

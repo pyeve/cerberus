@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-# TODO remove coercions of Path objects to strings when RTD builds on Python 3.6
-
-import importlib.util
+import importlib
 from operator import attrgetter
 from pathlib import Path
 from pprint import pformat
+from textwrap import indent
 from types import SimpleNamespace
 
 
@@ -13,17 +12,17 @@ INCLUDES_DIR = Path(__file__).parent.resolve()
 CERBERUS_DIR = INCLUDES_DIR.parent.parent / 'cerberus'
 
 
-def load_module(name, path):
-    module_spec = importlib.util.spec_from_file_location(name, str(path))
+def load_module_members(name, path):
+    module_spec = importlib.util.spec_from_file_location(name, path)
     _module = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(_module)
-    return _module
+    return vars(_module)
 
 
-errors_module = load_module('errors', CERBERUS_DIR / 'errors.py')
-error_type = vars(errors_module)['ErrorDefinition']
+errors_module = load_module_members('errors', CERBERUS_DIR / 'errors.py')
+error_type = errors_module['ErrorDefinition']
 error_definitions = []
-for name, member in vars(errors_module).items():
+for name, member in errors_module.items():
     if not isinstance(member, error_type) or member.rule is None:
         continue
     error_definition = SimpleNamespace(**member._asdict())
@@ -31,31 +30,31 @@ for name, member in vars(errors_module).items():
     error_definitions.append(error_definition)
 error_definitions.sort(key=attrgetter('code'))
 
-rows = []
-for error_definition in error_definitions:
-    rows.append((str(error_definition.code),
-                 hex(error_definition.code),
-                 error_definition.name,
-                 error_definition.rule))
-with open(str(INCLUDES_DIR / 'error-codes.rst'), 'wt') as f:
-    print('.. list-table::\n'
-          '   :header-rows: 1\n'
-          '\n'
-          '   * - Code (dec.)\n'
-          '     - Code (hex.)\n'
-          '     - Name\n'
-          '     - Rule',
+with (INCLUDES_DIR / 'error-codes.rst').open('wt') as f:
+    print("""
+.. list-table::
+   :header-rows: 1
+    
+   * - Code (dec.)
+     - Code (hex.)
+     - Name
+     - Rule""".lstrip('\n'), file=f)
+    for error_definition in error_definitions:
+        print(f"""
+   * - {error_definition.code}
+     - {hex(error_definition.code)}
+     - {error_definition.name}
+     - {error_definition.rule}""".lstrip('\n'), file=f)
+
+print('Generated table with ErrorDefinitions.')
+
+
+validator_module = load_module_members('validator', CERBERUS_DIR / 'validator.py')
+validator = validator_module['Validator']()
+schema_validation_schema = pformat(validator.rules, width=68)  # width seems w/o effect, use black?
+with (INCLUDES_DIR / 'schema-validation-schema.rst').open('wt') as f:
+    print('.. code-block:: python\n\n',
+          indent(schema_validation_schema, '    '),
           file=f)
-    for row in rows:
-        print('   * - %s\n' % row[0] +
-              '\n'.join(('     - ' + x for x in row[1:])),
-              file=f)
 
-
-validator_module = load_module('validator', CERBERUS_DIR / 'validator.py')
-validator = vars(validator_module)['Validator']()
-schema_validation_schema = pformat(validator.rules)
-with open(str(INCLUDES_DIR / 'schema-validation-schema.rst'), 'wt') as f:
-    print('.. code-block:: python\n', file=f)
-    for line in schema_validation_schema.split('\n'):
-        print('    ' + line, file=f)
+print("Generated schema for a vanilla validator's, well, schema.")
