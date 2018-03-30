@@ -9,8 +9,9 @@ and open a pull request (see :doc:`contribute`).
 7 Best Python Libraries For Validating Data (February 2018)
 -----------------------------------------------------------
 
-Clickbait that mentions Cerberus. It's a starting point to compare libraries
-with a similar scope though.
+`Clickbait <https://www.yeahhub.com/7-best-python-libraries-validating-data/>`_
+that mentions Cerberus. It's a starting point to compare libraries with a
+similar scope though.
 
 Nicola Iarocci: Cerberus, or Data Validation for Humans (November 2017)
 -----------------------------------------------------------------------
