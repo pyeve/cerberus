@@ -91,7 +91,7 @@ class BareValidator(object):
     :type update: :class:`bool`
     :param update: If rule `required` will
                    be used or not. May be overrriden in
-                   :attr:`~cerberus.Validator.validate`. 
+                   :attr:`~cerberus.Validator.validate`.
                    Defaults to ``False``.
     """  # noqa: E501
 
