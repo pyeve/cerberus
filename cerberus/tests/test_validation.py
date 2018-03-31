@@ -55,6 +55,17 @@ def test_required_field(schema):
                        True))
 
 
+def test_update_at_instanciation(schema):
+    validator = Validator(schema=schema, update=True)
+    required_string_extension = {
+        'a_required_string': {'type': 'string',
+                              'minlength': 2,
+                              'maxlength': 10,
+                              'required': True}}
+    schema.update(required_string_extension)
+    assert validator({'an_integer': 1}, schema)
+
+
 def test_nullable_field():
     assert_success({'a_nullable_integer': None})
     assert_success({'a_nullable_integer': 3})
