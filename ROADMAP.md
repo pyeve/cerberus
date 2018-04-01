@@ -9,30 +9,31 @@ The current status is a **draft**, pull requests for changes are welcome.
 
 There are some assumptions that guide the following:
 
-- The support of CPython 2.7 will end on April 12, 2020.
+- The support of CPython 2.7 will end on January 1st, 2020.
+  (See [Python Developer’s Guide](https://devguide.python.org/#status-of-python-branches))
 - Supporting Python 2 and 3 comes with trade-offs.
 - Everything is an object.
 
 
 ## Roadmap
 
-### 1.2 release
+### 1.3 release
 
-The release is estimated to be ready at the end of 2017.
-The planned fixes and features are listed 
+The release is estimated to be ready in mid or late 2018.
+The planned fixes and features are listed
 [here](https://github.com/pyeve/cerberus/milestone/5).
 It will contain a finalized version of this document.
 
 ### Branching off 1.x
 
-After that release, a new branch `1.x` is created. It will continue to support
-Python 2 and receive bug fixes *at least* until December 31, 2019.
+After that release, a new branch `1.x` is created. This one  will continue to
+support Python 2 and receive bug fixes *at least* until December 31, 2019.
 A *feature freeze* for functionality of the public API is declared.
 
 #### Checklist
 
 - [ ] The `README.rst` and `CONTRIBUTING.rst` are updated accordingly.
-- [ ] 1.2 is released.
+- [ ] 1.3 is released.
 - [ ] 1.x branch is created.
 
 #### Undecided issues
@@ -47,20 +48,22 @@ implications.
 #### Checklist
 
 - [ ] All Python 2 related code is removed.
-- [ ] Python 3 features that allow simpler code are applied where feasible are
-      used.
+- [ ] Python 3 features that allow simpler code are applied where feasible.
   - [ ] A Python 3-style metaclass.
+  - [ ] Using `super()` to call overridden methods.
+  - [ ] Usage of dictionary comprehensions.
 - [ ] All functions and methods are type annotated. MyPy is added to the test
       suite.
 - [ ] A wider choice of type names that are closer oriented on the builtin
       names are available. (#tba)
-- [ ] Objects from the `typing` module can be used as constraints for the 
+- [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule.
 - [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far.
-- [ ] Handlers for rules, coercers etc. can and the contributed should be
+      part where `schema` tested items in sequences so far. (#tba)
+- [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
-      clean the code and make extensions simpler.)
+      clean the code and make extensions simpler.) (#tba)
+- [ ] Dependency injection for all kind of handlers. (#279,#314)
 - [ ] The feature freeze gets lifted and the `CONTRIBUTING.rst` is updated
       accordingly.
 
@@ -78,7 +81,6 @@ available in the middle of 2018.
 #### Checklist
 
 - [ ] The `DocumentError` exception is replaced with an error. (#141)
-- [ ] Dependency injection for all kind of handlers. (#279,#314)
 - [ ] A convenient way for document processing chains and branches. (#tba)
 - [ ] Include a guide on upgrading from 1.x.
 - [ ] Remove this document.
