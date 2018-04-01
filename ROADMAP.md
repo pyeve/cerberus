@@ -62,7 +62,7 @@ implications.
       part where `schema` tested items in sequences so far. (#tba)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
-      clean the code and make extensions simpler.) (#tba)
+      clean the code and make extensions simpler.) (#372)
 - [ ] Dependency injection for all kind of handlers. (#279,#314)
 - [ ] The feature freeze gets lifted and the `CONTRIBUTING.rst` is updated
       accordingly.
@@ -70,6 +70,8 @@ implications.
 #### Undecided issues
 
 - Which Python version will be the minimum to support?
+  - CPython 3.4 will be eol before 2.7 and 3.5 brings some extensions to the
+    `inspect` module that would ease implementing a dependency injection.
 - The name `itemrules`.
 - Should the result be released as 2.0.a1?
 
