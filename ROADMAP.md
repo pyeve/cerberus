@@ -26,7 +26,7 @@ It will contain a finalized version of this document.
 
 ### Branching off 1.x
 
-After that release, a new branch `1.x` is created. This one  will continue to
+After that release, a new branch `1.x` is created. This one will continue to
 support Python 2 and receive bug fixes *at least* until December 31, 2019.
 A *feature freeze* for functionality of the public API is declared.
 
@@ -55,9 +55,9 @@ implications.
 - [ ] All functions and methods are type annotated. MyPy is added to the test
       suite.
 - [ ] A wider choice of type names that are closer oriented on the builtin
-      names are available. (#tba)
+      names are available. (#374)
 - [ ] Objects from the `typing` module can be used as constraints for the
-      `type` rule.
+      `type` rule. (#374)
 - [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
       part where `schema` tested items in sequences so far. (#tba)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
@@ -78,7 +78,7 @@ implications.
 ### 2.0 release
 
 After a series of release candidates, a final 2.0 with new features might be
-available in the middle of 2018.
+available by the end of 2018.
 
 #### Checklist
 
