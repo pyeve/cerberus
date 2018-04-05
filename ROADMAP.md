@@ -83,6 +83,5 @@ available by the end of 2018.
 #### Checklist
 
 - [ ] The `DocumentError` exception is replaced with an error. (#141)
-- [ ] A convenient way for document processing chains and branches. (#tba)
 - [ ] Include a guide on upgrading from 1.x.
 - [ ] Remove this document.
