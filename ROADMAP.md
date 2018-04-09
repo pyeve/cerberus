@@ -21,7 +21,7 @@ There are some assumptions that guide the following:
 
 The release is estimated to be ready in mid or late 2018.
 The planned fixes and features are listed
-[here](https://github.com/pyeve/cerberus/milestone/5).
+[here](https://github.com/pyeve/cerberus/milestone/6).
 It will contain a finalized version of this document.
 
 ### Branching off 1.x
