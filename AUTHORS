@@ -1,13 +1,14 @@
-Cerberus is written and maintained by Nicola Iarocci and
-various contributors:
+Cerberus is developed and maintained by the Cerberus community. It was created
+by Nicola Iarocci. 
 
-Development Lead
+Core maintainers
 ~~~~~~~~~~~~~~~~
 
-- Nicola Iarocci <nicola@nicolaiarocci.com>
+- Nicola Iarocci (nicolaiarocci)
+- Frank Sachsenheim (funkyfuture)
 
-Patches and Suggestions
-~~~~~~~~~~~~~~~~~~~~~~~
+Contributors
+~~~~~~~~~~~~
 
 - Antoine Lubineau
 - Arsh Singh
@@ -25,7 +26,6 @@ Patches and Suggestions
 - Dominik Kellner
 - Eelke Hermens
 - Florian Rathgeber
-- Frank Sachsenheim
 - Gabriel Wainer
 - Harro van der Klauw
 - Jaroslav Semančík
@@ -51,3 +51,7 @@ Patches and Suggestions
 - Waldir Pimenta
 - calve
 - gilbsgilbs
+
+A full, up-to-date list of contributors is available from git with:
+
+    git shortlog -sne
