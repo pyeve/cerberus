@@ -70,6 +70,7 @@ Cerberus is an open source project by `Nicola Iarocci
 informations.
 
 .. _`Contribution Guidelines`: https://github.com/pyeve/cerberus/blob/master/CONTRIBUTING.rst
+.. _`funding page`: http://docs.python-cerberus.org/en/latest/funding.html
 
 .. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
    :alt: Latest version on PyPI
