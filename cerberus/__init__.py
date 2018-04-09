@@ -16,7 +16,7 @@ from cerberus.schema import (rules_set_registry, schema_registry, Registry,
 from cerberus.utils import TypeDefinition
 
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 __all__ = [
     DocumentError.__name__,
