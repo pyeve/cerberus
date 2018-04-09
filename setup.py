@@ -29,6 +29,7 @@ setup(
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=['validation', 'schema', 'dictionaries'],
+    python_requires='>=2.6',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
