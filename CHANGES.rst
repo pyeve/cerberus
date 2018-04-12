@@ -9,7 +9,7 @@ Version 1.2
 Eve and Cerberus are now collaboratively funded projects,
 see: https://www.patreon.com/nicolaiarocci
 
-Not released yet.
+Released on April 12, 2018.
 
 
 - New: docs: Add note that normalization cannot be applied within an *of-rule.
