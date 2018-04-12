@@ -6,8 +6,7 @@ Here you can see the full list of changes between each Cerberus release.
 Version 1.2
 -----------
 
-Eve and Cerberus are now collaboratively funded projects,
-see: https://www.patreon.com/nicolaiarocci
+Cerberus is a collaboratively funded project, see the `funding page`_.
 
 Released on April 12, 2018.
 
@@ -436,4 +435,4 @@ Released on October 16 2012.
 First public preview release.
 
 .. _`upgrade notes`: upgrading
-
+.. _`funding page`: http://docs.python-cerberus.org/en/stable/funding.html
