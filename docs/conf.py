@@ -310,5 +310,5 @@ v = Validator()
 # -- Options for extlinks extension --------------------------------------------
 
 extlinks = {
-    'issue': ('https://github.com/sphinx-doc/sphinx/issues/%s', '#')
+    'issue': ('https://github.com/pyeve/cerberus/issues/%s', '#')
 }
