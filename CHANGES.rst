@@ -5,6 +5,12 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 
 Here you can see the full list of changes between each Cerberus release.
 
+In Development
+--------------
+
+- Update README link. Make it point to the new PYPI website (Frank
+  Sachsenheim).
+
 Version 1.2.x
 --------------
 
