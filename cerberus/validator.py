@@ -88,6 +88,11 @@ class BareValidator(object):
     :type error_handler: class or instance based on
                          :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
+    :type update: :class:`bool`
+    :param update: If rule `required` will
+                   be used or not. May be overrriden in
+                   :attr:`~cerberus.Validator.validate`.
+                   Defaults to ``False``.
     """  # noqa: E501
 
     mandatory_validations = ('nullable',)
@@ -132,7 +137,7 @@ class BareValidator(object):
 
         __init__(self, schema=None, ignore_none_values=False,
                  allow_unknown=False, purge_unknown=False,
-                 error_handler=errors.BasicErrorHandler)
+                 error_handler=errors.BasicErrorHandler, update=False)
         """
 
         self.document = None
@@ -159,7 +164,10 @@ class BareValidator(object):
         self.schema_path = ()
         """ The path within the schema to the current sub-schema.
             Type: :class:`tuple` """
-        self.update = False
+        self.update = kwargs.get('update', False)
+        """ If rule required will be used or not. May be overrriden in
+            validate().
+            Type: :class:`bool` """
         self.error_handler = self.__init_error_handler(kwargs)
         """ The error handler used to format :attr:`~cerberus.Validator.errors`
             and process submitted errors with
@@ -843,7 +851,7 @@ class BareValidator(object):
 
     # # Validating
 
-    def validate(self, document, schema=None, update=False, normalize=True):
+    def validate(self, document, schema=None, update=None, normalize=True):
         """ Normalizes and validates a mapping against a validation-schema of
         defined rules.
 
@@ -853,7 +861,8 @@ class BareValidator(object):
                        provided here, the schema must have been provided at
                        class instantiation.
         :type schema: any :term:`mapping`
-        :param update: If ``True``, required fields won't be checked.
+        :param update: Override self.update. If ``True``, required fields
+                       won't be checked.
         :type update: :class:`bool`
         :param normalize: If ``True``, normalize the document before validation.
         :type normalize: :class:`bool`
@@ -862,7 +871,9 @@ class BareValidator(object):
                  the :func:`errors` property for a list of processing errors.
         :rtype: :class:`bool`
         """
-        self.update = update
+        if update is not None:
+            self.update = update
+
         self._unrequired_by_excludes = set()
 
         self.__init_processing(document, schema)
