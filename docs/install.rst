@@ -4,28 +4,30 @@ Cerberus Installation
 This part of the documentation covers the installation of Cerberus. The first
 step to using any software package is getting it properly installed.
 
+
 Stable Version
 --------------
-Cerberus is on `PyPI <https://pypi.python.org/pypi/Cerberus>`_ so all you need
-to do is:
+
+Cerberus is on the PyPI_ so all you need to do is:
 
 .. code-block:: console
 
     $ pip install cerberus
 
+
 Development Version
 -------------------
-Cerberus is actively developed on GitHub, where the code is `always available
-<https://github.com/pyeve/cerberus>`_. If you want to work with the
-development version, there are two ways: you can either let `pip` pull
-in the development version, or you can tell it to operate on a git checkout.
-Either way, virtualenv is recommended.
+
+Cerberus is actively developed in a `GitHub Repository`_ where the code. If you
+want to work with the development version, there are two ways: You can either
+let ``pip`` pull in the development version, or you can tell it to operate on a
+``git`` checkout. Either way, virtualenv is recommended.
 
 Get the git checkout in a new virtualenv and run in development mode.
 
 .. code-block:: console
 
-    $ git clone http://github.com/pyeve/cerberus.git
+    $ git clone git@github.com:pyeve/cerberus.git
     Initialized empty Git repository in ~/dev/cerberus.git/
     $ cd cerberus
     $ virtualenv venv --distribute
@@ -55,3 +57,7 @@ To just get the development version without git, do this instead:
     Cleaning up...
 
 And you're done!
+
+
+.. _GitHub Repository: https://github.com/pyeve/cerberus
+.. _PyPI: https://pypi.org/project/Cerberus

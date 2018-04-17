@@ -6,10 +6,11 @@ import sys
 DESCRIPTION = ("Lightweight, extensible schema and data validation tool for "
                "Python dictionaries.")
 LONG_DESCRIPTION = open('README.rst').read()
-VERSION = __import__('cerberus').__version__
+VERSION = '1.2'
 
-needs_pytest = set(('pytest', 'test', 'ptr')) & set(sys.argv)
-setup_requires = ['pytest-runner'] if needs_pytest else []
+setup_requires = (
+    ['pytest-runner'] if any(x in sys.argv for x in ('pytest', 'test', 'ptr')) else []
+)
 
 
 setup(
