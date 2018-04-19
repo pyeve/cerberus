@@ -1,40 +1,39 @@
-This issue tracker is dedicated to bugs and feature requests. 
+<!--
+This issue tracker is dedicated to bugs and feature requests.
+
+**IT IS NOT SUPPOSED FOR ANY USAGE RELATED QUESTIONS.** 
+(sorry for that loud but necessary statement.) 
 
 Stack Overflow is the go-to place for general questions and general how-tos. On
 SO, questions tagged with the 'cerberus' tag are actively monitored by the
-project author, contributors and users.
+project author, contributors and users. If consultancy there leads you to the 
+conclusion that the documentation should be improved, it is a valid bug report 
+here.
 
-When reporting a bug, please post an example and make it as simple as possible.
-From your use-case throw everything out that is irrelevant for your question
-/ isn't necessary to evoke the bug.
+When reporting a bug, please post a full code example and make it as simple as 
+possible. From your use-case throw everything out that is irrelevant to evoke 
+the bug.
 
-Try to adhere as much as possible to the template below:
+**It is mandatory to provide the information in the template below:**
 
+-->
 
-Used Cerberus version / latest commit: ...
-
-- I consulted these documentations:
-  - [ ] http://docs.python-cerberus.org/en/stable/
-  - [ ] http://docs.python-cerberus.org/en/latest/
-
-- I consulted these sections of the docs (add more lines as necessary):
-  - ...
-  - ...
-
-- [ ] I found nothing relevant to my problem in the docs.
-- [ ] I found the documentation not helpful to my problem.
+Used Cerberus version / latest commit: …
 
 - [ ] I have the capacity to improve the docs when my problem is solved.
 - [ ] I have the capacity to submit a patch when a bug is identified.
+
+- [ ] My question does not concern a practical use-case that I can't figure out 
+      to solve.
 
 ----
 
 #### Use-case abstract
 
-PLEASE SUMMARIZE YOUR USE-CASE
+<!-- please summarize your use-case -->
 
 ----
 
-#### Support request / Bug report
+#### Bug report / Feature request 
 
-DESCRIBE YOUR ISSUE HERE
+<!-- describe your issue here -->
