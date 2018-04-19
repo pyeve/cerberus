@@ -20,7 +20,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     author='Nicola Iarocci',
     author_email='nicola@nicolaiarocci.com',
-    url='http://github.com/pyeve/cerberus',
+    url='http://docs.python-cerberus.org',
     license='ISC',
     platforms=["any"],
     packages=find_packages(),
