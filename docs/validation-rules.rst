@@ -452,6 +452,12 @@ equivalent to creating two separate schemas:
     >>> v.validate(document, schema1) or v.validate(document, schema2)
     False
 
+.. important::
+
+    Before you employ these rules, you should have investigated other possible
+    solutions for the problem at hand with and without Cerberus. Sometimes
+    people tend to overcomplicate schemas with these rules.
+
 .. attention::
 
     :doc:`Normalization rules <normalization-rules>` cannot be defined within
@@ -467,9 +473,11 @@ list of rule-values to save typing:
 
 .. testcode::
 
-    {'foo': {'anyof_type': ['string', 'integer']}}
+    {'foo': {'anyof_regex': ['^ham', 'spam$']}}
     # is equivalent to
-    {'foo': {'anyof': [{'type': 'string'}, {'type': 'integer'}]}}
+    {'foo': {'anyof': [{'regex': '^ham'}, {'regex': 'spam$'}]}}
+    # but is also equivalent to
+    # {'foo': {'regex': r'(^ham|spam$)'}}
 
 Thus you can use this to validate a document against several schemas without
 implementing your own logic:
