@@ -58,8 +58,8 @@ implications.
       names are available. (#374)
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
-- [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far. (#tba)
+- [ ] The `schema` rule only handles mappings, a new `itemsrules` replaces the
+      part where `schema` tested items in sequences so far. (#385)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
       clean the code and make extensions simpler.) (#372)
@@ -72,7 +72,7 @@ implications.
 - Which Python version will be the minimum to support?
   - CPython 3.4 will be eol before 2.7 and 3.5 brings some extensions to the
     `inspect` module that would ease implementing a dependency injection.
-- The name `itemrules`.
+- The name `itemsrules`.
 - Should the result be released as 2.0.a1?
 
 ### 2.0 release
