@@ -62,6 +62,31 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 .. versionadded:: 0.9
 
+contains
+--------
+This rule validates that the a container object contains all of the defined items.
+
+.. doctest::
+
+    >>> document = {'states': ['peace', 'love', 'inity']}
+
+    >>> schema = {'states': {'contains': 'peace'}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> schema = {'states': {'contains': 'greed'}}
+    >>> v.validate(document, schema)
+    False
+
+    >>> schema = {'states': {'contains': ['love', 'inity']}}
+    >>> v.validate(document, schema)
+    True
+
+    >>> schema = {'states': {'contains': ['love', 'respect']}}
+    >>> v.validate(document, schema)
+    False
+
+
 .. _dependencies:
 
 dependencies

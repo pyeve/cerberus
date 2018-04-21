@@ -966,6 +966,21 @@ class BareValidator(object):
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
+    def _validate_contains(self, expected_values, field, value):
+        """ {'empty': False } """
+        if not isinstance(value, Iterable):
+            return
+
+        if (not isinstance(expected_values, Iterable) or
+                isinstance(expected_values, _str_type)):
+            expected_values = set((expected_values,))
+        else:
+            expected_values = set(expected_values)
+
+        missing_values = expected_values - set(value)
+        if missing_values:
+            self._error(field, errors.MISSING_MEMBERS, missing_values)
+
     def _validate_dependencies(self, dependencies, field, value):
         """ {'type': ('dict', 'hashable', 'list'),
              'validator': 'dependencies'} """
