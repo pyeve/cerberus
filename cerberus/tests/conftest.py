@@ -79,11 +79,11 @@ sample_schema = {
     },
     'a_restricted_string': {
         'type': 'string',
-        'allowed': ["agent", "client", "vendor"],
+        'allowed': ['agent', 'client', 'vendor'],
     },
     'an_array': {
         'type': 'list',
-        'allowed': ["agent", "client", "vendor"],
+        'allowed': ['agent', 'client', 'vendor'],
     },
     'a_list_of_dicts': {
         'type': 'list',
