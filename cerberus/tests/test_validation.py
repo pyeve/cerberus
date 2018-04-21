@@ -1577,3 +1577,21 @@ def test_allow_unknown_with_oneof_rules(validator):
     # check that allow_unknown is actually applied
     document = {'test': {'known': 's', 'unknown': 'asd'}}
     assert_success(document, validator=validator)
+
+
+@mark.parametrize('constraint',
+                  (('Graham Chapman', 'Eric Idle'), 'Terry Gilliam'))
+def test_contains(constraint):
+    validator = Validator({'actors': {'contains': constraint}})
+
+    document = {'actors': ('Graham Chapman', 'Eric Idle', 'Terry Gilliam')}
+    assert validator(document)
+
+    document = {
+        'actors': ('Eric idle', 'Terry Jones', 'John Cleese', 'Michael Palin')
+    }
+    assert not validator(document)
+    assert errors.MISSING_MEMBERS in validator.document_error_tree['actors']
+    missing_actors = \
+        validator.document_error_tree['actors'][errors.MISSING_MEMBERS].info[0]
+    assert any(x in missing_actors for x in ('Eric Idle', 'Terry Gilliam'))
