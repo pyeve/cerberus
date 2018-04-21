@@ -8,6 +8,7 @@ Here you can see the full list of changes between each Cerberus release.
 In Development
 --------------
 
+- New: The ``contains`` rule. (Frank Sachsenheim)
 - Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
 - Update README link. Make it point to the new PYPI website. (Frank Sachsenheim)
 - Change ``allowed`` rule to use containers instead of lists. Closes :issue:`384` (Scott Crunkleton).
@@ -25,6 +26,8 @@ In Development
 - Docs: Remove redundant hint from ``*of-rules``.
 - Docs: Add usage reccommendation regarding the ``*ok-rules``.
 - Docs: add a few clarifications to the GitHub issue template.
+- Update README link. Make it point to the new PYPI website. (Frank
+  Sachsenheim)
 
 Version 1.2
 -----------
@@ -37,8 +40,8 @@ Released on April 12, 2018.
   (Frank Sachsenheim)
 - New: Add errors.MAPPING_SCHEMA on errors within subdocuments.
   (Frank Sachsenheim)
-- New: Support for Types Definitions, which allow quick types check on the fly
-  (Frank Sachsenheim).
+- New: Support for Types Definitions, which allow quick types check on the fly.
+  (Frank Sachsenheim)
 
 - Fix: Simplify the tests with Docker by using a volume for tox environments.
   (Frank Sachsenheim)
@@ -57,7 +60,7 @@ Released on April 12, 2018.
   Closes :issue:`269`. (Frank Sachsenheim)
 - Fix: A dependency is not considered satisfied if it has a null value.
   Closes :issue:`305`. (Frank Sachsenheim)
-- Override ``UnvalidatedSchema.copy`` (Peter Demin)
+- Override ``UnvalidatedSchema.copy``. (Peter Demin)
 - Fix: README link. (Gabriel Wainer)
 - Fix: Regression: allow_unknown causes dictionary validation to fail with
   a KeyError. Closes :issue:`302`. (Frank Sachsenheim)
