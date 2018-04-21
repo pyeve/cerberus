@@ -405,6 +405,12 @@ according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
     :doc:`Normalization <normalization-rules>` cannot be used in the rule sets
     within the constraints of these rules.
 
+.. note::
+
+    Before you employ these rules, you should have investigated other possible
+    solutions for the problem at hand with and without Cerberus. Sometimes
+    people tend to overcomplicate schemas with these rules.
+
 For example, to verify that a field's value is a number between 0 and 10 or 100
 and 110, you could do the following:
 
@@ -450,17 +456,6 @@ equivalent to creating two separate schemas:
     >>> document = {'prop1': 55}
     >>> v.validate(document, schema1) or v.validate(document, schema2)
     False
-
-.. important::
-
-    Before you employ these rules, you should have investigated other possible
-    solutions for the problem at hand with and without Cerberus. Sometimes
-    people tend to overcomplicate schemas with these rules.
-
-.. attention::
-
-    :doc:`Normalization rules <normalization-rules>` cannot be defined within
-    these rule sets.
 
 .. versionadded:: 0.9
 
