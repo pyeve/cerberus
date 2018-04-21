@@ -67,7 +67,7 @@ that level or when a used definition in a registry changes. You could therefore
 trigger a validation and catch the exception:
 
     >>> v = Validator({'foo': {'allowed': []}})
-    >>> v.schema['foo'] = {'allowed': 'strings are no valid constraint for allowed'}
+    >>> v.schema['foo'] = {'allowed': 1}
     Traceback (most recent call last):
       File "<input>", line 1, in <module>
       File "cerberus/schema.py", line 99, in __setitem__
@@ -76,7 +76,7 @@ trigger a validation and catch the exception:
         self._validate(schema)
       File "cerberus/schema.py", line 141, in _validate
         raise SchemaError(self.schema_validator.errors)
-    SchemaError: {'foo': {'allowed': 'must be of list type'}}
+    SchemaError: {'foo': {'allowed': 'must be of container type'}}
     >>> v.schema['foo']['allowed'] = 'strings are no valid constraint for allowed'
     >>> v.schema.validate()
     Traceback (most recent call last):
@@ -85,7 +85,7 @@ trigger a validation and catch the exception:
         self._validate(schema)
       File "cerberus/schema.py", line 141, in _validate
         raise SchemaError(self.schema_validator.errors)
-    SchemaError: {'foo': {'allowed': 'must be of list type'}}
+    SchemaError: {'foo': {'allowed': 'must be of container type'}}
 
 
 .. _schema-serialization:

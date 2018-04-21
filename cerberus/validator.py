@@ -11,7 +11,7 @@
 from __future__ import absolute_import
 
 from ast import literal_eval
-from collections import Hashable, Iterable, Mapping, Sequence, Sized
+from collections import Container, Hashable, Iterable, Mapping, Sequence
 from copy import copy
 from datetime import date, datetime
 import re
@@ -104,6 +104,8 @@ class BareValidator(object):
             TypeDefinition('binary', (bytes, bytearray), ()),
         'boolean':
             TypeDefinition('boolean', (bool,), ()),
+        'container':
+            TypeDefinition('container', (Container,), (_str_type,)),
         'date':
             TypeDefinition('date', (date,), ()),
         'datetime':
@@ -957,7 +959,7 @@ class BareValidator(object):
                         'validator': 'bulk_schema'}]} """)
 
     def _validate_allowed(self, allowed_values, field, value):
-        """ {'type': 'list'} """
+        """ {'type': 'container'} """
         if isinstance(value, Iterable) and not isinstance(value, _str_type):
             unallowed = set(value) - set(allowed_values)
             if unallowed:

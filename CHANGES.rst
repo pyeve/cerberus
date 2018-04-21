@@ -10,6 +10,7 @@ Version 1.2.x
 
 Unreleased
 
+- Change ``allowed`` rule to use containers instead of lists (Scott Crunkleton).
 - Check the ``empty`` rule against values of type ``Sized``.
 - Add the intent of a ``dataclasses`` module to ROADMAP.md
 - Drop support for Python 2.6 and 3.3.
