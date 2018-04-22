@@ -472,6 +472,10 @@ def test_a_list_of_values():
     assert_success({'a_list_of_values': ['hello', 100]})
 
 
+def test_an_array_from_set():
+    assert_success({'an_array_from_set': ['agent', 'client']})
+
+
 def test_a_list_of_integers():
     assert_success({'a_list_of_integers': [99, 100]})
 
