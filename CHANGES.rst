@@ -6,6 +6,8 @@ Here you can see the full list of changes between each Cerberus release.
 In Development
 --------------
 
+- New: Support for any iterable (instead of just list) in "allowed" rule.
+  Closes #384 (Scott Crunkleton). 
 - Update README link. Make it point to the new PYPI website (Frank
   Sachsenheim).
 
