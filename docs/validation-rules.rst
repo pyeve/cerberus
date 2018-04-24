@@ -13,9 +13,10 @@ For a full elaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
+This rule takes a :class:`py3:collectionsabc.Container` of allowed values.
+Validates the target value if the value is in the allowed values.
 If the target value is an :term:`iterable`, all its members must be in the
-list of allowed values. Other types of target values will validate if the
-value is in that list.
+allowed values.
 
 .. doctest::
 

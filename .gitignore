@@ -22,14 +22,17 @@ pip-log.txt
 .pytest_cache/
 .tox
 
-#Translations
+# Translations
 *.mo
 
-#Mr Developer
+# Mr Developer
 .mr.developer.cfg
 
-#Sphinx
+# Sphinx
 _build
+
+# Jetbrains
+.idea
 
 # my private cerberus playground
 run.py
