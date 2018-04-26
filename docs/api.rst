@@ -19,7 +19,7 @@ Validator Class
 Rules Set & Schema Registry
 ---------------------------
 
-.. autoclass:: cerberus.Registry
+.. autoclass:: cerberus.schema.Registry
   :members:
 
 
