@@ -19,10 +19,12 @@ from warnings import warn
 
 from cerberus import errors
 from cerberus.platform import _int_types, _str_type
-from cerberus.schema import (schema_registry, rules_set_registry,
-                             DefinitionSchema, SchemaError)
-from cerberus.utils import (drop_item_from_tuple, isclass,
-                            readonly_classproperty, TypeDefinition)
+from cerberus.schema import (
+    schema_registry, rules_set_registry, DefinitionSchema, SchemaError
+)
+from cerberus.utils import (
+    drop_item_from_tuple, readonly_classproperty, TypeDefinition
+)
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -182,7 +184,7 @@ class BareValidator(object):
             error_handler, eh_config = error_handler
         else:
             eh_config = {}
-        if isclass(error_handler) and \
+        if isinstance(error_handler, type) and \
                 issubclass(error_handler, errors.BaseErrorHandler):
             return error_handler(**eh_config)
         elif isinstance(error_handler, errors.BaseErrorHandler):
