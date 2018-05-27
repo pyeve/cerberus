@@ -38,6 +38,11 @@ def test_coerce_in_listitems():
     expected = {'things': [1, '2']}
     assert_normalized(document, expected, schema)
 
+    validator = Validator(schema)
+    document['things'].append(3)
+    assert not validator(document)
+    assert validator.document['things'] == document['things']
+
 
 def test_coerce_in_dictschema_in_listschema():
     item_schema = {'type': 'dict', 'schema': {'amount': {'coerce': int}}}
