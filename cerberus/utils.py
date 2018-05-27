@@ -65,15 +65,6 @@ def mapping_to_frozenset(mapping):
     return frozenset(mapping.items())
 
 
-def isclass(obj):
-    try:
-        issubclass(obj, object)
-    except TypeError:
-        return False
-    else:
-        return True
-
-
 def quote_string(value):
     if isinstance(value, _str_type):
         return '"%s"' % value
