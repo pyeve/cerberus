@@ -303,7 +303,8 @@ items
 -----
 Validates the items of any iterable against a sequence of rules that must
 validate each index-correspondent item. The items will only be evaluated if
-the given iterable's size matches the definition's.
+the given iterable's size matches the definition's. This also applies during
+normalization and items of a value are not normalized when the lengths mismatch.
 
 .. doctest::
 
