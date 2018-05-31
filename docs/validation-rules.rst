@@ -308,7 +308,10 @@ normalization and items of a value are not normalized when the lengths mismatch.
 
 .. doctest::
 
-   >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
+   >>> schema = {'list_of_values': {
+   ...              'type': 'list',
+   ...              'items': [{'type': 'string'}, {'type': 'integer'}]}
+   ...           }
    >>> document = {'list_of_values': ['hello', 100]}
    >>> v.validate(document, schema)
    True
@@ -326,7 +329,10 @@ Validation schema for all keys of a :term:`mapping`.
 
 .. doctest::
 
-    >>> schema = {'a_dict': {'type': 'dict', 'keyschema': {'type': 'string', 'regex': '[a-z]+'}}}
+    >>> schema = {'a_dict': {
+    ...               'type': 'dict',
+    ...               'keyschema': {'type': 'string', 'regex': '[a-z]+'}}
+    ...           }
     >>> document = {'a_dict': {'key': 'value'}}
     >>> v.validate(document, schema)
     True
