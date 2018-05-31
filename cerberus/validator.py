@@ -11,7 +11,7 @@
 from __future__ import absolute_import
 
 from ast import literal_eval
-from collections import Container, Hashable, Iterable, Mapping, Sequence
+from collections import Container, Hashable, Iterable, Mapping, Sequence, Sized
 from copy import copy
 from datetime import date, datetime
 import re
@@ -1026,7 +1026,7 @@ class BareValidator(object):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        if isinstance(value, Iterable) and len(value) == 0:
+        if isinstance(value, Sized) and len(value) == 0:
             self._drop_remaining_rules(
                 'allowed', 'forbidden', 'items', 'minlength', 'maxlength',
                 'regex', 'validator')
