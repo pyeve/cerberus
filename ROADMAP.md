@@ -66,6 +66,8 @@ implications.
 - [ ] Dependency injection for all kind of handlers. (#279,#314)
 - [ ] The feature freeze gets lifted and the `CONTRIBUTING.rst` is updated
       accordingly.
+- [ ] The module `dataclasses` is implemented. This may get postponed 'til a
+      following minor release. (#397) 
 
 #### Undecided issues
 
