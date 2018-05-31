@@ -2,7 +2,7 @@
 
 Running the Tests
 -----------------
-Cerberus runs under Python 2.6, 2.7, 3.3, 3.4, 3.5, PyPy and PyPy3. Therefore
+Cerberus runs under Python 2.7, 3.4, 3.5, 3.6, PyPy and PyPy3. Therefore
 tests will be run in those four platforms in our `continuous integration
 server`_.
 
@@ -16,8 +16,8 @@ with:
 Testing with other Python versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Before you submit a pull request, make sure your tests and changes run in
-all supported python versions: 2.6, 2.7, 3.3, 3.4 and PyPy. Instead of creating all
-those environments by hand, Cerberus uses tox_.
+all supported python versions. Instead of creating all those environments by
+hand, Cerberus uses tox_.
 
 Make sure you have all required python versions installed and run:
 
@@ -33,10 +33,10 @@ the following:
 .. code-block:: console
 
     _________ summary _________
-    py26: commands succeeded
     py27: commands succeeded
-    py33: commands succeeded
     py34: commands succeeded
+    py35: commands succeeded
+    py36: commands succeeded
     pypy: commands succeeded
     flake8: commands succeeded
     congratulations :)

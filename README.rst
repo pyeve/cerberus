@@ -1,6 +1,6 @@
 Cerberus |latest-version|
 =========================
-|build-status| |python-support| 
+|build-status| |python-support|
 
 Cerberus is a lightweight and extensible data validation library for Python.
 
@@ -14,8 +14,8 @@ Features
 --------
 Cerberus provides type checking and other base functionality out of the box and
 is designed to be non-blocking and easily extensible, allowing for custom
-validation. It has no dependencies and is thoroughly tested under Python 2.6,
-Python 2.7, Python 3.3, Python 3.4, Python 3.5, Python 3.6, PyPy and PyPy3.
+validation. It has no dependencies and is thoroughly tested under CPython 2.7,
+CPython 3.4, CPython 3.5, CPython 3.6, PyPy and PyPy3.
 
 Funding
 -------
@@ -24,7 +24,7 @@ a business and are using Cerberus in a revenue-generating product, it would
 make business sense to sponsor its development: it ensures the project that
 your product relies on stays healthy and actively maintained. Individual users
 are also welcome to make a recurring pledge or a one time donation if Cerberus
-has helped you in your work or personal projects. 
+has helped you in your work or personal projects.
 
 Every single sign-up makes a significant impact towards making Eve possible. To
 learn more, check out our `funding page`_.
