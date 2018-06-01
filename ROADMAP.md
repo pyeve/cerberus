@@ -24,9 +24,9 @@ The planned fixes and features are listed
 [here](https://github.com/pyeve/cerberus/milestone/6).
 It will contain a finalized version of this document.
 
-### Branching off 1.x
+### Branching off 1.3.x
 
-After that release, a new branch `1.x` is created. This one will continue to
+After that release, a new branch `1.3.x` is created. This one will continue to
 support Python 2 and receive bug fixes *at least* until December 31, 2019.
 A *feature freeze* for functionality of the public API is declared.
 
@@ -34,11 +34,7 @@ A *feature freeze* for functionality of the public API is declared.
 
 - [ ] The `README.rst` and `CONTRIBUTING.rst` are updated accordingly.
 - [ ] 1.3 is released.
-- [ ] 1.x branch is created.
-
-#### Undecided issues
-
-- Shall we start releasing micro / patch releases from here on?
+- [ ] 1.3.x branch is created.
 
 ### Modernization and consolidation
 
