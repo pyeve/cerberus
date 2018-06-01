@@ -81,7 +81,7 @@ remove it with ``docker volume rm`` to clean them.
 Building the HTML-documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To preview the rendered HTML-documentation you must intially install the
+To preview the rendered HTML-documentation you must initially install the
 documentation framework and a theme:
 
 .. code-block:: console

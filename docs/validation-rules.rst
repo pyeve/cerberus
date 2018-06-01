@@ -66,7 +66,7 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 dependencies
 ------------
-This rule allows to define either a single field name, a sequence of field
+This rule allows one to define either a single field name, a sequence of field
 names or a :term:`mapping` of field names and a sequence of allowed values as
 required in the document if the field defined upon is present in the document.
 
@@ -167,7 +167,7 @@ supported:
 
 When a subdocument is processed the lookup for a field in question starts at
 the level of that document. In order to address the processed document as
-root level, the declaration has to start with a ``^``. An occurance of two
+root level, the declaration has to start with a ``^``. An occurrence of two
 initial carets (``^^``) is interpreted as a literal, single ``^`` with no
 special meaning.
 
@@ -711,7 +711,7 @@ A list of types can be used to allow different values:
     exist for the same field (only `nullable`_ and `readonly`_ are considered
     beforehand). In the occurrence of a type failure subsequent validation
     rules on the field will be skipped and validation will continue on other
-    fields. This allows to safely assume that field type is correct when other
+    fields. This allows one to safely assume that field type is correct when other
     (standard or custom) rules are invoked.
 
 .. versionchanged:: 1.0
