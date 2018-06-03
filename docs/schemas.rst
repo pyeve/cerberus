@@ -29,7 +29,7 @@ validation schema. You can furthermore instantiate more
 :attr:`~cerberus.Validator.schema_registry` of a validator. You may also set
 these as keyword-arguments upon intitialization.
 
-Using registries is particulary interesting if
+Using registries is particularly interesting if
 
   - schemas shall include references to themselves, vulgo: schema recursion
   - schemas contain a lot of reused parts and are supposed to be
