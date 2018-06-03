@@ -56,9 +56,9 @@ instance after a processing of a document:
     attribute. You can test if at least one error with a specific error
     definition is ``in`` that list.
 
-  - ``document_error_tree``: A ``dict``-like object that allows you to query
+  - ``document_error_tree``: A ``dict``-like object that allows one to query
     nodes corresponding to your document.
-    The subscript notation on a node allows you to fetch either a specific error
+    The subscript notation on a node allows one to fetch either a specific error
     that matches the given :class:`~cerberus.errors.ErrorDefinition` or a child
     node with the given key.
     If there's no matching error respectively no errors occurred in a node or
