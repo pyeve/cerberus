@@ -117,16 +117,32 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
 Custom Validators
 -----------------
 If a validation test doesn't depend on a specified constraint, it's possible to
-rather define these as validators than as a rule. They are called when the
-``validator`` rule is given a string as constraint. A matching method with the
-prefix ``_validator_`` will be called with the field and value as argument:
+rather define these as validators than as a rule. There are two ways to use the
+``validator`` rule. 
+
+The first is by extending :class:`~cerberus.Validator` with a method prefixed
+with ``_validator_``. To reference this method using the ``validator`` rule, 
+simply pass the unprefixed method name as a string constraint.
+
+For example, one can define an ``oddity`` validator method as follows:
 
 .. testcode::
 
-    def _validator_oddity(self, field, value):
-        if not value & 1:
-            self._error(field, "Must be an odd number")
+    class AValidator(Validator):
+        def _validator_oddity(self, field, value):
+            if not value & 1:
+                self._error(field, "Must be an odd number")
 
+Usage would look something like:
+
+.. testcode::
+
+    v = AValidator({'amount': {'type': 'integer', 'validator': 'oddity'}})
+
+The second is to define a standalone function and pass it as the constraint.
+This brings with it the benefit of not having to extend ``Validator``. To 
+read more about this implementation and see examples check out 
+:doc:`validation-rules` under ``validator``.
 
 .. _custom-coercer:
 
