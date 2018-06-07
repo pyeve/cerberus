@@ -23,7 +23,7 @@ errors_module = load_module_members('errors', CERBERUS_DIR / 'errors.py')
 error_type = errors_module['ErrorDefinition']
 error_definitions = []
 for name, member in errors_module.items():
-    if not isinstance(member, error_type) or member.rule is None:
+    if not isinstance(member, error_type):
         continue
     error_definition = SimpleNamespace(**member._asdict())
     error_definition.name = name
