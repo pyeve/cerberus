@@ -515,12 +515,17 @@ might be provided by the datastore, but should not writable.
 
 regex
 -----
-Validation will fail if field value does not match the provided regular
-expression. It is only tested on string values.
+The validation will fail if the field's value does not match the provided
+regular expression. It is only tested on string values.
 
 .. doctest::
 
-    >>> schema = {'email': {'type': 'string', 'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'}}
+    >>> schema = {
+    ...     'email': {
+    ...        'type': 'string',
+    ...        'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    ...     }
+    ... }
     >>> document = {'email': 'john@example.com'}
     >>> v.validate(document, schema)
     True
@@ -533,8 +538,16 @@ expression. It is only tested on string values.
     {'email': ["value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"]}
 
 For details on regular expression syntax, see the documentation on the standard
-library's :mod:`re`-module. Mind that you can set flags as part of the
-expression, look for ``(?aiLmsux)`` in that document.
+library's :mod:`re`-module.
+
+.. hint::
+
+    Mind that one can set behavioural flags as part of the expression which is
+    equivalent to passing ``flags`` to the :func:`re.compile` function for
+    example. So, the constraint ``'(?i)holy grail'`` includes the equivalent
+    of the :obj:`re.I` flag and matches any string that includes 'holy grail'
+    or any variant of it with upper-case glyphs. Look for ``(?aiLmsux)`` in the
+    mentioned library documentation for a description there.
 
 .. versionadded:: 0.7
 
