@@ -54,6 +54,7 @@ UNALLOWED_VALUE = ErrorDefinition(0x44, 'allowed')
 UNALLOWED_VALUES = ErrorDefinition(0x45, 'allowed')
 FORBIDDEN_VALUE = ErrorDefinition(0x46, 'forbidden')
 FORBIDDEN_VALUES = ErrorDefinition(0x47, 'forbidden')
+MISSING_MEMBERS = ErrorDefinition(0x48, 'contains')
 
 # other
 NORMALIZATION = ErrorDefinition(0x60, None)
@@ -461,6 +462,7 @@ class BasicErrorHandler(BaseErrorHandler):
                 0x45: "unallowed values {0}",
                 0x46: "unallowed value {value}",
                 0x47: "unallowed values {0}",
+                0x48: "missing members {0}",
 
                 0x61: "field '{field}' cannot be coerced: {0}",
                 0x62: "field '{field}' cannot be renamed: {0}",
