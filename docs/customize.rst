@@ -100,7 +100,7 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
 
     decimal_type = cerberus.TypeDefinition('decimal', (Decimal,), ())
 
-    class CustomValidator(Validator):
+    class MyValidator(Validator):
         types_mapping = Validator.types_mapping.copy()
         types_mapping['decimal'] = decimal_type
 
@@ -114,21 +114,26 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
    Added the :attr:`~cerberus.Validator.types_mapping` property and marked
    methods for testing types as deprecated.
 
-Custom Validators
------------------
-If a validation test doesn't depend on a specified constraint, it's possible to
-rather define these as validators than as a rule. There are two ways to use the
-``validator`` rule. 
+.. _validator-rule-methods:
 
-The first is by extending :class:`~cerberus.Validator` with a method prefixed
-with ``_validator_``. To reference this method using the ``validator`` rule, 
-simply pass the unprefixed method name as a string constraint.
+Methods that can be referenced by the validator rule
+----------------------------------------------------
+If a validation test doesn't depend on a specified constraint from a schema or
+needs to be more complex than a rule should be, it's possible to rather define
+it as validators than as a rule. There are two ways to use the
+:ref:`validator rule <validator-rule>`.
+
+One is by extending :class:`~cerberus.Validator` with a method prefixed with
+``_validator_``. This allows to access the whole context of the validator
+instance including arbitrary configuration values and state. To reference such
+method using the ``validator`` rule, simply pass the unprefixed method name as
+a string constraint.
 
 For example, one can define an ``oddity`` validator method as follows:
 
 .. testcode::
 
-    class AValidator(Validator):
+    class MyValidator(Validator):
         def _validator_oddity(self, field, value):
             if not value & 1:
                 self._error(field, "Must be an odd number")
@@ -137,12 +142,12 @@ Usage would look something like:
 
 .. testcode::
 
-    v = AValidator({'amount': {'type': 'integer', 'validator': 'oddity'}})
+    schema = {'amount': {'type': 'integer', 'validator': 'oddity'}}
 
-The second is to define a standalone function and pass it as the constraint.
-This brings with it the benefit of not having to extend ``Validator``. To 
-read more about this implementation and see examples check out 
-:doc:`validation-rules` under ``validator``.
+The second option to use the rule is to define a standalone function and pass
+it as the constraint. This brings with it the benefit of not having to extend
+``Validator``. To read more about this implementation and see examples check
+out the rule's documentation.
 
 .. _custom-coercer:
 
@@ -195,30 +200,43 @@ Limitations
 It may be a bad idea to overwrite particular contributed rules.
 
 
-Instantiating Custom Validators
--------------------------------
-To make use of additional contextual information in a sub-class of
-:class:`~cerberus.Validator`, use a pattern like this:
+Attaching Configuration Data And Instantiating Custom Validators
+----------------------------------------------------------------
+It's possible to pass arbitrary configuration values when instantiating a
+:class:`~cerberus.Validator` or a subclass as keyword arguments (whose names
+are not used by Cerberus). These can be used in all of the handlers described
+in this document that have access to the instance.
+Cerberus ensures that this data is available in all child instances that may
+get spawned during processing. When you implement an ``__init__`` method on
+a customized validator, you must ensure that all positional and keyword
+arguments are also passed to the parent class' initialization method. Here's
+an example pattern:
 
 .. testcode::
 
     class MyValidator(Validator):
         def __init__(self, *args, **kwargs):
-            if 'additional_context' in kwargs:
-                self.additional_context = kwargs['additional_context']
+            # assign a configuration value to an instance property
+            # for convenience
+            self.additional_context = kwargs.get('additional_context')
+            # pass all data to the base classes
             super(MyValidator, self).__init__(*args, **kwargs)
 
-        # alternatively define a property
+        # alternatively a dynamic property can be defined, rendering
+        # the __init__ method unnecessary in this example case
         @property
         def additional_context(self):
             return self._config.get('additional_context', 'bar')
 
-        def _validate_type_foo(self, field, value):
+        def _validator_foo(self, field, value):
             make_use_of(self.additional_context)
 
-This ensures that the additional context will be available in
-:class:`~cerberus.Validator` child instances that may be used during
-validation.
+.. warning::
+
+    It is neither recommended to access the ``_config`` property in other
+    situations than outlined in the sketch above nor to to change its contents
+    during the processing of a document. Both cases are not tested and are
+    unlikely to get officially supported.
 
 .. versionadded:: 0.9
 

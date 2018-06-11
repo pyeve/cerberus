@@ -789,13 +789,15 @@ A list of types can be used to allow different values:
 
 .. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
+.. _validator-rule:
+
 validator
 ---------
 Validates the value by calling either a function or method.
 
 A function must be implemented like this the following prototype: ::
 
-    def validationname(field, value, error):
+    def functionnname(field, value, error):
         if value is invalid:
             error(field, 'error message')
 
@@ -826,7 +828,8 @@ Then, you can validate a value like this:
 
 If the rule's constraint is a string, the :class:`~cerberus.Validator` instance
 must have a method with that name prefixed by ``_validator_``. See
-:doc:`customize` for an equivalent to the function-based example above.
+:ref:`validator-rule-methods` for an equivalent to the function-based example
+above.
 
 The constraint can also be a sequence of these that will be called consecutively. ::
 
