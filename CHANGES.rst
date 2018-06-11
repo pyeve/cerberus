@@ -1,6 +1,8 @@
 Cerberus changelog
 ==================
 
+Cerberus is a collaboratively funded project, see the `funding page`_.
+
 Here you can see the full list of changes between each Cerberus release.
 
 In Development
@@ -13,15 +15,33 @@ In Development
 - Update README link. Make it point to the new PYPI website. (Frank
   Sachsenheim)
 
+Version 1.2.x
+--------------
+
+Unreleased
+
+- Change ``allowed`` rule to use containers instead of lists (Scott Crunkleton).
+- Check the ``empty`` rule against values of type ``Sized``.
+- Add the intent of a ``dataclasses`` module to ROADMAP.md
+- Drop support for Python 2.6 and 3.3.
+- Remove ``utils.is_class``
+- Remove ``Registry`` from top level namespace. Closes :issue:`354`.
+- Update homepage URL in package metadata. Closes :issue:`382`.
+- Docs: improve documentation of the regex rule. Closes :issue:`389`.
+- Docs: expand upon `validator` rules. Closes :issue:`320` (Connor Zapfel).
+- Docs: include all errors definitions in API docs. Closes :issue:`404`.
+- Docs: update README with elaborations on versioning and testing.
+- Docs: fix misspellings and missing pronouns (Connor Zapfel).
+- Docs: Remove redundant hint from ``*of-rules``.
+- Docs: Add usage reccommendation regarding the ``*ok-rules``.
+- Docs: add a few clarifications to the GitHub issue template.
+
 Version 1.2
 -----------
 
-Cerberus is a collaboratively funded project, see the `funding page`_.
-
 Released on April 12, 2018.
 
-
-- New: docs: Add note that normalization cannot be applied within an *of-rule.
+- New: docs: Add note that normalization cannot be applied within an ``*of-rule``.
   (Frank Sachsenheim)
 - New: Add the ability to query for a type of error in an error tree.
   (Frank Sachsenheim)
