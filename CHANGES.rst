@@ -8,16 +8,16 @@ Here you can see the full list of changes between each Cerberus release.
 In Development
 --------------
 
+- Drop support for Python 2.6 and 3.3.
 - New: The ``contains`` rule. (Frank Sachsenheim)
-- Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
-- Update README link. Make it point to the new PYPI website. (Frank Sachsenheim)
 - Change ``allowed`` rule to use containers instead of lists. Closes :issue:`384` (Scott Crunkleton).
 - Check the ``empty`` rule against values of type ``Sized``.
-- Add the intent of a ``dataclasses`` module to ROADMAP.md
-- Drop support for Python 2.6 and 3.3.
 - Remove ``utils.is_class``
 - Remove ``Registry`` from top level namespace. Closes :issue:`354`.
+- Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
 - Update homepage URL in package metadata. Closes :issue:`382`.
+- Docs: add the intent of a ``dataclasses`` module to ROADMAP.md
+- Docs: update README link. Make it point to the new PYPI website. (Frank Sachsenheim)
 - Docs: improve documentation of the regex rule. Closes :issue:`389`.
 - Docs: expand upon `validator` rules. Closes :issue:`320` (Connor Zapfel).
 - Docs: include all errors definitions in API docs. Closes :issue:`404`.
