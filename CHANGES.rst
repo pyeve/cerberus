@@ -27,6 +27,7 @@ Unreleased
 - Remove ``utils.is_class``
 - Remove ``Registry`` from top level namespace. Closes :issue:`354`.
 - Update homepage URL in package metadata. Closes :issue:`382`.
+- Docs: expand upon `validator` rules. Closes :issue:`320` (Connor Zapfel).
 - Docs: include all errors definitions in API docs. Closes :issue:`404`.
 - Docs: update README with elaborations on versioning and testing.
 - Docs: fix misspellings and missing pronouns (Connor Zapfel).
