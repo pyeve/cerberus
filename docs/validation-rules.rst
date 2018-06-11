@@ -13,7 +13,7 @@ For a full elaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
-This rule takes a :term:`container` of allowed values.
+This rule takes a :class:`py3:collectionsabc.Container` of allowed values.
 Validates the target value if the value is in the allowed values.
 If the target value is an :term:`iterable`, all its members must be in the
 allowed values.
@@ -303,11 +303,15 @@ items
 -----
 Validates the items of any iterable against a sequence of rules that must
 validate each index-correspondent item. The items will only be evaluated if
-the given iterable's size matches the definition's.
+the given iterable's size matches the definition's. This also applies during
+normalization and items of a value are not normalized when the lengths mismatch.
 
 .. doctest::
 
-   >>> schema = {'list_of_values': {'type': 'list', 'items': [{'type': 'string'}, {'type': 'integer'}]}}
+   >>> schema = {'list_of_values': {
+   ...              'type': 'list',
+   ...              'items': [{'type': 'string'}, {'type': 'integer'}]}
+   ...           }
    >>> document = {'list_of_values': ['hello', 100]}
    >>> v.validate(document, schema)
    True
@@ -325,7 +329,10 @@ Validation schema for all keys of a :term:`mapping`.
 
 .. doctest::
 
-    >>> schema = {'a_dict': {'type': 'dict', 'keyschema': {'type': 'string', 'regex': '[a-z]+'}}}
+    >>> schema = {'a_dict': {
+    ...               'type': 'dict',
+    ...               'keyschema': {'type': 'string', 'regex': '[a-z]+'}}
+    ...           }
     >>> document = {'a_dict': {'key': 'value'}}
     >>> v.validate(document, schema)
     True

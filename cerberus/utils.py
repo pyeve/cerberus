@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from collections import Mapping, namedtuple, Sequence
+from collections import Mapping, namedtuple, Sequence, Set
 
 from cerberus.platform import _int_types, _str_type
 
@@ -60,6 +60,8 @@ def mapping_to_frozenset(mapping):
                 if isinstance(item, Mapping):
                     value[i] = mapping_to_frozenset(item)
             mapping[key] = tuple(value)
+        elif isinstance(value, Set):
+            mapping[key] = frozenset(value)
     return frozenset(mapping.items())
 
 

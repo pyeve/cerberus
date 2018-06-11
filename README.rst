@@ -109,7 +109,7 @@ for more information.
 
 .. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
    :alt: Latest version on PyPI
-   :target: https://pypi.python.org/pypi/cerberus
+   :target: https://pypi.org/project/cerberus
 .. |build-status| image:: https://travis-ci.org/pyeve/cerberus.svg?branch=master
    :alt: Build status
    :target: https://travis-ci.org/pyeve/cerberus

@@ -10,12 +10,14 @@
 
 from __future__ import absolute_import
 
+import pkg_resources
+
 from cerberus.validator import DocumentError, Validator
 from cerberus.schema import rules_set_registry, schema_registry, SchemaError
 from cerberus.utils import TypeDefinition
 
 
-__version__ = "1.2"
+__version__ = pkg_resources.get_distribution('Cerberus').version
 
 __all__ = [
     DocumentError.__name__,
