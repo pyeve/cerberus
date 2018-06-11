@@ -8,19 +8,9 @@ Here you can see the full list of changes between each Cerberus release.
 In Development
 --------------
 
-- New: Support for any iterable (instead of just list) in "allowed" rule.
-  Closes :issue:`384`. (Scott Crunkleton)
-- Fix: Normalization rules defined within the ``items`` rule are applied.
-  (Evgeny Odegov)
-- Update README link. Make it point to the new PYPI website. (Frank
-  Sachsenheim)
-
-Version 1.2.x
---------------
-
-Unreleased
-
-- Change ``allowed`` rule to use containers instead of lists (Scott Crunkleton).
+- Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
+- Update README link. Make it point to the new PYPI website. (Frank Sachsenheim)
+- Change ``allowed`` rule to use containers instead of lists. Closes :issue:`384` (Scott Crunkleton).
 - Check the ``empty`` rule against values of type ``Sized``.
 - Add the intent of a ``dataclasses`` module to ROADMAP.md
 - Drop support for Python 2.6 and 3.3.
