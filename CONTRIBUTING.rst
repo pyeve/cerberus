@@ -6,6 +6,12 @@ There are many ways to contribute to open source projects: reporting bugs,
 helping with the documentation, spreading the word and of course, adding
 new features and patches.
 
+.. note::
+
+    There's currently a feature freeze until the basic code modernization for
+    the 2.0 release is finished. Have a look at the ``ROADMAP.md`` for a status
+    on its progress.
+
 Getting Started
 ---------------
 #. Make sure you have a GitHub account.

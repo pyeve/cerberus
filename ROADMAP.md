@@ -2,7 +2,6 @@
 
 This document lays out a roadmap for the further development of Cerberus in the
 next few years, particularly in anticipation of the decay of Python 2.
-The current status is a **draft**, pull requests for changes are welcome.
 
 
 ## Assumptions
@@ -32,7 +31,7 @@ A *feature freeze* for functionality of the public API is declared.
 
 #### Checklist
 
-- [ ] The `README.rst` and `CONTRIBUTING.rst` are updated accordingly.
+- [x] The `README.rst` and `CONTRIBUTING.rst` are updated accordingly.
 - [ ] 1.3 is released.
 - [ ] 1.3.x branch is created.
 
@@ -55,7 +54,10 @@ implications.
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
 - [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far. (#tba)
+      part where `schema` tested items in sequences so far. There will be no 
+      backward-compatibility for schemas. (#385)
+- [ ] The rules `keyschema` and `valueschema` are renamed to `keyrules` and
+      `valuerules`, backward-compatibility for schemas will be provided. (#385)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
       clean the code and make extensions simpler.) (#372)
