@@ -16,6 +16,7 @@ In Development
 - Remove ``Registry`` from top level namespace. Closes :issue:`354`.
 - Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
 - Update homepage URL in package metadata. Closes :issue:`382`.
+- Docs: add feature freeze note to CONTRIBUTING and note on Python support in README (Frank Sachsenheim).
 - Docs: add the intent of a ``dataclasses`` module to ROADMAP.md
 - Docs: update README link. Make it point to the new PYPI website. (Frank Sachsenheim)
 - Docs: improve documentation of the regex rule. Closes :issue:`389`.
