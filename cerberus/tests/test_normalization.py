@@ -532,3 +532,27 @@ def test_purge_readonly():
     expected = deepcopy(document)
     document['last_updated'] = 'future'
     assert_normalized(document, expected, validator=validator)
+
+
+def test_defaults_in_allow_unknown_schema():
+    schema = {
+        'meta': {'type': 'dict'},
+        'version': {'type': 'string'},
+    }
+    allow_unknown = {
+        'type': 'dict',
+        'schema': {
+            'cfg_path': {'type': 'string', 'default': 'cfg.yaml'},
+            'package': {'type': 'string'},
+        }
+    }
+    validator = Validator(schema=schema, allow_unknown=allow_unknown)
+
+    document = {
+        'version': '1.2.3',
+        'plugin_foo': {'package': 'foo'}
+    }
+    expected = {
+        'version': '1.2.3',
+        'plugin_foo': {'package': 'foo', 'cfg_path': 'cfg.yaml'}
+    }

@@ -683,29 +683,31 @@ class BareValidator(object):
 
     def __normalize_containers(self, mapping, schema):
         for field in mapping:
-            if field not in schema:
-                continue
+            rules = set(schema.get(field, ()))
+
             # TODO: This check conflates validation and normalization
             if isinstance(mapping[field], Mapping):
-                if 'keyschema' in schema[field]:
+                if 'keyschema' in rules:
                     self.__normalize_mapping_per_keyschema(
                         field, mapping, schema[field]['keyschema'])
-                if 'valueschema' in schema[field]:
+                if 'valueschema' in rules:
                     self.__normalize_mapping_per_valueschema(
                         field, mapping, schema[field]['valueschema'])
-                if set(schema[field]) & set(('allow_unknown', 'purge_unknown',
-                                             'schema')):
+                if rules & set(('allow_unknown', 'purge_unknown', 'schema')) \
+                        or isinstance(self.allow_unknown, Mapping):
                     try:
                         self.__normalize_mapping_per_schema(
                             field, mapping, schema)
                     except _SchemaRuleTypeError:
                         pass
+
             elif isinstance(mapping[field], _str_type):
                 continue
+
             elif isinstance(mapping[field], Sequence):
-                if 'schema' in schema[field]:
+                if 'schema' in rules:
                     self.__normalize_sequence_per_schema(field, mapping, schema)
-                elif 'items' in schema[field]:
+                elif 'items' in rules:
                     self.__normalize_sequence_per_items(field, mapping, schema)
 
     def __normalize_mapping_per_keyschema(self, field, mapping, property_rules):
@@ -743,11 +745,14 @@ class BareValidator(object):
             self._error(validator._errors)
 
     def __normalize_mapping_per_schema(self, field, mapping, schema):
+        rules = schema.get(field, {})
+        if not rules and isinstance(self.allow_unknown, Mapping):
+            rules = self.allow_unknown
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema[field].get('schema', {}),
-            allow_unknown=schema[field].get('allow_unknown', self.allow_unknown),  # noqa: E501
-            purge_unknown=schema[field].get('purge_unknown', self.purge_unknown))  # noqa: E501
+            schema=rules.get('schema', {}),
+            allow_unknown=rules.get('allow_unknown', self.allow_unknown),  # noqa: E501
+            purge_unknown=rules.get('purge_unknown', self.purge_unknown))  # noqa: E501
         value_type = type(mapping[field])
         result_value = validator.normalized(mapping[field],
                                             always_return_document=True)
@@ -841,34 +846,45 @@ class BareValidator(object):
                                     mapping[field])
 
     def __normalize_default_fields(self, mapping, schema):
-        fields = [x for x in schema if x not in mapping or
-                  mapping[x] is None and not schema[x].get('nullable', False)]
+        empty_fields = [
+            x for x in schema
+            if x not in mapping
+            or (mapping[x] is None  # noqa: W503
+                and not schema[x].get('nullable', False))  # noqa: W503
+        ]
+
         try:
-            fields_with_default = [x for x in fields if 'default' in schema[x]]
+            fields_with_default = [
+                x for x in empty_fields
+                if 'default' in schema[x]
+            ]
         except TypeError:
             raise _SchemaRuleTypeError
         for field in fields_with_default:
             self._normalize_default(mapping, schema, field)
 
         known_fields_states = set()
-        fields = [x for x in fields if 'default_setter' in schema[x]]
-        while fields:
-            field = fields.pop(0)
+        fields_with_default_setter = [
+            x for x in empty_fields
+            if 'default_setter' in schema[x]
+        ]
+        while fields_with_default_setter:
+            field = fields_with_default_setter.pop(0)
             try:
                 self._normalize_default_setter(mapping, schema, field)
             except KeyError:
-                fields.append(field)
+                fields_with_default_setter.append(field)
             except Exception as e:
                 self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
 
-            fields_state = tuple(fields)
-            if fields_state in known_fields_states:
-                for field in fields:
+            fields_processing_state = hash(tuple(fields_with_default_setter))
+            if fields_processing_state in known_fields_states:
+                for field in fields_with_default_setter:
                     self._error(field, errors.SETTING_DEFAULT_FAILED,
                                 'Circular dependencies of default setters.')
                 break
             else:
-                known_fields_states.add(fields_state)
+                known_fields_states.add(fields_processing_state)
 
     def _normalize_default(self, mapping, schema, field):
         """ {'nullable': True} """
