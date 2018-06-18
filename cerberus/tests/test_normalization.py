@@ -517,3 +517,28 @@ def test_allow_unknown_with_purge_unknown_subdocument():
     document = {'foo': {'bar': 'baz', 'corge': False}, 'thud': 'xyzzy'}
     expected = {'foo': {'bar': 'baz', 'corge': False}}
     assert_normalized(document, expected, schema, validator)
+
+
+def test_defaults_in_allow_unknown_schema():
+    schema = {
+        'meta': {'type': 'dict'},
+        'version': {'type': 'string'},
+    }
+    allow_unknown = {
+        'type': 'dict',
+        'schema': {
+            'cfg_path': {'type': 'string', 'default': 'cfg.yaml'},
+            'package': {'type': 'string'},
+        }
+    }
+    validator = Validator(schema=schema, allow_unknown=allow_unknown)
+
+    document = {
+        'version': '1.2.3',
+        'plugin_foo': {'package': 'foo'}
+    }
+    expected = {
+        'version': '1.2.3',
+        'plugin_foo': {'package': 'foo', 'cfg_path': 'cfg.yaml'}
+    }
+    assert_normalized(document, expected, validator=validator)

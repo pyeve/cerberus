@@ -15,6 +15,8 @@ In Development
 - Remove ``utils.is_class``
 - Remove ``Registry`` from top level namespace. Closes :issue:`354`.
 - Fix: Normalization rules defined within the ``items`` rule are applied. (Evgeny Odegov)
+- Fix: Defaults are applied to undefined fields from an ``allow_unknown``
+  definition. Closes :issue:`310`. (Frank Sachsenheim)
 - Update homepage URL in package metadata. Closes :issue:`382`.
 - Docs: add feature freeze note to CONTRIBUTING and note on Python support in README (Frank Sachsenheim).
 - Docs: add the intent of a ``dataclasses`` module to ROADMAP.md
