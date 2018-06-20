@@ -556,3 +556,4 @@ def test_defaults_in_allow_unknown_schema():
         'version': '1.2.3',
         'plugin_foo': {'package': 'foo', 'cfg_path': 'cfg.yaml'}
     }
+    assert_normalized(document, expected, schema, validator)
