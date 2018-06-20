@@ -538,8 +538,12 @@ readonly
 --------
 If ``True`` the value is readonly. Validation will fail if this field is
 present in the target dictionary. This is useful, for example, when receiving
-a payload which is to be validated before it is sent to the datastore. The field
-might be provided by the datastore, but should not writable.
+a payload which is to be validated before it is sent to the datastore. The
+field might be provided by the datastore, but should not writable.
+
+A validator can be configured with the initialization argument
+``purge_readonly`` and the property with the same name to let it delete all
+fields that have this rule defined positively.
 
 .. versionchanged:: 1.0.2
    Can be used in conjunction with ``default`` and ``default_setter``,

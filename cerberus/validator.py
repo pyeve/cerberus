@@ -81,6 +81,9 @@ class BareValidator(object):
     :param purge_unknown: See :attr:`~cerberus.Validator.purge_unknown`.
                           Defaults to to ``False``.
     :type purge_unknown: :class:`bool`
+    :param purge_readonly: Removes all fields that are defined as ``readonly`` in the
+                           normalization phase.
+    :type purge_readonly: :class:`bool`
     :param error_handler: The error handler that formats the result of
                           :attr:`~cerberus.Validator.errors`.
                           When given as two-value tuple with an error-handler
@@ -135,7 +138,7 @@ class BareValidator(object):
         """ The arguments will be treated as with this signature:
 
         __init__(self, schema=None, ignore_none_values=False,
-                 allow_unknown=False, purge_unknown=False,
+                 allow_unknown=False, purge_unknown=False, purge_readonly=False,
                  error_handler=errors.BasicErrorHandler)
         """
 
@@ -197,7 +200,7 @@ class BareValidator(object):
     def __store_config(self, args, kwargs):
         """ Assign args to kwargs and store configuration. """
         signature = ('schema', 'ignore_none_values', 'allow_unknown',
-                     'purge_unknown')
+                     'purge_unknown', 'purge_readonly')
         for i, p in enumerate(signature[:len(args)]):
             if p in kwargs:
                 raise TypeError("__init__ got multiple values for argument "
@@ -459,7 +462,7 @@ class BareValidator(object):
 
     @property
     def purge_unknown(self):
-        """ If ``True`` unknown fields will be deleted from the document
+        """ If ``True``, unknown fields will be deleted from the document
             unless a validation is called with disabled normalization.
             Also see :ref:`purging-unknown-fields`. Type: :class:`bool` """
         return self._config.get('purge_unknown', False)
@@ -467,6 +470,17 @@ class BareValidator(object):
     @purge_unknown.setter
     def purge_unknown(self, value):
         self._config['purge_unknown'] = value
+
+    @property
+    def purge_readonly(self):
+        """ If ``True``, fields declared as readonly will be deleted from the
+            document unless a validation is called with disabled normalization.
+            Type: :class:`bool` """
+        return self._config.get('purge_readonly', False)
+
+    @purge_readonly.setter
+    def purge_readonly(self, value):
+        self._config['purge_readonly'] = value
 
     @property
     def root_allow_unknown(self):
@@ -612,6 +626,8 @@ class BareValidator(object):
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown and not self.allow_unknown:
             self._normalize_purge_unknown(mapping, schema)
+        if self.purge_readonly:
+            self.__normalize_purge_readonly(mapping, schema)
         # Check `readonly` fields before applying default values because
         # a field's schema definition might contain both `readonly` and
         # `default`.
@@ -770,11 +786,18 @@ class BareValidator(object):
             self._error(validator._errors)
 
     @staticmethod
+    def __normalize_purge_readonly(mapping, schema):
+        for field in [
+                x for x in mapping if schema.get(x, {}).get('readonly', False)
+        ]:
+            mapping.pop(field)
+        return mapping
+
+    @staticmethod
     def _normalize_purge_unknown(mapping, schema):
         """ {'type': 'boolean'} """
-        for field in tuple(mapping):
-            if field not in schema:
-                del mapping[field]
+        for field in [x for x in mapping if x not in schema]:
+            mapping.pop(field)
         return mapping
 
     def __normalize_rename_fields(self, mapping, schema):

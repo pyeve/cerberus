@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from tempfile import NamedTemporaryFile
 
 from cerberus import Validator, errors
@@ -517,3 +518,17 @@ def test_allow_unknown_with_purge_unknown_subdocument():
     document = {'foo': {'bar': 'baz', 'corge': False}, 'thud': 'xyzzy'}
     expected = {'foo': {'bar': 'baz', 'corge': False}}
     assert_normalized(document, expected, schema, validator)
+
+
+def test_purge_readonly():
+    schema = {
+        'description': {'type': 'string', 'maxlength': 500},
+        'last_updated': {'readonly': True}
+    }
+    validator = Validator(schema=schema, purge_readonly=True)
+    document = {
+        'description': 'it is a thing',
+    }
+    expected = deepcopy(document)
+    document['last_updated'] = 'future'
+    assert_normalized(document, expected, validator=validator)
