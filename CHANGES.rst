@@ -1,43 +1,60 @@
-Cerberus changelog
+Cerberus Changelog
 ==================
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
-Here you can see the full list of changes between each Cerberus release.
-
 In Development
 --------------
 
-- Drop support for Python 2.6 and 3.3.
-- New: The ``contains`` rule. (Frank Sachsenheim)
-- New: All fields that are defined as ``readonly`` are removed from a document
-  when a validator has the ``purge_readonly`` flag set to ``True``. Closes
-  :issue:`240`. (Frank Sachsenheim)
-- Change ``allowed`` rule to use containers instead of lists. Closes
-  :issue:`384`. (Scott Crunkleton)
-- Check the ``empty`` rule against values of type ``Sized``.
+New
+~~~
+- The ``contains`` rule (`#358`_)
+- All fields that are defined as ``readonly`` are removed from a document
+  when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
+- **Python 2.6 and 3.3 are no longer supported**
+
+Fixed
+~~~~~
+- Normalization rules defined within the ``items`` rule are applied (`#361`_)
+- Defaults are applied to undefined fields from an ``allow_unknown``
+  definition (`#310`_)
+
+Improved
+~~~~~~~~
+- Change ``allowed`` rule to use containers instead of lists (`#384`_)
+- Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``
-- Remove ``Registry`` from top level namespace. Closes :issue:`354`.
-- Fix: Normalization rules defined within the ``items`` rule are applied.
-  (Evgeny Odegov)
-- Fix: Defaults are applied to undefined fields from an ``allow_unknown``
-  definition. Closes :issue:`310`. (Frank Sachsenheim)
-- Update homepage URL in package metadata. Closes :issue:`382`.
-- Docs: add feature freeze note to CONTRIBUTING and note on Python support in
-  README. (Frank Sachsenheim)
-- Docs: add the intent of a ``dataclasses`` module to ROADMAP.md
-- Docs: update README link. Make it point to the new PYPI website.
-  (Frank Sachsenheim)
-- Docs: improve documentation of the regex rule. Closes :issue:`389`.
-- Docs: expand upon `validator` rules. Closes :issue:`320` (Connor Zapfel).
-- Docs: include all errors definitions in API docs. Closes :issue:`404`.
-- Docs: update README with elaborations on versioning and testing.
-- Docs: fix misspellings and missing pronouns (Connor Zapfel).
-- Docs: Remove redundant hint from ``*of-rules``.
-- Docs: Add usage reccommendation regarding the ``*ok-rules``.
-- Docs: add a few clarifications to the GitHub issue template.
-- Update README link. Make it point to the new PYPI website. (Frank
-  Sachsenheim)
+- Check the ``empty`` rule against values of type ``Sized``.
+
+Docs
+~~~~
+- Improve documentation of the regex rule (`#389`_)
+- Expand upon `validator` rules (`#320`_)
+- Include all errors definitions in API docs (`#404`_)
+- Improva changelog format (`#406`_)
+- Update homepage URL in package metadata (`#382`_)
+- Add feature freeze note to CONTRIBUTING and note on Python support in
+  README
+- Add the intent of a ``dataclasses`` module to ROADMAP.md
+- Update README link. Make it point to the new PYPI website
+- Update README with elaborations on versioning and testing
+- Fix misspellings and missing pronouns
+- Remove redundant hint from ``*of-rules``.
+- Add usage reccommendation regarding the ``*ok-rules``
+- Add a few clarifications to the GitHub issue template
+- Update README link. Make it point to the new PYPI website
+
+.. _`#406`: https://github.com/pyeve/cerberus/issues/406
+.. _`#404`: https://github.com/pyeve/cerberus/issues/404
+.. _`#389`: https://github.com/pyeve/cerberus/issues/389
+.. _`#384`: https://github.com/pyeve/cerberus/issues/384
+.. _`#382`: https://github.com/pyeve/cerberus/issues/382
+.. _`#361`: https://github.com/pyeve/cerberus/pull/361
+.. _`#358`: https://github.com/pyeve/cerberus/issues/358
+.. _`#354`: https://github.com/pyeve/cerberus/issues/354
+.. _`#320`: https://github.com/pyeve/cerberus/issues/320
+.. _`#310`: https://github.com/pyeve/cerberus/issues/310
+.. _`#240`: https://github.com/pyeve/cerberus/issues/240
 
 Version 1.2
 -----------
