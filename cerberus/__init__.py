@@ -25,5 +25,5 @@ __all__ = [
     TypeDefinition.__name__,
     Validator.__name__,
     'schema_registry',
-    'rules_set_registry'
+    'rules_set_registry',
 ]

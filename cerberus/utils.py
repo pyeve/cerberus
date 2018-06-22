@@ -5,8 +5,7 @@ from collections import Mapping, namedtuple, Sequence, Set
 from cerberus.platform import _int_types, _str_type
 
 
-TypeDefinition = namedtuple('TypeDefinition',
-                            'name,included_types,excluded_types')
+TypeDefinition = namedtuple('TypeDefinition', 'name,included_types,excluded_types')
 """
 This class is used to define types that can be used as value in the
 :attr:`~cerberus.Validator.types_mapping` property.
@@ -31,7 +30,7 @@ def compare_paths_lt(x, y):
 
 
 def drop_item_from_tuple(t, i):
-    return t[:i] + t[i + 1:]
+    return t[:i] + t[i + 1 :]
 
 
 def get_Validator_class():

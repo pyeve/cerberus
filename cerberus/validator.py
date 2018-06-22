@@ -20,11 +20,12 @@ from warnings import warn
 from cerberus import errors
 from cerberus.platform import _int_types, _str_type
 from cerberus.schema import (
-    schema_registry, rules_set_registry, DefinitionSchema, SchemaError
+    schema_registry,
+    rules_set_registry,
+    DefinitionSchema,
+    SchemaError,
 )
-from cerberus.utils import (
-    drop_item_from_tuple, readonly_classproperty, TypeDefinition
-)
+from cerberus.utils import drop_item_from_tuple, readonly_classproperty, TypeDefinition
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -32,9 +33,12 @@ toy_error_handler = errors.ToyErrorHandler()
 
 def dummy_for_rule_validation(rule_constraints):
     def dummy(self, constraint, field, value):
-        raise RuntimeError('Dummy method called. Its purpose is to hold just'
-                           'validation constraints for a rule in its '
-                           'docstring.')
+        raise RuntimeError(
+            'Dummy method called. Its purpose is to hold just'
+            'validation constraints for a rule in its '
+            'docstring.'
+        )
+
     f = dummy
     f.__doc__ = rule_constraints
     return f
@@ -42,12 +46,14 @@ def dummy_for_rule_validation(rule_constraints):
 
 class DocumentError(Exception):
     """ Raised when the target document is missing or has the wrong format """
+
     pass
 
 
 class _SchemaRuleTypeError(Exception):
     """ Raised when a schema (list) validation encounters a mapping.
         Not supposed to be used outside this module. """
+
     pass
 
 
@@ -103,30 +109,18 @@ class BareValidator(object):
     """ Rules that will be processed in that order before any other.
         Type: :class:`tuple` """
     types_mapping = {
-        'binary':
-            TypeDefinition('binary', (bytes, bytearray), ()),
-        'boolean':
-            TypeDefinition('boolean', (bool,), ()),
-        'container':
-            TypeDefinition('container', (Container,), (_str_type,)),
-        'date':
-            TypeDefinition('date', (date,), ()),
-        'datetime':
-            TypeDefinition('datetime', (datetime,), ()),
-        'dict':
-            TypeDefinition('dict', (Mapping,), ()),
-        'float':
-            TypeDefinition('float', (float, _int_types), ()),
-        'integer':
-            TypeDefinition('integer', (_int_types,), ()),
-        'list':
-            TypeDefinition('list', (Sequence,), (_str_type,)),
-        'number':
-            TypeDefinition('number', (_int_types, float), (bool,)),
-        'set':
-            TypeDefinition('set', (set,), ()),
-        'string':
-            TypeDefinition('string', (_str_type), ())
+        'binary': TypeDefinition('binary', (bytes, bytearray), ()),
+        'boolean': TypeDefinition('boolean', (bool,), ()),
+        'container': TypeDefinition('container', (Container,), (_str_type,)),
+        'date': TypeDefinition('date', (date,), ()),
+        'datetime': TypeDefinition('datetime', (datetime,), ()),
+        'dict': TypeDefinition('dict', (Mapping,), ()),
+        'float': TypeDefinition('float', (float, _int_types), ()),
+        'integer': TypeDefinition('integer', (_int_types,), ()),
+        'list': TypeDefinition('list', (Sequence,), (_str_type,)),
+        'number': TypeDefinition('number', (_int_types, float), (bool,)),
+        'set': TypeDefinition('set', (set,), ()),
+        'string': TypeDefinition('string', (_str_type), ()),
     }
     """ This mapping holds all available constraints for the type rule and
         their assigned :class:`~cerberus.TypeDefinition`. """
@@ -189,8 +183,9 @@ class BareValidator(object):
             error_handler, eh_config = error_handler
         else:
             eh_config = {}
-        if isinstance(error_handler, type) and \
-                issubclass(error_handler, errors.BaseErrorHandler):
+        if isinstance(error_handler, type) and issubclass(
+            error_handler, errors.BaseErrorHandler
+        ):
             return error_handler(**eh_config)
         elif isinstance(error_handler, errors.BaseErrorHandler):
             return error_handler
@@ -199,12 +194,16 @@ class BareValidator(object):
 
     def __store_config(self, args, kwargs):
         """ Assign args to kwargs and store configuration. """
-        signature = ('schema', 'ignore_none_values', 'allow_unknown',
-                     'purge_unknown', 'purge_readonly')
-        for i, p in enumerate(signature[:len(args)]):
+        signature = (
+            'schema',
+            'ignore_none_values',
+            'allow_unknown',
+            'purge_unknown',
+            'purge_readonly',
+        )
+        for i, p in enumerate(signature[: len(args)]):
             if p in kwargs:
-                raise TypeError("__init__ got multiple values for argument "
-                                "'%s'" % p)
+                raise TypeError("__init__ got multiple values for argument " "'%s'" % p)
             else:
                 kwargs[p] = args[i]
         self._config = kwargs
@@ -269,7 +268,7 @@ class BareValidator(object):
             rule = args[1].rule
             info = args[2:]
 
-            document_path = self.document_path + (field, )
+            document_path = self.document_path + (field,)
 
             schema_path = self.schema_path
             if code != errors.UNKNOWN_FIELD.code and rule is not None:
@@ -291,8 +290,7 @@ class BareValidator(object):
             )
             self._error([self.recent_error])
 
-    def _get_child_validator(self, document_crumb=None, schema_crumb=None,
-                             **kwargs):
+    def _get_child_validator(self, document_crumb=None, schema_crumb=None, **kwargs):
         """ Creates a new instance of Validator-(sub-)class. All initial
             parameters of the parent are passed to the initialization, unless
             a parameter is given as an explicit *keyword*-parameter.
@@ -325,14 +323,14 @@ class BareValidator(object):
             child_validator.document_path = self.document_path
         else:
             if not isinstance(document_crumb, tuple):
-                document_crumb = (document_crumb, )
+                document_crumb = (document_crumb,)
             child_validator.document_path = self.document_path + document_crumb
 
         if schema_crumb is None:
             child_validator.schema_path = self.schema_path
         else:
             if not isinstance(schema_crumb, tuple):
-                schema_crumb = (schema_crumb, )
+                schema_crumb = (schema_crumb,)
             child_validator.schema_path = self.schema_path + schema_crumb
 
         return child_validator
@@ -341,8 +339,10 @@ class BareValidator(object):
         methodname = '_{0}_{1}'.format(domain, rule.replace(' ', '_'))
         result = getattr(self, methodname, None)
         if result is None:
-            raise RuntimeError("There's no handler for '{}' in the '{}' "
-                               "domain.".format(rule, domain))
+            raise RuntimeError(
+                "There's no handler for '{}' in the '{}' "
+                "domain.".format(rule, domain)
+            )
         return result
 
     def _drop_nodes_from_errorpaths(self, _errors, dp_items, sp_items):
@@ -358,14 +358,15 @@ class BareValidator(object):
         sp_basedepth = len(self.schema_path)
         for error in _errors:
             for i in sorted(dp_items, reverse=True):
-                error.document_path = \
-                    drop_item_from_tuple(error.document_path, dp_basedepth + i)
+                error.document_path = drop_item_from_tuple(
+                    error.document_path, dp_basedepth + i
+                )
             for i in sorted(sp_items, reverse=True):
-                error.schema_path = \
-                    drop_item_from_tuple(error.schema_path, sp_basedepth + i)
+                error.schema_path = drop_item_from_tuple(
+                    error.schema_path, sp_basedepth + i
+                )
             if error.child_errors:
-                self._drop_nodes_from_errorpaths(error.child_errors,
-                                                 dp_items, sp_items)
+                self._drop_nodes_from_errorpaths(error.child_errors, dp_items, sp_items)
 
     def _lookup_field(self, path):
         """ Searches for a field as defined by path. This method is used by the
@@ -384,8 +385,7 @@ class BareValidator(object):
         """
         if path.startswith('^'):
             path = path[1:]
-            context = self.document if path.startswith('^') \
-                else self.root_document
+            context = self.document if path.startswith('^') else self.root_document
         else:
             context = self.document
 
@@ -542,12 +542,12 @@ class BareValidator(object):
     def types(cls):
         """ The constraints that can be used for the 'type' rule.
             Type: A tuple of strings. """
-        redundant_types = \
-            set(cls.types_mapping) & set(cls._types_from_methods)
+        redundant_types = set(cls.types_mapping) & set(cls._types_from_methods)
         if redundant_types:
-            warn("These types are defined both with a method and in the"
-                 "'types_mapping' property of this validator: %s"
-                 % redundant_types)
+            warn(
+                "These types are defined both with a method and in the"
+                "'types_mapping' property of this validator: %s" % redundant_types
+            )
 
         return tuple(cls.types_mapping) + cls._types_from_methods
 
@@ -572,8 +572,7 @@ class BareValidator(object):
         if document is None:
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
-            raise DocumentError(
-                errors.DOCUMENT_FORMAT.format(document))
+            raise DocumentError(errors.DOCUMENT_FORMAT.format(document))
         self.error_handler.start(self)
 
     def _drop_remaining_rules(self, *rules):
@@ -651,13 +650,23 @@ class BareValidator(object):
         for field in mapping:
             if field in schema and 'coerce' in schema[field]:
                 mapping[field] = self.__normalize_coerce(
-                    schema[field]['coerce'], field, mapping[field],
-                    schema[field].get('nullable', False), error)
-            elif isinstance(self.allow_unknown, Mapping) and \
-                    'coerce' in self.allow_unknown:
+                    schema[field]['coerce'],
+                    field,
+                    mapping[field],
+                    schema[field].get('nullable', False),
+                    error,
+                )
+            elif (
+                isinstance(self.allow_unknown, Mapping)
+                and 'coerce' in self.allow_unknown
+            ):
                 mapping[field] = self.__normalize_coerce(
-                    self.allow_unknown['coerce'], field, mapping[field],
-                    self.allow_unknown.get('nullable', False), error)
+                    self.allow_unknown['coerce'],
+                    field,
+                    mapping[field],
+                    self.allow_unknown.get('nullable', False),
+                    error,
+                )
 
     def __normalize_coerce(self, processor, field, value, nullable, error):
         if isinstance(processor, _str_type):
@@ -666,11 +675,13 @@ class BareValidator(object):
         elif isinstance(processor, Iterable):
             result = value
             for p in processor:
-                result = self.__normalize_coerce(p, field, result,
-                                                 nullable, error)
-                if errors.COERCION_FAILED in \
-                    self.document_error_tree.fetch_errors_from(
-                        self.document_path + (field,)):
+                result = self.__normalize_coerce(p, field, result, nullable, error)
+                if (
+                    errors.COERCION_FAILED
+                    in self.document_error_tree.fetch_errors_from(
+                        self.document_path + (field,)
+                    )
+                ):
                     break
             return result
 
@@ -689,15 +700,17 @@ class BareValidator(object):
             if isinstance(mapping[field], Mapping):
                 if 'keyschema' in rules:
                     self.__normalize_mapping_per_keyschema(
-                        field, mapping, schema[field]['keyschema'])
+                        field, mapping, schema[field]['keyschema']
+                    )
                 if 'valueschema' in rules:
                     self.__normalize_mapping_per_valueschema(
-                        field, mapping, schema[field]['valueschema'])
-                if rules & set(('allow_unknown', 'purge_unknown', 'schema')) \
-                        or isinstance(self.allow_unknown, Mapping):
+                        field, mapping, schema[field]['valueschema']
+                    )
+                if rules & set(
+                    ('allow_unknown', 'purge_unknown', 'schema')
+                ) or isinstance(self.allow_unknown, Mapping):
                     try:
-                        self.__normalize_mapping_per_schema(
-                            field, mapping, schema)
+                        self.__normalize_mapping_per_schema(field, mapping, schema)
                     except _SchemaRuleTypeError:
                         pass
 
@@ -714,8 +727,8 @@ class BareValidator(object):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'keyschema'),
-            schema=schema)
+            document_crumb=field, schema_crumb=(field, 'keyschema'), schema=schema
+        )
         result = validator.normalized(document, always_return_document=True)
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
@@ -724,10 +737,12 @@ class BareValidator(object):
             if k == result[k]:
                 continue
             if result[k] in mapping[field]:
-                warn("Normalizing keys of {path}: {key} already exists, "
-                     "its value is replaced."
-                     .format(path='.'.join(self.document_path + (field,)),
-                             key=k))
+                warn(
+                    "Normalizing keys of {path}: {key} already exists, "
+                    "its value is replaced.".format(
+                        path='.'.join(self.document_path + (field,)), key=k
+                    )
+                )
                 mapping[field][result[k]] = mapping[field][k]
             else:
                 mapping[field][result[k]] = mapping[field][k]
@@ -736,10 +751,11 @@ class BareValidator(object):
     def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'valueschema'),
-            schema=schema)
-        mapping[field] = validator.normalized(mapping[field],
-                                              always_return_document=True)
+            document_crumb=field, schema_crumb=(field, 'valueschema'), schema=schema
+        )
+        mapping[field] = validator.normalized(
+            mapping[field], always_return_document=True
+        )
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(validator._errors)
@@ -749,24 +765,26 @@ class BareValidator(object):
         if not rules and isinstance(self.allow_unknown, Mapping):
             rules = self.allow_unknown
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'schema'),
+            document_crumb=field,
+            schema_crumb=(field, 'schema'),
             schema=rules.get('schema', {}),
             allow_unknown=rules.get('allow_unknown', self.allow_unknown),  # noqa: E501
-            purge_unknown=rules.get('purge_unknown', self.purge_unknown))  # noqa: E501
+            purge_unknown=rules.get('purge_unknown', self.purge_unknown),
+        )  # noqa: E501
         value_type = type(mapping[field])
-        result_value = validator.normalized(mapping[field],
-                                            always_return_document=True)
+        result_value = validator.normalized(mapping[field], always_return_document=True)
         mapping[field] = value_type(result_value)
         if validator._errors:
             self._error(validator._errors)
 
     def __normalize_sequence_per_schema(self, field, mapping, schema):
-        schema = dict(((k, schema[field]['schema'])
-                       for k in range(len(mapping[field]))))
+        schema = dict(
+            ((k, schema[field]['schema']) for k in range(len(mapping[field])))
+        )
         document = dict((k, v) for k, v in enumerate(mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema)
+            document_crumb=field, schema_crumb=(field, 'schema'), schema=schema
+        )
         value_type = type(mapping[field])
         result = validator.normalized(document, always_return_document=True)
         mapping[field] = value_type(result.values())
@@ -781,8 +799,8 @@ class BareValidator(object):
         schema = dict(((k, v) for k, v in enumerate(rules)))
         document = dict((k, v) for k, v in enumerate(values))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'items'),
-            schema=schema)
+            document_crumb=field, schema_crumb=(field, 'items'), schema=schema
+        )
         value_type = type(mapping[field])
         result = validator.normalized(document, always_return_document=True)
         mapping[field] = value_type(result.values())
@@ -792,9 +810,7 @@ class BareValidator(object):
 
     @staticmethod
     def __normalize_purge_readonly(mapping, schema):
-        for field in [
-                x for x in mapping if schema.get(x, {}).get('readonly', False)
-        ]:
+        for field in [x for x in mapping if schema.get(x, {}).get('readonly', False)]:
             mapping.pop(field)
         return mapping
 
@@ -810,10 +826,13 @@ class BareValidator(object):
             if field in schema:
                 self._normalize_rename(mapping, schema, field)
                 self._normalize_rename_handler(mapping, schema, field)
-            elif isinstance(self.allow_unknown, Mapping) and \
-                    'rename_handler' in self.allow_unknown:
+            elif (
+                isinstance(self.allow_unknown, Mapping)
+                and 'rename_handler' in self.allow_unknown
+            ):
                 self._normalize_rename_handler(
-                    mapping, {field: self.allow_unknown}, field)
+                    mapping, {field: self.allow_unknown}, field
+                )
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
@@ -833,31 +852,33 @@ class BareValidator(object):
         if 'rename_handler' not in schema[field]:
             return
         new_name = self.__normalize_coerce(
-            schema[field]['rename_handler'], field, field,
-            False, errors.RENAMING_FAILED)
+            schema[field]['rename_handler'], field, field, False, errors.RENAMING_FAILED
+        )
         if new_name != field:
             mapping[new_name] = mapping[field]
             del mapping[field]
 
     def __validate_readonly_fields(self, mapping, schema):
-        for field in (x for x in schema if x in mapping and
-                      self._resolve_rules_set(schema[x]).get('readonly')):
-            self._validate_readonly(schema[field]['readonly'], field,
-                                    mapping[field])
+        for field in (
+            x
+            for x in schema
+            if x in mapping and self._resolve_rules_set(schema[x]).get('readonly')
+        ):
+            self._validate_readonly(schema[field]['readonly'], field, mapping[field])
 
     def __normalize_default_fields(self, mapping, schema):
         empty_fields = [
-            x for x in schema
+            x
+            for x in schema
             if x not in mapping
-            or (mapping[x] is None  # noqa: W503
-                and not schema[x].get('nullable', False))  # noqa: W503
+            or (
+                mapping[x] is None  # noqa: W503
+                and not schema[x].get('nullable', False)
+            )  # noqa: W503
         ]
 
         try:
-            fields_with_default = [
-                x for x in empty_fields
-                if 'default' in schema[x]
-            ]
+            fields_with_default = [x for x in empty_fields if 'default' in schema[x]]
         except TypeError:
             raise _SchemaRuleTypeError
         for field in fields_with_default:
@@ -865,8 +886,7 @@ class BareValidator(object):
 
         known_fields_states = set()
         fields_with_default_setter = [
-            x for x in empty_fields
-            if 'default_setter' in schema[x]
+            x for x in empty_fields if 'default_setter' in schema[x]
         ]
         while fields_with_default_setter:
             field = fields_with_default_setter.pop(0)
@@ -880,8 +900,11 @@ class BareValidator(object):
             fields_processing_state = hash(tuple(fields_with_default_setter))
             if fields_processing_state in known_fields_states:
                 for field in fields_with_default_setter:
-                    self._error(field, errors.SETTING_DEFAULT_FAILED,
-                                'Circular dependencies of default setters.')
+                    self._error(
+                        field,
+                        errors.SETTING_DEFAULT_FAILED,
+                        'Circular dependencies of default setters.',
+                    )
                 break
             else:
                 known_fields_states.add(fields_processing_state)
@@ -898,8 +921,7 @@ class BareValidator(object):
         if 'default_setter' in schema[field]:
             setter = schema[field]['default_setter']
             if isinstance(setter, _str_type):
-                setter = self.__get_rule_handler('normalize_default_setter',
-                                                 setter)
+                setter = self.__get_rule_handler('normalize_default_setter', setter)
             mapping[field] = setter(mapping)
 
     # # Validating
@@ -965,11 +987,10 @@ class BareValidator(object):
             if isinstance(self.allow_unknown, (Mapping, _str_type)):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
-                schema_crumb = 'allow_unknown' if self.is_child \
-                    else '__allow_unknown__'
+                schema_crumb = 'allow_unknown' if self.is_child else '__allow_unknown__'
                 validator = self._get_child_validator(
-                    schema_crumb=schema_crumb,
-                    schema={field: self.allow_unknown})
+                    schema_crumb=schema_crumb, schema={field: self.allow_unknown}
+                )
                 if not validator({field: value}, normalize=False):
                     self._error(validator._errors)
         else:
@@ -985,14 +1006,21 @@ class BareValidator(object):
         definitions = self._resolve_rules_set(definitions)
         value = self.document[field]
 
-        rules_queue = [x for x in self.priority_validations
-                       if x in definitions or x in self.mandatory_validations]
-        rules_queue.extend(x for x in self.mandatory_validations
-                           if x not in rules_queue)
-        rules_queue.extend(x for x in definitions
-                           if x not in rules_queue and
-                           x not in self.normalization_rules and
-                           x not in ('allow_unknown', 'required'))
+        rules_queue = [
+            x
+            for x in self.priority_validations
+            if x in definitions or x in self.mandatory_validations
+        ]
+        rules_queue.extend(
+            x for x in self.mandatory_validations if x not in rules_queue
+        )
+        rules_queue.extend(
+            x
+            for x in definitions
+            if x not in rules_queue
+            and x not in self.normalization_rules
+            and x not in ('allow_unknown', 'required')
+        )
         self._remaining_rules = rules_queue
 
         while self._remaining_rules:
@@ -1013,7 +1041,8 @@ class BareValidator(object):
     _validate_allow_unknown = dummy_for_rule_validation(
         """ {'oneof': [{'type': 'boolean'},
                        {'type': ['dict', 'string'],
-                        'validator': 'bulk_schema'}]} """)
+                        'validator': 'bulk_schema'}]} """
+    )
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': 'container'} """
@@ -1030,8 +1059,9 @@ class BareValidator(object):
         if not isinstance(value, Iterable):
             return
 
-        if (not isinstance(expected_values, Iterable) or
-                isinstance(expected_values, _str_type)):
+        if not isinstance(expected_values, Iterable) or isinstance(
+            expected_values, _str_type
+        ):
             expected_values = set((expected_values,))
         else:
             expected_values = set(expected_values)
@@ -1051,20 +1081,24 @@ class BareValidator(object):
         elif isinstance(dependencies, Mapping):
             self.__validate_dependencies_mapping(dependencies, field)
 
-        if self.document_error_tree.fetch_node_from(
-                self.schema_path + (field, 'dependencies')) is not None:
+        if (
+            self.document_error_tree.fetch_node_from(
+                self.schema_path + (field, 'dependencies')
+            )
+            is not None
+        ):
             return True
 
     def __validate_dependencies_mapping(self, dependencies, field):
         validated_dependencies_counter = 0
         error_info = {}
         for dependency_name, dependency_values in dependencies.items():
-            if (not isinstance(dependency_values, Sequence) or
-                    isinstance(dependency_values, _str_type)):
+            if not isinstance(dependency_values, Sequence) or isinstance(
+                dependency_values, _str_type
+            ):
                 dependency_values = [dependency_values]
 
-            wanted_field, wanted_field_value = \
-                self._lookup_field(dependency_name)
+            wanted_field, wanted_field_value = self._lookup_field(dependency_name)
             if wanted_field_value in dependency_values:
                 validated_dependencies_counter += 1
             else:
@@ -1082,8 +1116,14 @@ class BareValidator(object):
         """ {'type': 'boolean'} """
         if isinstance(value, Sized) and len(value) == 0:
             self._drop_remaining_rules(
-                'allowed', 'forbidden', 'items', 'minlength', 'maxlength',
-                'regex', 'validator')
+                'allowed',
+                'forbidden',
+                'items',
+                'minlength',
+                'maxlength',
+                'regex',
+                'validator',
+            )
             if not empty:
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
 
@@ -1097,16 +1137,17 @@ class BareValidator(object):
         if 'required' in self.schema[field] and self.schema[field]['required']:
             self._unrequired_by_excludes.add(field)
         for exclude in excludes:
-            if (exclude in self.schema and
-                'required' in self.schema[exclude] and
-                    self.schema[exclude]['required']):
+            if (
+                exclude in self.schema
+                and 'required' in self.schema[exclude]
+                and self.schema[exclude]['required']
+            ):
 
                 self._unrequired_by_excludes.add(exclude)
 
         if [True for key in excludes if key in self.document]:
             # Wrap each field in `excludes` list between quotes
-            exclusion_str = ', '.join("'{0}'"
-                                      .format(word) for word in excludes)
+            exclusion_str = ', '.join("'{0}'".format(word) for word in excludes)
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
@@ -1127,12 +1168,19 @@ class BareValidator(object):
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
-            schema = dict((i, definition) for i, definition in enumerate(items))  # noqa: E501
-            validator = self._get_child_validator(document_crumb=field,
-                                                  schema_crumb=(field, 'items'),  # noqa: E501
-                                                  schema=schema)
-            if not validator(dict((i, value) for i, value in enumerate(values)),
-                             update=self.update, normalize=False):
+            schema = dict(
+                (i, definition) for i, definition in enumerate(items)
+            )  # noqa: E501
+            validator = self._get_child_validator(
+                document_crumb=field,
+                schema_crumb=(field, 'items'),  # noqa: E501
+                schema=schema,
+            )
+            if not validator(
+                dict((i, value) for i, value in enumerate(values)),
+                update=self.update,
+                normalize=False,
+            ):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
@@ -1150,8 +1198,8 @@ class BareValidator(object):
                 schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(
-                schema_crumb=(field, operator, i),
-                schema=schema, allow_unknown=True)
+                schema_crumb=(field, operator, i), schema=schema, allow_unknown=True
+            )
             if validator(self.document, update=self.update, normalize=False):
                 valid_counter += 1
             else:
@@ -1162,35 +1210,27 @@ class BareValidator(object):
 
     def _validate_anyof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'anyof'} """
-        valids, _errors = \
-            self.__validate_logical('anyof', definitions, field, value)
+        valids, _errors = self.__validate_logical('anyof', definitions, field, value)
         if valids < 1:
-            self._error(field, errors.ANYOF, _errors,
-                        valids, len(definitions))
+            self._error(field, errors.ANYOF, _errors, valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'allof'} """
-        valids, _errors = \
-            self.__validate_logical('allof', definitions, field, value)
+        valids, _errors = self.__validate_logical('allof', definitions, field, value)
         if valids < len(definitions):
-            self._error(field, errors.ALLOF, _errors,
-                        valids, len(definitions))
+            self._error(field, errors.ALLOF, _errors, valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'noneof'} """
-        valids, _errors = \
-            self.__validate_logical('noneof', definitions, field, value)
+        valids, _errors = self.__validate_logical('noneof', definitions, field, value)
         if valids > 0:
-            self._error(field, errors.NONEOF, _errors,
-                        valids, len(definitions))
+            self._error(field, errors.NONEOF, _errors, valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
         """ {'type': 'list', 'logical': 'oneof'} """
-        valids, _errors = \
-            self.__validate_logical('oneof', definitions, field, value)
+        valids, _errors = self.__validate_logical('oneof', definitions, field, value)
         if valids != 1:
-            self._error(field, errors.ONEOF, _errors,
-                        valids, len(definitions))
+            self._error(field, errors.ONEOF, _errors, valids, len(definitions))
 
     def _validate_max(self, max_value, field, value):
         """ {'nullable': False } """
@@ -1224,9 +1264,19 @@ class BareValidator(object):
             if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
             self._drop_remaining_rules(
-                'empty', 'forbidden', 'items', 'keyschema', 'min', 'max',
-                'minlength', 'maxlength', 'regex', 'schema', 'type',
-                'valueschema')
+                'empty',
+                'forbidden',
+                'items',
+                'keyschema',
+                'min',
+                'max',
+                'minlength',
+                'maxlength',
+                'regex',
+                'schema',
+                'type',
+                'valueschema',
+            )
 
     def _validate_keyschema(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
@@ -1235,11 +1285,10 @@ class BareValidator(object):
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=(field, 'keyschema'),
-                schema=dict(((k, schema) for k in value.keys())))
-            if not validator(dict(((k, k) for k in value.keys())),
-                             normalize=False):
-                self._drop_nodes_from_errorpaths(validator._errors,
-                                                 [], [2, 4])
+                schema=dict(((k, schema) for k in value.keys())),
+            )
+            if not validator(dict(((k, k) for k in value.keys())), normalize=False):
+                self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
                 self._error(field, errors.KEYSCHEMA, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
@@ -1250,9 +1299,12 @@ class BareValidator(object):
             # If the document was normalized (and therefore already been
             # checked for readonly fields), we still have to return True
             # if an error was filed.
-            has_error = errors.READONLY_FIELD in \
-                self.document_error_tree.fetch_errors_from(
-                    self.document_path + (field,))
+            has_error = (
+                errors.READONLY_FIELD
+                in self.document_error_tree.fetch_errors_from(
+                    self.document_path + (field,)
+                )
+            )
             if self._is_normalized and has_error:
                 self._drop_remaining_rules()
 
@@ -1274,18 +1326,22 @@ class BareValidator(object):
         :param document: The document being validated.
         """
         try:
-            required = set(field for field, definition in self.schema.items()
-                           if self._resolve_rules_set(definition).
-                           get('required') is True)
+            required = set(
+                field
+                for field, definition in self.schema.items()
+                if self._resolve_rules_set(definition).get('required') is True
+            )
         except AttributeError:
             if self.is_child and self.schema_path[-1] == 'schema':
                 raise _SchemaRuleTypeError
             else:
                 raise
         required -= self._unrequired_by_excludes
-        missing = required - set(field for field in document
-                                 if document.get(field) is not None or
-                                 not self.ignore_none_values)
+        missing = required - set(
+            field
+            for field in document
+            if document.get(field) is not None or not self.ignore_none_values
+        )
 
         for field in missing:
             self._error(field, errors.REQUIRED_FIELD)
@@ -1293,8 +1349,7 @@ class BareValidator(object):
         # At least on field from self._unrequired_by_excludes should be
         # present in document
         if self._unrequired_by_excludes:
-            fields = set(field for field in document
-                         if document.get(field) is not None)
+            fields = set(field for field in document if document.get(field) is not None)
             if self._unrequired_by_excludes.isdisjoint(fields):
                 for field in self._unrequired_by_excludes - fields:
                     self._error(field, errors.REQUIRED_FIELD)
@@ -1313,12 +1368,13 @@ class BareValidator(object):
 
     def __validate_schema_mapping(self, field, schema, value):
         schema = self._resolve_schema(schema)
-        allow_unknown = self.schema[field].get('allow_unknown',
-                                               self.allow_unknown)
-        validator = self._get_child_validator(document_crumb=field,
-                                              schema_crumb=(field, 'schema'),
-                                              schema=schema,
-                                              allow_unknown=allow_unknown)
+        allow_unknown = self.schema[field].get('allow_unknown', self.allow_unknown)
+        validator = self._get_child_validator(
+            document_crumb=field,
+            schema_crumb=(field, 'schema'),
+            schema=schema,
+            allow_unknown=allow_unknown,
+        )
         try:
             if not validator(value, update=self.update, normalize=False):
                 self._error(field, errors.MAPPING_SCHEMA, validator._errors)
@@ -1329,10 +1385,16 @@ class BareValidator(object):
     def __validate_schema_sequence(self, field, schema, value):
         schema = dict(((i, schema) for i in range(len(value))))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=schema, allow_unknown=self.allow_unknown)
-        validator(dict(((i, v) for i, v in enumerate(value))),
-                  update=self.update, normalize=False)
+            document_crumb=field,
+            schema_crumb=(field, 'schema'),
+            schema=schema,
+            allow_unknown=self.allow_unknown,
+        )
+        validator(
+            dict(((i, v) for i, v in enumerate(value))),
+            update=self.update,
+            normalize=False,
+        )
 
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
@@ -1351,8 +1413,9 @@ class BareValidator(object):
             # this implementation still supports custom type validation methods
             type_definition = self.types_mapping.get(_type)
             if type_definition is not None:
-                matched = isinstance(value, type_definition.included_types) \
-                    and not isinstance(value, type_definition.excluded_types)
+                matched = isinstance(
+                    value, type_definition.included_types
+                ) and not isinstance(value, type_definition.excluded_types)
             else:
                 type_handler = self.__get_rule_handler('validate_type', _type)
                 matched = type_handler(value)
@@ -1392,20 +1455,22 @@ class BareValidator(object):
         schema_crumb = (field, 'valueschema')
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
-                document_crumb=field, schema_crumb=schema_crumb,
-                schema=dict((k, schema) for k in value))
+                document_crumb=field,
+                schema_crumb=schema_crumb,
+                schema=dict((k, schema) for k in value),
+            )
             validator(value, update=self.update, normalize=False)
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESCHEMA, validator._errors)
 
 
-RULE_SCHEMA_SEPARATOR = \
-    "The rule's arguments are validated against this schema:"
+RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
 
 
 class InspectedValidator(type):
     """ Metaclass for all validators """
+
     def __new__(cls, *args):
         if '__doc__' not in args[2]:
             args[2].update({'__doc__': args[1][0].__doc__})
@@ -1413,8 +1478,9 @@ class InspectedValidator(type):
 
     def __init__(cls, *args):
         def attributes_with_prefix(prefix):
-            return tuple(x.split('_', 2)[-1] for x in dir(cls)
-                         if x.startswith('_' + prefix))
+            return tuple(
+                x.split('_', 2)[-1] for x in dir(cls) if x.startswith('_' + prefix)
+            )
 
         super(InspectedValidator, cls).__init__(*args)
 
@@ -1422,16 +1488,20 @@ class InspectedValidator(type):
         for attribute in attributes_with_prefix('validate'):
             # TODO remove inspection of type test methods in next major release
             if attribute.startswith('type_'):
-                cls._types_from_methods += (attribute[len('type_'):],)
+                cls._types_from_methods += (attribute[len('type_') :],)
             else:
-                cls.validation_rules[attribute] = \
-                    cls.__get_rule_schema('_validate_' + attribute)
+                cls.validation_rules[attribute] = cls.__get_rule_schema(
+                    '_validate_' + attribute
+                )
 
         # TODO remove on next major release
         if cls._types_from_methods:
-            warn("Methods for type testing are deprecated, use TypeDefinition "
-                 "and the 'types_mapping'-property of a Validator-instance "
-                 "instead.", DeprecationWarning)
+            warn(
+                "Methods for type testing are deprecated, use TypeDefinition "
+                "and the 'types_mapping'-property of a Validator-instance "
+                "instead.",
+                DeprecationWarning,
+            )
 
         cls.validators = tuple(x for x in attributes_with_prefix('validator'))
         x = cls.validation_rules['validator']['oneof']
@@ -1443,19 +1513,20 @@ class InspectedValidator(type):
         cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
-                cls.coercers += (attribute[len('coerce_'):],)
+                cls.coercers += (attribute[len('coerce_') :],)
             elif attribute.startswith('default_setter_'):
-                cls.default_setters += (attribute[len('default_setter_'):],)
+                cls.default_setters += (attribute[len('default_setter_') :],)
             else:
-                cls.normalization_rules[attribute] = \
-                    cls.__get_rule_schema('_normalize_' + attribute)
+                cls.normalization_rules[attribute] = cls.__get_rule_schema(
+                    '_normalize_' + attribute
+                )
 
         for rule in ('coerce', 'rename_handler'):
             x = cls.normalization_rules[rule]['oneof']
-            x[1]['schema']['oneof'][1]['allowed'] = \
-                x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1]['allowed'] = \
-            cls.default_setters
+            x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1][
+            'allowed'
+        ] = cls.default_setters
 
         cls.rules = {}
         cls.rules.update(cls.validation_rules)
@@ -1474,8 +1545,10 @@ class InspectedValidator(type):
                 result = {}
 
         if not result:
-            warn("No validation schema is defined for the arguments of rule "
-                 "'%s'" % method_name.split('_', 2)[-1])
+            warn(
+                "No validation schema is defined for the arguments of rule "
+                "'%s'" % method_name.split('_', 2)[-1]
+            )
 
         return result
 

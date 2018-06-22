@@ -26,16 +26,19 @@ Making Changes
 * Please avoid working directly on ``master`` branch.
 * Make commits of logical units (if needed rebase your feature branch before
   submitting it).
-* Check for unnecessary whitespace with ``git diff --check`` before committing.
 * Make sure your commit messages are in the `proper format`_.
 * If your commit fixes an open issue, reference it in the commit message (#15).
-* Make sure your code conforms to PEP8_.
 * Make sure you have added the necessary tests for your changes.
 * Run all the tests to assure nothing else was accidentally broken.
+* Install and enable pre-commit_ (``pip install pre-commit``, then ``pre-commit
+  install``) to ensure styleguides and codechecks are followed. CI will reject
+  a change that does not conform to the guidelines.
 * Don't forget to add yourself to AUTHORS_.
 
 These guidelines also apply when helping with documentation (actually, for
 typos and minor additions you might choose to `fork and edit`_).
+
+.. _pre-commit: https://pre-commit.com/
 
 Submitting Changes
 ------------------
@@ -62,10 +65,7 @@ you might want to check this excellent `Effective Guide to Pull Requests`_
 .. _`new issue`: https://github.com/pyeve/cerberus/issues/new
 .. _Fork: https://help.github.com/articles/fork-a-repo
 .. _`proper format`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-.. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _help: https://help.github.com/
 .. _`Effective Guide to Pull Requests`: http://codeinthehole.com/writing/pull-requests-and-other-good-practices-for-teams-using-github/
 .. _`fork and edit`: https://github.com/blog/844-forking-with-the-edit-button
 .. _`Pull Request`: https://help.github.com/articles/creating-a-pull-request
-
-
