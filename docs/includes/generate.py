@@ -35,7 +35,7 @@ with (INCLUDES_DIR / 'error-codes.rst').open('wt') as f:
         """
 .. list-table::
    :header-rows: 1
-    
+
    * - Code (dec.)
      - Code (hex.)
      - Name

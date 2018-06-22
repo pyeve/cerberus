@@ -21,6 +21,8 @@ Fixed
 
 Improved
 ~~~~~~~~
+- Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
+- Reformat code to match Black code-style (`#402`_)
 - Change ``allowed`` rule to use containers instead of lists (`#384`_)
 - Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``
@@ -28,7 +30,6 @@ Improved
 
 Docs
 ~~~~
-- Reformat code to match Black code-style (`#402`_)
 - Improve documentation of the regex rule (`#389`_)
 - Expand upon `validator` rules (`#320`_)
 - Include all errors definitions in API docs (`#404`_)

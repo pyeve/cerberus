@@ -54,7 +54,7 @@ implications.
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
 - [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far. There will be no 
+      part where `schema` tested items in sequences so far. There will be no
       backward-compatibility for schemas. (#385)
 - [ ] The rules `keyschema` and `valueschema` are renamed to `keyrules` and
       `valuerules`, backward-compatibility for schemas will be provided. (#385)
@@ -65,7 +65,7 @@ implications.
 - [ ] The feature freeze gets lifted and the `CONTRIBUTING.rst` is updated
       accordingly.
 - [ ] The module `dataclasses` is implemented. This may get postponed 'til a
-      following minor release. (#397) 
+      following minor release. (#397)
 
 #### Undecided issues
 

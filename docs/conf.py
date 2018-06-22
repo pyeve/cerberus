@@ -12,16 +12,15 @@
 # serve to show the default.
 
 import sys
+import importlib
+from pathlib import Path
+
+import alabaster
 
 if sys.version_info < (3, 6):
     raise RuntimeError(
         'Requires Python 3.6 or later, running on %s atm.' % '.'.join(sys.version_info)
     )
-
-import importlib
-from pathlib import Path
-
-import alabaster
 
 
 module_spec = importlib.util.spec_from_file_location(
