@@ -31,30 +31,42 @@ for name, member in errors_module.items():
 error_definitions.sort(key=attrgetter('code'))
 
 with (INCLUDES_DIR / 'error-codes.rst').open('wt') as f:
-    print("""
+    print(
+        """
 .. list-table::
    :header-rows: 1
     
    * - Code (dec.)
      - Code (hex.)
      - Name
-     - Rule""".lstrip('\n'), file=f)
+     - Rule""".lstrip(
+            '\n'
+        ),
+        file=f,
+    )
     for error_definition in error_definitions:
-        print(f"""
+        print(
+            f"""
    * - {error_definition.code}
      - {hex(error_definition.code)}
      - {error_definition.name}
-     - {error_definition.rule}""".lstrip('\n'), file=f)
+     - {error_definition.rule}""".lstrip(
+                '\n'
+            ),
+            file=f,
+        )
 
 print('Generated table with ErrorDefinitions.')
 
 
 validator_module = load_module_members('validator', CERBERUS_DIR / 'validator.py')
 validator = validator_module['Validator']()
-schema_validation_schema = pformat(validator.rules, width=68)  # width seems w/o effect, use black?
+schema_validation_schema = pformat(
+    validator.rules, width=68
+)  # width seems w/o effect, use black?
 with (INCLUDES_DIR / 'schema-validation-schema.rst').open('wt') as f:
-    print('.. code-block:: python\n\n',
-          indent(schema_validation_schema, '    '),
-          file=f)
+    print(
+        '.. code-block:: python\n\n', indent(schema_validation_schema, '    '), file=f
+    )
 
 print("Generated schema for a vanilla validator's, well, schema.")

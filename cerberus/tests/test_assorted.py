@@ -23,8 +23,11 @@ def test_docstring(validator):
 # Test that testing with the sample schema works as expected
 # as there might be rules with side-effects in it
 
-@mark.parametrize('test,document', ((assert_fail, {'an_integer': 60}),
-                                    (assert_success, {'an_integer': 110})))
+
+@mark.parametrize(
+    'test,document',
+    ((assert_fail, {'an_integer': 60}), (assert_success, {'an_integer': 110})),
+)
 def test_that_test_fails(test, document):
     try:
         test(document)
@@ -46,13 +49,13 @@ def test_dynamic_types():
     class MyValidator(Validator):
         types_mapping = Validator.types_mapping.copy()
         types_mapping['decimal'] = decimal_type
+
     validator = MyValidator()
     assert_success(document, schema, validator)
 
 
 def test_mro():
-    assert Validator.__mro__ == (Validator, BareValidator, object), \
-        Validator.__mro__
+    assert Validator.__mro__ == (Validator, BareValidator, object), Validator.__mro__
 
 
 def test_mixin_init():

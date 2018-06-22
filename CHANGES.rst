@@ -28,6 +28,7 @@ Improved
 
 Docs
 ~~~~
+- Reformat code to match Black code-style (`#402`_)
 - Improve documentation of the regex rule (`#389`_)
 - Expand upon `validator` rules (`#320`_)
 - Include all errors definitions in API docs (`#404`_)
@@ -46,6 +47,7 @@ Docs
 
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404
+.. _`#404`: https://github.com/pyeve/cerberus/issues/402
 .. _`#389`: https://github.com/pyeve/cerberus/issues/389
 .. _`#384`: https://github.com/pyeve/cerberus/issues/384
 .. _`#382`: https://github.com/pyeve/cerberus/issues/382

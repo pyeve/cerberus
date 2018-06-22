@@ -3,8 +3,10 @@
 from setuptools import setup, find_packages
 import sys
 
-DESCRIPTION = ("Lightweight, extensible schema and data validation tool for "
-               "Python dictionaries.")
+DESCRIPTION = (
+    "Lightweight, extensible schema and data validation tool for "
+    "Python dictionaries."
+)
 LONG_DESCRIPTION = open('README.rst').read()
 VERSION = '1.2'
 
@@ -45,6 +47,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy'
+        'Programming Language :: Python :: Implementation :: PyPy',
     ],
 )
