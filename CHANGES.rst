@@ -21,8 +21,10 @@ Fixed
 
 Improved
 ~~~~~~~~
-- Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
 - Reformat code to match Black code-style (`#402`_)
+- Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
+- Performm linting checks as CI first stage. On failure, do not run the test
+  suite (`#402`_).
 - Change ``allowed`` rule to use containers instead of lists (`#384`_)
 - Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``
@@ -48,7 +50,7 @@ Docs
 
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404
-.. _`#404`: https://github.com/pyeve/cerberus/issues/402
+.. _`#402`: https://github.com/pyeve/cerberus/issues/402
 .. _`#389`: https://github.com/pyeve/cerberus/issues/389
 .. _`#384`: https://github.com/pyeve/cerberus/issues/384
 .. _`#382`: https://github.com/pyeve/cerberus/issues/382
