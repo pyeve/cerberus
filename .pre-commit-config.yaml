@@ -6,8 +6,14 @@ repos:
       - id: black
         args: [--quiet, --safe, --skip-string-normalization, cerberus, setup.py]
         python_version: python3.6
+        types:
+          - python
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v1.3.0
     hooks:
       - id: check-yaml
+        types:
+          - yaml
       - id: debug-statements
+        types:
+          - python
