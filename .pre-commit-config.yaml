@@ -1,7 +1,6 @@
 repos:
 -   repo: https://github.com/ambv/black
-    # TODO switch to 'stable' once --skip-string-normalization lands on it
-    rev: master
+    rev: stable
     hooks:
     - id: black
       args: [--quiet, --safe, --skip-string-normalization]
