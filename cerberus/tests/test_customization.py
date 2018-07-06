@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from pytest import mark
+
 import cerberus
 from cerberus.tests import assert_fail, assert_success
 from cerberus.tests.conftest import sample_schema
@@ -41,13 +43,33 @@ def test_docstring_parsing():
     assert 'bar' in CustomValidator.validation_rules
 
 
-def test_issue_265():
+# TODO remove 'validator' as rule parameter with the next major release
+@mark.parametrize('rule', ('check_with', 'validator'))
+def test_check_with_method(rule):
+    # https://github.com/pyeve/cerberus/issues/265
+    class MyValidator(cerberus.Validator):
+        def _check_with_oddity(self, field, value):
+            if not value & 1:
+                self._error(field, "Must be an odd number")
+
+    v = MyValidator(schema={'amount': {rule: 'oddity'}})
+    assert_success(document={'amount': 1}, validator=v)
+    assert_fail(
+        document={'amount': 2},
+        validator=v,
+        error=('amount', (), cerberus.errors.CUSTOM, None, ('Must be an odd number',)),
+    )
+
+
+# TODO remove test with the next major release
+@mark.parametrize('rule', ('check_with', 'validator'))
+def test_validator_method(rule):
     class MyValidator(cerberus.Validator):
         def _validator_oddity(self, field, value):
             if not value & 1:
                 self._error(field, "Must be an odd number")
 
-    v = MyValidator(schema={'amount': {'validator': 'oddity'}})
+    v = MyValidator(schema={'amount': {rule: 'oddity'}})
     assert_success(document={'amount': 1}, validator=v)
     assert_fail(
         document={'amount': 2},

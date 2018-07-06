@@ -1041,7 +1041,7 @@ class BareValidator(object):
     _validate_allow_unknown = dummy_for_rule_validation(
         """ {'oneof': [{'type': 'boolean'},
                        {'type': ['dict', 'string'],
-                        'validator': 'bulk_schema'}]} """
+                        'check_with': 'bulk_schema'}]} """
     )
 
     def _validate_allowed(self, allowed_values, field, value):
@@ -1053,6 +1053,32 @@ class BareValidator(object):
         else:
             if value not in allowed_values:
                 self._error(field, errors.UNALLOWED_VALUE, value)
+
+    def _validate_check_with(self, checks, field, value):
+        """ {'oneof': [
+                {'type': 'callable'},
+                {'type': 'list',
+                 'schema': {'oneof': [{'type': 'callable'},
+                                      {'type': 'string'}]}},
+                {'type': 'string'}
+                ]} """
+        if isinstance(checks, _str_type):
+            try:
+                value_checker = self.__get_rule_handler('check_with', checks)
+            # TODO remove on next major release
+            except RuntimeError:
+                value_checker = self.__get_rule_handler('validator', checks)
+                warn(
+                    "The 'validator' rule was renamed to 'check_with'. Please update "
+                    "your schema and method names accordingly.",
+                    DeprecationWarning,
+                )
+            value_checker(field, value)
+        elif isinstance(checks, Iterable):
+            for v in checks:
+                self._validate_check_with(v, field, value)
+        else:
+            checks(field, value, self._error)
 
     def _validate_contains(self, expected_values, field, value):
         """ {'empty': False } """
@@ -1072,7 +1098,7 @@ class BareValidator(object):
 
     def _validate_dependencies(self, dependencies, field, value):
         """ {'type': ('dict', 'hashable', 'list'),
-             'validator': 'dependencies'} """
+             'check_with': 'dependencies'} """
         if isinstance(dependencies, _str_type):
             dependencies = (dependencies,)
 
@@ -1122,7 +1148,7 @@ class BareValidator(object):
                 'minlength',
                 'maxlength',
                 'regex',
-                'validator',
+                'check_with',
             )
             if not empty:
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
@@ -1164,7 +1190,7 @@ class BareValidator(object):
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
     def _validate_items(self, items, field, values):
-        """ {'type': 'list', 'validator': 'items'} """
+        """ {'type': 'list', 'check_with': 'items'} """
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -1279,7 +1305,7 @@ class BareValidator(object):
             )
 
     def _validate_keyschema(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
+        """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
@@ -1356,8 +1382,8 @@ class BareValidator(object):
 
     def _validate_schema(self, schema, field, value):
         """ {'type': ['dict', 'string'],
-             'anyof': [{'validator': 'schema'},
-                       {'validator': 'bulk_schema'}]} """
+             'anyof': [{'check_with': 'schema'},
+                       {'check_with': 'bulk_schema'}]} """
         if schema is None:
             return
 
@@ -1402,7 +1428,7 @@ class BareValidator(object):
 
     def _validate_type(self, data_type, field, value):
         """ {'type': ['string', 'list'],
-             'validator': 'type'} """
+             'check_with': 'type'} """
         if not data_type:
             return
 
@@ -1432,25 +1458,8 @@ class BareValidator(object):
         self._error(field, errors.BAD_TYPE)
         self._drop_remaining_rules()
 
-    def _validate_validator(self, validator, field, value):
-        """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'schema': {'oneof': [{'type': 'callable'},
-                                      {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
-        if isinstance(validator, _str_type):
-            validator = self.__get_rule_handler('validator', validator)
-            validator(field, value)
-        elif isinstance(validator, Iterable):
-            for v in validator:
-                self._validate_validator(v, field, value)
-        else:
-            validator(field, value, self._error)
-
     def _validate_valueschema(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'validator': 'bulk_schema',
+        """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         schema_crumb = (field, 'valueschema')
         if isinstance(value, Mapping):
@@ -1479,7 +1488,9 @@ class InspectedValidator(type):
     def __init__(cls, *args):
         def attributes_with_prefix(prefix):
             return tuple(
-                x.split('_', 2)[-1] for x in dir(cls) if x.startswith('_' + prefix)
+                x[len(prefix) + 2 :]
+                for x in dir(cls)
+                if x.startswith('_' + prefix + '_')
             )
 
         super(InspectedValidator, cls).__init__(*args)
@@ -1503,9 +1514,12 @@ class InspectedValidator(type):
                 DeprecationWarning,
             )
 
-        cls.validators = tuple(x for x in attributes_with_prefix('validator'))
-        x = cls.validation_rules['validator']['oneof']
-        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.validators
+        # TODO remove second summand on next major release
+        cls.checkers = tuple(x for x in attributes_with_prefix('check_with')) + tuple(
+            x for x in attributes_with_prefix('validator')
+        )
+        x = cls.validation_rules['check_with']['oneof']
+        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
 
         for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
             cls.validation_rules[rule]['required'] = True

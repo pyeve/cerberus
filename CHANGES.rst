@@ -11,6 +11,7 @@ New
 - The ``contains`` rule (`#358`_)
 - All fields that are defined as ``readonly`` are removed from a document
   when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
+- The ``validator`` rule is renamed to ``check_with`` (`#405`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
@@ -27,7 +28,7 @@ Improved
 - Change ``allowed`` rule to use containers instead of lists (`#384`_)
 - Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``
-- Check the ``empty`` rule against values of type ``Sized``.
+- Check the ``empty`` rule against values of type ``Sized``
 
 Docs
 ~~~~
@@ -39,16 +40,17 @@ Docs
 - Add feature freeze note to CONTRIBUTING and note on Python support in
   README
 - Add the intent of a ``dataclasses`` module to ROADMAP.md
-- Update README link. Make it point to the new PYPI website
+- Update README link. Make it point to the new PyPI website
 - Update README with elaborations on versioning and testing
 - Fix misspellings and missing pronouns
 - Remove redundant hint from ``*of-rules``.
-- Add usage reccommendation regarding the ``*ok-rules``
+- Add usage recommendation regarding the ``*of-rules``
 - Add a few clarifications to the GitHub issue template
-- Update README link. Make it point to the new PYPI website
+- Update README link. Make it point to the new PyPI website
 
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
+.. _`#405`: https://github.com/pyeve/cerberus/issues/405
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404
 .. _`#402`: https://github.com/pyeve/cerberus/issues/402
 .. _`#389`: https://github.com/pyeve/cerberus/issues/389

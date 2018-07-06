@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, Sequence
 from copy import copy
+from warnings import warn
 
 from cerberus import errors
 from cerberus.platform import _str_type
@@ -116,6 +117,10 @@ class DefinitionSchema(MutableMapping):
             schema = cls._expand_subschemas(schema)
         except Exception:
             pass
+
+        # TODO remove this with the next major release
+        schema = cls._rename_deprecated_rulenames(schema)
+
         return schema
 
     @classmethod
@@ -190,6 +195,23 @@ class DefinitionSchema(MutableMapping):
         else:
             self.schema = _new_schema
 
+    # TODO remove with next major release
+    @staticmethod
+    def _rename_deprecated_rulenames(schema):
+        for old, new in (('validator', 'check_with'),):
+            for field, rules in schema.items():
+                if old in rules:
+                    warn(
+                        "The rule '{old}' was renamed to '{new}'. The old name will "
+                        "not be available in the next major release of "
+                        "Cerberus".format(old=old, new=new),
+                        DeprecationWarning,
+                    )
+                    schema[field][new] = schema[field][old]
+                    schema[field].pop(old)
+
+        return schema
+
     def regenerate_validation_schema(self):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
@@ -247,7 +269,7 @@ class SchemaValidationSchema(UnvalidatedSchema):
 
 
 class SchemaValidatorMixin(object):
-    """ This validator is extended to validate schemas passed to a Cerberus
+    """ This validator mixin provides mechanics to validate schemas passed to a Cerberus
         validator. """
 
     @property
@@ -278,33 +300,7 @@ class SchemaValidatorMixin(object):
         """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
-    def _validate_logical(self, rule, field, value):
-        """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
-        if not isinstance(value, Sequence):
-            self._error(field, errors.BAD_TYPE)
-            return
-
-        validator = self._get_child_validator(
-            document_crumb=rule,
-            allow_unknown=False,
-            schema=self.target_validator.validation_rules,
-        )
-
-        for constraints in value:
-            _hash = (
-                mapping_hash({'turing': constraints}),
-                mapping_hash(self.target_validator.types_mapping),
-            )
-            if _hash in self.target_validator._valid_schemas:
-                continue
-
-            validator(constraints, normalize=False)
-            if validator._errors:
-                self._error(validator._errors)
-            else:
-                self.target_validator._valid_schemas.add(_hash)
-
-    def _validator_bulk_schema(self, field, value):
+    def _check_with_bulk_schema(self, field, value):
         # resolve schema registry reference
         if isinstance(value, _str_type):
             if value in self.known_rules_set_refs:
@@ -336,7 +332,7 @@ class SchemaValidatorMixin(object):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
-    def _validator_dependencies(self, field, value):
+    def _check_with_dependencies(self, field, value):
         if isinstance(value, _str_type):
             pass
         elif isinstance(value, Mapping):
@@ -352,24 +348,24 @@ class SchemaValidatorMixin(object):
                 path = self.document_path + (field,)
                 self._error(path, 'All dependencies must be a hashable type.')
 
-    def _validator_handler(self, field, value):
+    def _check_with_handler(self, field, value):
         if isinstance(value, Callable):
             return
         if isinstance(value, _str_type):
             if (
                 value
-                not in self.target_validator.validators + self.target_validator.coercers
+                not in self.target_validator.checkers + self.target_validator.coercers
             ):
                 self._error(field, '%s is no valid coercer' % value)
         elif isinstance(value, Iterable):
             for handler in value:
-                self._validator_handler(field, handler)
+                self._check_with_handler(field, handler)
 
-    def _validator_items(self, field, value):
+    def _check_with_items(self, field, value):
         for i, schema in enumerate(value):
-            self._validator_bulk_schema((field, i), schema)
+            self._check_with_bulk_schema((field, i), schema)
 
-    def _validator_schema(self, field, value):
+    def _check_with_schema(self, field, value):
         try:
             value = self._handle_schema_reference_for_validator(field, value)
         except _Abort:
@@ -388,6 +384,25 @@ class SchemaValidatorMixin(object):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
+    def _check_with_type(self, field, value):
+        value = (value,) if isinstance(value, _str_type) else value
+        invalid_constraints = ()
+        for constraint in value:
+            if constraint not in self.target_validator.types:
+                invalid_constraints += (constraint,)
+        if invalid_constraints:
+            path = self.document_path + (field,)
+            self._error(path, 'Unsupported types: %s' % invalid_constraints)
+
+    def _expand_rules_set_refs(self, schema):
+        result = {}
+        for k, v in schema.items():
+            if isinstance(v, _str_type):
+                result[k] = self.target_validator.rules_set_registry.get(v)
+            else:
+                result[k] = v
+        return result
+
     def _handle_schema_reference_for_validator(self, field, value):
         if not isinstance(value, _str_type):
             return value
@@ -402,24 +417,31 @@ class SchemaValidatorMixin(object):
             raise _Abort
         return definition
 
-    def _expand_rules_set_refs(self, schema):
-        result = {}
-        for k, v in schema.items():
-            if isinstance(v, _str_type):
-                result[k] = self.target_validator.rules_set_registry.get(v)
-            else:
-                result[k] = v
-        return result
+    def _validate_logical(self, rule, field, value):
+        """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
+        if not isinstance(value, Sequence):
+            self._error(field, errors.BAD_TYPE)
+            return
 
-    def _validator_type(self, field, value):
-        value = (value,) if isinstance(value, _str_type) else value
-        invalid_constraints = ()
-        for constraint in value:
-            if constraint not in self.target_validator.types:
-                invalid_constraints += (constraint,)
-        if invalid_constraints:
-            path = self.document_path + (field,)
-            self._error(path, 'Unsupported types: %s' % invalid_constraints)
+        validator = self._get_child_validator(
+            document_crumb=rule,
+            allow_unknown=False,
+            schema=self.target_validator.validation_rules,
+        )
+
+        for constraints in value:
+            _hash = (
+                mapping_hash({'turing': constraints}),
+                mapping_hash(self.target_validator.types_mapping),
+            )
+            if _hash in self.target_validator._valid_schemas:
+                continue
+
+            validator(constraints, normalize=False)
+            if validator._errors:
+                self._error(validator._errors)
+            else:
+                self.target_validator._valid_schemas.add(_hash)
 
 
 ####
