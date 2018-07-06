@@ -1153,27 +1153,28 @@ class BareValidator(object):
             if not empty:
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
 
-    def _validate_excludes(self, excludes, field, value):
+    def _validate_excludes(self, excluded_fields, field, value):
         """ {'type': ('hashable', 'list'),
              'schema': {'type': 'hashable'}} """
-        if isinstance(excludes, Hashable):
-            excludes = [excludes]
+        if isinstance(excluded_fields, Hashable):
+            excluded_fields = [excluded_fields]
 
-        # Save required field to be checked latter
-        if 'required' in self.schema[field] and self.schema[field]['required']:
+        # Mark the currently evaluated field as not required for now if it actually is.
+        # One of the so marked will be needed to pass when required fields are checked.
+        if self.schema[field].get('required', False):
             self._unrequired_by_excludes.add(field)
-        for exclude in excludes:
-            if (
-                exclude in self.schema
-                and 'required' in self.schema[exclude]
-                and self.schema[exclude]['required']
+
+        for excluded_field in excluded_fields:
+            if excluded_field in self.schema and self.schema[field].get(
+                'required', False
             ):
 
-                self._unrequired_by_excludes.add(exclude)
+                self._unrequired_by_excludes.add(excluded_field)
 
-        if [True for key in excludes if key in self.document]:
-            # Wrap each field in `excludes` list between quotes
-            exclusion_str = ', '.join("'{0}'".format(word) for word in excludes)
+        if any(excluded_field in self.document for excluded_field in excluded_fields):
+            exclusion_str = ', '.join(
+                "'{0}'".format(field) for field in excluded_fields
+            )
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
@@ -1372,8 +1373,8 @@ class BareValidator(object):
         for field in missing:
             self._error(field, errors.REQUIRED_FIELD)
 
-        # At least on field from self._unrequired_by_excludes should be
-        # present in document
+        # At least one field from self._unrequired_by_excludes should be present in
+        # document.
         if self._unrequired_by_excludes:
             fields = set(field for field in document if document.get(field) is not None)
             if self._unrequired_by_excludes.isdisjoint(fields):
