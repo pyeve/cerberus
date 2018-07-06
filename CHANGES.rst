@@ -23,8 +23,6 @@ Improved
 ~~~~~~~~
 - Reformat code to match Black code-style (`#402`_)
 - Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
-- Performm linting checks as CI first stage. On failure, do not run the test
-  suite (`#402`_).
 - Change ``allowed`` rule to use containers instead of lists (`#384`_)
 - Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``

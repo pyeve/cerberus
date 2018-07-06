@@ -1,10 +1,10 @@
-# mind that a similar file exists for linting usage
+# mind that a similar file exists for pre-commit usage
 repos:
   - repo: https://github.com/ambv/black
     rev: stable
     hooks:
       - id: black
-        args: [--quiet, --safe, --skip-string-normalization, cerberus, setup.py]
+        args: [--check, --safe, --skip-string-normalization, cerberus, setup.py]
         python_version: python3.6
         types:
           - python
