@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, Sequence
+from collections import Callable, Hashable, Mapping, MutableMapping, Sequence
 from copy import copy
 from warnings import warn
 
@@ -347,19 +347,6 @@ class SchemaValidatorMixin(object):
             if not all(isinstance(x, Hashable) for x in value):
                 path = self.document_path + (field,)
                 self._error(path, 'All dependencies must be a hashable type.')
-
-    def _check_with_handler(self, field, value):
-        if isinstance(value, Callable):
-            return
-        if isinstance(value, _str_type):
-            if (
-                value
-                not in self.target_validator.checkers + self.target_validator.coercers
-            ):
-                self._error(field, '%s is no valid coercer' % value)
-        elif isinstance(value, Iterable):
-            for handler in value:
-                self._check_with_handler(field, handler)
 
     def _check_with_items(self, field, value):
         for i, schema in enumerate(value):
