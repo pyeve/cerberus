@@ -698,13 +698,13 @@ class BareValidator(object):
 
             # TODO: This check conflates validation and normalization
             if isinstance(mapping[field], Mapping):
-                if 'keyschema' in rules:
-                    self.__normalize_mapping_per_keyschema(
-                        field, mapping, schema[field]['keyschema']
+                if 'keysrules' in rules:
+                    self.__normalize_mapping_per_keysrules(
+                        field, mapping, schema[field]['keysrules']
                     )
-                if 'valueschema' in rules:
-                    self.__normalize_mapping_per_valueschema(
-                        field, mapping, schema[field]['valueschema']
+                if 'valuesrules' in rules:
+                    self.__normalize_mapping_per_valuesrules(
+                        field, mapping, schema[field]['valuesrules']
                     )
                 if rules & set(
                     ('allow_unknown', 'purge_unknown', 'schema')
@@ -723,11 +723,11 @@ class BareValidator(object):
                 elif 'items' in rules:
                     self.__normalize_sequence_per_items(field, mapping, schema)
 
-    def __normalize_mapping_per_keyschema(self, field, mapping, property_rules):
+    def __normalize_mapping_per_keysrules(self, field, mapping, property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'keyschema'), schema=schema
+            document_crumb=field, schema_crumb=(field, 'keysrules'), schema=schema
         )
         result = validator.normalized(document, always_return_document=True)
         if validator._errors:
@@ -748,10 +748,10 @@ class BareValidator(object):
                 mapping[field][result[k]] = mapping[field][k]
                 del mapping[field][k]
 
-    def __normalize_mapping_per_valueschema(self, field, mapping, value_rules):
+    def __normalize_mapping_per_valuesrules(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'valueschema'), schema=schema
+            document_crumb=field, schema_crumb=(field, 'valuesrules'), schema=schema
         )
         mapping[field] = validator.normalized(
             mapping[field], always_return_document=True
@@ -1294,7 +1294,7 @@ class BareValidator(object):
                 'empty',
                 'forbidden',
                 'items',
-                'keyschema',
+                'keysrules',
                 'min',
                 'max',
                 'minlength',
@@ -1302,21 +1302,21 @@ class BareValidator(object):
                 'regex',
                 'schema',
                 'type',
-                'valueschema',
+                'valuesrules',
             )
 
-    def _validate_keyschema(self, schema, field, value):
+    def _validate_keysrules(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema_crumb=(field, 'keyschema'),
+                schema_crumb=(field, 'keysrules'),
                 schema=dict(((k, schema) for k in value.keys())),
             )
             if not validator(dict(((k, k) for k in value.keys())), normalize=False):
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
-                self._error(field, errors.KEYSCHEMA, validator._errors)
+                self._error(field, errors.KEYSRULES, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
         """ {'type': 'boolean'} """
@@ -1459,10 +1459,10 @@ class BareValidator(object):
         self._error(field, errors.BAD_TYPE)
         self._drop_remaining_rules()
 
-    def _validate_valueschema(self, schema, field, value):
+    def _validate_valuesrules(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
             'forbidden': ['rename', 'rename_handler']} """
-        schema_crumb = (field, 'valueschema')
+        schema_crumb = (field, 'valuesrules')
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
@@ -1472,7 +1472,7 @@ class BareValidator(object):
             validator(value, update=self.update, normalize=False)
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
-                self._error(field, errors.VALUESCHEMA, validator._errors)
+                self._error(field, errors.VALUESRULES, validator._errors)
 
 
 RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
