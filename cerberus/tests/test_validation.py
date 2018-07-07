@@ -360,22 +360,22 @@ def test_bad_schema():
     )
 
 
-def test_bad_valueschema():
-    field = 'a_dict_with_valueschema'
+def test_bad_valuesrules():
+    field = 'a_dict_with_valuesrules'
     schema_field = 'a_string'
     value = {schema_field: 'not an integer'}
 
     exp_child_errors = [
         (
             (field, schema_field),
-            (field, 'valueschema', 'type'),
+            (field, 'valuesrules', 'type'),
             errors.BAD_TYPE,
             'integer',
         )
     ]
     assert_fail(
         {field: value},
-        error=(field, (field, 'valueschema'), errors.VALUESCHEMA, {'type': 'integer'}),
+        error=(field, (field, 'valuesrules'), errors.VALUESRULES, {'type': 'integer'}),
         child_errors=exp_child_errors,
     )
 
@@ -640,41 +640,49 @@ def test_a_dict(schema):
     )
 
 
-def test_a_dict_with_valueschema(validator):
+def test_a_dict_with_valuesrules(validator):
     assert_success(
-        {'a_dict_with_valueschema': {'an integer': 99, 'another integer': 100}}
+        {'a_dict_with_valuesrules': {'an integer': 99, 'another integer': 100}}
     )
 
     error = (
-        'a_dict_with_valueschema',
-        ('a_dict_with_valueschema', 'valueschema'),
-        errors.VALUESCHEMA,
+        'a_dict_with_valuesrules',
+        ('a_dict_with_valuesrules', 'valuesrules'),
+        errors.VALUESRULES,
         {'type': 'integer'},
     )
     child_errors = [
         (
-            ('a_dict_with_valueschema', 'a string'),
-            ('a_dict_with_valueschema', 'valueschema', 'type'),
+            ('a_dict_with_valuesrules', 'a string'),
+            ('a_dict_with_valuesrules', 'valuesrules', 'type'),
             errors.BAD_TYPE,
             'integer',
         )
     ]
 
     assert_fail(
-        {'a_dict_with_valueschema': {'a string': '99'}},
+        {'a_dict_with_valuesrules': {'a string': '99'}},
         validator=validator,
         error=error,
         child_errors=child_errors,
     )
 
-    assert 'valueschema' in validator.schema_error_tree['a_dict_with_valueschema']
+    assert 'valuesrules' in validator.schema_error_tree['a_dict_with_valuesrules']
     v = validator.schema_error_tree
-    assert len(v['a_dict_with_valueschema']['valueschema'].descendants) == 1
+    assert len(v['a_dict_with_valuesrules']['valuesrules'].descendants) == 1
 
 
-def test_a_dict_with_keyschema():
-    assert_success({'a_dict_with_keyschema': {'key': 'value'}})
-    assert_fail({'a_dict_with_keyschema': {'KEY': 'value'}})
+# TODO remove 'keyschema' as rule with the next major release
+@mark.parametrize('rule', ('keysrules', 'keyschema'))
+def test_keysrules(rule):
+    schema = {
+        'a_dict_with_keysrules': {
+            'type': 'dict',
+            rule: {'type': 'string', 'regex': '[a-z]+'},
+        }
+    }
+    assert_success({'a_dict_with_keysrules': {'key': 'value'}}, schema=schema)
+    assert_fail({'a_dict_with_keysrules': {'KEY': 'value'}}, schema=schema)
 
 
 def test_a_list_length(schema):
@@ -1498,7 +1506,7 @@ def test_oneof_schema():
 
 def test_nested_oneof_type():
     schema = {
-        'nested_oneof_type': {'valueschema': {'oneof_type': ['string', 'integer']}}
+        'nested_oneof_type': {'valuesrules': {'oneof_type': ['string', 'integer']}}
     }
     assert_success({'nested_oneof_type': {'foo': 'a'}}, schema)
     assert_success({'nested_oneof_type': {'bar': 3}}, schema)

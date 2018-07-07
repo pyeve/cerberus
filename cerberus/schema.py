@@ -168,7 +168,7 @@ class DefinitionSchema(MutableMapping):
             else:  # assumes schema-constraints for a sequence
                 schema[field]['schema'] = cls.expand({0: schema[field]['schema']})[0]
 
-            for rule in ('keyschema', 'valueschema'):
+            for rule in ('keysrules', 'valuesrules'):
                 if rule in schema[field]:
                     schema[field][rule] = cls.expand({0: schema[field][rule]})[0]
 
@@ -198,17 +198,29 @@ class DefinitionSchema(MutableMapping):
     # TODO remove with next major release
     @staticmethod
     def _rename_deprecated_rulenames(schema):
-        for old, new in (('validator', 'check_with'),):
+        for old, new in (
+            ('keyschema', 'keysrules'),
+            ('validator', 'check_with'),
+            ('valueschema', 'valuesrules'),
+        ):
             for field, rules in schema.items():
-                if old in rules:
-                    warn(
-                        "The rule '{old}' was renamed to '{new}'. The old name will "
-                        "not be available in the next major release of "
-                        "Cerberus".format(old=old, new=new),
-                        DeprecationWarning,
+                if old not in rules:
+                    continue
+
+                if new in rules:
+                    raise RuntimeError(
+                        "The rule '{new}' is also present with its old "
+                        "name '{old}' in the same set of rules."
                     )
-                    schema[field][new] = schema[field][old]
-                    schema[field].pop(old)
+
+                warn(
+                    "The rule '{old}' was renamed to '{new}'. The old name will "
+                    "not be available in the next major release of "
+                    "Cerberus".format(old=old, new=new),
+                    DeprecationWarning,
+                )
+                schema[field][new] = schema[field][old]
+                schema[field].pop(old)
 
         return schema
 
@@ -338,7 +350,7 @@ class SchemaValidatorMixin(object):
         elif isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema={'valueschema': {'type': 'list'}},
+                schema={'valuesrules': {'type': 'list'}},
                 allow_unknown=True,
             )
             if not validator(value, normalize=False):

@@ -12,6 +12,8 @@ New
 - All fields that are defined as ``readonly`` are removed from a document
   when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
 - The ``validator`` rule is renamed to ``check_with`` (`#405`_)
+- The rules ``keyschema`` and ``valueschema`` are renamed to ``keysrules`` and
+  ``valuesrules`` (`385`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
@@ -54,6 +56,7 @@ Docs
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404
 .. _`#402`: https://github.com/pyeve/cerberus/issues/402
 .. _`#389`: https://github.com/pyeve/cerberus/issues/389
+.. _`#385`: https://github.com/pyeve/cerberus/issues/385
 .. _`#384`: https://github.com/pyeve/cerberus/issues/384
 .. _`#382`: https://github.com/pyeve/cerberus/issues/382
 .. _`#361`: https://github.com/pyeve/cerberus/pull/361

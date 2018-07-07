@@ -396,17 +396,18 @@ normalization and items of a value are not normalized when the lengths mismatch.
 
 See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
-.. _keyschema-rule:
+.. _keysrules-rule:
 
-keyschema
+keysrules
 ---------
-Validation schema for all keys of a :term:`mapping`.
+This rules takes a set of rules as constraint that all keys of a
+:term:`mapping` are validated with.
 
 .. doctest::
 
     >>> schema = {'a_dict': {
     ...               'type': 'dict',
-    ...               'keyschema': {'type': 'string', 'regex': '[a-z]+'}}
+    ...               'keysrules': {'type': 'string', 'regex': '[a-z]+'}}
     ...           }
     >>> document = {'a_dict': {'key': 'value'}}
     >>> v.validate(document, schema)
@@ -420,6 +421,9 @@ Validation schema for all keys of a :term:`mapping`.
 
 .. versionchanged:: 1.0
    Renamed from ``propertyschema`` to ``keyschema``
+
+.. versionchanged:: 1.3
+   Renamed from ``keyschema`` to ``keysrules``
 
 min, max
 --------
@@ -687,8 +691,8 @@ constraint.
 
 .. note::
 
-    To validate *arbitrary keys* of a mapping, see `keyschema`_, resp.
-    `valueschema`_ for validating *arbitrary values* of a mapping.
+    To validate *arbitrary keys* of a mapping, see keysrules-rule_, resp.
+    valuesrules-rule_ for validating *arbitrary values* of a mapping.
 
 schema (list)
 -------------
@@ -843,15 +847,19 @@ A list of types can be used to allow different values:
 
 .. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
-.. _valueschema-rule:
+.. _valuesrules-rule:
 
-valueschema
+valuesrules
 -----------
-Validation schema for all values of a :term:`mapping`.
+This rules takes a set of rules as constraint that all values of a
+:term:`mapping` are validated with.
 
 .. doctest::
 
-    >>> schema = {'numbers': {'type': 'dict', 'valueschema': {'type': 'integer', 'min': 10}}}
+    >>> schema = {'numbers':
+    ...              {'type': 'dict',
+    ...               'valuesrules': {'type': 'integer', 'min': 10}}
+    ... }
     >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
     >>> v.validate(document, schema)
     True
@@ -866,3 +874,5 @@ Validation schema for all values of a :term:`mapping`.
 .. versionadded:: 0.7
 .. versionchanged:: 0.9
    renamed ``keyschema`` to ``valueschema``
+.. versionchanged:: 1.3
+   renamed ``valueschema`` to ``valuesrules``
