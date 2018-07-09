@@ -11,9 +11,12 @@ New
 - The ``contains`` rule (`#358`_)
 - All fields that are defined as ``readonly`` are removed from a document
   when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
-- The ``validator`` rule is renamed to ``check_with`` (`#405`_)
+- The ``validator`` rule is renamed to ``check_with``. The old name is
+  deprecated and will not be available in the next major release of Cerberus
+  (`#405`_)
 - The rules ``keyschema`` and ``valueschema`` are renamed to ``keysrules`` and
-  ``valuesrules`` (`385`_)
+  ``valuesrules``. The old names are deprecated and will not be available in
+  the next major release of Cerbers (`385`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
