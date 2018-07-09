@@ -16,7 +16,7 @@ New
   (`#405`_)
 - The rules ``keyschema`` and ``valueschema`` are renamed to ``keysrules`` and
   ``valuesrules``. The old names are deprecated and will not be available in
-  the next major release of Cerbers (`385`_)
+  the next major release of Cerbers (`#385`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
