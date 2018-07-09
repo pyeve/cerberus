@@ -43,11 +43,11 @@ def test_recursion():
 
 def test_references_remain_unresolved(validator):
     rules_set_registry.extend(
-        (('boolean', {'type': 'boolean'}), ('booleans', {'valueschema': 'boolean'}))
+        (('boolean', {'type': 'boolean'}), ('booleans', {'valuesrules': 'boolean'}))
     )
     validator.schema = {'foo': 'booleans'}
     assert 'booleans' == validator.schema['foo']
-    assert 'boolean' == rules_set_registry._storage['booleans']['valueschema']
+    assert 'boolean' == rules_set_registry._storage['booleans']['valuesrules']
 
 
 def test_rules_registry_with_anyof_type():

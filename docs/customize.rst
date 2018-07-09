@@ -116,17 +116,17 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
 
 .. _validator-rule-methods:
 
-Methods that can be referenced by the validator rule
-----------------------------------------------------
+Methods that can be referenced by the check_with rule
+-----------------------------------------------------
 If a validation test doesn't depend on a specified constraint from a schema or
 needs to be more complex than a rule should be, it's possible to rather define
-it as validators than as a rule. There are two ways to use the
-:ref:`validator rule <validator-rule>`.
+it as *value checker* than as a rule. There are two ways to use the
+:ref:`check_with rule <check-with-rule>`.
 
 One is by extending :class:`~cerberus.Validator` with a method prefixed with
-``_validator_``. This allows to access the whole context of the validator
+``_check_with_``. This allows to access the whole context of the validator
 instance including arbitrary configuration values and state. To reference such
-method using the ``validator`` rule, simply pass the unprefixed method name as
+method using the ``check_with`` rule, simply pass the unprefixed method name as
 a string constraint.
 
 For example, one can define an ``oddity`` validator method as follows:
@@ -134,7 +134,7 @@ For example, one can define an ``oddity`` validator method as follows:
 .. testcode::
 
     class MyValidator(Validator):
-        def _validator_oddity(self, field, value):
+        def _check_with_oddity(self, field, value):
             if not value & 1:
                 self._error(field, "Must be an odd number")
 
@@ -142,7 +142,7 @@ Usage would look something like:
 
 .. testcode::
 
-    schema = {'amount': {'type': 'integer', 'validator': 'oddity'}}
+    schema = {'amount': {'type': 'integer', 'check_with': 'oddity'}}
 
 The second option to use the rule is to define a standalone function and pass
 it as the constraint. This brings with it the benefit of not having to extend

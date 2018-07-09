@@ -62,6 +62,56 @@ Validates if *any* of the provided constraints validates the field. See `\*of-ru
 
 .. versionadded:: 0.9
 
+.. _check-with-rule:
+
+check_with
+----------
+Validates the value of a field by calling either a function or method.
+
+A function must be implemented like the following prototype::
+
+    def functionnname(field, value, error):
+        if value is invalid:
+            error(field, 'error message')
+
+The ``error`` argument points to the calling validator's ``_error`` method. See
+:doc:`customize` on how to submit errors.
+
+Here's an example that tests whether an integer is odd or not:
+
+.. testcode::
+
+    def oddity(field, value, error):
+        if not value & 1:
+            error(field, "Must be an odd number")
+
+Then, you can validate a value like this:
+
+.. doctest::
+
+    >>> schema = {'amount': {'check_with': oddity}}
+    >>> v = Validator(schema)
+    >>> v.validate({'amount': 10})
+    False
+    >>> v.errors
+    {'amount': ['Must be an odd number']}
+
+    >>> v.validate({'amount': 9})
+    True
+
+If the rule's constraint is a string, the :class:`~cerberus.Validator` instance
+must have a method with that name prefixed by ``_check_with_``. See
+:ref:`check-with-rule-methods` for an equivalent to the function-based example
+above.
+
+The constraint can also be a sequence of these that will be called consecutively. ::
+
+   schema = {'field': {'check_with': (oddity, 'prime number')}}
+
+.. versionchanged:: 1.3
+   The rule was renamed from ``validator`` to ``check_with``
+
+
 contains
 --------
 This rule validates that the a container object contains all of the defined items.
@@ -346,17 +396,18 @@ normalization and items of a value are not normalized when the lengths mismatch.
 
 See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
-.. _keyschema-rule:
+.. _keysrules-rule:
 
-keyschema
+keysrules
 ---------
-Validation schema for all keys of a :term:`mapping`.
+This rules takes a set of rules as constraint that all keys of a
+:term:`mapping` are validated with.
 
 .. doctest::
 
     >>> schema = {'a_dict': {
     ...               'type': 'dict',
-    ...               'keyschema': {'type': 'string', 'regex': '[a-z]+'}}
+    ...               'keysrules': {'type': 'string', 'regex': '[a-z]+'}}
     ...           }
     >>> document = {'a_dict': {'key': 'value'}}
     >>> v.validate(document, schema)
@@ -370,6 +421,9 @@ Validation schema for all keys of a :term:`mapping`.
 
 .. versionchanged:: 1.0
    Renamed from ``propertyschema`` to ``keyschema``
+
+.. versionchanged:: 1.3
+   Renamed from ``keyschema`` to ``keysrules``
 
 min, max
 --------
@@ -637,8 +691,8 @@ constraint.
 
 .. note::
 
-    To validate *arbitrary keys* of a mapping, see `keyschema`_, resp.
-    `valueschema`_ for validating *arbitrary values* of a mapping.
+    To validate *arbitrary keys* of a mapping, see keysrules-rule_, resp.
+    valuesrules-rule_ for validating *arbitrary values* of a mapping.
 
 schema (list)
 -------------
@@ -793,61 +847,19 @@ A list of types can be used to allow different values:
 
 .. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
-.. _validator-rule:
+.. _valuesrules-rule:
 
-validator
----------
-Validates the value by calling either a function or method.
-
-A function must be implemented like this the following prototype: ::
-
-    def functionnname(field, value, error):
-        if value is invalid:
-            error(field, 'error message')
-
-The ``error`` argument points to the calling validator's ``_error`` method. See
-:doc:`customize` on how to submit errors.
-
-Here's an example that tests whether an integer is odd or not:
-
-.. testcode::
-
-    def oddity(field, value, error):
-        if not value & 1:
-            error(field, "Must be an odd number")
-
-Then, you can validate a value like this:
-
-.. doctest::
-
-    >>> schema = {'amount': {'validator': oddity}}
-    >>> v = Validator(schema)
-    >>> v.validate({'amount': 10})
-    False
-    >>> v.errors
-    {'amount': ['Must be an odd number']}
-
-    >>> v.validate({'amount': 9})
-    True
-
-If the rule's constraint is a string, the :class:`~cerberus.Validator` instance
-must have a method with that name prefixed by ``_validator_``. See
-:ref:`validator-rule-methods` for an equivalent to the function-based example
-above.
-
-The constraint can also be a sequence of these that will be called consecutively. ::
-
-   schema = {'field': {'validator': [oddity, 'prime number']}}
-
-.. _valueschema-rule:
-
-valueschema
+valuesrules
 -----------
-Validation schema for all values of a :term:`mapping`.
+This rules takes a set of rules as constraint that all values of a
+:term:`mapping` are validated with.
 
 .. doctest::
 
-    >>> schema = {'numbers': {'type': 'dict', 'valueschema': {'type': 'integer', 'min': 10}}}
+    >>> schema = {'numbers':
+    ...              {'type': 'dict',
+    ...               'valuesrules': {'type': 'integer', 'min': 10}}
+    ... }
     >>> document = {'numbers': {'an integer': 10, 'another integer': 100}}
     >>> v.validate(document, schema)
     True
@@ -862,3 +874,5 @@ Validation schema for all values of a :term:`mapping`.
 .. versionadded:: 0.7
 .. versionchanged:: 0.9
    renamed ``keyschema`` to ``valueschema``
+.. versionchanged:: 1.3
+   renamed ``valueschema`` to ``valuesrules``

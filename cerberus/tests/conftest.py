@@ -67,11 +67,7 @@ sample_schema = {
             'city': {'type': 'string', 'required': True},
         },
     },
-    'a_dict_with_valueschema': {'type': 'dict', 'valueschema': {'type': 'integer'}},
-    'a_dict_with_keyschema': {
-        'type': 'dict',
-        'keyschema': {'type': 'string', 'regex': '[a-z]+'},
-    },
+    'a_dict_with_valuesrules': {'type': 'dict', 'valuesrules': {'type': 'integer'}},
     'a_list_length': {
         'type': 'list',
         'schema': {'type': 'integer'},
