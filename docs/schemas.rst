@@ -50,7 +50,7 @@ Using registries is particularly interesting if
 
     >>> from cerberus import rules_set_registry
     >>> rules_set_registry.extend((('boolean', {'type': 'boolean'}),
-    ...                            ('booleans', {'valueschema': 'boolean'})))
+    ...                            ('booleans', {'valuesrules': 'boolean'})))
     >>> schema = {'foo': 'booleans'}
 
 

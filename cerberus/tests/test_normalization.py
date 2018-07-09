@@ -234,20 +234,20 @@ def test_issue_147_nested_dict():
     assert document['thing']['amount'] is ref_obj
 
 
-def test_coerce_in_valueschema():
+def test_coerce_in_valuesrules():
     # https://github.com/pyeve/cerberus/issues/155
     schema = {
-        'thing': {'type': 'dict', 'valueschema': {'coerce': int, 'type': 'integer'}}
+        'thing': {'type': 'dict', 'valuesrules': {'coerce': int, 'type': 'integer'}}
     }
     document = {'thing': {'amount': '2'}}
     expected = {'thing': {'amount': 2}}
     assert_normalized(document, expected, schema)
 
 
-def test_coerce_in_keyschema():
+def test_coerce_in_keysrules():
     # https://github.com/pyeve/cerberus/issues/155
     schema = {
-        'thing': {'type': 'dict', 'keyschema': {'coerce': int, 'type': 'integer'}}
+        'thing': {'type': 'dict', 'keysrules': {'coerce': int, 'type': 'integer'}}
     }
     document = {'thing': {'5': 'foo'}}
     expected = {'thing': {5: 'foo'}}

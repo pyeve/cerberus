@@ -24,14 +24,14 @@ def test__error_1():
 
 
 def test__error_2():
-    v = Validator(schema={'foo': {'keyschema': {'type': 'integer'}}})
+    v = Validator(schema={'foo': {'keysrules': {'type': 'integer'}}})
     v.document = {'foo': {'0': 'bar'}}
-    v._error('foo', errors.KEYSCHEMA, ())
+    v._error('foo', errors.KEYSRULES, ())
     error = v._errors[0]
     assert error.document_path == ('foo',)
-    assert error.schema_path == ('foo', 'keyschema')
+    assert error.schema_path == ('foo', 'keysrules')
     assert error.code == 0x83
-    assert error.rule == 'keyschema'
+    assert error.rule == 'keysrules'
     assert error.constraint == {'type': 'integer'}
     assert error.value == {'0': 'bar'}
     assert error.info == ((),)
@@ -103,8 +103,8 @@ def test_error_tree_from_anyof(validator):
 def test_nested_error_paths(validator):
     schema = {
         'a_dict': {
-            'keyschema': {'type': 'integer'},
-            'valueschema': {'regex': '[a-z]*'},
+            'keysrules': {'type': 'integer'},
+            'valuesrules': {'regex': '[a-z]*'},
         },
         'a_list': {'schema': {'type': 'string', 'oneof_regex': ['[a-z]*$', '[A-Z]*']}},
     }
@@ -128,15 +128,15 @@ def test_nested_error_paths(validator):
     assert len(_det['a_dict'][2].errors) == 1
     assert len(_det['a_dict']['three'].errors) == 2
 
-    assert len(_set['a_dict']['keyschema'].errors) == 1
-    assert len(_set['a_dict']['valueschema'].errors) == 1
+    assert len(_set['a_dict']['keysrules'].errors) == 1
+    assert len(_set['a_dict']['valuesrules'].errors) == 1
 
-    assert len(_set['a_dict']['keyschema']['type'].errors) == 2
-    assert len(_set['a_dict']['valueschema']['regex'].errors) == 2
+    assert len(_set['a_dict']['keysrules']['type'].errors) == 2
+    assert len(_set['a_dict']['valuesrules']['regex'].errors) == 2
 
     _ref_err = ValidationError(
         ('a_dict', 'one'),
-        ('a_dict', 'keyschema', 'type'),
+        ('a_dict', 'keysrules', 'type'),
         errors.BAD_TYPE.code,
         'type',
         'integer',
@@ -144,11 +144,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_dict']['one'].errors[0] == _ref_err
-    assert _set['a_dict']['keyschema']['type'].errors[0] == _ref_err
+    assert _set['a_dict']['keysrules']['type'].errors[0] == _ref_err
 
     _ref_err = ValidationError(
         ('a_dict', 2),
-        ('a_dict', 'valueschema', 'regex'),
+        ('a_dict', 'valuesrules', 'regex'),
         errors.REGEX_MISMATCH.code,
         'regex',
         '[a-z]*$',
@@ -156,11 +156,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_dict'][2].errors[0] == _ref_err
-    assert _set['a_dict']['valueschema']['regex'].errors[0] == _ref_err
+    assert _set['a_dict']['valuesrules']['regex'].errors[0] == _ref_err
 
     _ref_err = ValidationError(
         ('a_dict', 'three'),
-        ('a_dict', 'keyschema', 'type'),
+        ('a_dict', 'keysrules', 'type'),
         errors.BAD_TYPE.code,
         'type',
         'integer',
@@ -168,11 +168,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_dict']['three'].errors[0] == _ref_err
-    assert _set['a_dict']['keyschema']['type'].errors[1] == _ref_err
+    assert _set['a_dict']['keysrules']['type'].errors[1] == _ref_err
 
     _ref_err = ValidationError(
         ('a_dict', 'three'),
-        ('a_dict', 'valueschema', 'regex'),
+        ('a_dict', 'valuesrules', 'regex'),
         errors.REGEX_MISMATCH.code,
         'regex',
         '[a-z]*$',
@@ -180,7 +180,7 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_dict']['three'].errors[1] == _ref_err
-    assert _set['a_dict']['valueschema']['regex'].errors[1] == _ref_err
+    assert _set['a_dict']['valuesrules']['regex'].errors[1] == _ref_err
 
     assert len(_det['a_list'].errors) == 1
     assert len(_det['a_list'][0].errors) == 1
