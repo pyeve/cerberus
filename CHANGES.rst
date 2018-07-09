@@ -21,6 +21,7 @@ Fixed
 
 Improved
 ~~~~~~~~
+- Add ``.eggs`` to .gitignore file (`#420`_)
 - Reformat code to match Black code-style (`#402`_)
 - Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
 - Change ``allowed`` rule to use containers instead of lists (`#384`_)
@@ -46,6 +47,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link. Make it point to the new PYPI website
 
+.. _`#420`: https://github.com/pyeve/cerberus/issues/420
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404
 .. _`#402`: https://github.com/pyeve/cerberus/issues/402
