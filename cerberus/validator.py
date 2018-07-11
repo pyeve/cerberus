@@ -1019,7 +1019,7 @@ class BareValidator(object):
             for x in definitions
             if x not in rules_queue
             and x not in self.normalization_rules
-            and x not in ('allow_unknown', 'required')
+            and x not in ('allow_unknown', 'meta', 'required')
         )
         self._remaining_rules = rules_queue
 
@@ -1279,6 +1279,8 @@ class BareValidator(object):
         """ {'type': 'integer'} """
         if isinstance(value, Iterable) and len(value) > max_length:
             self._error(field, errors.MAX_LENGTH, len(value))
+
+    _validate_meta = dummy_for_rule_validation('')
 
     def _validate_minlength(self, min_length, field, value):
         """ {'type': 'integer'} """
