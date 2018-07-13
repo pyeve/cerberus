@@ -376,6 +376,7 @@ values:
 
 items
 -----
+
 Validates the items of any iterable against a sequence of rules that must
 validate each index-correspondent item. The items will only be evaluated if
 the given iterable's size matches the definition's. This also applies during
@@ -400,6 +401,7 @@ See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
 
 keysrules
 ---------
+
 This rules takes a set of rules as constraint that all keys of a
 :term:`mapping` are validated with.
 
@@ -425,8 +427,23 @@ This rules takes a set of rules as constraint that all keys of a
 .. versionchanged:: 1.3
    Renamed from ``keyschema`` to ``keysrules``
 
+meta
+----
+
+This is actually not a validation rule but a field in a rules set that can
+conventionally be used for application specific data that is descriptive for
+the document field::
+
+    {'id': {'type': 'string', 'regex': r'[A-M]\d{,6}',
+            'meta': {'label': 'Inventory Nr.'}}}
+
+The assigned data can be of any type.
+
+.. versionadded:: 1.3
+
 min, max
 --------
+
 Minimum and maximum value allowed for any types that implement comparison operators.
 
 .. versionchanged:: 1.0
@@ -437,6 +454,7 @@ Minimum and maximum value allowed for any types that implement comparison operat
 
 minlength, maxlength
 --------------------
+
 Minimum and maximum length allowed for iterables.
 
 noneof
@@ -449,6 +467,7 @@ Validates if *none* of the provided constraints validates the field. See
 
 nullable
 --------
+
 If ``True`` the field value is allowed to be :obj:`None`. The rule will be
 checked on every field, regardless it's defined or not. The rule's constraint
 defaults ``False``.

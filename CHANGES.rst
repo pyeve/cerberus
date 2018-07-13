@@ -15,8 +15,10 @@ New
   deprecated and will not be available in the next major release of Cerberus
   (`#405`_)
 - The rules ``keyschema`` and ``valueschema`` are renamed to ``keysrules`` and
-  ``valuesrules``. The old names are deprecated and will not be available in
+  ``valuesrules``; the old names are deprecated and will not be available in
   the next major release of Cerbers (`#385`_)
+- The ``meta`` pseudo-rule can be used to store arbitrary application data
+  related to a field in a schema
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
@@ -40,18 +42,18 @@ Docs
 - Improve documentation of the regex rule (`#389`_)
 - Expand upon `validator` rules (`#320`_)
 - Include all errors definitions in API docs (`#404`_)
-- Improva changelog format (`#406`_)
+- Improve changelog format (`#406`_)
 - Update homepage URL in package metadata (`#382`_)
 - Add feature freeze note to CONTRIBUTING and note on Python support in
   README
 - Add the intent of a ``dataclasses`` module to ROADMAP.md
-- Update README link. Make it point to the new PyPI website
+- Update README link; make it point to the new PyPI website
 - Update README with elaborations on versioning and testing
 - Fix misspellings and missing pronouns
 - Remove redundant hint from ``*of-rules``.
 - Add usage recommendation regarding the ``*of-rules``
 - Add a few clarifications to the GitHub issue template
-- Update README link. Make it point to the new PyPI website
+- Update README link; make it point to the new PyPI website
 
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
