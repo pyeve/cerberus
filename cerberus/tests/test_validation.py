@@ -541,7 +541,7 @@ def test_array():
 
 
 def test_set():
-    assert_success({'a_set': set(['hello', 1])})
+    assert_success({'a_set': {'hello', 1}})
 
 
 def test_one_of_two_types(validator):
