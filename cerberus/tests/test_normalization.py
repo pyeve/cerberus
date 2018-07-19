@@ -384,7 +384,7 @@ def test_issue_250():
     assert_fail(
         document,
         schema,
-        error=('a_list', ('a_list', 'type'), errors.BAD_TYPE, schema['a_list']['type']),
+        error=('a_list', ('a_list', 'type'), errors.TYPE, schema['a_list']['type']),
     )
 
 

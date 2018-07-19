@@ -37,9 +37,9 @@ EXCLUDES_FIELD = ErrorDefinition(0x06, 'excludes')
 # shape
 DOCUMENT_FORMAT = ErrorDefinition(0x21, None)  # issues/141
 DOCUMENT_FORMAT = "'{0}' is not a document, must be a dict"
-EMPTY_NOT_ALLOWED = ErrorDefinition(0x22, 'empty')
-NOT_NULLABLE = ErrorDefinition(0x23, 'nullable')
-BAD_TYPE = ErrorDefinition(0x24, 'type')
+EMPTY = ErrorDefinition(0x22, 'empty')
+NULLABLE = ErrorDefinition(0x23, 'nullable')
+TYPE = ErrorDefinition(0x24, 'type')
 ITEMS_LENGTH = ErrorDefinition(0x26, 'items')
 MIN_LENGTH = ErrorDefinition(0x27, 'minlength')
 MAX_LENGTH = ErrorDefinition(0x28, 'maxlength')
@@ -68,7 +68,7 @@ SCHEMA = ErrorDefinition(0x81, 'schema')
 ITEMSRULES = ErrorDefinition(0x82, 'itemsrules')
 KEYSRULES = ErrorDefinition(0x83, 'keysrules')
 VALUESRULES = ErrorDefinition(0x84, 'valuesrules')
-BAD_ITEMS = ErrorDefinition(0x8f, 'items')
+ITEMS = ErrorDefinition(0x8f, 'items')
 
 LOGICAL = ErrorDefinition(0x90, None)
 NONEOF = ErrorDefinition(0x91, 'noneof')
