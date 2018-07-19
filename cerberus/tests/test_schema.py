@@ -100,9 +100,9 @@ def test_validated_schema_cache():
 
 
 def test_expansion_in_nested_schema():
-    schema = {'detroit': {'schema': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
+    schema = {'detroit': {'itemsrules': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
     v = Validator(schema)
-    assert v.schema['detroit']['schema'] == {
+    assert v.schema['detroit']['itemsrules'] == {
         'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]
     }
 

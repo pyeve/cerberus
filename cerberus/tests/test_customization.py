@@ -18,7 +18,8 @@ def test_contextual_data_preservation():
 
     assert 'test' in InheritedValidator.checkers
     v = InheritedValidator(
-        {'test': {'type': 'list', 'schema': {'check_with': 'test'}}}, working_dir='/tmp'
+        {'test': {'type': 'list', 'itemsrules': {'check_with': 'test'}}},
+        working_dir='/tmp',
     )
     assert_success({'test': ['foo']}, validator=v)
 
