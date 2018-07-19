@@ -121,7 +121,7 @@ unknown fields will be validated against it:
     False
 
 ``allow_unknown`` can also be set as rule to configure a validator for a nested
-mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
+mapping that is checked against the :ref:`schema <schema-rule>` rule:
 
 .. doctest::
 

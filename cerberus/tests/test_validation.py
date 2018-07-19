@@ -326,7 +326,7 @@ def test_bad_schema():
         error=(
             field,
             (field, 'schema'),
-            errors.MAPPING_SCHEMA,
+            errors.SCHEMA,
             validator.schema['a_dict']['schema'],
         ),
         child_errors=[
@@ -429,7 +429,7 @@ def test_bad_list_of_dicts():
         'price': {'type': 'integer', 'required': True},
     }
     seq_schema = {'type': 'dict', 'schema': map_schema}
-    schema = {field: {'type': 'list', 'schema': seq_schema}}
+    schema = {field: {'type': 'list', 'itemsrules': seq_schema}}
     validator = Validator(schema)
     value = [{'sku': 'KT123', 'price': '100'}]
     document = {field: value}
@@ -437,9 +437,9 @@ def test_bad_list_of_dicts():
     assert_fail(
         document,
         validator=validator,
-        error=(field, (field, 'schema'), errors.SEQUENCE_SCHEMA, seq_schema),
+        error=(field, (field, 'itemsrules'), errors.ITEMSRULES, seq_schema),
         child_errors=[
-            ((field, 0), (field, 'schema', 'schema'), errors.MAPPING_SCHEMA, map_schema)
+            ((field, 0), (field, 'itemsrules', 'schema'), errors.SCHEMA, map_schema)
         ],
     )
 
@@ -453,11 +453,11 @@ def test_bad_list_of_dicts():
 
     value = ["not a dict"]
     exp_child_errors = [
-        ((field, 0), (field, 'schema', 'type'), errors.BAD_TYPE, 'dict', ())
+        ((field, 0), (field, 'itemsrules', 'type'), errors.BAD_TYPE, 'dict', ())
     ]
     assert_fail(
         {field: value},
-        error=(field, (field, 'schema'), errors.SEQUENCE_SCHEMA, seq_schema),
+        error=(field, (field, 'itemsrules'), errors.ITEMSRULES, seq_schema),
         child_errors=exp_child_errors,
     )
 
@@ -559,12 +559,12 @@ def test_one_of_two_types(validator):
     assert_success({field: 'foo'})
     assert_success({field: ['foo', 'bar']})
     exp_child_errors = [
-        ((field, 1), (field, 'schema', 'type'), errors.BAD_TYPE, 'string')
+        ((field, 1), (field, 'itemsrules', 'type'), errors.BAD_TYPE, 'string')
     ]
     assert_fail(
         {field: ['foo', 23]},
         validator=validator,
-        error=(field, (field, 'schema'), errors.SEQUENCE_SCHEMA, {'type': 'string'}),
+        error=(field, (field, 'itemsrules'), errors.ITEMSRULES, {'type': 'string'}),
         child_errors=exp_child_errors,
     )
     assert_fail(
@@ -619,7 +619,7 @@ def test_a_dict(schema):
         error=(
             'a_dict',
             ('a_dict', 'schema'),
-            errors.MAPPING_SCHEMA,
+            errors.SCHEMA,
             schema['a_dict']['schema'],
         ),
         child_errors=[
@@ -1018,7 +1018,7 @@ def test_root_relative_dependencies():
     assert_fail(
         {'package': {'repo': 'somewhere', 'version': 0}},
         schema,
-        error=('package', ('package', 'schema'), errors.MAPPING_SCHEMA, subschema),
+        error=('package', ('package', 'schema'), errors.SCHEMA, subschema),
         child_errors=[
             (
                 ('package', 'version'),
@@ -1077,7 +1077,7 @@ def test_self_root_document():
         'sub': {
             'type': 'list',
             'root_doc': True,
-            'schema': {
+            'itemsrules': {
                 'type': 'dict',
                 'schema': {'foo': {'type': 'string', 'root_doc': True}},
             },
@@ -1345,7 +1345,7 @@ def test_anyof_schema(validator):
         {'schema': {'serial number': {'type': 'string'}, 'count': {'type': 'integer'}}},
     ]
     valid_item = {'type': ['dict', 'string'], 'anyof': valid_parts}
-    schema = {'parts': {'type': 'list', 'schema': valid_item}}
+    schema = {'parts': {'type': 'list', 'itemsrules': valid_item}}
     document = {
         'parts': [
             {'model number': 'MX-009', 'count': 100},
@@ -1370,10 +1370,10 @@ def test_anyof_schema(validator):
     # and invalid. numbers are not allowed.
 
     exp_child_errors = [
-        (('parts', 3), ('parts', 'schema', 'anyof'), errors.ANYOF, valid_parts),
+        (('parts', 3), ('parts', 'itemsrules', 'anyof'), errors.ANYOF, valid_parts),
         (
             ('parts', 4),
-            ('parts', 'schema', 'type'),
+            ('parts', 'itemsrules', 'type'),
             errors.BAD_TYPE,
             ['dict', 'string'],
         ),
@@ -1383,11 +1383,15 @@ def test_anyof_schema(validator):
         document,
         schema,
         validator=validator,
-        error=('parts', ('parts', 'schema'), errors.SEQUENCE_SCHEMA, valid_item),
+        error=('parts', ('parts', 'itemsrules'), errors.ITEMSRULES, valid_item),
         child_errors=exp_child_errors,
     )
     assert_not_has_error(
-        _errors, ('parts', 4), ('parts', 'schema', 'anyof'), errors.ANYOF, valid_parts
+        _errors,
+        ('parts', 4),
+        ('parts', 'itemsrules', 'anyof'),
+        errors.ANYOF,
+        valid_parts,
     )
 
     # tests errors.BasicErrorHandler's tree representation
@@ -1698,21 +1702,6 @@ def test_forbidden():
     schema = {'user': {'forbidden': ['root', 'admin']}}
     assert_fail({'user': 'admin'}, schema)
     assert_success({'user': 'alice'}, schema)
-
-
-def test_mapping_with_sequence_schema():
-    schema = {'list': {'schema': {'allowed': ['a', 'b', 'c']}}}
-    document = {'list': {'is_a': 'mapping'}}
-    assert_fail(
-        document,
-        schema,
-        error=(
-            'list',
-            ('list', 'schema'),
-            errors.BAD_TYPE_FOR_SCHEMA,
-            schema['list']['schema'],
-        ),
-    )
 
 
 def test_sequence_with_mapping_schema():

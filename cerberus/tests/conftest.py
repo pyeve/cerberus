@@ -33,7 +33,10 @@ sample_schema = {
     'a_float': {'type': 'float', 'min': 1, 'max': 100},
     'a_number': {'type': 'number', 'min': 1, 'max': 100},
     'a_set': {'type': 'set'},
-    'one_or_more_strings': {'type': ['string', 'list'], 'schema': {'type': 'string'}},
+    'one_or_more_strings': {
+        'type': ['string', 'list'],
+        'itemsrules': {'type': 'string'},
+    },
     'a_regex_email': {
         'type': 'string',
         'regex': '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
@@ -47,7 +50,7 @@ sample_schema = {
     },
     'a_list_of_dicts': {
         'type': 'list',
-        'schema': {
+        'itemsrules': {
             'type': 'dict',
             'schema': {
                 'sku': {'type': 'string'},
@@ -59,7 +62,7 @@ sample_schema = {
         'type': 'list',
         'items': [{'type': 'string'}, {'type': 'integer'}],
     },
-    'a_list_of_integers': {'type': 'list', 'schema': {'type': 'integer'}},
+    'a_list_of_integers': {'type': 'list', 'itemsrules': {'type': 'integer'}},
     'a_dict': {
         'type': 'dict',
         'schema': {
@@ -70,7 +73,7 @@ sample_schema = {
     'a_dict_with_valuesrules': {'type': 'dict', 'valuesrules': {'type': 'integer'}},
     'a_list_length': {
         'type': 'list',
-        'schema': {'type': 'integer'},
+        'itemsrules': {'type': 'integer'},
         'minlength': 2,
         'maxlength': 5,
     },

@@ -26,14 +26,14 @@ def test_coerce_in_dictschema():
     assert_normalized(document, expected, schema)
 
 
-def test_coerce_in_listschema():
-    schema = {'things': {'type': 'list', 'schema': {'coerce': int}}}
+def test_coerce_in_itemsrules():
+    schema = {'things': {'type': 'list', 'itemsrules': {'coerce': int}}}
     document = {'things': ['1', '2', '3']}
     expected = {'things': [1, 2, 3]}
     assert_normalized(document, expected, schema)
 
 
-def test_coerce_in_listitems():
+def test_coerce_in_items():
     schema = {'things': {'type': 'list', 'items': [{'coerce': int}, {'coerce': str}]}}
     document = {'things': ['1', 2]}
     expected = {'things': [1, '2']}
@@ -45,9 +45,9 @@ def test_coerce_in_listitems():
     assert validator.document['things'] == document['things']
 
 
-def test_coerce_in_dictschema_in_listschema():
+def test_coerce_in_dictschema_in_itemsrules():
     item_schema = {'type': 'dict', 'schema': {'amount': {'coerce': int}}}
-    schema = {'things': {'type': 'list', 'schema': item_schema}}
+    schema = {'things': {'type': 'list', 'itemsrules': item_schema}}
     document = {'things': [{'amount': '2'}]}
     expected = {'things': [{'amount': 2}]}
     assert_normalized(document, expected, schema)
@@ -150,7 +150,9 @@ def test_coerce_chain_aborts(validator):
 
 def test_coerce_non_digit_in_sequence(validator):
     # https://github.com/pyeve/cerberus/issues/211
-    schema = {'data': {'type': 'list', 'schema': {'type': 'integer', 'coerce': int}}}
+    schema = {
+        'data': {'type': 'list', 'itemsrules': {'type': 'integer', 'coerce': int}}
+    }
     document = {'data': ['q']}
     assert validator.validated(document, schema) is None
     assert (
@@ -256,7 +258,9 @@ def test_coerce_in_keysrules():
 
 def test_coercion_of_sequence_items(validator):
     # https://github.com/pyeve/cerberus/issues/161
-    schema = {'a_list': {'type': 'list', 'schema': {'type': 'float', 'coerce': float}}}
+    schema = {
+        'a_list': {'type': 'list', 'itemsrules': {'type': 'float', 'coerce': float}}
+    }
     document = {'a_list': [3, 4, 5]}
     expected = {'a_list': [3.0, 4.0, 5.0]}
     assert_normalized(document, expected, schema, validator)
@@ -391,62 +395,46 @@ def test_circular_depending_default_setters(validator):
 def test_issue_250():
     # https://github.com/pyeve/cerberus/issues/250
     schema = {
-        'list': {
+        'a_list': {
             'type': 'list',
-            'schema': {
+            'itemsrules': {
                 'type': 'dict',
                 'allow_unknown': True,
                 'schema': {'a': {'type': 'string'}},
             },
         }
     }
-    document = {'list': {'is_a': 'mapping'}}
+    document = {'a_list': {'is_a': 'mapping'}}
     assert_fail(
         document,
         schema,
-        error=('list', ('list', 'type'), errors.BAD_TYPE, schema['list']['type']),
+        error=('a_list', ('a_list', 'type'), errors.BAD_TYPE, schema['a_list']['type']),
     )
 
 
 def test_issue_250_no_type_pass_on_list():
     # https://github.com/pyeve/cerberus/issues/250
     schema = {
-        'list': {
-            'schema': {
+        'a_list': {
+            'itemsrules': {
                 'allow_unknown': True,
                 'type': 'dict',
                 'schema': {'a': {'type': 'string'}},
             }
         }
     }
-    document = {'list': [{'a': 'known', 'b': 'unknown'}]}
+    document = {'a_list': [{'a': 'known', 'b': 'unknown'}]}
     assert_normalized(document, document, schema)
-
-
-def test_issue_250_no_type_fail_on_dict():
-    # https://github.com/pyeve/cerberus/issues/250
-    schema = {
-        'list': {'schema': {'allow_unknown': True, 'schema': {'a': {'type': 'string'}}}}
-    }
-    document = {'list': {'a': {'a': 'known'}}}
-    assert_fail(
-        document,
-        schema,
-        error=(
-            'list',
-            ('list', 'schema'),
-            errors.BAD_TYPE_FOR_SCHEMA,
-            schema['list']['schema'],
-        ),
-    )
 
 
 def test_issue_250_no_type_fail_pass_on_other():
     # https://github.com/pyeve/cerberus/issues/250
     schema = {
-        'list': {'schema': {'allow_unknown': True, 'schema': {'a': {'type': 'string'}}}}
+        'a_list': {
+            'itemsrules': {'allow_unknown': True, 'schema': {'a': {'type': 'string'}}}
+        }
     }
-    document = {'list': 1}
+    document = {'a_list': 1}
     assert_normalized(document, document, schema)
 
 
@@ -480,7 +468,10 @@ def test_allow_unknown_with_of_rules():
 def test_271_normalising_tuples():
     # https://github.com/pyeve/cerberus/issues/271
     schema = {
-        'my_field': {'type': 'list', 'schema': {'type': ('string', 'number', 'dict')}}
+        'my_field': {
+            'type': 'list',
+            'itemsrules': {'type': ('string', 'number', 'dict')},
+        }
     }
     document = {'my_field': ('foo', 'bar', 42, 'albert', 'kandinsky', {'items': 23})}
     assert_success(document, schema)

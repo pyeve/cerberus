@@ -1,25 +1,41 @@
 Upgrading to Cerberus 2.0 from any 1.x version
 ==============================================
 
-Deprecations
-------------
+Major Changes and Deprecations
+------------------------------
 
 Rules
 .....
 
 A few rules have been renamed:
 
-===============  ===============
-Old name         New name
-===============  ===============
-``keyschema``    ``keysrules``
-``validator``    ``check_with``
-``valueschema``  ``valuesrules``
-===============  ===============
+========================  ===============
+Old name                  New name
+========================  ===============
+``keyschema``             ``keysrules``
+``schema`` for sequences  ``itemsrules``
+``validator``             ``check_with``
+``valueschema``           ``valuesrules``
+========================  ===============
 
 As a consequence custom validators' methods that are referenced by name in
 constraints for the ``check_with`` rule must be prefixed with ``_check_with_``
 instead of ``_validator_``.
+
+Errors
+......
+
+A few constant names of error definitions in the :mod:`~cerberus.errors`
+module have been renamed:
+
+===================  ==============
+Old name             New name
+===================  ==============
+``MAPPING_SCHEMA``   ``SCHEMA``
+``SEQUENCE_SCHEMA``  ``ITEMSRULES``
+===================  ==============
+
+The constant ``BAD_TYPE_FOR_SCHEMA`` has been removed permanently.
 
 Type checking
 .............
