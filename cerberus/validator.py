@@ -1110,7 +1110,7 @@ class BareValidator(object):
                 'check_with',
             )
             if not empty:
-                self._error(field, errors.EMPTY_NOT_ALLOWED)
+                self._error(field, errors.EMPTY)
 
     def _validate_excludes(self, excluded_fields, field, value):
         """ {'type': ('hashable', 'list'),
@@ -1167,7 +1167,7 @@ class BareValidator(object):
                 update=self.update,
                 normalize=False,
             ):
-                self._error(field, errors.BAD_ITEMS, validator._errors)
+                self._error(field, errors.ITEMS, validator._errors)
 
     def _validate_itemsrules(self, rulesset, field, value):
         """ {'type': ('dict', 'string'),
@@ -1274,7 +1274,7 @@ class BareValidator(object):
         """ {'type': 'boolean'} """
         if value is None:
             if not nullable:
-                self._error(field, errors.NOT_NULLABLE)
+                self._error(field, errors.NULLABLE)
             self._drop_remaining_rules(
                 'empty',
                 'forbidden',
@@ -1393,7 +1393,7 @@ class BareValidator(object):
             ):
                 return
 
-        self._error(field, errors.BAD_TYPE)
+        self._error(field, errors.TYPE)
         self._drop_remaining_rules()
 
     def _validate_valuesrules(self, schema, field, value):

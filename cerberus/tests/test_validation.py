@@ -333,7 +333,7 @@ def test_bad_schema():
             (
                 (field, subschema_field),
                 (field, 'schema', subschema_field, 'type'),
-                errors.BAD_TYPE,
+                errors.TYPE,
                 'string',
             ),
             (
@@ -349,7 +349,7 @@ def test_bad_schema():
     assert field in validator.errors
     assert subschema_field in validator.errors[field][-1]
     assert (
-        handler.messages[errors.BAD_TYPE.code].format(constraint='string')
+        handler.messages[errors.TYPE.code].format(constraint='string')
         in validator.errors[field][-1][subschema_field]
     )
     assert 'city' in validator.errors[field][-1]
@@ -365,12 +365,7 @@ def test_bad_valuesrules():
     value = {schema_field: 'not an integer'}
 
     exp_child_errors = [
-        (
-            (field, schema_field),
-            (field, 'valuesrules', 'type'),
-            errors.BAD_TYPE,
-            'integer',
-        )
+        ((field, schema_field), (field, 'valuesrules', 'type'), errors.TYPE, 'integer')
     ]
     assert_fail(
         {field: value},
@@ -388,18 +383,16 @@ def test_bad_list_of_values(validator):
         error=(
             field,
             (field, 'items'),
-            errors.BAD_ITEMS,
+            errors.ITEMS,
             [{'type': 'string'}, {'type': 'integer'}],
         ),
         child_errors=[
-            ((field, 1), (field, 'items', 1, 'type'), errors.BAD_TYPE, 'integer')
+            ((field, 1), (field, 'items', 1, 'type'), errors.TYPE, 'integer')
         ],
     )
 
     assert (
-        errors.BasicErrorHandler.messages[errors.BAD_TYPE.code].format(
-            constraint='integer'
-        )
+        errors.BasicErrorHandler.messages[errors.TYPE.code].format(constraint='integer')
         in validator.errors[field][-1][1]
     )
 
@@ -446,14 +439,14 @@ def test_bad_list_of_dicts():
     assert field in validator.errors
     assert 0 in validator.errors[field][-1]
     assert 'price' in validator.errors[field][-1][0][-1]
-    exp_msg = errors.BasicErrorHandler.messages[errors.BAD_TYPE.code].format(
+    exp_msg = errors.BasicErrorHandler.messages[errors.TYPE.code].format(
         constraint='integer'
     )
     assert exp_msg in validator.errors[field][-1][0][-1]['price']
 
     value = ["not a dict"]
     exp_child_errors = [
-        ((field, 0), (field, 'itemsrules', 'type'), errors.BAD_TYPE, 'dict', ())
+        ((field, 0), (field, 'itemsrules', 'type'), errors.TYPE, 'dict', ())
     ]
     assert_fail(
         {field: value},
@@ -559,7 +552,7 @@ def test_one_of_two_types(validator):
     assert_success({field: 'foo'})
     assert_success({field: ['foo', 'bar']})
     exp_child_errors = [
-        ((field, 1), (field, 'itemsrules', 'type'), errors.BAD_TYPE, 'string')
+        ((field, 1), (field, 'itemsrules', 'type'), errors.TYPE, 'string')
     ]
     assert_fail(
         {field: ['foo', 23]},
@@ -568,8 +561,7 @@ def test_one_of_two_types(validator):
         child_errors=exp_child_errors,
     )
     assert_fail(
-        {field: 23},
-        error=((field,), (field, 'type'), errors.BAD_TYPE, ['string', 'list']),
+        {field: 23}, error=((field,), (field, 'type'), errors.TYPE, ['string', 'list'])
     )
     assert validator.errors == {field: [{1: ['must be of string type']}]}
 
@@ -626,7 +618,7 @@ def test_a_dict(schema):
             (
                 ('a_dict', 'address'),
                 ('a_dict', 'schema', 'address', 'type'),
-                errors.BAD_TYPE,
+                errors.TYPE,
                 'string',
             ),
             (
@@ -654,7 +646,7 @@ def test_a_dict_with_valuesrules(validator):
         (
             ('a_dict_with_valuesrules', 'a string'),
             ('a_dict_with_valuesrules', 'valuesrules', 'type'),
-            errors.BAD_TYPE,
+            errors.TYPE,
             'integer',
         )
     ]
@@ -743,11 +735,7 @@ def test_empty_values(value, _type):
     assert_success(document, schema)
 
     schema[field]['empty'] = False
-    assert_fail(
-        document,
-        schema,
-        error=(field, (field, 'empty'), errors.EMPTY_NOT_ALLOWED, False),
-    )
+    assert_fail(document, schema, error=(field, (field, 'empty'), errors.EMPTY, False))
 
     schema[field]['empty'] = True
     assert_success(document, schema)
@@ -781,7 +769,7 @@ def test_ignore_none_values():
     validator.schema[field]['required'] = True
     _errors = assert_fail(schema=schema, document=document, validator=validator)
     assert_has_error(_errors, field, (field, 'required'), errors.REQUIRED_FIELD, True)
-    assert_not_has_error(_errors, field, (field, 'type'), errors.BAD_TYPE, 'string')
+    assert_not_has_error(_errors, field, (field, 'type'), errors.TYPE, 'string')
 
 
 def test_unknown_keys():
@@ -1374,7 +1362,7 @@ def test_anyof_schema(validator):
         (
             ('parts', 4),
             ('parts', 'itemsrules', 'type'),
-            errors.BAD_TYPE,
+            errors.TYPE,
             ['dict', 'string'],
         ),
     ]
@@ -1713,9 +1701,7 @@ def test_sequence_with_mapping_schema():
 def test_type_error_aborts_validation():
     schema = {'foo': {'type': 'string', 'allowed': ['a']}}
     document = {'foo': 0}
-    assert_fail(
-        document, schema, error=('foo', ('foo', 'type'), errors.BAD_TYPE, 'string')
-    )
+    assert_fail(document, schema, error=('foo', ('foo', 'type'), errors.TYPE, 'string'))
 
 
 def test_dependencies_in_oneof():

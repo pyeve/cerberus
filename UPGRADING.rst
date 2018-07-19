@@ -28,12 +28,16 @@ Errors
 A few constant names of error definitions in the :mod:`~cerberus.errors`
 module have been renamed:
 
-===================  ==============
-Old name             New name
-===================  ==============
-``MAPPING_SCHEMA``   ``SCHEMA``
-``SEQUENCE_SCHEMA``  ``ITEMSRULES``
-===================  ==============
+=====================  ==============
+Old name               New name
+=====================  ==============
+``BAD_ITEMS``          ``ITEMS``
+``BAD_TYPE``           ``TYPE``
+``EMPTY_NOT_ALLOWED``  ``EMPTY``
+``MAPPING_SCHEMA``     ``SCHEMA``
+``NOT_NULLABLE``       ``NULLABLE``
+``SEQUENCE_SCHEMA``    ``ITEMSRULES``
+=====================  ==============
 
 The constant ``BAD_TYPE_FOR_SCHEMA`` has been removed permanently.
 
