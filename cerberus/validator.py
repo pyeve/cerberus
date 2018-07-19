@@ -729,8 +729,8 @@ class BareValidator(object):
                     self.__normalize_sequence_per_items(field, mapping, schema)
 
     def __normalize_mapping_per_keysrules(self, field, mapping, property_rules):
-        schema = dict(((k, property_rules) for k in mapping[field]))
-        document = dict(((k, k) for k in mapping[field]))
+        schema = {k: property_rules for k in mapping[field]}
+        document = {k: k for k in mapping[field]}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'keysrules'), schema=schema
         )
@@ -755,7 +755,7 @@ class BareValidator(object):
                 del mapping[field][k]
 
     def __normalize_mapping_per_valuesrules(self, field, mapping, value_rules):
-        schema = dict(((k, value_rules) for k in mapping[field]))
+        schema = {k: value_rules for k in mapping[field]}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'valuesrules'), schema=schema
         )
@@ -788,8 +788,8 @@ class BareValidator(object):
         rules, values = schema[field]['items'], mapping[field]
         if len(rules) != len(values):
             return
-        schema = dict(((k, v) for k, v in enumerate(rules)))
-        document = dict((k, v) for k, v in enumerate(values))
+        schema = {k: v for k, v in enumerate(rules)}
+        document = {k: v for k, v in enumerate(values)}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'items'), schema=schema
         )
@@ -801,10 +801,8 @@ class BareValidator(object):
             self._error(validator._errors)
 
     def __normalize_sequence_per_itemsrules(self, field, mapping, schema):
-        schema = dict(
-            ((k, schema[field]['itemsrules']) for k in range(len(mapping[field])))
-        )
-        document = dict((k, v) for k, v in enumerate(mapping[field]))
+        schema = {k: schema[field]['itemsrules'] for k in range(len(mapping[field]))}
+        document = {k: v for k, v in enumerate(mapping[field])}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'itemsrules'), schema=schema
         )
@@ -1179,16 +1177,15 @@ class BareValidator(object):
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
-            schema = dict(
-                (i, definition) for i, definition in enumerate(items)
-            )  # noqa: E501
+            schema = {i: definition for i, definition in enumerate(items)}
+
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=(field, 'items'),  # noqa: E501
                 schema=schema,
             )
             if not validator(
-                dict((i, value) for i, value in enumerate(values)),
+                {i: value for i, value in enumerate(values)},
                 update=self.update,
                 normalize=False,
             ):
@@ -1201,7 +1198,7 @@ class BareValidator(object):
         if not isinstance(value, Sequence):
             return
 
-        schema = dict(((i, rulesset) for i in range(len(value))))
+        schema = {i: rulesset for i in range(len(value))}
         validator = self._get_child_validator(
             document_crumb=field,
             schema_crumb=(field, 'itemsrules'),
@@ -1209,9 +1206,7 @@ class BareValidator(object):
             allow_unknown=self.allow_unknown,
         )
         validator(
-            dict(((i, v) for i, v in enumerate(value))),
-            update=self.update,
-            normalize=False,
+            {i: v for i, v in enumerate(value)}, update=self.update, normalize=False
         )
 
         if validator._errors:
@@ -1323,9 +1318,9 @@ class BareValidator(object):
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=(field, 'keysrules'),
-                schema=dict(((k, schema) for k in value.keys())),
+                schema={k: schema for k in value.keys()},
             )
-            if not validator(dict(((k, k) for k in value.keys())), normalize=False):
+            if not validator({k: k for k in value.keys()}, normalize=False):
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
                 self._error(field, errors.KEYSRULES, validator._errors)
 
@@ -1434,7 +1429,7 @@ class BareValidator(object):
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=schema_crumb,
-                schema=dict((k, schema) for k in value),
+                schema={k: schema for k in value},
             )
             validator(value, update=self.update, normalize=False)
             if validator._errors:

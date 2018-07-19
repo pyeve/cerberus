@@ -42,10 +42,7 @@ sample_schema = {
     'a_readonly_string': {'type': 'string', 'readonly': True},
     'a_restricted_string': {'type': 'string', 'allowed': ['agent', 'client', 'vendor']},
     'an_array': {'type': 'list', 'allowed': ['agent', 'client', 'vendor']},
-    'an_array_from_set': {
-        'type': 'list',
-        'allowed': set(['agent', 'client', 'vendor']),
-    },
+    'an_array_from_set': {'type': 'list', 'allowed': {'agent', 'client', 'vendor'}},
     'a_list_of_dicts': {
         'type': 'list',
         'itemsrules': {
