@@ -133,8 +133,8 @@ def test_custom_coerce_and_rename():
 
 
 def test_coerce_chain():
-    drop_prefix = lambda x: x[2:]
-    upper = lambda x: x.upper()
+    drop_prefix = lambda x: x[2:]  # noqa: E731
+    upper = lambda x: x.upper()  # noqa: E731
     schema = {'foo': {'coerce': [hex, drop_prefix, upper]}}
     assert_normalized({'foo': 15}, {'foo': 'F'}, schema)
 

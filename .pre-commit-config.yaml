@@ -17,3 +17,7 @@ repos:
       - id: debug-statements
         types:
           - python
+      - id: flake8
+        types:
+          - python
+        exclude: ^docs/conf.py$
