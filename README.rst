@@ -27,7 +27,7 @@ The Cerberus `1.x` versions can be used with Python 2 while version `2.0` and
 later rely on Python 3 features.
 
 Starting with Cerberus 1.2, it is maintained according to
-`semantical versioning`_. So, a major release sheds off the old and defines a
+`semantic versioning`_. So, a major release sheds off the old and defines a
 space for the new, minor releases ship further new features and improvements
 (you now the drill, new bugs are inevitable too), and micro releases polish a
 definite amount of features to glory.
@@ -108,7 +108,7 @@ for more information.
 .. _license: https://github.com/pyeve/cerberus/blob/master/LICENSE
 .. _Nicola Iarocci: http://nicolaiarocci.com/
 .. _PyPI: https://pypi.python.org/
-.. _semantical versioning: https://semver.org/
+.. _semantic versioning: https://semver.org/
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :alt: Black code style
