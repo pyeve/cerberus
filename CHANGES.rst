@@ -40,6 +40,7 @@ Improved
 
 Docs
 ~~~~
+- Fix semantical versioning naming. There are only two hard things in Computer Science: cache invalidation and naming things -- *Phil Karlton* (`#429`_)
 - Improve documentation of the regex rule (`#389`_)
 - Expand upon `validator` rules (`#320`_)
 - Include all errors definitions in API docs (`#404`_)
@@ -56,6 +57,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
