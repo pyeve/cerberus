@@ -1,4 +1,11 @@
-.*
+.benchmarks
+.cache
+.dockerignore
+.eggs
+.pytest_cache
+.readthedocs.yml
+.tox
+.travis.yml
 **/*.egg-info
 **/*.orig
 **/*.pyc
