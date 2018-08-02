@@ -4,7 +4,7 @@ repos:
     rev: stable
     hooks:
       - id: black
-        args: [--check, --safe, --skip-string-normalization, cerberus, setup.py]
+        args: [--check, --safe, --skip-string-normalization]
         python_version: python3.6
         types:
           - python
@@ -17,3 +17,7 @@ repos:
       - id: debug-statements
         types:
           - python
+      - id: flake8
+        types:
+          - python
+        exclude: ^docs/conf.py$
