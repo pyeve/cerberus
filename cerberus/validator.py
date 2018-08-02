@@ -1561,7 +1561,7 @@ class InspectedValidator(type):
             except Exception:
                 result = {}
 
-        if not result:
+        if not result and method_name != '_validate_meta':
             warn(
                 "No validation schema is defined for the arguments of rule "
                 "'%s'" % method_name.split('_', 2)[-1]
