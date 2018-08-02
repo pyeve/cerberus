@@ -114,7 +114,7 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
    Added the :attr:`~cerberus.Validator.types_mapping` property and marked
    methods for testing types as deprecated.
 
-.. _validator-rule-methods:
+.. _check-with-rule-methods:
 
 Methods that can be referenced by the check_with rule
 -----------------------------------------------------

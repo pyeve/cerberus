@@ -14,7 +14,7 @@ allows a more detailed and flexible handling. Make sure you have look on
 Also, :attr:`~cerberus.Validator.errors` (as provided by the default
 :class:`~cerberus.errors.BasicErrorHandler`) values are lists containing
 error messages, and possibly a ``dict`` as last item containing nested errors.
-Previously, they were strings if single errors per field occured; lists
+Previously, they were strings if single errors per field occurred; lists
 otherwise.
 
 
@@ -60,9 +60,8 @@ keyschema & valueschema
 
 To reflect the common terms in the Pythoniverse [#]_, the rule for validating
 all *values* of a :term:`mapping` was renamed from ``keyschema`` to
-``valueschema`` (:ref:`docs <valueschema-rule>`). Furthermore a rule was
-implemented to validate all *keys*, introduced as ``propertyschema``, now
-renamed to ``keyschema`` (:ref:`docs <keyschema-rule>`). This means code
+``valueschema``. Furthermore a rule was implemented to validate all *keys*,
+introduced as ``propertyschema``, now renamed to ``keyschema``. This means code
 using prior versions of cerberus would not break, but bring up wrong results!
 
 To update your code you may adapt cerberus' iteration:
