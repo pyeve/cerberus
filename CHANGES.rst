@@ -29,6 +29,7 @@ Fixed
 
 Improved
 ~~~~~~~~
+- Omit warning when no schema for ``meta`` rule constraint is available (`#425`_)
 - Add ``.eggs`` to .gitignore file (`#420`_)
 - Reformat code to match Black code-style (`#402`_)
 - Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
@@ -55,6 +56,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#425`: https://github.com/pyeve/cerberus/pull/425
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#405`: https://github.com/pyeve/cerberus/issues/405
