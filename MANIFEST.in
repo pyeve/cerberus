@@ -1,0 +1,7 @@
+include AUTHORS
+include CHANGES
+include CONTRIBUTING.rst
+include LICENSE
+include README.rst
+include ROADMAP.md
+include UPGRADING.rst

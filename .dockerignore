@@ -1,0 +1,10 @@
+.*
+**/*.egg-info
+**/*.orig
+**/*.pyc
+**/__pycache__
+build
+dist
+run-docker-tests
+
+docs/_build

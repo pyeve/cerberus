@@ -1,0 +1,15 @@
+#!/bin/bash
+
+IMAGE_NAME=cerberus-tox
+VOLUME_NAME=cerberus-tox
+
+cd "$(dirname ${0})"
+
+docker build -t $IMAGE_NAME --build-arg uid=$(id -u) . || exit 1
+[ -z "$(docker volume ls -q --filter 'name=$VOLUME_NAME')" ] \
+    && docker volume create $VOLUME_NAME
+docker run --rm -v "$VOLUME_NAME:/src/.tox" $IMAGE_NAME "${@}"
+EXIT_CODE=$?
+
+cd -
+exit $EXIT_CODE
