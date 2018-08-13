@@ -25,7 +25,7 @@ error_definitions = []
 for name, member in errors_module.items():
     if not isinstance(member, error_type):
         continue
-    error_definition = SimpleNamespace(**member._asdict())
+    error_definition = SimpleNamespace(code=member.code, rule=member.rule)
     error_definition.name = name
     error_definitions.append(error_definition)
 error_definitions.sort(key=attrgetter('code'))
