@@ -162,6 +162,46 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
    ``allow_unknown`` can also be set to a validation schema.
 
 
+.. _requiring-all:
+
+Requiring all
+-------------
+See also :ref:`this paragraph <require_all>`, :ref:`this paragraph <required>`.
+
+By default any keys defined in the schema are not required.
+However, you can require all document keys pairs by setting
+``require_all`` to ``True`` at validator initialization (``v = Validator(…, require_all=True)``)
+or change it latter via attribute access (``v.require_all = True``).
+``require_all`` can also be set as rule to configure a validator for a subdocument
+that is checked against the :ref:`schema <schema_dict-rule>` rule:
+
+.. doctest::
+
+    >>> v = Validator()
+    >>> v.require_all
+    False
+
+    >>> schema = {
+    ...   'name': {'type': 'string'},
+    ...   'a_dict': {
+    ...     'type': 'dict',
+    ...     'require_all': True,
+    ...     'schema': {
+    ...       'address': {'type': 'string'}
+    ...     }
+    ...   }
+    ... }
+
+    >>> v.validate({'name': 'foo', 'a_dict': {}}, schema)
+    False
+    >>> v.errors
+    {'a_dict': [{'address': ['required field']}]}
+
+    >>> v.validate({'a_dict': {'address': 'foobar'}}, schema)
+    True
+
+.. versionadded:: 1.3
+
 Fetching Processed Documents
 ----------------------------
 
