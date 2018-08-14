@@ -320,19 +320,20 @@ def _test_default_none_nullable(default):
 
 
 def test_default_none_nonnullable():
-    _test_default_none_nullable({'default': 'bar_value'})
+    _test_default_none_nonnullable({'default': 'bar_value'})
 
 
 def test_default_setter_none_nonnullable():
-    _test_default_none_nullable({'default_setter': lambda doc: 'bar_value'})
+    _test_default_none_nonnullable({'default_setter': lambda doc: 'bar_value'})
 
 
 def _test_default_none_nonnullable(default):
     bar_schema = {'type': 'string', 'nullable': False}
     bar_schema.update(default)
     schema = {'foo': {'type': 'string'}, 'bar': bar_schema}
-    document = {'foo': 'foo_value', 'bar': 'bar_value'}
-    assert_normalized(document, document.copy(), schema)
+    document = {'foo': 'foo_value', 'bar': None}
+    expected = {'foo': 'foo_value', 'bar': 'bar_value'}
+    assert_normalized(document, expected, schema)
 
 
 def test_default_none_default_value():
