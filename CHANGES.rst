@@ -19,6 +19,7 @@ New
   the next major release of Cerbers (`#385`_)
 - The ``meta`` pseudo-rule can be used to store arbitrary application data
   related to a field in a schema
+- Add ``require_all`` rule and validator argument (`#417`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
@@ -60,6 +61,7 @@ Docs
 .. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
+.. _`#417`: https://github.com/pyeve/cerberus/issues/417
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#405`: https://github.com/pyeve/cerberus/issues/405
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404

@@ -692,7 +692,8 @@ unless :meth:`~cerberus.Validator.validate` is called with ``update=True``:
 
 .. note::
 
-   To define all fields of a document as required see :ref:`this paragraph <requiring-all>`.
+   To define all fields of a document as required see
+   :ref:`this section about the available options <requiring-all>`.
 
 .. note::
 

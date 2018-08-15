@@ -166,7 +166,6 @@ mapping that is checked against the :ref:`schema <schema_dict-rule>` rule:
 
 Requiring all
 -------------
-See also :ref:`this paragraph <require_all>`, :ref:`this paragraph <required>`.
 
 By default any keys defined in the schema are not required.
 However, you can require all document keys pairs by setting
