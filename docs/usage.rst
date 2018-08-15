@@ -171,8 +171,9 @@ By default any keys defined in the schema are not required.
 However, you can require all document keys pairs by setting
 ``require_all`` to ``True`` at validator initialization (``v = Validator(…, require_all=True)``)
 or change it latter via attribute access (``v.require_all = True``).
-``require_all`` can also be set as rule to configure a validator for a subdocument
-that is checked against the :ref:`schema <schema_dict-rule>` rule:
+``require_all`` can also be set :ref:`as rule <require_all>` to configure a
+validator for a subdocument that is checked against the
+:ref:`schema <schema_dict-rule>` rule:
 
 .. doctest::
 
