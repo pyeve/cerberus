@@ -3,6 +3,8 @@
 from copy import deepcopy
 from tempfile import NamedTemporaryFile
 
+from pytest import mark
+
 from cerberus import Validator, errors
 from cerberus.tests import (
     assert_fail,
@@ -10,6 +12,10 @@ from cerberus.tests import (
     assert_normalized,
     assert_success,
 )
+
+
+def must_not_be_called(*args, **kwargs):
+    raise RuntimeError('This shall not be called.')
 
 
 def test_coerce():
@@ -222,15 +228,10 @@ def test_coercion_of_sequence_items(validator):
         assert isinstance(x, float)
 
 
-def test_default_missing():
-    _test_default_missing({'default': 'bar_value'})
-
-
-def test_default_setter_missing():
-    _test_default_missing({'default_setter': lambda doc: 'bar_value'})
-
-
-def _test_default_missing(default):
+@mark.parametrize(
+    'default', ({'default': 'bar_value'}, {'default_setter': lambda doc: 'bar_value'})
+)
+def test_default_missing(default):
     bar_schema = {'type': 'string'}
     bar_schema.update(default)
     schema = {'foo': {'type': 'string'}, 'bar': bar_schema}
@@ -239,18 +240,10 @@ def _test_default_missing(default):
     assert_normalized(document, expected, schema)
 
 
-def test_default_existent():
-    _test_default_existent({'default': 'bar_value'})
-
-
-def test_default_setter_existent():
-    def raise_error(doc):
-        raise RuntimeError('should not be called')
-
-    _test_default_existent({'default_setter': raise_error})
-
-
-def _test_default_existent(default):
+@mark.parametrize(
+    'default', ({'default': 'bar_value'}, {'default_setter': must_not_be_called})
+)
+def test_default_existent(default):
     bar_schema = {'type': 'string'}
     bar_schema.update(default)
     schema = {'foo': {'type': 'string'}, 'bar': bar_schema}
@@ -258,18 +251,10 @@ def _test_default_existent(default):
     assert_normalized(document, document.copy(), schema)
 
 
-def test_default_none_nullable():
-    _test_default_none_nullable({'default': 'bar_value'})
-
-
-def test_default_setter_none_nullable():
-    def raise_error(doc):
-        raise RuntimeError('should not be called')
-
-    _test_default_none_nullable({'default_setter': raise_error})
-
-
-def _test_default_none_nullable(default):
+@mark.parametrize(
+    'default', ({'default': 'bar_value'}, {'default_setter': must_not_be_called})
+)
+def test_default_none_nullable(default):
     bar_schema = {'type': 'string', 'nullable': True}
     bar_schema.update(default)
     schema = {'foo': {'type': 'string'}, 'bar': bar_schema}
@@ -277,15 +262,10 @@ def _test_default_none_nullable(default):
     assert_normalized(document, document.copy(), schema)
 
 
-def test_default_none_nonnullable():
-    _test_default_none_nonnullable({'default': 'bar_value'})
-
-
-def test_default_setter_none_nonnullable():
-    _test_default_none_nonnullable({'default_setter': lambda doc: 'bar_value'})
-
-
-def _test_default_none_nonnullable(default):
+@mark.parametrize(
+    'default', ({'default': 'bar_value'}, {'default_setter': lambda doc: 'bar_value'})
+)
+def test_default_none_nonnullable(default):
     bar_schema = {'type': 'string', 'nullable': False}
     bar_schema.update(default)
     schema = {'foo': {'type': 'string'}, 'bar': bar_schema}
@@ -304,15 +284,10 @@ def test_default_none_default_value():
     assert_normalized(document, expected, schema)
 
 
-def test_default_missing_in_subschema():
-    _test_default_missing_in_subschema({'default': 'bar_value'})
-
-
-def test_default_setter_missing_in_subschema():
-    _test_default_missing_in_subschema({'default_setter': lambda doc: 'bar_value'})
-
-
-def _test_default_missing_in_subschema(default):
+@mark.parametrize(
+    'default', ({'default': 'bar_value'}, {'default_setter': lambda doc: 'bar_value'})
+)
+def test_default_missing_in_subschema(default):
     bar_schema = {'type': 'string'}
     bar_schema.update(default)
     schema = {
