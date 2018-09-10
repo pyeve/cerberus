@@ -1856,4 +1856,3 @@ def test_can_update_document_under_validation():
         validator.validate({'candidate': 'Connie Booth'}, schema)
     except RuntimeError:
         fail('Cannot modify document under validation')
-
