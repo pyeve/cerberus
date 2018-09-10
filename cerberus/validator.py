@@ -260,7 +260,7 @@ class BareValidator(object):
                 self.document_error_tree += error
                 self.schema_error_tree += error
                 self.error_handler.emit(error)
-        elif len(args) == 2 and isinstance(args[1], _str_type):
+        elif len(args) == 2 and (isinstance(args[1], _str_type) or not hasattr(args[1], 'code')):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
             field = args[0]
