@@ -17,7 +17,7 @@ from cerberus.schema import rules_set_registry, schema_registry, SchemaError
 from cerberus.utils import TypeDefinition
 
 
-__version__ = pkg_resources.get_distribution('Cerberus').version + ".cri"
+__version__ = pkg_resources.get_distribution('Cerberus').version
 
 __all__ = [
     DocumentError.__name__,
