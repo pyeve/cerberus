@@ -953,7 +953,7 @@ class BareValidator(object):
         if normalize:
             self.__normalize_mapping(self.document, self.schema)
 
-        for field in self.document:
+        for field in list(self.document):
             if self.ignore_none_values and self.document[field] is None:
                 continue
             definitions = self.schema.get(field)
