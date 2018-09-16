@@ -8,7 +8,7 @@ DESCRIPTION = (
     "Python dictionaries."
 )
 LONG_DESCRIPTION = open('README.rst').read()
-VERSION = '1.2'
+VERSION = 'v1.2-cri.1.0'
 
 setup_requires = (
     ['pytest-runner'] if any(x in sys.argv for x in ('pytest', 'test', 'ptr')) else []

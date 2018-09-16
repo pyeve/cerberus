@@ -6,7 +6,7 @@ from datetime import datetime, date
 from random import choice
 from string import ascii_lowercase
 
-from pytest import mark
+from pytest import mark, fail
 
 from cerberus import errors, Validator
 from cerberus.tests import (
@@ -1838,3 +1838,21 @@ def test_contains(constraint):
         errors.MISSING_MEMBERS
     ].info[0]
     assert any(x in missing_actors for x in ('Eric Idle', 'Terry Gilliam'))
+
+
+def test_can_update_document_under_validation():
+    class MyValidator(Validator):
+        def _validate_is_witch(self, is_witch, field, value):
+            """ {'type': 'boolean'} """
+            # If you have to ask, she's a witch
+            if is_witch:
+                self._error(field, 'Burn her!')
+                self.document['duck_weight'] = True
+
+    schema = {'candidate': {'is_witch': True}}
+    validator = MyValidator(schema)
+
+    try:
+        validator.validate({'candidate': 'Connie Booth'}, schema)
+    except RuntimeError:
+        fail('Cannot modify document under validation')
