@@ -169,6 +169,7 @@ class BareValidator(object):
         self.__store_config(args, kwargs)
         self.schema = kwargs.get('schema', None)
         self.allow_unknown = kwargs.get('allow_unknown', False)
+        self.document_validations = kwargs.get('document_validations', None)
         self._remaining_rules = []
         """ Keeps track of the rules that are next in line to be evaluated
             during the validation of a field.
@@ -962,6 +963,9 @@ class BareValidator(object):
             else:
                 self.__validate_unknown_fields(field)
 
+        if self.document_validations:
+            self.__validate_definitions(self.document_validations, None)
+
         if not self.update:
             self.__validate_required_fields(self.document)
 
@@ -1002,26 +1006,34 @@ class BareValidator(object):
 
         def validate_rule(rule):
             validator = self.__get_rule_handler('validate', rule)
-            return validator(definitions.get(rule, None), field, value)
+            rule_value = definitions.get(rule, None)
+            if rule.startswith('document_'):
+                rule_value = self.document_validations.get(rule.split('document_')[1])
+            return validator(rule_value, field, value)
 
         definitions = self._resolve_rules_set(definitions)
-        value = self.document[field]
+        value = self.document.get(field)
 
-        rules_queue = [
-            x
-            for x in self.priority_validations
-            if x in definitions or x in self.mandatory_validations
-        ]
-        rules_queue.extend(
-            x for x in self.mandatory_validations if x not in rules_queue
-        )
-        rules_queue.extend(
-            x
-            for x in definitions
-            if x not in rules_queue
-            and x not in self.normalization_rules
-            and x not in ('allow_unknown', 'meta', 'required')
-        )
+        if not (field is None and value is None):
+            rules_queue = [
+                x
+                for x in self.priority_validations
+                if x in definitions or x in self.mandatory_validations
+            ]
+            rules_queue.extend(
+                x for x in self.mandatory_validations if x not in rules_queue
+            )
+            rules_queue.extend(
+                x
+                for x in definitions
+                if x not in rules_queue
+                and x not in self.normalization_rules
+                and x not in ('allow_unknown', 'meta', 'required')
+            )
+        else:
+            field = '_document'
+            rules_queue = ['document_' + x for x in definitions]
+
         self._remaining_rules = rules_queue
 
         while self._remaining_rules:
