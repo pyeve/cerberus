@@ -1880,24 +1880,21 @@ def test_document_level_validation():
             is_valid = True
             if self.document.get('is_pregnant'):
                 is_valid = self.document.get('gender') == 'female'
-            if not(preg_check and is_valid):
+            if not (preg_check and is_valid):
                 self._error(field, 'Invalid: males cannot be pregnant')
 
     schema = {
         'name': {'type': 'string'},
         'aka': {'type': 'string'},
-        'gender': {
-            'type': 'string',
-            'allowed': ['male', 'female']
-        },
-        'is_pregnant': {'type': 'boolean'}
+        'gender': {'type': 'string', 'allowed': ['male', 'female']},
+        'is_pregnant': {'type': 'boolean'},
     }
 
     medical_record = {
         'name': 'Stan',
         'aka': 'Loretta',
         'gender': 'male',
-        'is_pregnant': True
+        'is_pregnant': True,
     }
     validator = MyValidator(schema, document_validations={'preg_check': True})
     assert_fail(medical_record, validator=validator)
@@ -1910,7 +1907,7 @@ def test_multiple_document_level_validations():
             is_valid = True
             if self.document.get('is_pregnant'):
                 is_valid = self.document.get('gender') == 'female'
-            if not(preg_check and is_valid):
+            if not (preg_check and is_valid):
                 self._error(field, 'Invalid: males cannot be pregnant')
 
         def _validate_document_stay_check(self, stay_check, field, value):
@@ -1929,13 +1926,10 @@ def test_multiple_document_level_validations():
     schema = {
         'name': {'type': 'string'},
         'aka': {'type': 'string'},
-        'gender': {
-            'type': 'string',
-            'allowed': ['male', 'female']
-        },
+        'gender': {'type': 'string', 'allowed': ['male', 'female']},
         'admitted': {'type': 'date'},
         'discharged': {'type': 'date'},
-        'is_pregnant': {'type': 'boolean'}
+        'is_pregnant': {'type': 'boolean'},
     }
 
     medical_record = {
@@ -1944,13 +1938,10 @@ def test_multiple_document_level_validations():
         'gender': 'male',
         'admitted': date(2018, 9, 16),
         'discharged': date(2018, 9, 15),
-        'is_pregnant': True
+        'is_pregnant': True,
     }
 
-    doc_vals = {
-        'preg_check': True,
-        'stay_check': True
-    }
+    doc_vals = {'preg_check': True, 'stay_check': True}
 
     validator = MyValidator(schema, document_validations=doc_vals)
     validator.validate(medical_record)
