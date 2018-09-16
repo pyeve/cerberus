@@ -1838,3 +1838,18 @@ def test_contains(constraint):
         errors.MISSING_MEMBERS
     ].info[0]
     assert any(x in missing_actors for x in ('Eric Idle', 'Terry Gilliam'))
+
+
+def test_can_add_dict_to_error():
+    class MyValidator(Validator):
+        def _validate_isodd(self, isodd, field, value):
+            """ {'type': 'boolean'} """
+            message = {'message': 'not odd', 'suggestion': 'add/subtract one'}
+            if isodd and not bool(value & 1):
+                self._error(field, message)
+
+    schema = {'test_field': {'isodd': True}}
+    validator = MyValidator(schema)
+
+    assert_fail({'test_field': 8}, validator=validator)
+    assert isinstance(validator._errors[0].info[0], dict)

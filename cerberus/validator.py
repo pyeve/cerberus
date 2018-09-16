@@ -253,6 +253,7 @@ class BareValidator(object):
                      be created and added to
                      :attr:`~cerberus.Validator._errors`.
         """
+        is_error_definition = len(args) == 2 and hasattr(args[1], 'code')
         if len(args) == 1:
             self._errors.extend(args[0])
             self._errors.sort()
@@ -260,7 +261,7 @@ class BareValidator(object):
                 self.document_error_tree += error
                 self.schema_error_tree += error
                 self.error_handler.emit(error)
-        elif len(args) == 2 and isinstance(args[1], _str_type):
+        elif len(args) == 2 and not is_error_definition:
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
             field = args[0]
