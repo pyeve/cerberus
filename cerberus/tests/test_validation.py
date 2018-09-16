@@ -1853,6 +1853,6 @@ def test_can_update_document_under_validation():
     validator = MyValidator(schema)
 
     try:
-        validator.validate({'candidate': 'Connie Booth'}, schema)
+        validator.validate({'candidate': 'Connie Booth'})
     except RuntimeError:
         fail('Cannot modify document under validation')
