@@ -1850,7 +1850,9 @@ def test_can_add_dict_to_error():
 
     schema = {'test_field': {'isodd': True}}
     validator = MyValidator(schema)
-    validator.validate({'test_field': 8}, schema)
+
+    assert_fail({'test_field': 8}, validator=validator)
+    assert isinstance(validator._errors[0].info[0], dict)
 
 
 def test_can_update_document_under_validation():
