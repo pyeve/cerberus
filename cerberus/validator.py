@@ -1171,7 +1171,14 @@ class BareValidator(object):
 
                 self._unrequired_by_excludes.add(excluded_field)
 
-        if any(excluded_field in self.document for excluded_field in excluded_fields):
+        def _ignore_field(field):
+            # If the field is None and ignore_none_values is set, ignore it.
+            return self.document[field] is None and self.ignore_none_values
+
+        if any(
+            excluded_field in self.document and not _ignore_field(excluded_field)
+            for excluded_field in excluded_fields
+        ):
             exclusion_str = ', '.join(
                 "'{0}'".format(field) for field in excluded_fields
             )

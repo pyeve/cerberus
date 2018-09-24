@@ -1699,6 +1699,21 @@ def test_multiples_exclusions():
     assert_success({'that_field': {}, 'bazo_field': {}}, schema)
 
 
+def test_exlude_none():
+    """If `ignore_none_values` is True, None is not considered for exclusion."""
+    schema = {
+        'this_field': {'type': 'dict', 'excludes': 'that_field'},
+        'that_field': {'type': 'dict'},
+    }
+    document = {'this_field': {}, 'that_field': None}
+
+    validator = Validator(schema, ignore_none_values=True)
+    assert_success(document, validator=validator)
+
+    validator = Validator(schema, ignore_none_values=False)
+    assert_fail(document, validator=validator)
+
+
 def test_bad_excludes_fields(validator):
     validator.schema = {
         'this_field': {

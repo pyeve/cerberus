@@ -19,6 +19,7 @@ New
   the next major release of Cerbers (`#385`_)
 - The ``meta`` pseudo-rule can be used to store arbitrary application data
   related to a field in a schema
+- The `excludes` validator takes `ignore_none_values` into account
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
