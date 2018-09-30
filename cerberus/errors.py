@@ -70,7 +70,7 @@ SEQUENCE_SCHEMA = ErrorDefinition(0x82, 'schema')
 # TODO remove KEYSCHEMA AND VALUESCHEMA with next major release
 KEYSRULES = KEYSCHEMA = ErrorDefinition(0x83, 'keysrules')
 VALUESRULES = VALUESCHEMA = ErrorDefinition(0x84, 'valuesrules')
-BAD_ITEMS = ErrorDefinition(0x8f, 'items')
+BAD_ITEMS = ErrorDefinition(0x8F, 'items')
 
 LOGICAL = ErrorDefinition(0x90, None)
 NONEOF = ErrorDefinition(0x91, 'noneof')

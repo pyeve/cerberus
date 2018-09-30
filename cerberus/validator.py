@@ -1189,6 +1189,11 @@ class BareValidator(object):
         elif isinstance(value, int):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
+        elif isinstance(value, float):
+            if value in forbidden_values:
+                self._error(field, errors.FORBIDDEN_VALUE, value)
+            elif value.is_integer() and int(value) in forbidden_values:
+                self._error(field, errors.FORBIDDEN_VALUE, value)
 
     def _validate_items(self, items, field, values):
         """ {'type': 'list', 'check_with': 'items'} """
