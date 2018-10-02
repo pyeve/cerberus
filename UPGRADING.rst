@@ -1,5 +1,26 @@
-Upgrading to Cerberus 1.0
-=========================
+Upgrading to Cerberus 2.0 from any 1.x version
+==============================================
+
+Deprecations
+------------
+
+A few rules have been renamed:
+
+===============  ===============
+Old name         New name
+===============  ===============
+``keyschema``    ``keysrules``
+``validator``    ``check_with``
+``valueschema``  ``valuesrules``
+===============  ===============
+
+As a consequence custom validators' methods that are referenced by name in
+constraints for the ``check_with`` rule must be prefixed with ``_check_with_``
+instead of ``_validator_``.
+
+
+Upgrading to Cerberus 1.0 from prior versions
+=============================================
 
 Major Additions
 ---------------

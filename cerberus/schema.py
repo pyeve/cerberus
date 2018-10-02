@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from collections import Callable, Hashable, Mapping, MutableMapping, Sequence
 from copy import copy
-from warnings import warn
 
 from cerberus import errors
 from cerberus.platform import _str_type
@@ -118,9 +117,6 @@ class DefinitionSchema(MutableMapping):
         except Exception:
             pass
 
-        # TODO remove this with the next major release
-        schema = cls._rename_deprecated_rulenames(schema)
-
         return schema
 
     @classmethod
@@ -194,35 +190,6 @@ class DefinitionSchema(MutableMapping):
             raise e
         else:
             self.schema = _new_schema
-
-    # TODO remove with next major release
-    @staticmethod
-    def _rename_deprecated_rulenames(schema):
-        for old, new in (
-            ('keyschema', 'keysrules'),
-            ('validator', 'check_with'),
-            ('valueschema', 'valuesrules'),
-        ):
-            for field, rules in schema.items():
-                if old not in rules:
-                    continue
-
-                if new in rules:
-                    raise RuntimeError(
-                        "The rule '{new}' is also present with its old "
-                        "name '{old}' in the same set of rules."
-                    )
-
-                warn(
-                    "The rule '{old}' was renamed to '{new}'. The old name will "
-                    "not be available in the next major release of "
-                    "Cerberus".format(old=old, new=new),
-                    DeprecationWarning,
-                )
-                schema[field][new] = schema[field][old]
-                schema[field].pop(old)
-
-        return schema
 
     def regenerate_validation_schema(self):
         self.validation_schema = SchemaValidationSchema(self.validator)

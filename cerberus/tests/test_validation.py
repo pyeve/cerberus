@@ -672,13 +672,11 @@ def test_a_dict_with_valuesrules(validator):
     assert len(v['a_dict_with_valuesrules']['valuesrules'].descendants) == 1
 
 
-# TODO remove 'keyschema' as rule with the next major release
-@mark.parametrize('rule', ('keysrules', 'keyschema'))
-def test_keysrules(rule):
+def test_keysrules():
     schema = {
         'a_dict_with_keysrules': {
             'type': 'dict',
-            rule: {'type': 'string', 'regex': '[a-z]+'},
+            'keysrules': {'type': 'string', 'regex': '[a-z]+'},
         }
     }
     assert_success({'a_dict_with_keysrules': {'key': 'value'}}, schema=schema)
@@ -1135,13 +1133,13 @@ def test_self_root_document():
     )
 
 
-def test_validator_rule(validator):
-    def validate_name(field, value, error):
+def test_check_with_rule(validator):
+    def check_with_name(field, value, error):
         if not value.islower():
             error(field, 'must be lowercase')
 
     validator.schema = {
-        'name': {'validator': validate_name},
+        'name': {'check_with': check_with_name},
         'age': {'type': 'integer'},
     }
 

@@ -57,8 +57,6 @@ implications.
 - [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
       part where `schema` tested items in sequences so far. There will be no
       backward-compatibility for schemas. (#385)
-- [ ] The rules `keyschema` and `valueschema` are renamed to `keyrules` and
-      `valuerules`, backward-compatibility for schemas will be provided. (#385)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
       clean the code and make extensions simpler.) (#372)

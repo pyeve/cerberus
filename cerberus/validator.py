@@ -1063,16 +1063,7 @@ class BareValidator(object):
                 {'type': 'string'}
                 ]} """
         if isinstance(checks, _str_type):
-            try:
-                value_checker = self.__get_rule_handler('check_with', checks)
-            # TODO remove on next major release
-            except RuntimeError:
-                value_checker = self.__get_rule_handler('validator', checks)
-                warn(
-                    "The 'validator' rule was renamed to 'check_with'. Please update "
-                    "your schema and method names accordingly.",
-                    DeprecationWarning,
-                )
+            value_checker = self.__get_rule_handler('check_with', checks)
             value_checker(field, value)
         elif isinstance(checks, Iterable):
             for v in checks:
@@ -1517,10 +1508,7 @@ class InspectedValidator(type):
                 DeprecationWarning,
             )
 
-        # TODO remove second summand on next major release
-        cls.checkers = tuple(x for x in attributes_with_prefix('check_with')) + tuple(
-            x for x in attributes_with_prefix('validator')
-        )
+        cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
         x = cls.validation_rules['check_with']['oneof']
         x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
 
