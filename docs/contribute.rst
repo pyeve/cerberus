@@ -32,7 +32,6 @@ the following:
 .. code-block:: console
 
     _________ summary _________
-    py34: commands succeeded
     py35: commands succeeded
     py36: commands succeeded
     pypy3: commands succeeded
