@@ -1,9 +1,7 @@
-from __future__ import absolute_import
-
+from collections import Callable, Hashable, Mapping, MutableMapping, Sequence
 from copy import copy
 
 from cerberus import errors
-from cerberus.platform import _str_type
 from cerberus.utils import (
     get_Validator_class,
     validator_factory,
@@ -49,7 +47,7 @@ class DefinitionSchema(MutableMapping):
             raise RuntimeError('validator argument must be a Validator-' 'instance.')
         self.validator = validator
 
-        if isinstance(schema, _str_type):
+        if isinstance(schema, str):
             schema = validator.schema_registry.get(schema, schema)
 
         if not isinstance(schema, Mapping):
@@ -124,7 +122,7 @@ class DefinitionSchema(MutableMapping):
         """
 
         def is_of_rule(x):
-            return isinstance(x, _str_type) and x.startswith(
+            return isinstance(x, str) and x.startswith(
                 ('allof_', 'anyof_', 'noneof_', 'oneof_')
             )
 
@@ -196,7 +194,12 @@ class DefinitionSchema(MutableMapping):
             self.validator._valid_schemas.add(_hash)
 
     def _validate(self, schema):
-        if isinstance(schema, _str_type):
+        """ Validates a schema that defines rules against supported rules.
+
+        :param schema: The schema to be validated as a legal cerberus schema
+                       according to the rules of this Validator object.
+        """
+        if isinstance(schema, str):
             schema = self.validator.schema_registry.get(schema, schema)
 
         if schema is None:
@@ -204,7 +207,7 @@ class DefinitionSchema(MutableMapping):
 
         schema = copy(schema)
         for field in schema:
-            if isinstance(schema[field], _str_type):
+            if isinstance(schema[field], str):
                 schema[field] = rules_set_registry.get(schema[field], schema[field])
 
         if not self.schema_validator(schema, normalize=False):
@@ -265,7 +268,7 @@ class SchemaValidatorMixin(object):
         return self._config['target_validator']
 
     def _check_with_dependencies(self, field, value):
-        if isinstance(value, _str_type):
+        if isinstance(value, str):
             return
         elif isinstance(value, Mapping):
             validator = self._get_child_validator(
@@ -287,7 +290,7 @@ class SchemaValidatorMixin(object):
 
     def _check_with_rulesset(self, field, value):
         # resolve schema registry reference
-        if isinstance(value, _str_type):
+        if isinstance(value, str):
             if value in self.known_rules_set_refs:
                 return
             else:
@@ -318,7 +321,7 @@ class SchemaValidatorMixin(object):
             self.target_validator._valid_schemas.add(_hash)
 
     def _check_with_schema(self, field, value):
-        if isinstance(value, _str_type):
+        if isinstance(value, str):
             if value in self.known_schema_refs:
                 return
 
@@ -347,8 +350,11 @@ class SchemaValidatorMixin(object):
             self.target_validator._valid_schemas.add(_hash)
 
     def _check_with_type(self, field, value):
-        value = set((value,)) if isinstance(value, _str_type) else set(value)
-        invalid_constraints = value - set(self.target_validator.types)
+        value = (value,) if isinstance(value, str) else value
+        invalid_constraints = ()
+        for constraint in value:
+            if constraint not in self.target_validator.types:
+                invalid_constraints += (constraint,)
         if invalid_constraints:
             path = self.document_path + (field,)
             self._error(
@@ -358,7 +364,7 @@ class SchemaValidatorMixin(object):
     def _expand_rules_set_refs(self, schema):
         result = {}
         for k, v in schema.items():
-            if isinstance(v, _str_type):
+            if isinstance(v, str):
                 result[k] = self.target_validator.rules_set_registry.get(v)
             else:
                 result[k] = v

@@ -1,9 +1,4 @@
-from __future__ import absolute_import
-
-from collections import namedtuple
-
-from cerberus.platform import _int_types, _str_type, Mapping, Sequence, Set
-
+from collections import Mapping, namedtuple, Sequence, Set
 
 TypeDefinition = namedtuple('TypeDefinition', 'name,included_types,excluded_types')
 """
@@ -18,26 +13,13 @@ contained in ``excluded_types``.
 
 
 def compare_paths_lt(x, y):
-    min_length = min(len(x), len(y))
-
-    if x[:min_length] == y[:min_length]:
-        return len(x) == min_length
-
-    for i in range(min_length):
-        a, b = x[i], y[i]
-
-        for _type in (_int_types, _str_type, tuple):
-            if isinstance(a, _type):
-                if isinstance(b, _type):
-                    break
-                else:
-                    return True
-
-        if a == b:
-            continue
-        elif a < b:
+    for i in range(min(len(x), len(y))):
+        if isinstance(x[i], type(y[i])):
+            if x[i] != y[i]:
+                return x[i] < y[i]
+        elif isinstance(x[i], int):
             return True
-        else:
+        elif isinstance(y[i], int):
             return False
 
     raise RuntimeError
@@ -84,7 +66,7 @@ def mapping_to_frozenset(mapping):
 
 
 def quote_string(value):
-    if isinstance(value, _str_type):
+    if isinstance(value, str):
         return '"%s"' % value
     else:
         return value

@@ -8,9 +8,7 @@
 
 """
 
-from __future__ import absolute_import
-
-from pkg_resources import get_distribution, DistributionNotFound
+import pkg_resources
 
 from cerberus.validator import DocumentError, Validator
 from cerberus.schema import rules_set_registry, schema_registry, SchemaError

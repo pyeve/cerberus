@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import cerberus
 from cerberus.tests import assert_fail, assert_success
 from cerberus.tests.conftest import sample_schema

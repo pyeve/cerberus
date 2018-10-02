@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import sys
 from datetime import datetime, date
 from random import choice
 from string import ascii_lowercase
@@ -1187,29 +1184,6 @@ def test_unicode_allowed():
     schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
     doc = {'letters': '♄εℓł☺'}
     assert_success(doc, schema)
-
-
-@mark.skipif(sys.version_info[0] < 3, reason='requires python 3.x')
-def test_unicode_allowed_py3():
-    """ All strings are unicode in Python 3.x. Input doc and schema
-    have equal strings and validation yield success."""
-
-    # issue 280
-    doc = {'letters': u'♄εℓł☺'}
-    schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
-    assert_success(doc, schema)
-
-
-@mark.skipif(sys.version_info[0] > 2, reason='requires python 2.x')
-def test_unicode_allowed_py2():
-    """ Python 2.x encodes value of allowed using default encoding if
-    the string includes characters outside ASCII range. Produced string
-    does not match input which is an unicode string."""
-
-    # issue 280
-    doc = {'letters': u'♄εℓł☺'}
-    schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
-    assert_fail(doc, schema)
 
 
 def test_oneof():
