@@ -4,6 +4,9 @@ Upgrading to Cerberus 2.0 from any 1.x version
 Deprecations
 ------------
 
+Rules
+.....
+
 A few rules have been renamed:
 
 ===============  ===============
@@ -17,6 +20,14 @@ Old name         New name
 As a consequence custom validators' methods that are referenced by name in
 constraints for the ``check_with`` rule must be prefixed with ``_check_with_``
 instead of ``_validator_``.
+
+Type checking
+.............
+
+The use of methods prefixes with ``_validate_type_`` for checking the type of
+a value has been abandoned. See :doc:`customize` how to define custom types
+with :class:`TypeDefinition` objects. If you used such methods to test more
+than the type of the value, use the ``check_with`` rules instead.
 
 
 Upgrading to Cerberus 1.0 from prior versions

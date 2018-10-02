@@ -542,14 +542,7 @@ class BareValidator(object):
     def types(cls):
         """ The constraints that can be used for the 'type' rule.
             Type: A tuple of strings. """
-        redundant_types = set(cls.types_mapping) & set(cls._types_from_methods)
-        if redundant_types:
-            warn(
-                "These types are defined both with a method and in the"
-                "'types_mapping' property of this validator: %s" % redundant_types
-            )
-
-        return tuple(cls.types_mapping) + cls._types_from_methods
+        return tuple(cls.types_mapping)
 
     # Document processing
 
@@ -1429,25 +1422,11 @@ class BareValidator(object):
         types = (data_type,) if isinstance(data_type, _str_type) else data_type
 
         for _type in types:
-            # TODO remove this block on next major release
-            # this implementation still supports custom type validation methods
-            type_definition = self.types_mapping.get(_type)
-            if type_definition is not None:
-                matched = isinstance(
-                    value, type_definition.included_types
-                ) and not isinstance(value, type_definition.excluded_types)
-            else:
-                type_handler = self.__get_rule_handler('validate_type', _type)
-                matched = type_handler(value)
-            if matched:
+            type_definition = self.types_mapping[_type]
+            if isinstance(value, type_definition.included_types) and not isinstance(
+                value, type_definition.excluded_types
+            ):
                 return
-
-            # TODO uncomment this block on next major release
-            #      when _validate_type_* methods were deprecated:
-            # type_definition = self.types_mapping[_type]
-            # if isinstance(value, type_definition.included_types) \
-            #         and not isinstance(value, type_definition.excluded_types):  # noqa 501
-            #     return
 
         self._error(field, errors.BAD_TYPE)
         self._drop_remaining_rules()
@@ -1489,24 +1468,10 @@ class InspectedValidator(type):
 
         super(InspectedValidator, cls).__init__(*args)
 
-        cls._types_from_methods, cls.validation_rules = (), {}
-        for attribute in attributes_with_prefix('validate'):
-            # TODO remove inspection of type test methods in next major release
-            if attribute.startswith('type_'):
-                cls._types_from_methods += (attribute[len('type_') :],)
-            else:
-                cls.validation_rules[attribute] = cls.__get_rule_schema(
-                    '_validate_' + attribute
-                )
-
-        # TODO remove on next major release
-        if cls._types_from_methods:
-            warn(
-                "Methods for type testing are deprecated, use TypeDefinition "
-                "and the 'types_mapping'-property of a Validator-instance "
-                "instead.",
-                DeprecationWarning,
-            )
+        cls.validation_rules = {
+            attribute: cls.__get_rule_schema('_validate_' + attribute)
+            for attribute in attributes_with_prefix('validate')
+        }
 
         cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
         x = cls.validation_rules['check_with']['oneof']

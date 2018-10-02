@@ -12,13 +12,13 @@ def test_contextual_data_preservation():
                 self.working_dir = kwargs['working_dir']
             super(InheritedValidator, self).__init__(*args, **kwargs)
 
-        def _validate_type_test(self, value):
+        def _check_with_test(self, field, value):
             if self.working_dir:
                 return True
 
-    assert 'test' in InheritedValidator.types
+    assert 'test' in InheritedValidator.checkers
     v = InheritedValidator(
-        {'test': {'type': 'list', 'schema': {'type': 'test'}}}, working_dir='/tmp'
+        {'test': {'type': 'list', 'schema': {'check_with': 'test'}}}, working_dir='/tmp'
     )
     assert_success({'test': ['foo']}, validator=v)
 
@@ -77,3 +77,33 @@ def test_schema_validation_can_be_disabled_in_schema_setter():
     v = NonvalidatingValidator(schema=sample_schema)
     assert v.validate(document={'an_integer': 1})
     assert not v.validate(document={'an_integer': 'a'})
+
+
+def test_custom_datatype_rule():
+    class MyValidator(cerberus.Validator):
+        types_mapping = cerberus.Validator.types_mapping.copy()
+        types_mapping['number'] = cerberus.TypeDefinition('number', (int,), ())
+
+        def _validate_min_number(self, min_number, field, value):
+            """ {'type': 'number'} """
+            if value < min_number:
+                self._error(field, 'Below the min')
+
+    schema = {'test_field': {'min_number': 1, 'type': 'number'}}
+    validator = MyValidator(schema)
+    assert_fail(
+        {'test_field': 0.0},
+        validator=validator,
+        error=(
+            'test_field',
+            ('test_field', 'type'),
+            cerberus.errors.BAD_TYPE,
+            'number',
+        ),
+    )
+    assert_fail(
+        {'test_field': 0},
+        validator=validator,
+        error=('test_field', (), cerberus.errors.CUSTOM, None, ('Below the min',)),
+    )
+    assert validator.errors == {'test_field': ['Below the min']}
