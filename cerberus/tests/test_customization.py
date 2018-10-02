@@ -8,7 +8,7 @@ def test_contextual_data_preservation():
         def __init__(self, *args, **kwargs):
             if 'working_dir' in kwargs:
                 self.working_dir = kwargs['working_dir']
-            super(InheritedValidator, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def _check_with_test(self, field, value):
             if self.working_dir:

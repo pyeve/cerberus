@@ -123,7 +123,7 @@ def test_coerce_unknown():
 def test_custom_coerce_and_rename():
     class MyNormalizer(Validator):
         def __init__(self, multiplier, *args, **kwargs):
-            super(MyNormalizer, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.multiplier = multiplier
 
         def _normalize_coerce_multiply(self, value):
