@@ -32,7 +32,7 @@ setup(
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=['validation', 'schema', 'dictionaries', 'documents', 'normalization'],
-    python_requires='>=3.4',
+    python_requires='>=3.5',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -41,7 +41,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',

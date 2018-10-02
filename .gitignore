@@ -17,11 +17,12 @@ develop-eggs
 # Installer logs
 pip-log.txt
 
-# Unit test / coverage reports
-.cache
-.coverage
+# tests / coverage reports
+.cache/
+.coverage/
+.mypy_cache/
 .pytest_cache/
-.tox
+.tox/
 
 # Translations
 *.mo
