@@ -1,4 +1,9 @@
+# -*- coding: utf-8 -*-
+
+import pytest
+
 import cerberus
+from cerberus.base import UnconcernedValidator
 from cerberus.tests import assert_fail, assert_success
 from cerberus.tests.conftest import sample_schema
 
@@ -56,26 +61,22 @@ def test_check_with_method():
     )
 
 
-def test_schema_validation_can_be_disabled_in_schema_setter():
-    class NonvalidatingValidator(cerberus.Validator):
-        """
-        Skips schema validation to speed up initialization
-        """
-
-        @cerberus.Validator.schema.setter
-        def schema(self, schema):
-            if schema is None:
-                self._schema = None
-            elif self.is_child:
-                self._schema = schema
-            elif isinstance(schema, cerberus.schema.DefinitionSchema):
-                self._schema = schema
-            else:
-                self._schema = cerberus.schema.UnvalidatedSchema(schema)
-
-    v = NonvalidatingValidator(schema=sample_schema)
+@pytest.mark.parametrize(
+    'cls',
+    (
+        UnconcernedValidator,
+        cerberus.validator_factory('NonvalidatingValidator', validated_schema=False),
+    ),
+)
+def test_schema_validation_can_be_disabled(cls):
+    v = cls(schema=sample_schema)
     assert v.validate(document={'an_integer': 1})
     assert not v.validate(document={'an_integer': 'a'})
+
+    v.schema['an_integer']['tüpe'] = 'int'
+    with pytest.raises(RuntimeError):
+        v.validate(document={'an_integer': 1})
+    v.schema['an_integer'].pop('tüpe')
 
 
 def test_custom_datatype_rule():
