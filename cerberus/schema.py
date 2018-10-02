@@ -1,10 +1,14 @@
+from collections.abc import ItemsView
 from copy import copy
 from typing import (
+    TYPE_CHECKING,
+    Any,
     Callable,
     Dict,
     Hashable,
+    Iterator,
     Mapping,
-    MutableMapping,
+    Optional,
     Sequence,
     Set,
     Union,
@@ -18,9 +22,14 @@ from cerberus.base import (
     SchemaError,
     SchemaRegistry,
     TypeDefinition,
+    TypesMapping,
     UnconcernedValidator,
 )
-from cerberus.platform import Callable, Hashable, Mapping, MutableMapping, Sequence
+from cerberus.typing import FieldName, RulesSet, Schema, SchemaDict
+
+
+if TYPE_CHECKING:
+    from cerberus.validator import Validator  # noqa: F401
 
 
 class SchemaValidator(UnconcernedValidator):
@@ -30,28 +39,30 @@ class SchemaValidator(UnconcernedValidator):
     types_mapping = UnconcernedValidator.types_mapping.copy()
     types_mapping.update(
         {
-            'callable': TypeDefinition('callable', (Callable,), ()),
-            'hashable': TypeDefinition('hashable', (Hashable,), ()),
+            'callable': TypeDefinition('callable', (Callable,), ()),  # type: ignore
+            'hashable': TypeDefinition('hashable', (Hashable,), ()),  # type: ignore
         }
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs.setdefault('known_rules_set_refs', set())
         kwargs.setdefault('known_schema_refs', set())
-        super(SchemaValidatorMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
-    def known_rules_set_refs(self):
-        """ The encountered references to rules set registry items. """
+    def known_rules_set_refs(self) -> Set[str]:
+        """ The encountered references to rules set registry items that have already
+            been validated. """
         return self._config['known_rules_set_refs']
 
     @property
-    def known_schema_refs(self):
-        """ The encountered references to schema registry items. """
+    def known_schema_refs(self) -> Set[str]:
+        """ The encountered references to schema registry items that have already
+            been validated. """
         return self._config['known_schema_refs']
 
     @property
-    def target_validator(self):
+    def target_validator(self) -> 'Validator':
         """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
@@ -113,7 +124,7 @@ class SchemaValidator(UnconcernedValidator):
             if value in self.known_schema_refs:
                 return
 
-            self.known_schema_refs += (value,)
+            self.known_schema_refs.add(value)
             definition = self.target_validator.schema_registry.get(value)
             if definition is None:
                 path = self.document_path + (field,)
@@ -138,11 +149,8 @@ class SchemaValidator(UnconcernedValidator):
             self.target_validator._valid_schemas.add(_hash)
 
     def _check_with_type(self, field, value):
-        value = (value,) if isinstance(value, str) else value
-        invalid_constraints = ()
-        for constraint in value:
-            if constraint not in self.target_validator.types:
-                invalid_constraints += (constraint,)
+        value = {value} if isinstance(value, str) else set(value)
+        invalid_constraints = value - set(self.target_validator.types)
         if invalid_constraints:
             path = self.document_path + (field,)
             self._error(
@@ -158,7 +166,7 @@ class SchemaValidator(UnconcernedValidator):
                 result[k] = v
         return result
 
-    def _validate_logical(self, rule, field, value):
+    def _validate_logical(self, rule: str, field: FieldName, value: Any) -> None:
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
         if not isinstance(value, Sequence):
             self._error(field, errors.TYPE)
@@ -185,15 +193,19 @@ class SchemaValidator(UnconcernedValidator):
                 self.target_validator._valid_schemas.add(_hash)
 
 
-class ValidatedSchema(MutableMapping):
-    """ A dict-subclass for caching of validated schemas. """
+# TODO in the future this could base on a structural type that will allow mypy to
+#      identify its mapping-like capabilities, some currently ignored errors would
+#      then cease. atm, it can't be derived from typing.Mapping b/c get's signature
+#      conflicts with it.
+class ValidatedSchema:
+    """ A wrapper around a validated schema dictionary that mimics a dictionary
+        interface. """
 
-    def __init__(self, validator, schema=None):
+    def __init__(self, validator: 'Validator', schema: Dict) -> None:
         """
         :param validator: An instance of Validator-(sub-)class that uses this
                           schema.
-        :param schema: A definition-schema as ``dict``. Defaults to an empty
-                       one.
+        :param schema: A dictionary that defines a schema.
         """
         if not isinstance(validator, UnconcernedValidator):
             raise RuntimeError('validator argument must be a Validator-' 'instance.')
@@ -208,19 +220,21 @@ class ValidatedSchema(MutableMapping):
             except Exception:
                 raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
 
+        self.validation_schema = {}  # type: RulesSet
         self.regenerate_validation_schema()
         self.schema_validator = SchemaValidator(
             None,
             allow_unknown=self.validation_schema,
             error_handler=errors.SchemaErrorHandler,
+            target_schema=schema,
             target_validator=validator,
         )
 
-        schema = expand_schema(schema)
+        expand_schema(schema)
         self.validate(schema)
         self.schema = schema
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: FieldName) -> None:
         _new_schema = self.schema.copy()
         try:
             del _new_schema[key]
@@ -231,34 +245,39 @@ class ValidatedSchema(MutableMapping):
         else:
             del self.schema[key]
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: FieldName) -> RulesSet:
         return self.schema[item]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[FieldName]:
         return iter(self.schema)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.schema)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: FieldName, value: RulesSet) -> None:
         value = expand_schema({0: value})[0]
         self.validate({key: value})
         self.schema[key] = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.schema)
 
-    def copy(self):
+    def copy(self) -> 'ValidatedSchema':
         return self.__class__(self.validator, self.schema.copy())
 
-    def update(self, schema):
+    def get(self, item: FieldName, default: RulesSet = None) -> Optional[RulesSet]:
+        return self.schema.get(item, default)
+
+    def items(self) -> ItemsView:
+        return self.schema.items()
+
+    def update(self, schema: SchemaDict) -> None:
         try:
-            schema = expand_schema(schema)
             _new_schema = self.schema.copy()
-            _new_schema.update(schema)
+            _new_schema.update(expand_schema(schema))  # type: ignore
             self.validate(_new_schema)
         except ValueError:
             raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
@@ -267,14 +286,20 @@ class ValidatedSchema(MutableMapping):
         else:
             self.schema = _new_schema
 
-    def regenerate_validation_schema(self):
+    def regenerate_validation_schema(self) -> None:
         self.validation_schema = {
             'allow_unknown': False,
             'schema': self.validator.rules,
             'type': 'dict',
         }
 
-    def validate(self, schema=None):
+    def validate(self, schema: Optional[Schema] = None) -> None:
+        """ Validates a schema that defines rules against supported rules.
+
+        :param schema: The schema to be validated as a legal cerberus schema
+                       according to the rules of the assigned Validator object.
+                       Raises a :class:`~cerberus.base.SchemaError` when an invalid
+                       schema is encountered. """
         if schema is None:
             schema = self.schema
         _hash = (schema_hash(schema), schema_hash(self.validator.types_mapping))
@@ -283,11 +308,6 @@ class ValidatedSchema(MutableMapping):
             self.validator._valid_schemas.add(_hash)
 
     def _validate(self, schema):
-        """ Validates a schema that defines rules against supported rules.
-
-        :param schema: The schema to be validated as a legal cerberus schema
-                       according to the rules of this Validator object.
-        """
         if isinstance(schema, str):
             schema = self.validator.schema_registry.get(schema, schema)
 
@@ -303,28 +323,33 @@ class ValidatedSchema(MutableMapping):
             raise SchemaError(self.schema_validator.errors)
 
 
-def schema_hash(schema: ValidatedSchema) -> int:
+def schema_hash(schema: Union[Schema, TypesMapping]) -> int:
     return hash(mapping_to_frozenset(schema))
 
 
-def mapping_to_frozenset(schema: Union[ValidatedSchema, Dict]) -> frozenset:
+def mapping_to_frozenset(schema: Union[Schema, TypesMapping]) -> frozenset:
     """ Be aware that this treats any sequence type with the equal members as
         equal. As it is used to identify equality of schemas, this can be
         considered okay as definitions are semantically equal regardless the
         container type. """
-    schema_copy = schema.copy()
-    for key, value in schema_copy.items():
+
+    aggregation = {}  # type: Dict[FieldName, Hashable]
+
+    for key, value in schema.items():
         if isinstance(value, (ValidatedSchema, Dict)):
-            schema_copy[key] = mapping_to_frozenset(value)
+            aggregation[key] = mapping_to_frozenset(value)
         elif isinstance(value, Sequence):
             value = list(value)
             for i, item in enumerate(value):
                 if isinstance(item, (ValidatedSchema, Dict)):
                     value[i] = mapping_to_frozenset(item)
-            schema_copy[key] = tuple(value)
+            aggregation[key] = tuple(value)
         elif isinstance(value, Set):
-            schema_copy[key] = frozenset(value)
-    return frozenset(schema_copy.items())
+            aggregation[key] = frozenset(value)
+        else:
+            aggregation[key] = value
+
+    return frozenset(aggregation.items())
 
 
 __all__ = (RulesSetRegistry.__name__, SchemaRegistry.__name__)
