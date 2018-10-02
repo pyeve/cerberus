@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import itertools
-import re
 import sys
 from datetime import datetime, date
 from random import choice
@@ -721,49 +719,6 @@ def test_a_list_length(schema):
     )
 
 
-def test_custom_datatype():
-    class MyValidator(Validator):
-        def _validate_type_objectid(self, value):
-            if re.match('[a-f0-9]{24}', value):
-                return True
-
-    schema = {'test_field': {'type': 'objectid'}}
-    validator = MyValidator(schema)
-    assert_success({'test_field': '50ad188438345b1049c88a28'}, validator=validator)
-    assert_fail(
-        {'test_field': 'hello'},
-        validator=validator,
-        error=('test_field', ('test_field', 'type'), errors.BAD_TYPE, 'objectid'),
-    )
-
-
-def test_custom_datatype_rule():
-    class MyValidator(Validator):
-        def _validate_min_number(self, min_number, field, value):
-            """ {'type': 'number'} """
-            if value < min_number:
-                self._error(field, 'Below the min')
-
-        # TODO replace with TypeDefintion in next major release
-        def _validate_type_number(self, value):
-            if isinstance(value, int):
-                return True
-
-    schema = {'test_field': {'min_number': 1, 'type': 'number'}}
-    validator = MyValidator(schema)
-    assert_fail(
-        {'test_field': '0'},
-        validator=validator,
-        error=('test_field', ('test_field', 'type'), errors.BAD_TYPE, 'number'),
-    )
-    assert_fail(
-        {'test_field': 0},
-        validator=validator,
-        error=('test_field', (), errors.CUSTOM, None, ('Below the min',)),
-    )
-    assert validator.errors == {'test_field': ['Below the min']}
-
-
 def test_custom_validator():
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
@@ -878,12 +833,11 @@ def test_unknown_keys_retain_custom_rules():
     # test that allow_unknown schema respect custom validation rules.
     # https://github.com/pyeve/cerberus/issues/#66.
     class CustomValidator(Validator):
-        def _validate_type_foo(self, value):
-            if value == "foo":
-                return True
+        def _check_with_foo(self, field, value):
+            return value == "foo"
 
     validator = CustomValidator({})
-    validator.allow_unknown = {"type": "foo"}
+    validator.allow_unknown = {"check_with": "foo"}
     assert_success(document={"fred": "foo", "barney": "foo"}, validator=validator)
 
 
