@@ -47,9 +47,9 @@ implications.
       part where `schema` tested items in sequences so far. There will be no
       backward-compatibility for schemas. (#385)
 - [x] All Python 2 related code is removed.
-- [ ] Python 3 features that allow simpler code are applied where feasible.
-  - [ ] A Python 3-style metaclass.
-  - [ ] Using `super()` to call overridden methods.
+- [x] Python 3 features that allow simpler code are applied where feasible.
+  - [x] A Python 3-style metaclass.
+  - [x] Using `super()` to call overridden methods.
   - [x] Usage of dictionary comprehensions and set literals.
 - [ ] All functions and methods are type annotated. MyPy is added to the test
       suite.

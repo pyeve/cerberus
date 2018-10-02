@@ -69,7 +69,7 @@ def quote_string(value):
 
 class readonly_classproperty(property):
     def __get__(self, instance, owner):
-        return super(readonly_classproperty, self).__get__(owner)
+        return super().__get__(owner)
 
     def __set__(self, instance, value):
         raise RuntimeError('This is a readonly class property.')

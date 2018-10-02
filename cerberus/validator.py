@@ -9,7 +9,15 @@
 """
 
 from ast import literal_eval
-from collections import Container, Hashable, Iterable, Mapping, Sequence, Sized
+from collections import (
+    ChainMap,
+    Container,
+    Hashable,
+    Iterable,
+    Mapping,
+    Sequence,
+    Sized,
+)
 from copy import copy
 from datetime import date, datetime
 import re
@@ -23,6 +31,9 @@ from cerberus.schema import (
     SchemaError,
 )
 from cerberus.utils import drop_item_from_tuple, readonly_classproperty, TypeDefinition
+
+
+RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
 
 
 toy_error_handler = errors.ToyErrorHandler()
@@ -47,7 +58,78 @@ class DocumentError(Exception):
     pass
 
 
-class BareValidator(object):
+class ValidatorMeta(type):
+    """ Metaclass for all validators """
+
+    def __new__(mcls, name, bases, namespace):
+        if '__doc__' not in namespace:
+            namespace['__doc__'] = bases[0].__doc__
+        return super().__new__(mcls, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace):
+        def attributes_with_prefix(prefix):
+            return tuple(
+                x[len(prefix) + 2 :]
+                for x in dir(cls)
+                if x.startswith('_' + prefix + '_')
+            )
+
+        super().__init__(name, bases, namespace)
+
+        cls.validation_rules = {
+            attribute: cls.__get_rule_schema('_validate_' + attribute)
+            for attribute in attributes_with_prefix('validate')
+        }
+
+        cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
+        x = cls.validation_rules['check_with']['oneof']
+        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
+
+        for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
+            cls.validation_rules[rule]['required'] = True
+
+        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
+        for attribute in attributes_with_prefix('normalize'):
+            if attribute.startswith('coerce_'):
+                cls.coercers += (attribute[len('coerce_') :],)
+            elif attribute.startswith('default_setter_'):
+                cls.default_setters += (attribute[len('default_setter_') :],)
+            else:
+                cls.normalization_rules[attribute] = cls.__get_rule_schema(
+                    '_normalize_' + attribute
+                )
+
+        for rule in ('coerce', 'rename_handler'):
+            x = cls.normalization_rules[rule]['oneof']
+            x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.coercers
+        cls.normalization_rules['default_setter']['oneof'][1][
+            'allowed'
+        ] = cls.default_setters
+
+        cls.rules = ChainMap(cls.normalization_rules, cls.validation_rules)
+
+    def __get_rule_schema(mcls, method_name):
+        docstring = getattr(mcls, method_name).__doc__
+        if docstring is None:
+            result = {}
+        else:
+            if RULE_SCHEMA_SEPARATOR in docstring:
+                docstring = docstring.split(RULE_SCHEMA_SEPARATOR)[1]
+            try:
+                result = literal_eval(docstring.strip())
+            except Exception:
+                result = {}
+
+        if not result and method_name != '_validate_meta':
+            warn(
+                "No validation schema is defined for the arguments of rule "
+                "'%s'" % method_name.split('_', 2)[-1]
+            )
+
+        return result
+
+
+class Validator(metaclass=ValidatorMeta):
     """ Validator class. Normalizes and/or validates any mapping against a
     validation-schema which is provided as an argument at class instantiation
     or upon calling the :meth:`~cerberus.Validator.validate`,
@@ -89,7 +171,7 @@ class BareValidator(object):
     :type error_handler: class or instance based on
                          :class:`~cerberus.errors.BaseErrorHandler` or
                          :class:`tuple`
-    """  # noqa: E501
+    """
 
     mandatory_validations = ('nullable',)
     """ Rules that are evaluated on any field, regardless whether defined in
@@ -164,7 +246,7 @@ class BareValidator(object):
             during the validation of a field.
             Type: :class:`list` """
 
-        super(BareValidator, self).__init__()
+        super().__init__()
 
     @staticmethod
     def __init_error_handler(kwargs):
@@ -1402,82 +1484,3 @@ class BareValidator(object):
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [], [2])
                 self._error(field, errors.VALUESRULES, validator._errors)
-
-
-RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
-
-
-class InspectedValidator(type):
-    """ Metaclass for all validators """
-
-    def __new__(cls, *args):
-        if '__doc__' not in args[2]:
-            args[2].update({'__doc__': args[1][0].__doc__})
-        return super(InspectedValidator, cls).__new__(cls, *args)
-
-    def __init__(cls, *args):
-        def attributes_with_prefix(prefix):
-            return tuple(
-                x[len(prefix) + 2 :]
-                for x in dir(cls)
-                if x.startswith('_' + prefix + '_')
-            )
-
-        super(InspectedValidator, cls).__init__(*args)
-
-        cls.validation_rules = {
-            attribute: cls.__get_rule_schema('_validate_' + attribute)
-            for attribute in attributes_with_prefix('validate')
-        }
-
-        cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
-        x = cls.validation_rules['check_with']['oneof']
-        x[1]['schema']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
-
-        for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
-            cls.validation_rules[rule]['required'] = True
-
-        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
-        for attribute in attributes_with_prefix('normalize'):
-            if attribute.startswith('coerce_'):
-                cls.coercers += (attribute[len('coerce_') :],)
-            elif attribute.startswith('default_setter_'):
-                cls.default_setters += (attribute[len('default_setter_') :],)
-            else:
-                cls.normalization_rules[attribute] = cls.__get_rule_schema(
-                    '_normalize_' + attribute
-                )
-
-        for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['oneof']
-            x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1][
-            'allowed'
-        ] = cls.default_setters
-
-        cls.rules = {}
-        cls.rules.update(cls.validation_rules)
-        cls.rules.update(cls.normalization_rules)
-
-    def __get_rule_schema(cls, method_name):
-        docstring = getattr(cls, method_name).__doc__
-        if docstring is None:
-            result = {}
-        else:
-            if RULE_SCHEMA_SEPARATOR in docstring:
-                docstring = docstring.split(RULE_SCHEMA_SEPARATOR)[1]
-            try:
-                result = literal_eval(docstring.strip())
-            except Exception:
-                result = {}
-
-        if not result and method_name != '_validate_meta':
-            warn(
-                "No validation schema is defined for the arguments of rule "
-                "'%s'" % method_name.split('_', 2)[-1]
-            )
-
-        return result
-
-
-Validator = InspectedValidator('Validator', (BareValidator,), {})
