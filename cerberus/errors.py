@@ -1,14 +1,9 @@
-# -*-: coding utf-8 -*-
 """ This module contains the error-related constants and classes. """
-
-from __future__ import absolute_import
 
 from collections import defaultdict, namedtuple, MutableMapping
 from copy import copy, deepcopy
-from functools import wraps
 from pprint import pformat
 
-from cerberus.platform import PYTHON_VERSION
 from cerberus.utils import compare_paths_lt, quote_string
 
 
@@ -411,33 +406,6 @@ class ToyErrorHandler(BaseErrorHandler):
         pass
 
 
-def encode_unicode(f):
-    """Cerberus error messages expect regular binary strings.
-    If unicode is used in a ValidationError message can't be printed.
-
-    This decorator ensures that if legacy Python is used unicode
-    strings are encoded before passing to a function.
-    """
-
-    @wraps(f)
-    def wrapped(obj, error):
-        def _encode(value):
-            """Helper encoding unicode strings into binary utf-8"""
-            if isinstance(value, unicode):  # noqa: F821
-                return value.encode('utf-8')
-            return value
-
-        error = copy(error)
-        error.document_path = _encode(error.document_path)
-        error.schema_path = _encode(error.schema_path)
-        error.constraint = _encode(error.constraint)
-        error.value = _encode(error.value)
-        error.info = _encode(error.info)
-        return f(obj, error)
-
-    return wrapped if PYTHON_VERSION < 3 else f
-
-
 class BasicErrorHandler(BaseErrorHandler):
     """ Models cerberus' legacy. Returns a :class:`dict`. When mangled
         through :class:`str` a pretty-formatted representation of that
@@ -501,7 +469,6 @@ class BasicErrorHandler(BaseErrorHandler):
             self._purge_empty_dicts(pretty[field])
         return pretty
 
-    @encode_unicode
     def add(self, error):
         # Make sure the original error is not altered with
         # error paths specific to the handler.

@@ -13,7 +13,7 @@ For a full elaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
-This rule takes a :class:`py3:collectionsabc.Container` of allowed values.
+This rule takes a :class:`py:collections.abc.Container` of allowed values.
 Validates the target value if the value is in the allowed values.
 If the target value is an :term:`iterable`, all its members must be in the
 allowed values.
@@ -741,41 +741,29 @@ Data type allowed for the key value. Can be one of the following names:
    :header-rows: 1
 
    * - Type Name
-     - Python 2 Type
-     - Python 3 Type
+     - Python Type
    * - ``boolean``
-     - :class:`py2:bool`
-     - :class:`py3:bool`
+     - :class:`pybool`
    * - ``binary``
-     - :class:`py2:bytes` [#]_, :class:`py2:bytearray`
-     - :class:`py3:bytes`, :class:`py3:bytearray`
+     - :class:`pybytes`, :class:`pybytearray`
    * - ``date``
-     - :class:`py2:datetime.date`
-     - :class:`py3:datetime.date`
+     - :class:`pydatetime.date`
    * - ``datetime``
-     - :class:`py2:datetime.datetime`
-     - :class:`py3:datetime.datetime`
+     - :class:`pydatetime.datetime`
    * - ``dict``
-     - :class:`py2:collections.Mapping`
-     - :class:`py3:collections.abc.Mapping`
+     - :class:`pycollections.abc.Mapping`
    * - ``float``
-     - :class:`py2:float`
-     - :class:`py3:float`
+     - :class:`pyfloat`
    * - ``integer``
-     - :class:`py2:int`, :class:`py2:long`
-     - :class:`py3:int`
+     - :class:`pyint`
    * - ``list``
-     - :class:`py2:collections.Sequence`, excl. ``string``
-     - :class:`py3:collections.abc.Sequence`, excl. ``string``
+     - :class:`pycollections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`, excl. :class:`py2:bool`
-     - :class:`py3:float`, :class:`py3:int`, excl. :class:`py3:bool`
+     - :class:`pyfloat`, :class:`pyint`, excl. :class:`pybool`
    * - ``set``
-     - :class:`py2:set`
-     - :class:`py3:set`
+     - :class:`pyset`
    * - ``string``
-     - :func:`py2:basestring`
-     - :class:`py3:str`
+     - :class:`pystr`
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -837,8 +825,6 @@ A list of types can be used to allow different values:
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
-
-.. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
 .. _valuesrules-rule:
 
