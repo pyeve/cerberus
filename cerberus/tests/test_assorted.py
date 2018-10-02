@@ -3,9 +3,9 @@ from pkg_resources import Distribution, DistributionNotFound
 
 from pytest import mark
 
-from cerberus import TypeDefinition, Validator
+from cerberus import validator_factory, TypeDefinition, Validator
+from cerberus.base import UnconcernedValidator
 from cerberus.tests import assert_fail, assert_success
-from cerberus.utils import validator_factory
 
 
 def test_clear_cache(validator):
@@ -53,7 +53,11 @@ def test_dynamic_types():
 
 
 def test_mro():
-    assert Validator.__mro__ == (Validator, object), Validator.__mro__
+    assert Validator.__mro__ == (
+        Validator,
+        UnconcernedValidator,
+        object,
+    ), Validator.__mro__
 
 
 def test_mixin_init():

@@ -1,7 +1,6 @@
 import pytest
 
 from cerberus import Validator, errors, SchemaError
-from cerberus.schema import UnvalidatedSchema
 from cerberus.tests import assert_schema_error
 
 
@@ -84,6 +83,7 @@ def test_validated_schema_cache():
     assert len(v._valid_schemas) == cache_size
 
     v = Validator({'foozifix': {'coerce': int}})
+    v.schema = {'foozifix': {'type': 'integer'}}
     assert len(v._valid_schemas) == cache_size
 
     max_cache_size = 160
@@ -103,9 +103,3 @@ def test_expansion_in_nested_schema():
     assert v.schema['detroit']['itemsrules'] == {
         'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]
     }
-
-
-def test_unvalidated_schema_can_be_copied():
-    schema = UnvalidatedSchema()
-    schema_copy = schema.copy()
-    assert schema_copy == schema
