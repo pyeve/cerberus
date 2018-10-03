@@ -6,6 +6,7 @@ python:
   - 3.4
   - 3.5
   - 3.6
+  - 3.7-dev  # FIXME when 3.7 is available
   - pypy
   - pypy3
 install: travis_retry pip install tox-travis
