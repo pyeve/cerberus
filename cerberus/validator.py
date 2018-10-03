@@ -11,14 +11,22 @@
 from __future__ import absolute_import
 
 from ast import literal_eval
-from collections import Container, Hashable, Iterable, Mapping, Sequence, Sized
 from copy import copy
 from datetime import date, datetime
 import re
 from warnings import warn
 
 from cerberus import errors
-from cerberus.platform import _int_types, _str_type
+from cerberus.platform import (
+    _int_types,
+    _str_type,
+    Container,
+    Hashable,
+    Iterable,
+    Mapping,
+    Sequence,
+    Sized,
+)
 from cerberus.schema import (
     schema_registry,
     rules_set_registry,
@@ -26,7 +34,6 @@ from cerberus.schema import (
     SchemaError,
 )
 from cerberus.utils import drop_item_from_tuple, readonly_classproperty, TypeDefinition
-
 
 toy_error_handler = errors.ToyErrorHandler()
 
