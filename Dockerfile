@@ -3,7 +3,7 @@ FROM funkyfuture/nest-of-serpents
 ENTRYPOINT tox
 WORKDIR /src
 
-RUN pip3.6 install black flake8 pre-commit pytest tox PyYAML Sphinx \
+RUN pip3.7 install black flake8 pre-commit pytest tox PyYAML Sphinx \
  && mkdir /home/tox \
  && mv /root/.cache /home/tox/
 
