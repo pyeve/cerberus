@@ -36,7 +36,8 @@ Fixed
 Improved
 ~~~~~~~~
 - Suppress DeprecationWarning about collections.abc (`#451`_)
-- Omit warning when no schema for ``meta`` rule constraint is available (`#425`_)
+- Omit warning when no schema for ``meta`` rule constraint is available
+  (`#425`_)
 - Add ``.eggs`` to .gitignore file (`#420`_)
 - Reformat code to match Black code-style (`#402`_)
 - Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
@@ -44,10 +45,13 @@ Improved
 - Remove ``Registry`` from top level namespace (`#354`_)
 - Remove ``utils.is_class``
 - Check the ``empty`` rule against values of type ``Sized``
+- Various micro optimizations and 'safety belts' that were inspired by adding
+  type annotations to a branch of the code base
 
 Docs
 ~~~~
-- Fix semantical versioning naming. There are only two hard things in Computer Science: cache invalidation and naming things -- *Phil Karlton* (`#429`_)
+- Fix semantical versioning naming. There are only two hard things in Computer
+  Science: cache invalidation and naming things -- *Phil Karlton* (`#429`_)
 - Improve documentation of the regex rule (`#389`_)
 - Expand upon `validator` rules (`#320`_)
 - Include all errors definitions in API docs (`#404`_)

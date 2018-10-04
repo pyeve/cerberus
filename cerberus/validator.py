@@ -270,8 +270,8 @@ class BareValidator(object):
             self._errors.extend(args[0])
             self._errors.sort()
             for error in args[0]:
-                self.document_error_tree += error
-                self.schema_error_tree += error
+                self.document_error_tree.add(error)
+                self.schema_error_tree.add(error)
                 self.error_handler.emit(error)
         elif len(args) == 2 and isinstance(args[1], _str_type):
             self._error(args[0], errors.CUSTOM, args[1])
@@ -411,7 +411,7 @@ class BareValidator(object):
         for part in parts:
             if part not in context:
                 return None, None
-            context = context.get(part)
+            context = context.get(part, {})
 
         return parts[-1], context
 
@@ -775,7 +775,8 @@ class BareValidator(object):
                 warn(
                     "Normalizing keys of {path}: {key} already exists, "
                     "its value is replaced.".format(
-                        path='.'.join(self.document_path + (field,)), key=k
+                        path='.'.join(str(x) for x in self.document_path + (field,)),
+                        key=k,
                     )
                 )
                 mapping[field][result[k]] = mapping[field][k]
@@ -1135,7 +1136,9 @@ class BareValidator(object):
     def _validate_dependencies(self, dependencies, field, value):
         """ {'type': ('dict', 'hashable', 'list'),
              'check_with': 'dependencies'} """
-        if isinstance(dependencies, _str_type):
+        if isinstance(dependencies, _str_type) or not isinstance(
+            dependencies, (Iterable, Mapping)
+        ):
             dependencies = (dependencies,)
 
         if isinstance(dependencies, Sequence):
