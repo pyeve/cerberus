@@ -4,12 +4,13 @@ repos:
     rev: stable
     hooks:
       - id: black
-        args: [--quiet, --safe, --skip-string-normalization]
+        args: [--quiet]
         python_version: python3.6
         types:
           - python
+        exclude: ^docs/conf.py$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.3.0
+    rev: v1.4.0
     hooks:
       - id: check-yaml
         types:
