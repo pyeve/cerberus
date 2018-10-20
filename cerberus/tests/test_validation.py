@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import itertools
 import re
 import sys
 from datetime import datetime, date
@@ -1838,3 +1839,99 @@ def test_contains(constraint):
         errors.MISSING_MEMBERS
     ].info[0]
     assert any(x in missing_actors for x in ('Eric Idle', 'Terry Gilliam'))
+
+
+def test_require_all_simple():
+    schema = {'foo': {'type': 'string'}}
+    validator = Validator(require_all=True)
+    assert_fail(
+        {},
+        schema,
+        validator,
+        error=('foo', '__require_all__', errors.REQUIRED_FIELD, True),
+    )
+    assert_success({'foo': 'bar'}, schema, validator)
+    validator.require_all = False
+    assert_success({}, schema, validator)
+    assert_success({'foo': 'bar'}, schema, validator)
+
+
+def test_require_all_override_by_required():
+    schema = {'foo': {'type': 'string', 'required': False}}
+    validator = Validator(require_all=True)
+    assert_success({}, schema, validator)
+    assert_success({'foo': 'bar'}, schema, validator)
+    validator.require_all = False
+    assert_success({}, schema, validator)
+    assert_success({'foo': 'bar'}, schema, validator)
+
+    schema = {'foo': {'type': 'string', 'required': True}}
+    validator.require_all = True
+    assert_fail(
+        {},
+        schema,
+        validator,
+        error=('foo', ('foo', 'required'), errors.REQUIRED_FIELD, True),
+    )
+    assert_success({'foo': 'bar'}, schema, validator)
+    validator.require_all = False
+    assert_fail(
+        {},
+        schema,
+        validator,
+        error=('foo', ('foo', 'required'), errors.REQUIRED_FIELD, True),
+    )
+    assert_success({'foo': 'bar'}, schema, validator)
+
+
+@mark.parametrize(
+    "validator_require_all, sub_doc_require_all",
+    list(itertools.product([True, False], repeat=2)),
+)
+def test_require_all_override_by_subdoc_require_all(
+    validator_require_all, sub_doc_require_all
+):
+    sub_schema = {"bar": {"type": "string"}}
+    schema = {
+        "foo": {
+            "type": "dict",
+            "require_all": sub_doc_require_all,
+            "schema": sub_schema,
+        }
+    }
+    validator = Validator(require_all=validator_require_all)
+
+    assert_success({"foo": {"bar": "baz"}}, schema, validator)
+    if validator_require_all:
+        assert_fail({}, schema, validator)
+    else:
+        assert_success({}, schema, validator)
+    if sub_doc_require_all:
+        assert_fail({"foo": {}}, schema, validator)
+    else:
+        assert_success({"foo": {}}, schema, validator)
+
+
+def test_require_all_and_exclude():
+    schema = {
+        'foo': {'type': 'string', 'excludes': 'bar'},
+        'bar': {'type': 'string', 'excludes': 'foo'},
+    }
+    validator = Validator(require_all=True)
+    assert_fail(
+        {},
+        schema,
+        validator,
+        errors=[
+            ('foo', '__require_all__', errors.REQUIRED_FIELD, True),
+            ('bar', '__require_all__', errors.REQUIRED_FIELD, True),
+        ],
+    )
+    assert_success({'foo': 'value'}, schema, validator)
+    assert_success({'bar': 'value'}, schema, validator)
+    assert_fail({'foo': 'value', 'bar': 'value'}, schema, validator)
+    validator.require_all = False
+    assert_success({}, schema, validator)
+    assert_success({'foo': 'value'}, schema, validator)
+    assert_success({'bar': 'value'}, schema, validator)
+    assert_fail({'foo': 'value', 'bar': 'value'}, schema, validator)

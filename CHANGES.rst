@@ -8,6 +8,7 @@ In Development
 
 New
 ~~~
+- Add ``require_all`` rule and validator argument (`#417`_)
 - The ``contains`` rule (`#358`_)
 - All fields that are defined as ``readonly`` are removed from a document
   when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
@@ -60,6 +61,7 @@ Docs
 .. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
+.. _`#417`: https://github.com/pyeve/cerberus/issues/417
 .. _`#406`: https://github.com/pyeve/cerberus/issues/406
 .. _`#405`: https://github.com/pyeve/cerberus/issues/405
 .. _`#404`: https://github.com/pyeve/cerberus/issues/404

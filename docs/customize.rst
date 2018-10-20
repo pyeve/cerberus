@@ -334,15 +334,18 @@ Study the source code for example usages.
     Added ``document_crumb`` and ``schema_crumb`` as optional keyword-
     arguments.
 
-`Validator.root_document`, `.root_schema` & `root_allow_unknown`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`Validator.root_document`, `.root_schema`, `.root_allow_unknown` & `.root_require_all`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A child-validator - as used when validating a ``schema`` - can access the first
 generation validator's document and schema that are being processed as well as
-the constraints for unknown fields via its ``root_document`` and ``root_schema``
-``root_allow_unknown``-properties.
+the constraints for unknown fields via its ``root_document``, ``root_schema``,
+``root_allow_unknown`` and ``root_require_all`` properties.
 
 .. versionadded:: 1.0
+
+.. versionchanged:: 1.3
+    Added ``root_require_all``
 
 `Validator.document_path` & `Validator.schema_path`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
