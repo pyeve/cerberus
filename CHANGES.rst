@@ -24,6 +24,7 @@ New
 
 Fixed
 ~~~~~
+- Fix test test_{default,default_setter}_none_nonnullable (`#435`_)
 - Normalization rules defined within the ``items`` rule are applied (`#361`_)
 - Defaults are applied to undefined fields from an ``allow_unknown``
   definition (`#310`_)
@@ -58,6 +59,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#435`: https://github.com/pyeve/cerberus/pull/435
 .. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
 .. _`#420`: https://github.com/pyeve/cerberus/issues/420
