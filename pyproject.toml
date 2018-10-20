@@ -1,0 +1,4 @@
+[tool.black]
+
+safe = true
+skip-string-normalization = true
