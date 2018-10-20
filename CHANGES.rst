@@ -8,6 +8,7 @@ In Development
 
 New
 ~~~
+- Add ``require_all`` rule and validator argument (`#417`_)
 - The ``contains`` rule (`#358`_)
 - All fields that are defined as ``readonly`` are removed from a document
   when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
@@ -19,7 +20,6 @@ New
   the next major release of Cerbers (`#385`_)
 - The ``meta`` pseudo-rule can be used to store arbitrary application data
   related to a field in a schema
-- Add ``require_all`` rule and validator argument (`#417`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
