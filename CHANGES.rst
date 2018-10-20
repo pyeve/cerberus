@@ -20,6 +20,7 @@ New
   the next major release of Cerbers (`#385`_)
 - The ``meta`` pseudo-rule can be used to store arbitrary application data
   related to a field in a schema
+- Python 3.7 officially supported (`#451`_)
 - **Python 2.6 and 3.3 are no longer supported**
 
 Fixed
@@ -31,6 +32,7 @@ Fixed
 
 Improved
 ~~~~~~~~
+- Suppress DeprecationWarning about collections.abc (`#451`_)
 - Omit warning when no schema for ``meta`` rule constraint is available (`#425`_)
 - Add ``.eggs`` to .gitignore file (`#420`_)
 - Reformat code to match Black code-style (`#402`_)
@@ -59,6 +61,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#451`: https://github.com/pyeve/cerberus/pull/451
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
 .. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
