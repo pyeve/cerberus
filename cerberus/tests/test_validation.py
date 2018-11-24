@@ -1515,6 +1515,12 @@ def test_forbidden():
     assert_success({'user': 'alice'}, schema)
 
 
+def test_forbidden_number():
+    schema = {'amount': {'forbidden': (0, 0.0)}}
+    assert_fail({'amount': 0}, schema)
+    assert_fail({'amount': 0.0}, schema)
+
+
 def test_mapping_with_sequence_schema():
     schema = {'list': {'schema': {'allowed': ['a', 'b', 'c']}}}
     document = {'list': {'is_a': 'mapping'}}

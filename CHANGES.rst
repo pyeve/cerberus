@@ -1,12 +1,91 @@
 Cerberus changelog
 ==================
 
-Here you can see the full list of changes between each Cerberus release.
+Cerberus is a collaboratively funded project, see the `funding page`_.
+
+In Development
+--------------
+
+New
+~~~
+- Add ``require_all`` rule and validator argument (`#417`_)
+- The ``contains`` rule (`#358`_)
+- All fields that are defined as ``readonly`` are removed from a document
+  when a validator has the ``purge_readonly`` flag set to ``True`` (`#240`_)
+- The ``validator`` rule is renamed to ``check_with``. The old name is
+  deprecated and will not be available in the next major release of Cerberus
+  (`#405`_)
+- The rules ``keyschema`` and ``valueschema`` are renamed to ``keysrules`` and
+  ``valuesrules``; the old names are deprecated and will not be available in
+  the next major release of Cerbers (`#385`_)
+- The ``meta`` pseudo-rule can be used to store arbitrary application data
+  related to a field in a schema
+- Python 3.7 officially supported (`#451`_)
+- **Python 2.6 and 3.3 are no longer supported**
+
+Fixed
+~~~~~
+- Fix test test_{default,default_setter}_none_nonnullable (`#435`_)
+- Normalization rules defined within the ``items`` rule are applied (`#361`_)
+- Defaults are applied to undefined fields from an ``allow_unknown``
+  definition (`#310`_)
+- The ``forbidden`` value now handles any input type (`#449`_)
+
+Improved
+~~~~~~~~
+- Suppress DeprecationWarning about collections.abc (`#451`_)
+- Omit warning when no schema for ``meta`` rule constraint is available (`#425`_)
+- Add ``.eggs`` to .gitignore file (`#420`_)
+- Reformat code to match Black code-style (`#402`_)
+- Perform lint checks and fixes on staged files, as a pre-commit hook (`#402`_)
+- Change ``allowed`` rule to use containers instead of lists (`#384`_)
+- Remove ``Registry`` from top level namespace (`#354`_)
+- Remove ``utils.is_class``
+- Check the ``empty`` rule against values of type ``Sized``
+
+Docs
+~~~~
+- Fix semantical versioning naming. There are only two hard things in Computer Science: cache invalidation and naming things -- *Phil Karlton* (`#429`_)
+- Improve documentation of the regex rule (`#389`_)
+- Expand upon `validator` rules (`#320`_)
+- Include all errors definitions in API docs (`#404`_)
+- Improve changelog format (`#406`_)
+- Update homepage URL in package metadata (`#382`_)
+- Add feature freeze note to CONTRIBUTING and note on Python support in
+  README
+- Add the intent of a ``dataclasses`` module to ROADMAP.md
+- Update README link; make it point to the new PyPI website
+- Update README with elaborations on versioning and testing
+- Fix misspellings and missing pronouns
+- Remove redundant hint from ``*of-rules``.
+- Add usage recommendation regarding the ``*of-rules``
+- Add a few clarifications to the GitHub issue template
+- Update README link; make it point to the new PyPI website
+
+.. _`#451`: https://github.com/pyeve/cerberus/pull/451
+.. _`#449`: https://github.com/pyeve/cerberus/pull/449
+.. _`#435`: https://github.com/pyeve/cerberus/pull/435
+.. _`#429`: https://github.com/pyeve/cerberus/pull/429
+.. _`#425`: https://github.com/pyeve/cerberus/pull/425
+.. _`#420`: https://github.com/pyeve/cerberus/issues/420
+.. _`#417`: https://github.com/pyeve/cerberus/issues/417
+.. _`#406`: https://github.com/pyeve/cerberus/issues/406
+.. _`#405`: https://github.com/pyeve/cerberus/issues/405
+.. _`#404`: https://github.com/pyeve/cerberus/issues/404
+.. _`#402`: https://github.com/pyeve/cerberus/issues/402
+.. _`#389`: https://github.com/pyeve/cerberus/issues/389
+.. _`#385`: https://github.com/pyeve/cerberus/issues/385
+.. _`#384`: https://github.com/pyeve/cerberus/issues/384
+.. _`#382`: https://github.com/pyeve/cerberus/issues/382
+.. _`#361`: https://github.com/pyeve/cerberus/pull/361
+.. _`#358`: https://github.com/pyeve/cerberus/issues/358
+.. _`#354`: https://github.com/pyeve/cerberus/issues/354
+.. _`#320`: https://github.com/pyeve/cerberus/issues/320
+.. _`#310`: https://github.com/pyeve/cerberus/issues/310
+.. _`#240`: https://github.com/pyeve/cerberus/issues/240
 
 Version 1.2
 -----------
-
-Cerberus is a collaboratively funded project, see the `funding page`_.
 
 Released on April 12, 2018.
 
@@ -52,14 +131,14 @@ Version 1.1
 
 Released on January 25, 2017.
 
-- New: Python 3.6 support (Frank Sachsenheim)
-- New: Users can implement their own semantics in Validator._lookup_field
-  (Frank Sachsenheim).
+- New: Python 3.6 support. (Frank Sachsenheim)
+- New: Users can implement their own semantics in Validator._lookup_field.
+  (Frank Sachsenheim)
 - New: Allow applying of ``empty`` rule to sequences and mappings.
   Closes :issue:`270`. (Frank Sachsenheim)
 
 - Fix: Better handling of unicode in ``allowed`` rule.
-  Closes :issue:`280`. (Michael Klich)
+  Closes :issue:`280`. (Michael Klich).
 - Fix: Rules sets with normalization rules fail.
   Closes :issue:`283`. (Frank Sachsenheim)
 - Fix: Spelling error in RULE_SCHEMA_SEPARATOR constant (Antoine Lubineau)
@@ -70,19 +149,19 @@ Released on January 25, 2017.
 - Fix: Creating custom Validator instance with ``_validator_*`` method raises
   ``SchemaError``. Closes :issue:`265` (Frank Sachsenheim).
 - Fix: Consistently use new style classes (Dominik Kellner).
-- Fix: ``NotImplemented`` does not derive from ``BaseException`` (Bryan W.
+- Fix: ``NotImplemented`` does not derive from ``BaseException``. (Bryan W.
   Weber).
 
 - Completely switch to py.test. Closes :issue:`213` (Frank Sachsenheim).
 - Convert ``self.assert`` method calls to plain ``assert`` calls supported by
   pytest. Addresses :issue:`213` (Bruno Oliveira).
 
-- Docs: Clarifications concerning dependencies and unique rules (Frank
+- Docs: Clarifications concerning dependencies and unique rules. (Frank
   Sachsenheim)
-- Docs: Fix custom coerces documentation. Closes :issue:`285` (gilbsgilbs).
-- Docs: Add note concerning regex flags. Closes :issue:`173` (Frank Sachsenheim).
+- Docs: Fix custom coerces documentation. Closes :issue:`285`. (gilbsgilbs)
+- Docs: Add note concerning regex flags. Closes :issue:`173`. (Frank Sachsenheim)
 - Docs: Explain that normalization and coercion are performed on a copy of the
-  original document (Sergey Leshchenko).
+  original document (Sergey Leshchenko)
 
 Version 1.0.1
 -------------
@@ -104,54 +183,54 @@ Released on September 1, 2016.
     `Breaking Changes`_ and consider their impact on your codebase. For your
     convenience, some :doc:`upgrade notes <upgrading>` have been included.
 
-- New: Add capability to use references in schemas (Frank Sachsenheim).
-- New: Support for binary type (Matthew Ellison).
-- New: Allow callables for 'default' schema rule (Dominik Kellner).
+- New: Add capability to use references in schemas. (Frank Sachsenheim)
+- New: Support for binary type. (Matthew Ellison)
+- New: Allow callables for 'default' schema rule. (Dominik Kellner)
 - New: Support arbitrary types with 'max' and 'min' (Frank Sachsenheim).
 - New: Support any iterable with 'minlength' and 'maxlength'.
   Closes :issue:`158`. (Frank Sachsenheim)
-- New: 'default' normalization rule. Closes :issue:`131` (Damián Nohales).
+- New: 'default' normalization rule. Closes :issue:`131`. (Damián Nohales)
 - New: 'excludes' rule (calve). Addresses :issue:`132`.
-- New: 'forbidden' rule (Frank Sachsenheim).
+- New: 'forbidden' rule. (Frank Sachsenheim)
 - New: 'rename'-rule renames a field to a given value during normalization
   (Frank Sachsenheim).
 - New: 'rename_handler'-rule that takes an callable that renames unknown
-  fields (Frank Sachsenheim).
+  fields. (Frank Sachsenheim)
 - New: 'Validator.purge_unknown'-property and conditional purging of unknown
-  fields (Frank Sachsenheim).
+  fields. (Frank Sachsenheim)
 - New: 'coerce', 'rename_handler' and 'validator' can use class-methods (Frank
   Sachsenheim).
-- New: '*of'-rules can be extended by concatenating another rule (Frank
-  Sachsenheim).
+- New: '*of'-rules can be extended by concatenating another rule. (Frank
+  Sachsenheim)
 - New: Allows various error output with error handlers (Frank Sachsenheim).
 - New: Available rules etc. of a Validator-instance are accessible as
   'validation_rules', 'normalization_rules', 'types', 'validators' and
-  'coercer' -property (Frank Sachsenheim).
+  'coercer' -property. (Frank Sachsenheim)
 - New: Custom rule's method docstrings can contain an expression to validate
-  constraints for that rule when a schema is validated (Frank Sachsenheim).
-- New: 'Validator.root_schema' complements 'Validator.root_document' (Frank
-  Sachsenheim).
+  constraints for that rule when a schema is validated. (Frank Sachsenheim).
+- New: 'Validator.root_schema' complements 'Validator.root_document'. (Frank
+  Sachsenheim)
 - New: 'Validator.document_path' and 'Validator.schema_path' properties can
   be used to determine the relation of the currently validating document to the
-  'root_document' / 'root_schema' (Frank Sachsenheim).
+  'root_document' / 'root_schema'. (Frank Sachsenheim)
 - New: Known, validated definition schemas are cached, thus validation run-time
-  of schemas is reduced (Frank Sachsenheim).
-- New: Add testing with Docker (Frank Sachsenheim).
-- New: Support CPython 3.5 (Frank Sachsenheim).
+  of schemas is reduced. (Frank Sachsenheim)
+- New: Add testing with Docker. (Frank Sachsenheim)
+- New: Support CPython 3.5. (Frank Sachsenheim)
 
-- Fix: 'allow_unknown' inside *of rule is ignored.
-  Closes :issue:`251`. (Davis Kirkendall)
+- Fix: 'allow_unknown' inside *of rule is ignored. Closes #251. (Davis
+  Kirkendall)
 - Fix: unexpected TypeError when using allow_unknown in a schema defining
   a list of dicts. Closes :issue:`250`. (Davis Kirkendall)
 - Fix: validate with 'update=True' does not work when required fields are in
-  a list of subdicts (Jonathan Huot).
+  a list of subdicts. (Jonathan Huot)
 - Fix: 'number' type fails if value is boolean.
-  Closes :issue:`144`. (Frank Sachsenheim).
-- Fix: allow None in 'default' normalization rule (Damián Nohales).
+  Closes :issue:`144`. (Frank Sachsenheim)
+- Fix: allow None in 'default' normalization rule. (Damián Nohales)
 - Fix: in 0.9.2, coerce does not maintain proper nesting on dict fields. Closes
   :issue:`185`.
 - Fix: normalization not working for valueschema and propertyschema. Closes
-  :issue:`155` (Frank Sachsenheim).
+  :issue:`155`. (Frank Sachsenheim)
 - Fix: 'coerce' on List elements produces unexpected results.
   Closes :issue:`161`. (Frank Sachsenheim)
 - Fix: 'coerce'-constraints are validated. (Frank Sachsenheim)
@@ -186,7 +265,7 @@ the inside scoop, please see the :doc:`upgrade notes <upgrading>`.
 - Change: The processed root-document of is now available as 'root_document'-
   property of the (child-)Validator. (Frank Sachsenheim)
 - Change: Removed 'context'-argument from 'validate'-method as this is set
-  upon the creation of a child-validator (Frank Sachsenheim).
+  upon the creation of a child-validator. (Frank Sachsenheim)
 - Change: 'ValidationError'-exception renamed to 'DocumentError'.
   (Frank Sachsenheim)
 - Change: Consolidated all schema-related error-messages' names.
