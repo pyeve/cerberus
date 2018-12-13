@@ -419,7 +419,7 @@ class BareValidator(object):
         if isinstance(rules_set, Mapping):
             return rules_set
         elif isinstance(rules_set, _str_type):
-            return self.rules_set_registry.get(rules_set)
+            return self.rules_set_registry.get(rules_set, {})
         return None
 
     def _resolve_schema(self, schema):
