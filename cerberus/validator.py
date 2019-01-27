@@ -1326,6 +1326,7 @@ class BareValidator(object):
             if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
             self._drop_remaining_rules(
+                'allowed',
                 'empty',
                 'forbidden',
                 'items',

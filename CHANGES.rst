@@ -30,6 +30,8 @@ Fixed
 - Defaults are applied to undefined fields from an ``allow_unknown``
   definition (`#310`_)
 - The ``forbidden`` value now handles any input type (`#449`_)
+- The `allowed` rule will not be evaluated on fields that have a legit ``None``
+  value (`#454`_)
 
 Improved
 ~~~~~~~~
@@ -62,6 +64,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#454`: https://github.com/pyeve/cerberus/pull/454
 .. _`#451`: https://github.com/pyeve/cerberus/pull/451
 .. _`#449`: https://github.com/pyeve/cerberus/pull/449
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
