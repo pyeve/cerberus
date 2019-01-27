@@ -29,6 +29,7 @@ Fixed
 - Normalization rules defined within the ``items`` rule are applied (`#361`_)
 - Defaults are applied to undefined fields from an ``allow_unknown``
   definition (`#310`_)
+- The ``forbidden`` value now handles any input type (`#449`_)
 
 Improved
 ~~~~~~~~
@@ -62,6 +63,7 @@ Docs
 - Update README link; make it point to the new PyPI website
 
 .. _`#451`: https://github.com/pyeve/cerberus/pull/451
+.. _`#449`: https://github.com/pyeve/cerberus/pull/449
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
 .. _`#429`: https://github.com/pyeve/cerberus/pull/429
 .. _`#425`: https://github.com/pyeve/cerberus/pull/425
