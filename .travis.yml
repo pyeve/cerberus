@@ -1,14 +1,29 @@
-sudo: false
+dist: xenial
 language: python
 cache: pip
-python:
-  - 2.7
-  - 3.4
-  - 3.5
-  - 3.6
-  - 3.7-dev  # FIXME when 3.7 is available
-  - pypy
-  - pypy3
-install: travis_retry pip install tox-travis
-script:
-  - tox
+
+matrix:
+  include:
+    - env: TOXENV=linting
+      python: "3.7"
+    - env: TOXENV=py27
+      python: "2.7"
+    - env: TOXENV=py34
+      python: "3.4"
+    - env: TOXENV=py35
+      python: "3.5"
+    - env: TOXENV=py36
+      python: "3.6"
+    - env: TOXENV=py37
+      python: "3.7"
+    - env: TOXENV=pypy
+      python: "pypy2.7-6.0"
+    - env: TOXENV=pypy3
+      python: "pypy3.5-6.0"
+    - env: TOXENV=doclinks
+      python: "3.7"
+    - env: TOXENV=doctest
+      python: "3.7"
+
+install: travis_retry pip install tox
+script: tox --recreate
