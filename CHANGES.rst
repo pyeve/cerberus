@@ -11,8 +11,11 @@ Fixed
 - Fix test test_{default,default_setter}_none_nonnullable (`#435`_)
 - Normalization rules defined within the ``items`` rule are applied (`#361`_)
 - The ``forbidden`` value now handles any input type (`#449`_)
+- The `allowed` rule will not be evaluated on fields that have a legit ``None``
+  value (`#454`_)
 - Various documentation fixes
 
+.. _`#454`: https://github.com/pyeve/cerberus/pull/454
 .. _`#449`: https://github.com/pyeve/cerberus/pull/449
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
 .. _`#361`: https://github.com/pyeve/cerberus/pull/361

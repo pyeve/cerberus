@@ -1149,8 +1149,8 @@ class BareValidator(object):
             if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
             self._drop_remaining_rules(
-                'empty', 'forbidden', 'items', 'keyschema', 'min', 'max',
-                'minlength', 'maxlength', 'regex', 'schema', 'type',
+                'allowed', 'empty', 'forbidden', 'items', 'keyschema', 'min',
+                'max', 'minlength', 'maxlength', 'regex', 'schema', 'type',
                 'valueschema')
 
     def _validate_keyschema(self, schema, field, value):

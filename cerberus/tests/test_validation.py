@@ -64,6 +64,11 @@ def test_nullable_field():
     assert_fail({'a_not_nullable_field_without_type': None})
 
 
+def test_nullable_skips_allowed():
+    schema = {'role': {'allowed': ['agent', 'client', 'supplier'], 'nullable': True}}
+    assert_success({'role': None}, schema)
+
+
 def test_readonly_field():
     field = 'a_readonly_string'
     assert_fail({field: 'update me if you can'},
