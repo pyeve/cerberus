@@ -6,7 +6,6 @@ from cerberus.tests.conftest import sample_schema
 
 
 def test_contextual_data_preservation():
-
     class InheritedValidator(cerberus.Validator):
         def __init__(self, *args, **kwargs):
             if 'working_dir' in kwargs:
@@ -18,9 +17,9 @@ def test_contextual_data_preservation():
                 return True
 
     assert 'test' in InheritedValidator.types
-    v = InheritedValidator({'test': {'type': 'list',
-                                     'schema': {'type': 'test'}}},
-                           working_dir='/tmp')
+    v = InheritedValidator(
+        {'test': {'type': 'list', 'schema': {'type': 'test'}}}, working_dir='/tmp'
+    )
     assert_success({'test': ['foo']}, validator=v)
 
 
@@ -50,17 +49,19 @@ def test_issue_265():
 
     v = MyValidator(schema={'amount': {'validator': 'oddity'}})
     assert_success(document={'amount': 1}, validator=v)
-    assert_fail(document={'amount': 2}, validator=v,
-                error=('amount', (), cerberus.errors.CUSTOM, None,
-                       ('Must be an odd number',)))
+    assert_fail(
+        document={'amount': 2},
+        validator=v,
+        error=('amount', (), cerberus.errors.CUSTOM, None, ('Must be an odd number',)),
+    )
 
 
 def test_schema_validation_can_be_disabled_in_schema_setter():
-
     class NonvalidatingValidator(cerberus.Validator):
         """
         Skips schema validation to speed up initialization
         """
+
         @cerberus.Validator.schema.setter
         def schema(self, schema):
             if schema is None:

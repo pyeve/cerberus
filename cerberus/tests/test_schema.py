@@ -61,14 +61,14 @@ def test_normalization_rules_are_invalid_in_of_rules():
 def test_anyof_allof_schema_validate():
     # make sure schema with 'anyof' and 'allof' constraints are checked
     # correctly
-    schema = {'doc': {'type': 'dict',
-                      'anyof': [
-                          {'schema': [{'param': {'type': 'number'}}]}]}}
+    schema = {
+        'doc': {'type': 'dict', 'anyof': [{'schema': [{'param': {'type': 'number'}}]}]}
+    }
     assert_schema_error({'doc': 'this is my document'}, schema)
 
-    schema = {'doc': {'type': 'dict',
-                      'allof': [
-                          {'schema': [{'param': {'type': 'number'}}]}]}}
+    schema = {
+        'doc': {'type': 'dict', 'allof': [{'schema': [{'param': {'type': 'number'}}]}]}
+    }
     assert_schema_error({'doc': 'this is my document'}, schema)
 
 
@@ -89,20 +89,22 @@ def test_validated_schema_cache():
     assert len(v._valid_schemas) == cache_size
 
     max_cache_size = 150
-    assert cache_size <= max_cache_size, \
-        "There's an unexpected high amount (%s) of cached valid " \
-        "definition schemas. Unless you added further tests, " \
-        "there are good chances that something is wrong. " \
-        "If you added tests with new schemas, you can try to " \
-        "adjust the variable `max_cache_size` according to " \
+    assert cache_size <= max_cache_size, (
+        "There's an unexpected high amount (%s) of cached valid "
+        "definition schemas. Unless you added further tests, "
+        "there are good chances that something is wrong. "
+        "If you added tests with new schemas, you can try to "
+        "adjust the variable `max_cache_size` according to "
         "the added schemas." % cache_size
+    )
 
 
 def test_expansion_in_nested_schema():
     schema = {'detroit': {'schema': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
     v = Validator(schema)
-    assert (v.schema['detroit']['schema'] ==
-            {'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]})
+    assert v.schema['detroit']['schema'] == {
+        'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]
+    }
 
 
 def test_unvalidated_schema_can_be_copied():
