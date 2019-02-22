@@ -43,7 +43,7 @@ class DefinitionSchema(MutableMapping):
 
         return super(DefinitionSchema, cls).__new__(cls)
 
-    def __init__(self, validator, schema={}):
+    def __init__(self, validator, schema):
         """
         :param validator: An instance of Validator-(sub-)class that uses this
                           schema.
@@ -182,6 +182,12 @@ class DefinitionSchema(MutableMapping):
                     schema[field][rule] = new_rules_definition
         return schema
 
+    def get(self, item, default=None):
+        return self.schema.get(item, default)
+
+    def items(self):
+        return self.schema.items()
+
     def update(self, schema):
         try:
             schema = self.expand(schema)
@@ -228,6 +234,12 @@ class DefinitionSchema(MutableMapping):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
     def validate(self, schema=None):
+        """ Validates a schema that defines rules against supported rules.
+
+        :param schema: The schema to be validated as a legal cerberus schema
+                       according to the rules of the assigned Validator object.
+                       Raises a :class:`~cerberus.base.SchemaError` when an invalid
+                       schema is encountered. """
         if schema is None:
             schema = self.schema
         _hash = (mapping_hash(schema), mapping_hash(self.validator.types_mapping))
@@ -236,11 +248,6 @@ class DefinitionSchema(MutableMapping):
             self.validator._valid_schemas.add(_hash)
 
     def _validate(self, schema):
-        """ Validates a schema that defines rules against supported rules.
-
-        :param schema: The schema to be validated as a legal cerberus schema
-                       according to the rules of this Validator object.
-        """
         if isinstance(schema, _str_type):
             schema = self.validator.schema_registry.get(schema, schema)
 
@@ -284,23 +291,20 @@ class SchemaValidatorMixin(object):
     """ This validator mixin provides mechanics to validate schemas passed to a Cerberus
         validator. """
 
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('known_rules_set_refs', set())
+        kwargs.setdefault('known_schema_refs', set())
+        super(SchemaValidatorMixin, self).__init__(*args, **kwargs)
+
     @property
     def known_rules_set_refs(self):
         """ The encountered references to rules set registry items. """
-        return self._config.get('known_rules_set_refs', ())
-
-    @known_rules_set_refs.setter
-    def known_rules_set_refs(self, value):
-        self._config['known_rules_set_refs'] = value
+        return self._config['known_rules_set_refs']
 
     @property
     def known_schema_refs(self):
         """ The encountered references to schema registry items. """
-        return self._config.get('known_schema_refs', ())
-
-    @known_schema_refs.setter
-    def known_schema_refs(self, value):
-        self._config['known_schema_refs'] = value
+        return self._config['known_schema_refs']
 
     @property
     def target_schema(self):
@@ -318,7 +322,7 @@ class SchemaValidatorMixin(object):
             if value in self.known_rules_set_refs:
                 return
             else:
-                self.known_rules_set_refs += (value,)
+                self.known_rules_set_refs.add(value)
             definition = self.target_validator.rules_set_registry.get(value)
             if definition is None:
                 self._error(field, 'Rules set definition %s not found.' % value)
@@ -384,14 +388,13 @@ class SchemaValidatorMixin(object):
             self.target_validator._valid_schemas.add(_hash)
 
     def _check_with_type(self, field, value):
-        value = (value,) if isinstance(value, _str_type) else value
-        invalid_constraints = ()
-        for constraint in value:
-            if constraint not in self.target_validator.types:
-                invalid_constraints += (constraint,)
+        value = set((value,)) if isinstance(value, _str_type) else set(value)
+        invalid_constraints = value - set(self.target_validator.types)
         if invalid_constraints:
             path = self.document_path + (field,)
-            self._error(path, 'Unsupported types: %s' % invalid_constraints)
+            self._error(
+                path, 'Unsupported types: {}'.format(', '.join(invalid_constraints))
+            )
 
     def _expand_rules_set_refs(self, schema):
         result = {}
@@ -408,7 +411,7 @@ class SchemaValidatorMixin(object):
         if value in self.known_schema_refs:
             raise _Abort
 
-        self.known_schema_refs += (value,)
+        self.known_schema_refs.add(value)
         definition = self.target_validator.schema_registry.get(value)
         if definition is None:
             path = self.document_path + (field,)

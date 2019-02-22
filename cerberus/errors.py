@@ -70,7 +70,7 @@ SEQUENCE_SCHEMA = ErrorDefinition(0x82, 'schema')
 # TODO remove KEYSCHEMA AND VALUESCHEMA with next major release
 KEYSRULES = KEYSCHEMA = ErrorDefinition(0x83, 'keysrules')
 VALUESRULES = VALUESCHEMA = ErrorDefinition(0x84, 'valuesrules')
-BAD_ITEMS = ErrorDefinition(0x8f, 'items')
+BAD_ITEMS = ErrorDefinition(0x8F, 'items')
 
 LOGICAL = ErrorDefinition(0x90, None)
 NONEOF = ErrorDefinition(0x91, 'noneof')
@@ -196,10 +196,11 @@ class ErrorList(list):
         :class:`~cerberus.errors.ErrorDefinition`. """
 
     def __contains__(self, error_definition):
-        for code in (x.code for x in self):
-            if code == error_definition.code:
-                return True
-        return False
+        if not isinstance(error_definition, ErrorDefinition):
+            raise TypeError
+
+        wanted_code = error_definition.code
+        return any(x.code == wanted_code for x in self)
 
 
 class ErrorTreeNode(MutableMapping):
@@ -211,10 +212,6 @@ class ErrorTreeNode(MutableMapping):
         self.path = path[: self.parent_node.depth + 1]
         self.errors = ErrorList()
         self.descendants = {}
-
-    def __add__(self, error):
-        self.add(error)
-        return self
 
     def __contains__(self, item):
         if isinstance(item, ErrorDefinition):
@@ -233,6 +230,7 @@ class ErrorTreeNode(MutableMapping):
             for error in self.errors:
                 if item.code == error.code:
                     return error
+            return None
         else:
             return self.descendants.get(item)
 
@@ -263,14 +261,16 @@ class ErrorTreeNode(MutableMapping):
         if key not in self.descendants:
             self[key] = ErrorTreeNode(error_path, self)
 
+        node = self[key]
+
         if len(error_path) == self.depth + 1:
-            self[key].errors.append(error)
-            self[key].errors.sort()
+            node.errors.append(error)
+            node.errors.sort()
             if error.is_group_error:
                 for child_error in error.child_errors:
-                    self.tree_root += child_error
+                    self.tree_root.add(child_error)
         else:
-            self[key] += error
+            node.add(error)
 
     def _path_of_(self, error):
         return getattr(error, self.tree_type + '_path')
@@ -280,14 +280,14 @@ class ErrorTree(ErrorTreeNode):
     """ Base class for :class:`~cerberus.errors.DocumentErrorTree` and
         :class:`~cerberus.errors.SchemaErrorTree`. """
 
-    def __init__(self, errors=[]):
+    def __init__(self, errors=()):
         self.parent_node = None
         self.tree_root = self
         self.path = ()
         self.errors = ErrorList()
         self.descendants = {}
         for error in errors:
-            self += error
+            self.add(error)
 
     def add(self, error):
         """ Add an error to the tree.
@@ -488,10 +488,9 @@ class BasicErrorHandler(BaseErrorHandler):
     def __init__(self, tree=None):
         self.tree = {} if tree is None else tree
 
-    def __call__(self, errors=None):
-        if errors is not None:
-            self.clear()
-            self.extend(errors)
+    def __call__(self, errors):
+        self.clear()
+        self.extend(errors)
         return self.pretty_tree
 
     def __str__(self):
