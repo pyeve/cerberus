@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from copy import deepcopy
 from tempfile import NamedTemporaryFile
 
 from pytest import mark

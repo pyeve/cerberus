@@ -1,0 +1,23 @@
+# mind that a similar file exists for pre-commit usage
+repos:
+  - repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
+        args: [--check]
+        types:
+          - python
+        exclude: ^docs/conf.py$
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v1.4.0
+    hooks:
+      - id: check-yaml
+        types:
+          - yaml
+      - id: debug-statements
+        types:
+          - python
+      - id: flake8
+        types:
+          - python
+        exclude: ^docs/conf.py$
