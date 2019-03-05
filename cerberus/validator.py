@@ -1554,7 +1554,7 @@ class InspectedValidator(type):
         if cls._types_from_methods:
             warn(
                 "Methods for type testing are deprecated, use TypeDefinition "
-                "and the 'types_mapping'-property of a Validator-instance "
+                "and the 'types_mapping'-property of a Validator-class "
                 "instead.",
                 DeprecationWarning,
             )
