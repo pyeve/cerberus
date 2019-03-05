@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from collections import Callable, Hashable, Iterable, Mapping, MutableMapping, Sequence
 from copy import copy
 
 from cerberus import errors
@@ -10,6 +9,14 @@ from cerberus.utils import (
     validator_factory,
     mapping_hash,
     TypeDefinition,
+)
+from cerberus.platform import (
+    Callable,
+    Hashable,
+    Iterable,
+    Mapping,
+    MutableMapping,
+    Sequence,
 )
 
 
