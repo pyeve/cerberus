@@ -41,3 +41,10 @@ the implementation should look like this:
             return False
         else:
             return True
+
+Ross Rhodes: Validating Python Data with Cerberus (December 2018)
+-----------------------------------------------------------------
+
+Ross Rhodes wrote a `gentle introduction <https://towardsdatascience.com/validating-python-data-with-cerberus-374447bd3cbe>`_
+to Cerberus by sketching a validation of payloads to an API against a schema
+that is loaded from a `JSON` file.
