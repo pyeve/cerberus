@@ -14,7 +14,10 @@ Fixed
 - The `allowed` rule will not be evaluated on fields that have a legit ``None``
   value (`#454`_)
 - Various documentation fixes
+- If the cerberus distribution cannot not be found, the version is set to the
+  value ``unknown`` (`#472`_)
 
+.. _`#472`: https://github.com/pyeve/cerberus/pull/472
 .. _`#454`: https://github.com/pyeve/cerberus/pull/454
 .. _`#449`: https://github.com/pyeve/cerberus/pull/449
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
