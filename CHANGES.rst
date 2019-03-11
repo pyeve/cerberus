@@ -32,6 +32,8 @@ Fixed
 - The ``forbidden`` value now handles any input type (`#449`_)
 - The `allowed` rule will not be evaluated on fields that have a legit ``None``
   value (`#454`_)
+- If the cerberus distribution cannot not be found, the version is set to the
+  value ``unknown`` (`#472`_)
 
 Improved
 ~~~~~~~~
@@ -68,6 +70,7 @@ Docs
 - Add a few clarifications to the GitHub issue template
 - Update README link; make it point to the new PyPI website
 
+.. _`#472`: https://github.com/pyeve/cerberus/pull/472
 .. _`#454`: https://github.com/pyeve/cerberus/pull/454
 .. _`#451`: https://github.com/pyeve/cerberus/pull/451
 .. _`#449`: https://github.com/pyeve/cerberus/pull/449
