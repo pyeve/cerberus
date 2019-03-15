@@ -1,47 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from copy import deepcopy
-from pkg_resources import Distribution, DistributionNotFound
 
 import pytest
 
 from cerberus import Validator
-
-
-def reload_module(name):
-    try:
-        reload
-    except NameError:
-        try:
-            from importlib import reload
-        except ImportError:
-            from imp import reload
-    reload(name)
-
-
-@pytest.fixture
-def cerberus():
-    return __import__('cerberus')
-
-
-@pytest.fixture(scope="function")
-def get_distribution_finds_distribution(monkeypatch, cerberus):
-    def creates_distribution(name):
-        return Distribution(project_name="cerberus", version="1.2.3")
-
-    with monkeypatch.context() as m:
-        m.setattr('pkg_resources.get_distribution', creates_distribution)
-        reload_module(cerberus)
-
-
-@pytest.fixture
-def get_distribution_raises_exception(monkeypatch, cerberus):
-    def raise_distribution_not_found(name):
-        raise DistributionNotFound("pkg_resources cannot get distribution")
-
-    with monkeypatch.context() as m:
-        m.setattr('pkg_resources.get_distribution', raise_distribution_not_found)
-        reload_module(cerberus)
 
 
 @pytest.fixture
