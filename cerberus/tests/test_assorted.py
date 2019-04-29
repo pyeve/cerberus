@@ -1,5 +1,4 @@
 from decimal import Decimal
-from pkg_resources import Distribution, DistributionNotFound
 
 from pytest import mark
 

@@ -1,3 +1,4 @@
+import itertools
 from datetime import datetime, date
 from random import choice
 from string import ascii_lowercase
