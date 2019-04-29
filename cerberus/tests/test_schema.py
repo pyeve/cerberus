@@ -86,7 +86,7 @@ def test_validated_schema_cache():
     v.schema = {'foozifix': {'type': 'integer'}}
     assert len(v._valid_schemas) == cache_size
 
-    max_cache_size = 160
+    max_cache_size = 161
     assert cache_size <= max_cache_size, (
         "There's an unexpected high amount (%s) of cached valid "
         "definition schemas. Unless you added further tests, "
