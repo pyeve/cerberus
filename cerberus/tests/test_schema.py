@@ -29,15 +29,7 @@ def test_bad_schema_type_field(validator):
 
 def test_unknown_rule(validator):
     message = "{'foo': [{'unknown': ['unknown rule']}]}"
-    with pytest.raises(SchemaError, match=message):
-        validator.schema = {'foo': {'unknown': 'rule'}}
-
-
-def test_unknown_type(validator):
-    field = 'name'
-    value = 'catch_me'
-    message = str({field: [{'type': ['unallowed value %s' % value]}]})
-    with pytest.raises(SchemaError, match=message):
+    with pytest.raises(SchemaError, match=re.escape(message)):
         validator.schema = {'foo': {'unknown': 'rule'}}
 
 
