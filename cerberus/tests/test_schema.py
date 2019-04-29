@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from cerberus import Validator, errors, SchemaError
@@ -6,14 +8,15 @@ from cerberus.tests import assert_schema_error
 
 def test_empty_schema():
     validator = Validator()
-    with pytest.raises(SchemaError, message=errors.SCHEMA_ERROR_MISSING):
+    message = errors.SCHEMA_ERROR_MISSING
+    with pytest.raises(SchemaError, match=re.escape(message)):
         validator({}, schema=None)
 
 
 def test_bad_schema_type(validator):
     schema = "this string should really be dict"
-    exp_msg = errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema)
-    with pytest.raises(SchemaError, message=exp_msg):
+    message = errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema)
+    with pytest.raises(SchemaError, match=re.escape(message)):
         validator.schema = schema
 
 
@@ -26,7 +29,7 @@ def test_bad_schema_type_field(validator):
 
 def test_unknown_rule(validator):
     message = "{'foo': [{'unknown': ['unknown rule']}]}"
-    with pytest.raises(SchemaError, message=message):
+    with pytest.raises(SchemaError, match=message):
         validator.schema = {'foo': {'unknown': 'rule'}}
 
 
@@ -34,14 +37,14 @@ def test_unknown_type(validator):
     field = 'name'
     value = 'catch_me'
     message = str({field: [{'type': ['unallowed value %s' % value]}]})
-    with pytest.raises(SchemaError, message=message):
+    with pytest.raises(SchemaError, match=message):
         validator.schema = {'foo': {'unknown': 'rule'}}
 
 
 def test_bad_schema_definition(validator):
     field = 'name'
     message = str({field: ['must be of dict type']})
-    with pytest.raises(SchemaError, message=message):
+    with pytest.raises(SchemaError, match=re.escape(message)):
         validator.schema = {field: 'this should really be a dict'}
 
 
