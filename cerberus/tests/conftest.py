@@ -37,7 +37,7 @@ sample_schema = {
     },
     'a_regex_email': {
         'type': 'string',
-        'regex': r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
+        'regex': r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$',
     },
     'a_readonly_string': {'type': 'string', 'readonly': True},
     'a_restricted_string': {'type': 'string', 'allowed': ['agent', 'client', 'vendor']},
