@@ -13,12 +13,14 @@ Fixed
 
 - Fixed the expansion of the deprecated rule names ``keyschema`` and
   ``valueschema`` (`#482`_)
+- ``*of_``-typesavers properly expand rule names containing ``_`` (`#484`_)
 
 Improved
 ~~~~~~~~
 - Add ``maintainer`` and ``maintainer_email`` to setup.py (`#481`_)
 - Add ``project_urls`` to setup.py (`#480`_)
 
+.. _`#484`: https://github.com/pyeve/cerberus/issues/484
 .. _`#482`: https://github.com/pyeve/cerberus/issues/482
 .. _`#481`: https://github.com/pyeve/cerberus/issues/481
 .. _`#480`: https://github.com/pyeve/cerberus/issues/480

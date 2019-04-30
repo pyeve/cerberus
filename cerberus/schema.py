@@ -138,7 +138,7 @@ class DefinitionSchema(MutableMapping):
 
         for field in schema:
             for of_rule in (x for x in schema[field] if is_of_rule(x)):
-                operator, rule = of_rule.split('_')
+                operator, rule = of_rule.split('_', 1)
                 schema[field].update({operator: []})
                 for value in schema[field][of_rule]:
                     schema[field][operator].append({rule: value})

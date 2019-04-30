@@ -157,3 +157,18 @@ def test_deprecated_rule_names_in_valueschema():
             ],
         },
     }
+
+
+def test_anyof_check_with():
+    def foo(field, value, error):
+        pass
+
+    def bar(field, value, error):
+        pass
+
+    schema = {'field': {'anyof_check_with': [foo, bar]}}
+    validator = Validator(schema)
+
+    assert validator.schema == {
+        'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}
+    }
