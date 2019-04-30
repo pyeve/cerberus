@@ -6,6 +6,13 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 In Development
 --------------
 
+- hic sunt leones.
+
+v 1.3
+-----
+
+Releases on April 30, 2019.
+
 New
 ~~~
 - Add ``require_all`` rule and validator argument (`#417`_)
