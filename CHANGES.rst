@@ -6,7 +6,9 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 In Development
 --------------
 
-- hic sunt leones.
+Improved
+~~~~~~~~
+- Add ``project_urls`` to setup.py, so they will show on next PyPI release
 
 v 1.3
 -----

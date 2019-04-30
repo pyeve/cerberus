@@ -2,6 +2,7 @@
 
 from setuptools import setup, find_packages
 import sys
+from collections import OrderedDict
 
 DESCRIPTION = (
     "Lightweight, extensible schema and data validation tool for "
@@ -23,6 +24,13 @@ setup(
     author="Nicola Iarocci",
     author_email="nicola@nicolaiarocci.com",
     url="http://docs.python-cerberus.org",
+    project_urls=OrderedDict(
+        (
+            ("Documentation", "http://python-cerberus.org"),
+            ("Code", "https://github.com/pyeve/cerberus"),
+            ("Issue tracker", "https://github.com/pyeve/cerberus/issues"),
+        )
+    ),
     license="ISC",
     platforms=["any"],
     packages=find_packages(),
