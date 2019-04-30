@@ -18,15 +18,15 @@ from cerberus.utils import TypeDefinition
 
 
 try:
-    __version__ = get_distribution('Cerberus').version
+    __version__ = get_distribution("Cerberus").version
 except DistributionNotFound:
-    __version__ = 'unknown'
+    __version__ = "unknown"
 
 __all__ = [
     DocumentError.__name__,
     SchemaError.__name__,
     TypeDefinition.__name__,
     Validator.__name__,
-    'schema_registry',
-    'rules_set_registry',
+    "schema_registry",
+    "rules_set_registry",
 ]
