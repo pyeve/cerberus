@@ -23,6 +23,8 @@ setup(
     long_description=LONG_DESCRIPTION,
     author="Nicola Iarocci",
     author_email="nicola@nicolaiarocci.com",
+    maintainer="Frank Sachsenheim",
+    maintainer_email="funkyfuture@riseup.net",
     url="http://docs.python-cerberus.org",
     project_urls=OrderedDict(
         (

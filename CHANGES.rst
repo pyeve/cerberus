@@ -8,7 +8,11 @@ In Development
 
 Improved
 ~~~~~~~~
-- Add ``project_urls`` to setup.py, so they will show on next PyPI release
+- Add ``maintainer`` and ``maintainer_email`` to setup.py (`#481`_)
+- Add ``project_urls`` to setup.py (`#480`_)
+
+.. _`#481`: https://github.com/pyeve/cerberus/issues/481
+.. _`#480`: https://github.com/pyeve/cerberus/issues/480
 
 v 1.3
 -----
