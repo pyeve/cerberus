@@ -3,19 +3,28 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
-In Development
---------------
+Version 1.3.1
+-------------
+
+UNRELEASED.
+
+Fixed
+~~~~~
+
+- Fixed the expansion of the deprecated rule names ``keyschema`` and
+  ``valueschema`` (`#482`_)
 
 Improved
 ~~~~~~~~
 - Add ``maintainer`` and ``maintainer_email`` to setup.py (`#481`_)
 - Add ``project_urls`` to setup.py (`#480`_)
 
+.. _`#482`: https://github.com/pyeve/cerberus/issues/482
 .. _`#481`: https://github.com/pyeve/cerberus/issues/481
 .. _`#480`: https://github.com/pyeve/cerberus/issues/480
 
-v 1.3
------
+Version 1.3
+-----------
 
 Releases on April 30, 2019.
 
