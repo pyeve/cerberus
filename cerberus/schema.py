@@ -4,14 +4,20 @@ from copy import copy
 from warnings import warn
 
 from cerberus import errors
-from cerberus.platform import _str_type
+from cerberus.platform import (
+    _str_type,
+    Callable,
+    Hashable,
+    Mapping,
+    MutableMapping,
+    Sequence,
+)
 from cerberus.utils import (
     get_Validator_class,
     validator_factory,
     mapping_hash,
     TypeDefinition,
 )
-from cerberus.platform import Callable, Hashable, Mapping, MutableMapping, Sequence
 
 
 class _Abort(Exception):
