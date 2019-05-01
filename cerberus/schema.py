@@ -403,9 +403,8 @@ class SchemaValidatorMixin(object):
         value = set((value,)) if isinstance(value, _str_type) else set(value)
         invalid_constraints = value - set(self.target_validator.types)
         if invalid_constraints:
-            path = self.document_path + (field,)
             self._error(
-                path, 'Unsupported types: {}'.format(', '.join(invalid_constraints))
+                field, 'Unsupported types: {}'.format(', '.join(invalid_constraints))
             )
 
     def _expand_rules_set_refs(self, schema):
