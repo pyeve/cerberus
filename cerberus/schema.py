@@ -138,7 +138,7 @@ class DefinitionSchema(MutableMapping):
 
         for field in schema:
             for of_rule in (x for x in schema[field] if is_of_rule(x)):
-                operator, rule = of_rule.split('_')
+                operator, rule = of_rule.split('_', 1)
                 schema[field].update({operator: []})
                 for value in schema[field][of_rule]:
                     schema[field][operator].append({rule: value})
@@ -168,7 +168,8 @@ class DefinitionSchema(MutableMapping):
             else:  # assumes schema-constraints for a sequence
                 schema[field]['schema'] = cls.expand({0: schema[field]['schema']})[0]
 
-            for rule in ('keysrules', 'valuesrules'):
+            # TODO remove the last two values in the tuple with the next major release
+            for rule in ('keysrules', 'valuesrules', 'keyschema', 'valueschema'):
                 if rule in schema[field]:
                     schema[field][rule] = cls.expand({0: schema[field][rule]})[0]
 
@@ -204,12 +205,17 @@ class DefinitionSchema(MutableMapping):
     # TODO remove with next major release
     @staticmethod
     def _rename_deprecated_rulenames(schema):
-        for old, new in (
-            ('keyschema', 'keysrules'),
-            ('validator', 'check_with'),
-            ('valueschema', 'valuesrules'),
-        ):
-            for field, rules in schema.items():
+        for field, rules in schema.items():
+
+            if isinstance(rules, str):  # registry reference
+                continue
+
+            for old, new in (
+                ('keyschema', 'keysrules'),
+                ('validator', 'check_with'),
+                ('valueschema', 'valuesrules'),
+            ):
+
                 if old not in rules:
                     continue
 
@@ -222,7 +228,7 @@ class DefinitionSchema(MutableMapping):
                 warn(
                     "The rule '{old}' was renamed to '{new}'. The old name will "
                     "not be available in the next major release of "
-                    "Cerberus".format(old=old, new=new),
+                    "Cerberus.".format(old=old, new=new),
                     DeprecationWarning,
                 )
                 schema[field][new] = schema[field][old]

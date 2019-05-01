@@ -111,3 +111,64 @@ def test_unvalidated_schema_can_be_copied():
     schema = UnvalidatedSchema()
     schema_copy = schema.copy()
     assert schema_copy == schema
+
+
+# TODO remove with next major release
+def test_deprecated_rule_names_in_valueschema():
+    def check_with(field, value, error):
+        pass
+
+    schema = {
+        "field_1": {
+            "type": "dict",
+            "valueschema": {
+                "type": "dict",
+                "keyschema": {"type": "string"},
+                "valueschema": {"type": "string"},
+            },
+        },
+        "field_2": {
+            "type": "list",
+            "items": [
+                {"keyschema": {}},
+                {"validator": check_with},
+                {"valueschema": {}},
+            ],
+        },
+    }
+
+    validator = Validator(schema)
+
+    assert validator.schema == {
+        "field_1": {
+            "type": "dict",
+            "valuesrules": {
+                "type": "dict",
+                "keysrules": {"type": "string"},
+                "valuesrules": {"type": "string"},
+            },
+        },
+        "field_2": {
+            "type": "list",
+            "items": [
+                {"keysrules": {}},
+                {"check_with": check_with},
+                {"valuesrules": {}},
+            ],
+        },
+    }
+
+
+def test_anyof_check_with():
+    def foo(field, value, error):
+        pass
+
+    def bar(field, value, error):
+        pass
+
+    schema = {'field': {'anyof_check_with': [foo, bar]}}
+    validator = Validator(schema)
+
+    assert validator.schema == {
+        'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}
+    }
