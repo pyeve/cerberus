@@ -170,6 +170,18 @@ def test_nullables_dont_fail_coerce():
     assert_normalized(document, document, schema)
 
 
+def test_nullables_fail_coerce_on_non_null_values(validator):
+    def failing_coercion(value):
+        raise Exception("expected to fail")
+
+    schema = {'foo': {'coerce': failing_coercion, 'nullable': True, 'type': 'integer'}}
+    document = {'foo': None}
+    assert_normalized(document, document, schema)
+
+    validator({'foo': 2}, schema)
+    assert errors.COERCION_FAILED in validator._errors
+
+
 def test_normalized():
     schema = {'amount': {'coerce': int}}
     document = {'amount': '2'}
