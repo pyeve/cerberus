@@ -723,7 +723,7 @@ class BareValidator(object):
         try:
             return processor(value)
         except Exception as e:
-            if not nullable and e is not TypeError:
+            if not (nullable and value is None):
                 self._error(field, error, str(e))
             return value
 
