@@ -21,8 +21,9 @@ Improved
 - Add ``project_urls`` to setup.py (`#480`_)
 - Don't ignore all exceptions during coercions for nullable fields. If a
 coercion raises an exception for a nullable field where the field is not
-``None`` the validation now fails.
+``None`` the validation now fails. (`#490`_)
 
+.. _`#490`: https://github.com/pyeve/cerberus/issues/490
 .. _`#484`: https://github.com/pyeve/cerberus/issues/484
 .. _`#482`: https://github.com/pyeve/cerberus/issues/482
 .. _`#481`: https://github.com/pyeve/cerberus/issues/481
