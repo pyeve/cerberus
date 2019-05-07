@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 import pytest
 
 from cerberus import errors, Validator, SchemaError, DocumentError
@@ -12,10 +14,10 @@ def assert_exception(exception, document={}, schema=None, validator=None, msg=No
     if validator is None:
         validator = Validator()
     if msg is None:
-        with pytest.raises(exception) as excinfo:
+        with pytest.raises(exception):
             validator(document, schema)
     else:
-        with pytest.raises(exception, message=msg) as excinfo:  # noqa: F841
+        with pytest.raises(exception, match=re.escape(msg)):
             validator(document, schema)
 
 
