@@ -9,8 +9,10 @@ In Development
 Fixed
 ~~~~~~
 
+- WARNING Unexpected keys present on Black: python_version (`#494`_)
 - CHANGES.rst is not correctly listed in MANIFEST.in (`#493`_)
 
+.. _`#494`: https://github.com/pyeve/cerberus/issues/494
 .. _`#493`: https://github.com/pyeve/cerberus/issues/493
 
 Version 1.3.1

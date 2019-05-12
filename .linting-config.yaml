@@ -5,7 +5,6 @@ repos:
     hooks:
       - id: black
         args: [--check]
-        python_version: python3.6
         types:
           - python
         exclude: ^docs/conf.py$
