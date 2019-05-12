@@ -35,3 +35,4 @@ _build
 
 # Jetbrains
 .idea
+.vscode/
