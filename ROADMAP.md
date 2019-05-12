@@ -32,8 +32,8 @@ A *feature freeze* for functionality of the public API is declared.
 #### Checklist
 
 - [x] The `README.rst` and `CONTRIBUTING.rst` are updated accordingly.
-- [ ] 1.3 is released.
-- [ ] 1.3.x branch is created.
+- [x] 1.3 is released.
+- [x] 1.3.x branch is created.
 
 ### Modernization and consolidation
 
@@ -47,7 +47,7 @@ implications.
   - [ ] A Python 3-style metaclass.
   - [ ] Using `super()` to call overridden methods.
   - [ ] Usage of dictionary comprehensions.
-- [ ] All *public* functions and methods are type annotated. MyPy is added to 
+- [ ] All *public* functions and methods are type annotated. MyPy is added to
       the test suite to validate these.
 - [ ] A wider choice of type names that are closer oriented on the builtin
       names are available. (#374)

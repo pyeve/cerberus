@@ -1,5 +1,5 @@
 include AUTHORS
-include CHANGES
+include CHANGES.rst
 include CONTRIBUTING.rst
 include LICENSE
 include README.rst
