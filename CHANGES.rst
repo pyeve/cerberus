@@ -3,6 +3,16 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
+In Development
+--------------
+
+Fixed
+~~~~~~
+
+- CHANGES.rst is not correctly listed in MANIFEST.in (`#493`_)
+
+.. _`#493`: https://github.com/pyeve/cerberus/issues/493
+
 Version 1.3.1
 -------------
 
