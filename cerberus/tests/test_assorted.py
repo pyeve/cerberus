@@ -7,7 +7,6 @@ from pytest import mark
 from cerberus import TypeDefinition, Validator
 from cerberus.tests import assert_fail, assert_success
 from cerberus.utils import validator_factory
-from cerberus.validator import BareValidator
 
 
 def test_pkgresources_version(monkeypatch):
@@ -77,14 +76,14 @@ def test_dynamic_types():
 
 
 def test_mro():
-    assert Validator.__mro__ == (Validator, BareValidator, object), Validator.__mro__
+    assert Validator.__mro__ == (Validator, object), Validator.__mro__
 
 
 def test_mixin_init():
     class Mixin(object):
         def __init__(self, *args, **kwargs):
-            kwargs["test"] = True
-            super(Mixin, self).__init__(*args, **kwargs)
+            kwargs['test'] = True
+            super().__init__(*args, **kwargs)
 
     MyValidator = validator_factory("MyValidator", Mixin)
     validator = MyValidator()
@@ -94,8 +93,8 @@ def test_mixin_init():
 def test_sub_init():
     class MyValidator(Validator):
         def __init__(self, *args, **kwargs):
-            kwargs["test"] = True
-            super(MyValidator, self).__init__(*args, **kwargs)
+            kwargs['test'] = True
+            super().__init__(*args, **kwargs)
 
     validator = MyValidator()
     assert validator._config["test"]

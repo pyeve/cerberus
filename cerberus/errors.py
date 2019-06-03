@@ -81,7 +81,7 @@ SCHEMA_ERROR_MISSING = "validation schema missing"
 """ Error representations """
 
 
-class ValidationError(object):
+class ValidationError:
     """ A simple class to store and query basic error information. """
 
     def __init__(self, document_path, schema_path, code, rule, constraint, value, info):
@@ -291,7 +291,7 @@ class ErrorTree(ErrorTreeNode):
             self.errors.append(error)
             self.errors.sort()
         else:
-            super(ErrorTree, self).add(error)
+            super().add(error)
 
     def fetch_errors_from(self, path):
         """ Returns all errors for a particular path.
@@ -333,7 +333,7 @@ class SchemaErrorTree(ErrorTree):
     tree_type = 'schema'
 
 
-class BaseErrorHandler(object):
+class BaseErrorHandler:
     """ Base class for all error handlers.
         Subclasses are identified as error-handlers with an instance-test. """
 

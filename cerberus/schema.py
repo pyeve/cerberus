@@ -33,7 +33,7 @@ class DefinitionSchema(MutableMapping):
             )
             SchemaValidator.types_mapping = types_mapping
 
-        return super(DefinitionSchema, cls).__new__(cls)
+        return super().__new__(cls)
 
     def __init__(self, validator, schema):
         """
@@ -232,14 +232,14 @@ class SchemaValidationSchema(UnvalidatedSchema):
         }
 
 
-class SchemaValidatorMixin(object):
+class SchemaValidatorMixin:
     """ This validator mixin provides mechanics to validate schemas passed to a Cerberus
         validator. """
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('known_rules_set_refs', set())
         kwargs.setdefault('known_schema_refs', set())
-        super(SchemaValidatorMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def known_rules_set_refs(self):
@@ -390,7 +390,7 @@ class SchemaValidatorMixin(object):
 ####
 
 
-class Registry(object):
+class Registry:
     """ A registry to store and retrieve schemas and parts of it by a name
     that can be used in validation schemas.
 
