@@ -40,7 +40,6 @@ DOCUMENT_FORMAT = "'{0}' is not a document, must be a dict"
 EMPTY_NOT_ALLOWED = ErrorDefinition(0x22, 'empty')
 NOT_NULLABLE = ErrorDefinition(0x23, 'nullable')
 BAD_TYPE = ErrorDefinition(0x24, 'type')
-BAD_TYPE_FOR_SCHEMA = ErrorDefinition(0x25, 'schema')
 ITEMS_LENGTH = ErrorDefinition(0x26, 'items')
 MIN_LENGTH = ErrorDefinition(0x27, 'minlength')
 MAX_LENGTH = ErrorDefinition(0x28, 'maxlength')
@@ -65,8 +64,8 @@ SETTING_DEFAULT_FAILED = ErrorDefinition(0x64, 'default_setter')
 
 # groups
 ERROR_GROUP = ErrorDefinition(0x80, None)
-MAPPING_SCHEMA = ErrorDefinition(0x81, 'schema')
-SEQUENCE_SCHEMA = ErrorDefinition(0x82, 'schema')
+SCHEMA = ErrorDefinition(0x81, 'schema')
+ITEMSRULES = ErrorDefinition(0x82, 'itemsrules')
 KEYSRULES = ErrorDefinition(0x83, 'keysrules')
 VALUESRULES = ErrorDefinition(0x84, 'valuesrules')
 BAD_ITEMS = ErrorDefinition(0x8F, 'items')
@@ -457,7 +456,6 @@ class BasicErrorHandler(BaseErrorHandler):
         0x22: "empty values not allowed",
         0x23: "null value not allowed",
         0x24: "must be of {constraint} type",
-        0x25: "must be of dict type",
         0x26: "length of list should be {constraint}, it is {0}",
         0x27: "min length is {constraint}",
         0x28: "max length is {constraint}",

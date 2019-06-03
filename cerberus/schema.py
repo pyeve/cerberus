@@ -19,10 +19,6 @@ from cerberus.utils import (
 )
 
 
-class _Abort(Exception):
-    pass
-
-
 class SchemaError(Exception):
     """ Raised when the validation schema is missing, has the wrong format or
         contains errors. """
@@ -149,40 +145,24 @@ class DefinitionSchema(MutableMapping):
 
     @classmethod
     def _expand_subschemas(cls, schema):
-        def has_schema_rule():
-            return isinstance(schema[field], Mapping) and 'schema' in schema[field]
+        for field, rules in schema.items():
+            if 'schema' in schema[field]:
+                rules['schema'] = cls.expand(rules['schema'])
 
-        def has_mapping_schema():
-            """ Tries to determine heuristically if the schema-constraints are
-                aimed to mappings. """
-            try:
-                return all(
-                    isinstance(x, Mapping) for x in schema[field]['schema'].values()
-                )
-            except TypeError:
-                return False
+            for rule in (
+                x for x in ('itemsrules', 'keysrules', 'valuesrules') if x in rules
+            ):
+                rules[rule] = cls.expand({0: rules[rule]})[0]
 
-        for field in schema:
-            if not has_schema_rule():
-                pass
-            elif has_mapping_schema():
-                schema[field]['schema'] = cls.expand(schema[field]['schema'])
-            else:  # assumes schema-constraints for a sequence
-                schema[field]['schema'] = cls.expand({0: schema[field]['schema']})[0]
-
-            # TODO remove the last two values in the tuple with the next major release
-            for rule in ('keysrules', 'valuesrules', 'keyschema', 'valueschema'):
-                if rule in schema[field]:
-                    schema[field][rule] = cls.expand({0: schema[field][rule]})[0]
-
-            for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
-                if rule in schema[field]:
-                    if not isinstance(schema[field][rule], Sequence):
-                        continue
-                    new_rules_definition = []
-                    for item in schema[field][rule]:
-                        new_rules_definition.append(cls.expand({0: item})[0])
-                    schema[field][rule] = new_rules_definition
+            for rule in (
+                x for x in ('allof', 'anyof', 'items', 'noneof', 'oneof') if x in rules
+            ):
+                if not isinstance(rules[rule], Sequence):
+                    continue
+                new_rules_definition = []
+                for item in rules[rule]:
+                    new_rules_definition.append(cls.expand({0: item})[0])
+                rules[rule] = new_rules_definition
         return schema
 
     def get(self, item, default=None):
@@ -290,7 +270,28 @@ class SchemaValidatorMixin(object):
         """ The validator whose schema is being validated. """
         return self._config['target_validator']
 
-    def _check_with_bulk_schema(self, field, value):
+    def _check_with_dependencies(self, field, value):
+        if isinstance(value, _str_type):
+            return
+        elif isinstance(value, Mapping):
+            validator = self._get_child_validator(
+                document_crumb=field,
+                schema={'valuesrules': {'type': 'list'}},
+                allow_unknown=True,
+            )
+            if not validator(value, normalize=False):
+                self._error(validator._errors)
+        elif isinstance(value, Sequence):
+            if not all(isinstance(x, Hashable) for x in value):
+                path = self.document_path + (field,)
+                self._error(path, 'All dependencies must be a hashable type.')
+
+    def _check_with_items(self, field, value):
+        self._check_with_schema(
+            field, {i: rules_set for i, rules_set in enumerate(value)}
+        )
+
+    def _check_with_rulesset(self, field, value):
         # resolve schema registry reference
         if isinstance(value, _str_type):
             if value in self.known_rules_set_refs:
@@ -299,7 +300,7 @@ class SchemaValidatorMixin(object):
                 self.known_rules_set_refs.add(value)
             definition = self.target_validator.rules_set_registry.get(value)
             if definition is None:
-                self._error(field, 'Rules set definition %s not found.' % value)
+                self._error(field, "Rules set definition '{}' not found.".format(value))
                 return
             else:
                 value = definition
@@ -322,40 +323,30 @@ class SchemaValidatorMixin(object):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
-    def _check_with_dependencies(self, field, value):
-        if isinstance(value, _str_type):
-            pass
-        elif isinstance(value, Mapping):
-            validator = self._get_child_validator(
-                document_crumb=field,
-                schema={'valuesrules': {'type': 'list'}},
-                allow_unknown=True,
-            )
-            if not validator(value, normalize=False):
-                self._error(validator._errors)
-        elif isinstance(value, Sequence):
-            if not all(isinstance(x, Hashable) for x in value):
-                path = self.document_path + (field,)
-                self._error(path, 'All dependencies must be a hashable type.')
-
-    def _check_with_items(self, field, value):
-        for i, schema in enumerate(value):
-            self._check_with_bulk_schema((field, i), schema)
-
     def _check_with_schema(self, field, value):
-        try:
-            value = self._handle_schema_reference_for_validator(field, value)
-        except _Abort:
-            return
+        if isinstance(value, _str_type):
+            if value in self.known_schema_refs:
+                return
 
-        _hash = (mapping_hash(value), mapping_hash(self.target_validator.types_mapping))
+            self.known_schema_refs.add(value)
+            definition = self.target_validator.schema_registry.get(value)
+            if definition is None:
+                path = self.document_path + (field,)
+                self._error(path, "Schema definition '{}' not found.".format(value))
+        else:
+            definition = value
+
+        _hash = (
+            mapping_hash(definition),
+            mapping_hash(self.target_validator.types_mapping),
+        )
         if _hash in self.target_validator._valid_schemas:
             return
 
         validator = self._get_child_validator(
             document_crumb=field, schema=None, allow_unknown=self.root_allow_unknown
         )
-        validator(self._expand_rules_set_refs(value), normalize=False)
+        validator(self._expand_rules_set_refs(definition), normalize=False)
         if validator._errors:
             self._error(validator._errors)
         else:
@@ -377,20 +368,6 @@ class SchemaValidatorMixin(object):
             else:
                 result[k] = v
         return result
-
-    def _handle_schema_reference_for_validator(self, field, value):
-        if not isinstance(value, _str_type):
-            return value
-        if value in self.known_schema_refs:
-            raise _Abort
-
-        self.known_schema_refs.add(value)
-        definition = self.target_validator.schema_registry.get(value)
-        if definition is None:
-            path = self.document_path + (field,)
-            self._error(path, 'Schema definition {} not found.'.format(value))
-            raise _Abort
-        return definition
 
     def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """

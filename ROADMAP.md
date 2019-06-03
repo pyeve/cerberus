@@ -43,6 +43,9 @@ implications.
 #### Checklist
 
 - [x] Deprecated features are removed.
+- [x] The `schema` rule only handles mappings, a new `itemrules` replaces the
+      part where `schema` tested items in sequences so far. There will be no
+      backward-compatibility for schemas. (#385)
 - [ ] All Python 2 related code is removed.
 - [ ] Python 3 features that allow simpler code are applied where feasible.
   - [ ] A Python 3-style metaclass.
@@ -54,9 +57,6 @@ implications.
       names are available. (#374)
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
-- [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far. There will be no
-      backward-compatibility for schemas. (#385)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
       clean the code and make extensions simpler.) (#372)

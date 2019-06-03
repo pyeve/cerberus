@@ -69,7 +69,7 @@ def test_error_tree_from_subschema(validator):
     assert 'foo' in d_error_tree
 
     assert len(d_error_tree['foo'].errors) == 1, d_error_tree['foo']
-    assert d_error_tree['foo'].errors[0].code == errors.MAPPING_SCHEMA.code
+    assert d_error_tree['foo'].errors[0].code == errors.SCHEMA.code
     assert 'bar' in d_error_tree['foo']
     assert d_error_tree['foo']['bar'].errors[0].value == 0
     assert d_error_tree.fetch_errors_from(('foo', 'bar'))[0].value == 0
@@ -106,7 +106,9 @@ def test_nested_error_paths(validator):
             'keysrules': {'type': 'integer'},
             'valuesrules': {'regex': '[a-z]*'},
         },
-        'a_list': {'schema': {'type': 'string', 'oneof_regex': ['[a-z]*$', '[A-Z]*']}},
+        'a_list': {
+            'itemsrules': {'type': 'string', 'oneof_regex': ['[a-z]*$', '[A-Z]*']}
+        },
     }
     document = {
         'a_dict': {0: 'abc', 'one': 'abc', 2: 'aBc', 'three': 'abC'},
@@ -187,14 +189,14 @@ def test_nested_error_paths(validator):
     assert _det['a_list'][1] is None
     assert len(_det['a_list'][2].errors) == 3
     assert len(_set['a_list'].errors) == 0
-    assert len(_set['a_list']['schema'].errors) == 1
-    assert len(_set['a_list']['schema']['type'].errors) == 1
-    assert len(_set['a_list']['schema']['oneof'][0]['regex'].errors) == 1
-    assert len(_set['a_list']['schema']['oneof'][1]['regex'].errors) == 1
+    assert len(_set['a_list']['itemsrules'].errors) == 1
+    assert len(_set['a_list']['itemsrules']['type'].errors) == 1
+    assert len(_set['a_list']['itemsrules']['oneof'][0]['regex'].errors) == 1
+    assert len(_set['a_list']['itemsrules']['oneof'][1]['regex'].errors) == 1
 
     _ref_err = ValidationError(
         ('a_list', 0),
-        ('a_list', 'schema', 'type'),
+        ('a_list', 'itemsrules', 'type'),
         errors.BAD_TYPE.code,
         'type',
         'string',
@@ -202,11 +204,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_list'][0].errors[0] == _ref_err
-    assert _set['a_list']['schema']['type'].errors[0] == _ref_err
+    assert _set['a_list']['itemsrules']['type'].errors[0] == _ref_err
 
     _ref_err = ValidationError(
         ('a_list', 2),
-        ('a_list', 'schema', 'oneof'),
+        ('a_list', 'itemsrules', 'oneof'),
         errors.ONEOF.code,
         'oneof',
         'irrelevant_at_this_point',
@@ -214,11 +216,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_list'][2].errors[0] == _ref_err
-    assert _set['a_list']['schema']['oneof'].errors[0] == _ref_err
+    assert _set['a_list']['itemsrules']['oneof'].errors[0] == _ref_err
 
     _ref_err = ValidationError(
         ('a_list', 2),
-        ('a_list', 'schema', 'oneof', 0, 'regex'),
+        ('a_list', 'itemsrules', 'oneof', 0, 'regex'),
         errors.REGEX_MISMATCH.code,
         'regex',
         '[a-z]*$',
@@ -226,11 +228,11 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_list'][2].errors[1] == _ref_err
-    assert _set['a_list']['schema']['oneof'][0]['regex'].errors[0] == _ref_err
+    assert _set['a_list']['itemsrules']['oneof'][0]['regex'].errors[0] == _ref_err
 
     _ref_err = ValidationError(
         ('a_list', 2),
-        ('a_list', 'schema', 'oneof', 1, 'regex'),
+        ('a_list', 'itemsrules', 'oneof', 1, 'regex'),
         errors.REGEX_MISMATCH.code,
         'regex',
         '[a-z]*$',
@@ -238,7 +240,7 @@ def test_nested_error_paths(validator):
         (),
     )
     assert _det['a_list'][2].errors[2] == _ref_err
-    assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == _ref_err
+    assert _set['a_list']['itemsrules']['oneof'][1]['regex'].errors[0] == _ref_err
 
 
 def test_queries():
@@ -252,16 +254,16 @@ def test_queries():
     assert 'foo' in validator.schema_error_tree
     assert 'schema' in validator.schema_error_tree['foo']
 
-    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo'].errors
-    assert errors.MAPPING_SCHEMA in validator.document_error_tree['foo']
+    assert errors.SCHEMA in validator.document_error_tree['foo'].errors
+    assert errors.SCHEMA in validator.document_error_tree['foo']
     assert errors.BAD_TYPE in validator.document_error_tree['foo']['bar']
-    assert errors.MAPPING_SCHEMA in validator.schema_error_tree['foo']['schema']
+    assert errors.SCHEMA in validator.schema_error_tree['foo']['schema']
     assert (
         errors.BAD_TYPE in validator.schema_error_tree['foo']['schema']['bar']['type']
     )
 
     assert (
-        validator.document_error_tree['foo'][errors.MAPPING_SCHEMA].child_errors[0].code
+        validator.document_error_tree['foo'][errors.SCHEMA].child_errors[0].code
         == errors.BAD_TYPE.code
     )
 
