@@ -50,7 +50,7 @@ implications.
 - [ ] Python 3 features that allow simpler code are applied where feasible.
   - [ ] A Python 3-style metaclass.
   - [ ] Using `super()` to call overridden methods.
-  - [ ] Usage of dictionary comprehensions.
+  - [x] Usage of dictionary comprehensions.
 - [ ] All *public* functions and methods are type annotated. MyPy is added to
       the test suite to validate these.
 - [ ] A wider choice of type names that are closer oriented on the builtin
