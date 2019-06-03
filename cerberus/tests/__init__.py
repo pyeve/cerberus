@@ -147,9 +147,7 @@ def assert_not_has_error(_errors, *args, **kwargs):
 
 
 def assert_bad_type(field, data_type, value):
-    assert_fail(
-        {field: value}, error=(field, (field, 'type'), errors.BAD_TYPE, data_type)
-    )
+    assert_fail({field: value}, error=(field, (field, 'type'), errors.TYPE, data_type))
 
 
 def assert_normalized(document, expected, schema=None, validator=None):

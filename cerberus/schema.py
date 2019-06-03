@@ -372,7 +372,7 @@ class SchemaValidatorMixin(object):
     def _validate_logical(self, rule, field, value):
         """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
         if not isinstance(value, Sequence):
-            self._error(field, errors.BAD_TYPE)
+            self._error(field, errors.TYPE)
             return
 
         validator = self._get_child_validator(

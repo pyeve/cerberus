@@ -10,7 +10,7 @@ ValidationError = errors.ValidationError
 def test__error_1():
     v = Validator(schema={'foo': {'type': 'string'}})
     v.document = {'foo': 42}
-    v._error('foo', errors.BAD_TYPE, 'string')
+    v._error('foo', errors.TYPE, 'string')
     error = v._errors[0]
     assert error.document_path == ('foo',)
     assert error.schema_path == ('foo', 'type')
@@ -139,7 +139,7 @@ def test_nested_error_paths(validator):
     _ref_err = ValidationError(
         ('a_dict', 'one'),
         ('a_dict', 'keysrules', 'type'),
-        errors.BAD_TYPE.code,
+        errors.TYPE.code,
         'type',
         'integer',
         'one',
@@ -163,7 +163,7 @@ def test_nested_error_paths(validator):
     _ref_err = ValidationError(
         ('a_dict', 'three'),
         ('a_dict', 'keysrules', 'type'),
-        errors.BAD_TYPE.code,
+        errors.TYPE.code,
         'type',
         'integer',
         'three',
@@ -197,7 +197,7 @@ def test_nested_error_paths(validator):
     _ref_err = ValidationError(
         ('a_list', 0),
         ('a_list', 'itemsrules', 'type'),
-        errors.BAD_TYPE.code,
+        errors.TYPE.code,
         'type',
         'string',
         0,
@@ -256,15 +256,13 @@ def test_queries():
 
     assert errors.SCHEMA in validator.document_error_tree['foo'].errors
     assert errors.SCHEMA in validator.document_error_tree['foo']
-    assert errors.BAD_TYPE in validator.document_error_tree['foo']['bar']
+    assert errors.TYPE in validator.document_error_tree['foo']['bar']
     assert errors.SCHEMA in validator.schema_error_tree['foo']['schema']
-    assert (
-        errors.BAD_TYPE in validator.schema_error_tree['foo']['schema']['bar']['type']
-    )
+    assert errors.TYPE in validator.schema_error_tree['foo']['schema']['bar']['type']
 
     assert (
         validator.document_error_tree['foo'][errors.SCHEMA].child_errors[0].code
-        == errors.BAD_TYPE.code
+        == errors.TYPE.code
     )
 
 
@@ -308,8 +306,8 @@ def test_basic_error_of_errors(validator):
     document = {'foo': 23.42}
     error = ('foo', ('foo', 'oneof'), errors.ONEOF, schema['foo']['oneof'], ())
     child_errors = [
-        (error[0], error[1] + (0, 'type'), errors.BAD_TYPE, 'integer'),
-        (error[0], error[1] + (1, 'type'), errors.BAD_TYPE, 'string'),
+        (error[0], error[1] + (0, 'type'), errors.TYPE, 'integer'),
+        (error[0], error[1] + (1, 'type'), errors.TYPE, 'string'),
     ]
     assert_fail(
         document, schema, validator=validator, error=error, child_errors=child_errors

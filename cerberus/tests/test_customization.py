@@ -95,12 +95,7 @@ def test_custom_datatype_rule():
     assert_fail(
         {'test_field': 0.0},
         validator=validator,
-        error=(
-            'test_field',
-            ('test_field', 'type'),
-            cerberus.errors.BAD_TYPE,
-            'number',
-        ),
+        error=('test_field', ('test_field', 'type'), cerberus.errors.TYPE, 'number'),
     )
     assert_fail(
         {'test_field': 0},

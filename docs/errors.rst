@@ -83,13 +83,14 @@ Examples
     >>> document = {'cats': 'two'}
     >>> v.validate(document, schema)
     False
-    >>> cerberus.errors.BAD_TYPE in v._errors
+    >>> cerberus.errors.TYPE in v._errors
     True
-    >>> v.document_error_tree['cats'].errors == v.schema_error_tree['cats']['type'].errors
+    >>> v.document_error_tree['cats'].errors \
+    ...     == v.schema_error_tree['cats']['type'].errors
     True
-    >>> cerberus.errors.BAD_TYPE in v.document_error_tree['cats']
+    >>> cerberus.errors.TYPE in v.document_error_tree['cats']
     True
-    >>> v.document_error_tree['cats'][cerberus.errors.BAD_TYPE] \
+    >>> v.document_error_tree['cats'][cerberus.errors.TYPE] \
     ...     == v.document_error_tree['cats'].errors[0]
     True
     >>> error = v.document_error_tree['cats'].errors[0]
