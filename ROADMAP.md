@@ -42,7 +42,7 @@ implications.
 
 #### Checklist
 
-- [ ] Deprecated features are removed.
+- [x] Deprecated features are removed.
 - [ ] All Python 2 related code is removed.
 - [ ] Python 3 features that allow simpler code are applied where feasible.
   - [ ] A Python 3-style metaclass.
