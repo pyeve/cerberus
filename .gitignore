@@ -18,11 +18,11 @@ develop-eggs
 pip-log.txt
 
 # Testing
-.cache
-.coverage
+.cache/
+.coverage/
 .mypy_cache/
 .pytest_cache/
-.tox
+.tox/
 
 # Translations
 *.mo

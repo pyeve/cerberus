@@ -51,7 +51,7 @@ implications.
   - [x] A Python 3-style metaclass.
   - [x] Using `super()` to call overridden methods.
   - [x] Usage of dictionary comprehensions.
-- [ ] All *public* functions and methods are type annotated. MyPy is added to
+- [x] All *public* functions and methods are type annotated. MyPy is added to
       the test suite to validate these.
 - [ ] A wider choice of type names that are closer oriented on the builtin
       names are available. (#374)

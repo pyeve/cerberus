@@ -6,8 +6,8 @@ matrix:
   include:
     - env: TOXENV=linting
       python: "3.7"
-    - env: TOXENV=py34
-      python: "3.4"
+    - env: TOXENV=mypy
+      python: "3.7"
     - env: TOXENV=py35
       python: "3.5"
     - env: TOXENV=py36

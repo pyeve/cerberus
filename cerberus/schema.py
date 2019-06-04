@@ -1,14 +1,6 @@
+from collections.abc import Callable, Mapping
 from copy import copy
-from typing import (
-    Callable,
-    Dict,
-    Hashable,
-    Mapping,
-    MutableMapping,
-    Sequence,
-    Set,
-    Union,
-)
+from typing import Dict, Hashable, MutableMapping, Sequence, Set
 
 from cerberus import errors
 from cerberus.base import (
@@ -20,6 +12,7 @@ from cerberus.base import (
     TypeDefinition,
     UnconcernedValidator,
 )
+from cerberus.typing import SchemaDict
 
 
 class SchemaValidator(UnconcernedValidator):
@@ -29,7 +22,7 @@ class SchemaValidator(UnconcernedValidator):
     types_mapping = UnconcernedValidator.types_mapping.copy()
     types_mapping.update(
         {
-            'callable': TypeDefinition('callable', (Callable,), ()),
+            'callable': TypeDefinition('callable', (Callable,), ()),  # type: ignore
             'hashable': TypeDefinition('hashable', (Hashable,), ()),
         }
     )
@@ -205,7 +198,7 @@ class ValidatedSchema(MutableMapping):
 
         if not isinstance(schema, Mapping):
             try:
-                schema = dict(schema)
+                schema = dict(schema)  # type: ignore
             except Exception:
                 raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
 
@@ -304,18 +297,18 @@ class ValidatedSchema(MutableMapping):
             raise SchemaError(self.schema_validator.errors)
 
 
-def schema_hash(schema: ValidatedSchema) -> int:
+def schema_hash(schema: SchemaDict) -> int:
     return hash(mapping_to_frozenset(schema))
 
 
-def mapping_to_frozenset(schema: Union[ValidatedSchema, Dict]) -> frozenset:
+def mapping_to_frozenset(schema: Mapping) -> frozenset:
     """ Be aware that this treats any sequence type with the equal members as
         equal. As it is used to identify equality of schemas, this can be
         considered okay as definitions are semantically equal regardless the
         container type. """
-    schema_copy = schema.copy()
-    for key, value in schema_copy.items():
-        if isinstance(value, (ValidatedSchema, Dict)):
+    schema_copy = {}  # type: Dict[Hashable, Hashable]
+    for key, value in schema.items():
+        if isinstance(value, Mapping):
             schema_copy[key] = mapping_to_frozenset(value)
         elif isinstance(value, Sequence):
             value = list(value)
@@ -325,6 +318,11 @@ def mapping_to_frozenset(schema: Union[ValidatedSchema, Dict]) -> frozenset:
             schema_copy[key] = tuple(value)
         elif isinstance(value, Set):
             schema_copy[key] = frozenset(value)
+        elif isinstance(value, Hashable):
+            schema_copy[key] = value
+        else:
+            raise TypeError("All schema contents must be hashable.")
+
     return frozenset(schema_copy.items())
 
 

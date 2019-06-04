@@ -32,7 +32,7 @@ class Validator(UnconcernedValidator):
             ValidatedSchema(self, {'allow_unknown': value})
         self._config['allow_unknown'] = value
 
-    @property
+    @property  # type: ignore
     def schema(self):
         """ The validation schema of a validator. When a schema is passed to
             a validator method (e.g. ``validate``), it replaces this attribute.
