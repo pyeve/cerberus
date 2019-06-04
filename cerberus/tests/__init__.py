@@ -2,7 +2,8 @@ import re
 
 import pytest
 
-from cerberus import errors, Validator, SchemaError, DocumentError
+from cerberus import errors, Validator, SchemaError
+from cerberus.base import DocumentError
 from cerberus.tests.conftest import sample_schema
 
 

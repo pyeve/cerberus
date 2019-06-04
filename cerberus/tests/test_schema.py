@@ -2,9 +2,8 @@ import re
 
 import pytest
 
-from cerberus import Validator, errors, SchemaError
-from cerberus.schema import UnvalidatedSchema
-from cerberus.tests import assert_schema_error
+from cerberus import Validator, errors, SchemaError, UnconcernedValidator
+from cerberus.tests import assert_schema_error, assert_success
 
 
 def test_empty_schema():
@@ -105,12 +104,6 @@ def test_expansion_in_nested_schema():
     }
 
 
-def test_unvalidated_schema_can_be_copied():
-    schema = UnvalidatedSchema()
-    schema_copy = schema.copy()
-    assert schema_copy == schema
-
-
 def test_anyof_check_with():
     def foo(field, value, error):
         pass
@@ -124,3 +117,10 @@ def test_anyof_check_with():
     assert validator.schema == {
         'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}
     }
+
+
+def test_expansion_with_unvalidated_schema():
+    validator = UnconcernedValidator(
+        {"field": {'allof_regex': ['^Aladdin .*', '.* Sane$']}}
+    )
+    assert_success(document={"field": "Aladdin Sane"}, validator=validator)
