@@ -200,7 +200,7 @@ class ValidatedSchema(MutableMapping):
             try:
                 schema = dict(schema)  # type: ignore
             except Exception:
-                raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
+                raise SchemaError(errors.SCHEMA_TYPE.format(schema))
 
         self.regenerate_validation_schema()
         self.schema_validator = SchemaValidator(
@@ -255,7 +255,7 @@ class ValidatedSchema(MutableMapping):
             _new_schema.update(schema)
             self.validate(_new_schema)
         except ValueError:
-            raise SchemaError(errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema))
+            raise SchemaError(errors.SCHEMA_TYPE.format(schema))
         except Exception as e:
             raise e
         else:

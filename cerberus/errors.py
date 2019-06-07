@@ -96,8 +96,8 @@ ALLOF = ErrorDefinition(0x94, 'allof')
 
 """ SchemaError messages """
 
-SCHEMA_ERROR_DEFINITION_TYPE = "schema definition for field '{0}' must be a dict"
-SCHEMA_ERROR_MISSING = "validation schema missing"
+MISSING_SCHEMA = "validation schema missing"
+SCHEMA_TYPE = "schema definition for field '{0}' must be a dict"
 
 
 """ Error representations """

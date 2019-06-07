@@ -8,13 +8,13 @@ from cerberus.tests import assert_schema_error, assert_success
 
 def test_empty_schema():
     validator = Validator()
-    with pytest.raises(SchemaError, match=errors.SCHEMA_ERROR_MISSING):
+    with pytest.raises(SchemaError, match=errors.MISSING_SCHEMA):
         validator({}, schema=None)
 
 
 def test_bad_schema_type(validator):
     schema = "this string should really be dict"
-    msg = errors.SCHEMA_ERROR_DEFINITION_TYPE.format(schema)
+    msg = errors.SCHEMA_TYPE.format(schema)
     with pytest.raises(SchemaError, match=msg):
         validator.schema = schema
 

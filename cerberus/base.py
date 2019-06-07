@@ -837,7 +837,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             if isinstance(self.allow_unknown, Mapping):
                 self.schema = {}
             else:
-                raise SchemaError(errors.SCHEMA_ERROR_MISSING)
+                raise SchemaError(errors.MISSING_SCHEMA)
 
         if document is None:
             raise DocumentError(errors.DOCUMENT_MISSING)
