@@ -192,16 +192,6 @@ class ValidatedSchema(MutableMapping):
         if not isinstance(validator, UnconcernedValidator):
             raise RuntimeError('validator argument must be a Validator-' 'instance.')
         self.validator = validator
-
-        if isinstance(schema, str):
-            schema = validator.schema_registry.get(schema, schema)
-
-        if not isinstance(schema, Mapping):
-            try:
-                schema = dict(schema)  # type: ignore
-            except Exception:
-                raise SchemaError(errors.SCHEMA_TYPE.format(schema))
-
         self.regenerate_validation_schema()
         self.schema_validator = SchemaValidator(
             None,
@@ -209,6 +199,14 @@ class ValidatedSchema(MutableMapping):
             error_handler=errors.SchemaErrorHandler,
             target_validator=validator,
         )
+
+        if isinstance(schema, str):
+            schema = validator.schema_registry.get(schema, schema)
+
+        try:
+            schema = dict(schema)  # type: ignore
+        except Exception:
+            raise SchemaError(errors.SCHEMA_TYPE.format(schema))
 
         schema = expand_schema(schema)
         self.validate(schema)
