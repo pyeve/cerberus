@@ -145,10 +145,6 @@ def assert_not_has_error(_errors, *args, **kwargs):
         raise AssertionError('An unexpected error occurred.')
 
 
-def assert_bad_type(field, data_type, value):
-    assert_fail({field: value}, error=(field, (field, 'type'), errors.TYPE, data_type))
-
-
 def assert_normalized(document, expected, schema=None, validator=None):
     if validator is None:
         validator = Validator(sample_schema)
