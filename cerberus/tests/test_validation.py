@@ -82,7 +82,6 @@ def test_validate_update():
     [
         {'a_boolean': True},
         {'a_datetime': datetime.now()},
-        {'a_float': 1},
         {'a_float': 3.5},
         {
             'a_list_of_dicts': [

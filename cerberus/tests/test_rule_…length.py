@@ -53,7 +53,7 @@ def test_maxlength_fails(schema):
 
 
 def test_maxlength_with_bytestring_fails(schema):
-    field = 'a_binary'
+    field = 'a_bytestring'
     max_length = schema[field]['maxlength']
     value = b'\x00' * (max_length + 1)
     assert_fail(
@@ -85,7 +85,7 @@ def test_minlength_fails(schema):
 
 
 def test_minlength_with_bytestring_fails(schema):
-    field = 'a_binary'
+    field = 'a_bytestring'
     min_length = schema[field]['minlength']
     value = b'\x00' * (min_length - 1)
     assert_fail(

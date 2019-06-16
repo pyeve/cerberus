@@ -762,26 +762,34 @@ string:
      - Python Type
    * - ``boolean``
      - :class:`bool`
-   * - ``binary``
-     - :class:`bytes`, :class:`bytearray`
+   * - ``bytesarray``
+     - :class:`bytearray`
+   * - ``bytes``
+     - :class:`bytes`
+   * - ``complex``
+     - :class:`complex`
    * - ``date``
-     - :class:`datetime.date`
+     - :class:`datetime.date`, but not its subclass :class:`datetime.datetime`
    * - ``datetime``
      - :class:`datetime.datetime`
    * - ``dict``
-     - :class:`collections.abc.Mapping`
+     - :class:`dict`
    * - ``float``
      - :class:`float`
+   * - ``frozenset``
+     - :class:`frozenset`
    * - ``integer``
-     - :class:`int`
+     - :class:`int`, but not its subclass :class:`bool`
    * - ``list``
-     - :class:`collections.abc.Sequence`, excl. ``string``
+     - :class:`list`
    * - ``number``
-     - :class:`float`, :class:`pyint`, excl. :class:`pybool`
+     - :class:`float`, :class:`int`, but not  :class:`bool`
    * - ``set``
      - :class:`set`
    * - ``string``
      - :class:`str`
+   * - ``tuple``
+     - :class:`tuple`
    * - ``type``
      - :class:`type` (classes)
 

@@ -14,7 +14,7 @@ from cerberus.tests import assert_fail, assert_not_has_error, assert_success
 )
 def test_allof(test_function, document):
     test_function(
-        schema={'field': {'allof': [{'type': 'float'}, {'min': 0}, {'max': 10}]}},
+        schema={'field': {'allof': [{'type': 'integer'}, {'min': 0}, {'max': 10}]}},
         document=document,
     )
 

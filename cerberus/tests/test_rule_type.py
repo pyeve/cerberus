@@ -1,4 +1,5 @@
-from collections import abc
+from collections import abc, OrderedDict
+from datetime import date, datetime
 
 from pytest import mark
 
@@ -11,27 +12,59 @@ class SelfDefinedType:
 
 
 @mark.parametrize(
-    ("field", "_type", "value"),
+    ("_type", "value"),
     [
-        ('a_binary', 'binary', u"i'm not a binary"),
-        ('a_boolean', 'boolean', "i'm not a boolean"),
-        ('a_datetime', 'datetime', "i'm not a datetime"),
-        ('a_dict', 'dict', "i'm not a dict"),
-        ('a_float', 'float', "i'm not a float"),
-        ('an_integer', 'integer', "i'm not an integer"),
-        ('a_list_of_values', 'list', "i'm not a list"),
-        ('a_number', 'number', "i'm not a number"),
-        ('a_string', 'string', 1),
+        ("boolean", 0),
+        ("bytearray", b""),
+        ("bytes", ""),
+        ("complex", False),
+        ("date", datetime(year=1945, month=5, day=9, hour=0, minute=1)),
+        ("datetime", date(year=1945, month=5, day=9)),
+        ("dict", OrderedDict),
+        ("float", 1),
+        ("frozenset", set()),
+        ("integer", 0.1),
+        ("integer", False),
+        ("list", ()),
+        ("number", True),
+        ("set", frozenset()),
+        ("string", b""),
+        ("tuple", []),
+        ("type", 0),
     ],
 )
-def test_type_fails(field, _type, value):
+def test_type_fails(_type, value):
     assert_fail(
-        document={field: value}, error=(field, (field, 'type'), errors.TYPE, (_type,))
+        schema={"field": {"type": _type}},
+        document={"field": value},
+        error=("field", ("field", 'type'), errors.TYPE, (_type,)),
     )
 
 
-def test_type_succeeds():
-    assert_success(document={'a_set': {'hello', 1}})
+@mark.parametrize(
+    ("_type", "value"),
+    [
+        ("boolean", True),
+        ("bytearray", bytearray()),
+        ("bytes", b""),
+        ("complex", complex(1, -1)),
+        ("date", date(year=1945, month=5, day=9)),
+        ("datetime", datetime(year=1945, month=5, day=9, hour=0, minute=1)),
+        ("dict", {}),
+        ("float", 0.1),
+        ("frozenset", frozenset()),
+        ("integer", 0),
+        ("list", []),
+        ("number", 0),
+        ("number", 0.0),
+        ("set", set()),
+        ("string", ""),
+        ("tuple", ()),
+        ("type", int),
+    ],
+)
+def test_type_succeeds(_type, value):
+    assert_success(schema={"field": {"type": _type}}, document={"field": value})
 
 
 def test_type_skips_allowed():

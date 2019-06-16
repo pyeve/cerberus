@@ -22,7 +22,7 @@ def validator():
 
 sample_schema = {
     'a_string': {'type': 'string', 'minlength': 2, 'maxlength': 10},
-    'a_binary': {'type': 'binary', 'minlength': 2, 'maxlength': 10},
+    'a_bytestring': {'type': 'bytes', 'minlength': 2, 'maxlength': 10},
     'a_nullable_integer': {'type': 'integer', 'nullable': True},
     'an_integer': {'type': 'integer', 'min': 1, 'max': 100},
     'a_boolean': {'type': 'boolean', 'meta': 'can haz two distinct states'},

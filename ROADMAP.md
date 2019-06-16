@@ -53,7 +53,7 @@ implications.
   - [x] Usage of dictionary comprehensions.
 - [x] All *public* functions and methods are type annotated. MyPy is added to
       the test suite to validate these.
-- [ ] A wider choice of type names that are closer oriented on the builtin
+- [x] A wider choice of type names that are closer oriented on the builtin
       names are available. (#374)
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)

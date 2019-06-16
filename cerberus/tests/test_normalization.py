@@ -40,7 +40,7 @@ def test_normalize_tuples():
     # https://github.com/pyeve/cerberus/issues/271
     schema = {
         'my_field': {
-            'type': 'list',
+            'type': 'tuple',
             'itemsrules': {'type': ('string', 'number', 'dict')},
         }
     }

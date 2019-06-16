@@ -389,17 +389,22 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     )  # type: ClassVar[Tuple[str, ...]]
     """ Rules that will be processed in that order before any other. """
     types_mapping = {
-        'binary': TypeDefinition('binary', (bytes, bytearray), ()),
         'boolean': TypeDefinition('boolean', (bool,), ()),
+        'bytearray': TypeDefinition('bytearray', (bytearray,), ()),
+        'bytes': TypeDefinition('bytes', (bytes,), ()),
+        'complex': TypeDefinition('complex', (complex,), ()),
         'container': TypeDefinition('container', (Container,), (str,)),
-        'date': TypeDefinition('date', (date,), ()),
+        'date': TypeDefinition('date', (date,), (datetime,)),
         'datetime': TypeDefinition('datetime', (datetime,), ()),
         'dict': TypeDefinition('dict', (Mapping,), ()),
-        'float': TypeDefinition('float', (float, int), ()),
-        'integer': TypeDefinition('integer', (int,), ()),
-        'list': TypeDefinition('list', (Sequence,), (str,)),
+        'float': TypeDefinition('float', (float,), ()),
+        'frozenset': TypeDefinition('frozenset', (frozenset,), ()),
+        'integer': TypeDefinition('integer', (int,), (bool,)),
+        'iterable': TypeDefinition('iterable', (Iterable,), ()),
+        'list': TypeDefinition('list', (list,), ()),
         'number': TypeDefinition('number', (int, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
+        'sequence': TypeDefinition('sequence', (Sequence,), ()),
         'string': TypeDefinition('string', (str,), ()),
         'tuple': TypeDefinition('tuple', (tuple,), ()),
         'type': TypeDefinition('type', (type,), ()),
@@ -957,7 +962,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _normalize_coerce(self, mapping, schema):
         """ {'oneof': [
                 {'type': 'callable'},
-                {'type': 'list',
+                {'type': 'iterable',
                  'itemsrules': {'oneof': [{'type': 'callable'},
                                           {'type': 'string'}]}},
                 {'type': 'string'}
@@ -1476,7 +1481,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
-        """ {'type': 'list'} """
+        """ {'type': 'iterable'} """
         if isinstance(value, str):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
