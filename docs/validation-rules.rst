@@ -751,9 +751,14 @@ as constraint.
 
 type
 ----
-Tests whether the field value's type matches the specified type. That
-specification can either be a class or one of the following names given as
-string:
+Tests whether the field value's type matches the specified type. A single
+specification can either be a class, one of the names (as string) that strictly
+map to one type documented in the following table or a name of the abstract
+types from the :mod:`collections.abc` module. Note that the extent of the
+latter depends on the used Python version and the names are camel-cased (e.g.
+``Set`` or ``MutableMapping``). Named types allow the serialization of schemas
+and the exclusion of particular subtypes. You can also extend the named types
+to support :ref:`custom types <new-types>`.
 
 .. list-table::
    :header-rows: 1
@@ -793,9 +798,25 @@ string:
    * - ``type``
      - :class:`type` (classes)
 
-You can extend this list and support :ref:`custom types <new-types>`.
+Here are examples of the different ways to specify a type:
 
-A list of types can be used to allow different values:
+.. doctest::
+
+    >>> document = {"items": frozenset("a", "b", "c")}
+    >>> v.schema = {"items": {"type": frozenset}}  # class-based test
+    >>> v.validate(document)
+    True
+    >>> v.schema = {"items": {"type": 'frozenset'}}  # named concrete type
+    >>> v.validate(document)
+    True
+    >>> v.schema = {"items": {"type": 'set'}}  # also a named concrete type
+    >>> v.validate(document)
+    False
+    >>> v.schema = {"items": {"type": 'Set'}}  # named abstract type
+    >>> v.validate(document)
+    True
+
+A list of types can be used to allow different values of different types:
 
 .. doctest::
 

@@ -1,7 +1,7 @@
 import re
 from abc import abstractclassmethod
 from ast import literal_eval
-from collections import ChainMap
+from collections import abc, ChainMap
 from copy import copy
 from datetime import date, datetime
 from typing import (
@@ -11,7 +11,6 @@ from typing import (
     Container,
     Dict,
     Generic,
-    Hashable,
     Iterable,
     List,
     Mapping,
@@ -393,24 +392,26 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         'bytearray': TypeDefinition('bytearray', (bytearray,), ()),
         'bytes': TypeDefinition('bytes', (bytes,), ()),
         'complex': TypeDefinition('complex', (complex,), ()),
-        'container': TypeDefinition('container', (Container,), (str,)),
         'date': TypeDefinition('date', (date,), (datetime,)),
         'datetime': TypeDefinition('datetime', (datetime,), ()),
         'dict': TypeDefinition('dict', (Mapping,), ()),
         'float': TypeDefinition('float', (float,), ()),
         'frozenset': TypeDefinition('frozenset', (frozenset,), ()),
         'integer': TypeDefinition('integer', (int,), (bool,)),
-        'iterable': TypeDefinition('iterable', (Iterable,), ()),
         'list': TypeDefinition('list', (list,), ()),
         'number': TypeDefinition('number', (int, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
-        'sequence': TypeDefinition('sequence', (Sequence,), ()),
         'string': TypeDefinition('string', (str,), ()),
         'tuple': TypeDefinition('tuple', (tuple,), ()),
         'type': TypeDefinition('type', (type,), ()),
     }  # type: ClassVar[TypesMapping]
     """ This mapping holds all available constraints for the type rule and
         their assigned :class:`~cerberus.TypeDefinition`. """
+    types_mapping.update(
+        (x, TypeDefinition(x, (getattr(abc, x),), ()))
+        for x in abc.__all__  # type: ignore
+    )
+
     _valid_schemas = set()  # type: ClassVar[Set[Tuple[int, int]]]
     """ A :class:`set` of hashes derived from validation schemas that are
         legit for a particular ``Validator`` class. """
@@ -961,9 +962,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     def _normalize_coerce(self, mapping, schema):
         """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'iterable',
-                 'itemsrules': {'oneof': [{'type': 'callable'},
+                {'type': 'Callable'},
+                {'type': 'Iterable',
+                 'itemsrules': {'oneof': [{'type': 'Callable'},
                                           {'type': 'string'}]}},
                 {'type': 'string'}
                 ]} """
@@ -1154,16 +1155,16 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
-        """ {'type': 'hashable'} """
+        """ {'type': 'Hashable'} """
         if 'rename' in schema[field]:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
         """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'itemsrules': {'oneof': [{'type': 'callable'},
+                {'type': 'Callable'},
+                {'type': 'Iterable',
+                 'itemsrules': {'oneof': [{'type': 'Callable'},
                                           {'type': 'string'}]}},
                 {'type': 'string'}
                 ]} """
@@ -1230,7 +1231,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     def _normalize_default_setter(self, mapping, schema, field):
         """ {'oneof': [
-                {'type': 'callable'},
+                {'type': 'Callable'},
                 {'type': 'string'}
                 ]} """
         if 'default_setter' in schema[field]:
@@ -1357,7 +1358,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     )
 
     def _validate_allowed(self, allowed_values, field, value):
-        """ {'type': 'container'} """
+        """ {'type': 'container_but_not_string'} """
         if isinstance(value, Iterable) and not isinstance(value, str):
             unallowed = set(value) - set(allowed_values)
             if unallowed:
@@ -1368,12 +1369,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     def _validate_check_with(self, checks, field, value):
         """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'itemsrules': {'oneof': [{'type': 'callable'},
+                {'type': 'Callable'},
+                {'type': 'Iterable',
+                 'itemsrules': {'oneof': [{'type': 'Callable'},
                                           {'type': 'string'}]}},
                 {'type': 'string'}
-                ]} """
+                ]}
+        """
         if isinstance(checks, str):
             value_checker = self.__get_rule_handler('check_with', checks)
             value_checker(field, value)
@@ -1385,7 +1387,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     def _validate_contains(self, expected_values, field, value):
         """ {'empty': False } """
-        if not isinstance(value, Iterable):
+        if not isinstance(value, Container):
             return
 
         if not isinstance(expected_values, Iterable) or isinstance(
@@ -1400,7 +1402,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.MISSING_MEMBERS, missing_values)
 
     def _validate_dependencies(self, dependencies, field, value):
-        """ {'type': ('dict', 'hashable', 'list'),
+        """ {'type': ('Hashable', 'Iterable', 'Mapping'),
              'check_with': 'dependencies'} """
         if isinstance(dependencies, str):
             dependencies = (dependencies,)
@@ -1457,10 +1459,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.EMPTY)
 
     def _validate_excludes(self, excluded_fields, field, value):
-        """ {'type': ('hashable', 'list'),
-             'schema': {'type': 'hashable'}} """
-        if isinstance(excluded_fields, Hashable):
-            excluded_fields = [excluded_fields]
+        """ {'type': ('Hashable', 'Iterable'),
+             'itemsrules': {'type': 'Hashable'}} """
+
+        if isinstance(excluded_fields, str) or not isinstance(
+            excluded_fields, Container
+        ):
+            excluded_fields = (excluded_fields,)
 
         # Mark the currently evaluated field as not required for now if it actually is.
         # One of the so marked will be needed to pass when required fields are checked.
@@ -1481,7 +1486,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
-        """ {'type': 'iterable'} """
+        """ {'type': 'Container'} """
         if isinstance(value, str):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
@@ -1494,7 +1499,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
     def _validate_items(self, items, field, values):
-        """ {'type': 'list', 'check_with': 'items'} """
+        """ {'type': 'Sequence', 'check_with': 'items'} """
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -1560,25 +1565,25 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return valid_counter, _errors
 
     def _validate_anyof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'anyof'} """
+        """ {'type': 'Sequence', 'logical': 'anyof'} """
         valids, _errors = self.__validate_logical('anyof', definitions, field, value)
         if valids < 1:
             self._error(field, errors.ANYOF, _errors, valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'allof'} """
+        """ {'type': 'Sequence', 'logical': 'allof'} """
         valids, _errors = self.__validate_logical('allof', definitions, field, value)
         if valids < len(definitions):
             self._error(field, errors.ALLOF, _errors, valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'noneof'} """
+        """ {'type': 'Sequence', 'logical': 'noneof'} """
         valids, _errors = self.__validate_logical('noneof', definitions, field, value)
         if valids > 0:
             self._error(field, errors.NONEOF, _errors, valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'oneof'} """
+        """ {'type': 'Sequence', 'logical': 'oneof'} """
         valids, _errors = self.__validate_logical('oneof', definitions, field, value)
         if valids != 1:
             self._error(field, errors.ONEOF, _errors, valids, len(definitions))
@@ -1633,8 +1638,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             )
 
     def _validate_keysrules(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'check_with': 'rulesset',
-            'forbidden': ['rename', 'rename_handler']} """
+        """ {'type': ('Mapping', 'string'), 'check_with': 'rulesset',
+            'forbidden': ('rename', 'rename_handler')} """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
@@ -1706,7 +1711,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
-        """ {'type': ('dict', 'string'),
+        """ {'type': ('Mapping', 'string'),
              'check_with': 'schema'} """
 
         if not isinstance(value, Mapping):
@@ -1728,8 +1733,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_type(self, data_type, field, value):
         """ {'type': 'tuple',
              'itemsrules': {
-                 'oneof': [{'type': 'string', 'check_with': 'type_names'},
-                           {'type': 'type'}]}} """
+                 'oneof': (
+                    {'type': 'string', 'check_with': 'type_names'},
+                    {'type': 'type'}
+                 )}} """
         if not data_type:
             return
 

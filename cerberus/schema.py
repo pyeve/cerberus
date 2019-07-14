@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Container, Mapping
 from copy import copy
 from typing import Dict, Hashable, MutableMapping, Sequence, Set
 
@@ -23,8 +23,9 @@ class SchemaValidator(UnconcernedValidator):
     types_mapping = UnconcernedValidator.types_mapping.copy()
     types_mapping.update(
         {
-            'callable': TypeDefinition('callable', (Callable,), ()),  # type: ignore
-            'hashable': TypeDefinition('hashable', (Hashable,), ()),
+            "container_but_not_string": TypeDefinition(
+                "container_but_not_string", (Container,), (str,)
+            )
         }
     )
 

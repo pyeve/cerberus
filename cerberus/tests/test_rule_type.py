@@ -1,10 +1,16 @@
 from collections import abc, OrderedDict
 from datetime import date, datetime
+from types import MappingProxyType
 
 from pytest import mark
 
 from cerberus import errors
 from cerberus.tests import assert_fail, assert_success
+
+
+class SelfDefinedContainer(abc.Container):
+    def __contains__(self, item):
+        pass
 
 
 class SelfDefinedType:
@@ -17,17 +23,30 @@ class SelfDefinedType:
         ("boolean", 0),
         ("bytearray", b""),
         ("bytes", ""),
+        ("ByteString", ""),
+        ("Callable", True),
         ("complex", False),
+        ("Container", 0),
         ("date", datetime(year=1945, month=5, day=9, hour=0, minute=1)),
         ("datetime", date(year=1945, month=5, day=9)),
         ("dict", OrderedDict),
         ("float", 1),
         ("frozenset", set()),
+        ("Hashable", []),
         ("integer", 0.1),
         ("integer", False),
+        ("Iterable", 0),
+        ("Iterator", []),
         ("list", ()),
+        ("Mapping", ((0, 1),)),
+        ("MutableMapping", MappingProxyType({})),
+        ("MutableSequence", ()),
+        ("MutableSet", frozenset()),
         ("number", True),
         ("set", frozenset()),
+        ("Set", ()),
+        ("Sequence", set()),
+        ("Sized", 0),
         ("string", b""),
         ("tuple", []),
         ("type", 0),
@@ -47,17 +66,32 @@ def test_type_fails(_type, value):
         ("boolean", True),
         ("bytearray", bytearray()),
         ("bytes", b""),
+        ("ByteString", b""),
+        ("Callable", assert_success),
         ("complex", complex(1, -1)),
+        ("Container", []),
+        ("Container", {}),
+        ("Container", SelfDefinedContainer()),
         ("date", date(year=1945, month=5, day=9)),
         ("datetime", datetime(year=1945, month=5, day=9, hour=0, minute=1)),
         ("dict", {}),
         ("float", 0.1),
         ("frozenset", frozenset()),
+        ("Hashable", 0),
         ("integer", 0),
+        ("Iterable", []),
+        ("Iterator", iter([])),
         ("list", []),
+        ("Mapping", {}),
+        ("MutableMapping", {}),
+        ("MutableSequence", []),
+        ("MutableSet", set()),
         ("number", 0),
         ("number", 0.0),
+        ("Sequence", ()),
         ("set", set()),
+        ("Set", frozenset()),
+        ("Sized", ()),
         ("string", ""),
         ("tuple", ()),
         ("type", int),
