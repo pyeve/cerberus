@@ -6,6 +6,11 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 In Development
 --------------
 
+New
+~~~
+
+- Classes can be used as constraint for the ``type`` rule (`#374`_)
+
 Fixed
 ~~~~~~
 
@@ -14,6 +19,7 @@ Fixed
 
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
 .. _`#493`: https://github.com/pyeve/cerberus/issues/493
+.. _`#374`: https://github.com/pyeve/cerberus/issues/374
 
 Version 1.3.1
 -------------

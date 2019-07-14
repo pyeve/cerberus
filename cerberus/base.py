@@ -367,6 +367,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         'number': TypeDefinition('number', (int, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
         'string': TypeDefinition('string', (str,), ()),
+        'type': TypeDefinition('type', (type,), ()),
     }  # type: ClassVar[TypesMapping]
     """ This mapping holds all available constraints for the type rule and
         their assigned :class:`~cerberus.TypeDefinition`. """
@@ -1680,19 +1681,22 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
-        """ {'type': ['string', 'list'],
-             'check_with': 'type'} """
+        """ {'type': ('list', 'string', 'type'), 'check_with': 'type_names'} """
         if not data_type:
             return
 
-        types = (data_type,) if isinstance(data_type, str) else data_type
+        types = (data_type,) if isinstance(data_type, (str, type)) else data_type
 
         for _type in types:
-            type_definition = self.types_mapping[_type]
-            if isinstance(value, type_definition.included_types) and not isinstance(
-                value, type_definition.excluded_types
-            ):
-                return
+            if isinstance(_type, str):
+                type_definition = self.types_mapping[_type]
+                if isinstance(value, type_definition.included_types) and not isinstance(
+                    value, type_definition.excluded_types
+                ):
+                    return
+            else:
+                if isinstance(value, _type):
+                    return
 
         self._error(field, errors.TYPE)
         self._drop_remaining_rules()

@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from copy import copy
 from typing import Dict, Hashable, MutableMapping, Sequence, Set
 
@@ -132,15 +132,22 @@ class SchemaValidator(UnconcernedValidator):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
-    def _check_with_type(self, field, value):
-        value = (value,) if isinstance(value, str) else value
-        invalid_constraints = ()
+    def _check_with_type_names(self, field, value):
+        if not isinstance(value, Iterable) or isinstance(value, str):
+            value = (value,)
+
+        invalid_constraints = set()
         for constraint in value:
-            if constraint not in self.target_validator.types:
-                invalid_constraints += (constraint,)
+            if (
+                isinstance(constraint, str)
+                and constraint not in self.target_validator.types
+            ):
+                invalid_constraints.add(constraint)
+
         if invalid_constraints:
             self._error(
-                field, 'Unsupported types: {}'.format(", ".join(invalid_constraints))
+                field,
+                'Unsupported type names: {}'.format(", ".join(invalid_constraints)),
             )
 
     def _expand_rules_set_refs(self, schema):

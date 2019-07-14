@@ -751,7 +751,9 @@ as constraint.
 
 type
 ----
-Data type allowed for the key value. Can be one of the following names:
+Tests whether the field value's type matches the specified type. That
+specification can either be a class or one of the following names given as
+string:
 
 .. list-table::
    :header-rows: 1
@@ -759,27 +761,29 @@ Data type allowed for the key value. Can be one of the following names:
    * - Type Name
      - Python Type
    * - ``boolean``
-     - :class:`pybool`
+     - :class:`bool`
    * - ``binary``
-     - :class:`pybytes`, :class:`pybytearray`
+     - :class:`bytes`, :class:`bytearray`
    * - ``date``
-     - :class:`pydatetime.date`
+     - :class:`datetime.date`
    * - ``datetime``
-     - :class:`pydatetime.datetime`
+     - :class:`datetime.datetime`
    * - ``dict``
-     - :class:`pycollections.abc.Mapping`
+     - :class:`collections.abc.Mapping`
    * - ``float``
-     - :class:`pyfloat`
+     - :class:`float`
    * - ``integer``
-     - :class:`pyint`
+     - :class:`int`
    * - ``list``
-     - :class:`pycollections.abc.Sequence`, excl. ``string``
+     - :class:`collections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`pyfloat`, :class:`pyint`, excl. :class:`pybool`
+     - :class:`float`, :class:`pyint`, excl. :class:`pybool`
    * - ``set``
-     - :class:`pyset`
+     - :class:`set`
    * - ``string``
-     - :class:`pystr`
+     - :class:`str`
+   * - ``type``
+     - :class:`type` (classes)
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -787,7 +791,7 @@ A list of types can be used to allow different values:
 
 .. doctest::
 
-    >>> v.schema = {'quotes': {'type': ['string', 'list']}}
+    >>> v.schema = {'quotes': {'type': ['string', list]}}
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})

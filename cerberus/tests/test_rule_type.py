@@ -1,7 +1,13 @@
+from collections import abc
+
 from pytest import mark
 
 from cerberus import errors
 from cerberus.tests import assert_fail, assert_success
+
+
+class SelfDefinedType:
+    pass
 
 
 @mark.parametrize(
@@ -46,6 +52,23 @@ def test_type_skips_anyof():
         document={'part': 10},
     )
     assert len(_errors) == 1
+
+
+@mark.parametrize(
+    ("test_function", "constraint", "value"),
+    [
+        (assert_success, list, []),
+        (assert_success, abc.Sequence, []),
+        (assert_success, str, ""),
+        (assert_success, SelfDefinedType, SelfDefinedType()),
+        (assert_fail, list, ()),
+        (assert_fail, abc.Sequence, SelfDefinedType()),
+        (assert_fail, str, 1.0),
+        (assert_fail, SelfDefinedType, ""),
+    ],
+)
+def test_type_with_class_as_constraint(test_function, constraint, value):
+    test_function(schema={"field": {"type": constraint}}, document={"field": value})
 
 
 def test_boolean_is_not_a_number():

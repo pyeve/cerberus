@@ -33,7 +33,7 @@ def test_unknown_rule(validator):
 
 
 def test_unknown_type(validator):
-    msg = str({'foo': [{'type': ['Unsupported types: unknown']}]})
+    msg = str({'foo': [{'type': ['Unsupported type names: unknown']}]})
     with pytest.raises(SchemaError, match=re.escape(msg)):
         validator.schema = {'foo': {'type': 'unknown'}}
 
