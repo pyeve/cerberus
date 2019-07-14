@@ -130,7 +130,7 @@ def test_anyof_in_itemsrules(validator):
                 ('parts', 4),
                 ('parts', 'itemsrules', 'type'),
                 errors.TYPE,
-                ['dict', 'string'],
+                ('dict', 'string'),
             ),
         ],
     )
@@ -152,7 +152,7 @@ def test_anyof_in_itemsrules(validator):
     assert 'anyof definition 1' in scope
     assert scope['anyof definition 0'] == [{"product name": ["unknown field"]}]
     assert scope['anyof definition 1'] == [{"product name": ["unknown field"]}]
-    assert _errors['parts'][-1][4] == ["must be of ['dict', 'string'] type"]
+    assert _errors['parts'][-1][4] == ["must be one of these types: ('dict', 'string')"]
 
 
 @mark.parametrize(
@@ -319,9 +319,11 @@ def test_oneof_type_in_oneof_schema(validator):
                                     'none or more than one rule validate',
                                     {
                                         'oneof definition 0': [
-                                            'must be of integer type'
+                                            "must be one of these types: ('integer',)"
                                         ],
-                                        'oneof definition 1': ['must be of float type'],
+                                        'oneof definition 1': [
+                                            "must be one of these " "types: ('float',)"
+                                        ],
                                     },
                                 ]
                             }

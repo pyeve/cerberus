@@ -26,7 +26,7 @@ class SelfDefinedType:
 )
 def test_type_fails(field, _type, value):
     assert_fail(
-        document={field: value}, error=(field, (field, 'type'), errors.TYPE, _type)
+        document={field: value}, error=(field, (field, 'type'), errors.TYPE, (_type,))
     )
 
 
@@ -38,7 +38,7 @@ def test_type_skips_allowed():
     assert_fail(
         schema={'foo': {'type': 'string', 'allowed': ['a']}},
         document={'foo': 0},
-        error=('foo', ('foo', 'type'), errors.TYPE, 'string'),
+        error=('foo', ('foo', 'type'), errors.TYPE, ('string',)),
     )
 
 

@@ -807,7 +807,8 @@ A list of types can be used to allow different values:
     >>> v.validate({'quotes': [1, 'Heureka!']})
     False
     >>> v.errors
-    {'quotes': [{0: ['must be of string type']}]}
+    {'quotes': [{0: ["must be one of these types: ('string',)"]}]}
+
 
 .. note::
 

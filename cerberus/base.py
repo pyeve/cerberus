@@ -73,7 +73,34 @@ class SchemaError(Exception):
 # Schema mangling
 
 
-def expand_schema(schema: Schema) -> Schema:
+def normalize_rulesset(rulesset: RulesSet) -> RulesSet:
+    """ Transforms a set of rules into a canonical form. """
+    return normalize_schema({0: rulesset})[0]
+
+
+def normalize_schema(schema: Schema) -> Schema:
+    """ Transforms a schema into a canonical form. """
+    # TODO add a caching mechanism
+
+    schema = _expand_schema(schema)
+
+    for rules in schema.values():
+        if isinstance(rules, str):
+            continue
+
+        if "type" in rules:
+            constraint = rules["type"]
+            if isinstance(constraint, Iterable) and not isinstance(constraint, str):
+                rules["type"] = tuple(constraint)  # type: ignore
+            else:
+                rules["type"] = (constraint,)  # type: ignore
+
+        # TODO prepare constraints of other rules to improve validation speed
+
+    return schema
+
+
+def _expand_schema(schema: Schema) -> Schema:
     try:
         schema = _expand_logical_shortcuts(schema)
         schema = _expand_subschemas(schema)
@@ -90,30 +117,37 @@ def _expand_logical_shortcuts(schema):
     :return: The expanded schema-definition.
     """
 
-    def is_of_rule(x):
-        return isinstance(x, str) and x.startswith(
-            ('allof_', 'anyof_', 'noneof_', 'oneof_')
-        )
+    for rules in schema.values():
+        if isinstance(rules, str):
+            continue
 
-    for field in schema:
-        for of_rule in (x for x in schema[field] if is_of_rule(x)):
+        for of_rule in (
+            x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
+        ):
             operator, rule = of_rule.split('_', 1)
-            schema[field].update({operator: []})
-            for value in schema[field][of_rule]:
-                schema[field][operator].append({rule: value})
-            del schema[field][of_rule]
+            rules[operator] = tuple(
+                normalize_rulesset({rule: x}) for x in rules[of_rule]
+            )
+            rules.pop(of_rule)
+
     return schema
 
 
 def _expand_subschemas(schema):
-    for field, rules in schema.items():
-        if 'schema' in schema[field]:
-            rules['schema'] = expand_schema(rules['schema'])
+    for rules in schema.values():
+        if isinstance(rules, str):
+            continue
+
+        if 'schema' in rules:
+            rules['schema'] = normalize_schema(rules['schema'])
 
         for rule in (
             x for x in ('itemsrules', 'keysrules', 'valuesrules') if x in rules
         ):
-            rules[rule] = expand_schema({0: rules[rule]})[0]
+            rules[rule] = normalize_rulesset(rules[rule])
+
+        if isinstance(rules.get("allow_unknown", None), Mapping):
+            rules["allow_unknown"] = normalize_rulesset(rules["allow_unknown"])
 
         for rule in (
             x for x in ('allof', 'anyof', 'items', 'noneof', 'oneof') if x in rules
@@ -122,7 +156,7 @@ def _expand_subschemas(schema):
                 continue
             new_rules_definition = []
             for item in rules[rule]:
-                new_rules_definition.append(expand_schema({0: item})[0])
+                new_rules_definition.append(normalize_rulesset(item))
             rules[rule] = new_rules_definition
     return schema
 
@@ -198,13 +232,13 @@ class Registry(Generic[RegistryItem]):
 class SchemaRegistry(Registry):
     @classmethod
     def _expand_definition(cls, definition):
-        return expand_schema(definition)
+        return normalize_schema(definition)
 
 
 class RulesSetRegistry(Registry):
     @classmethod
     def _expand_definition(cls, definition):
-        return expand_schema({0: definition})[0]
+        return normalize_rulesset(definition)
 
 
 schema_registry, rules_set_registry = SchemaRegistry(), RulesSetRegistry()
@@ -367,6 +401,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         'number': TypeDefinition('number', (int, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
         'string': TypeDefinition('string', (str,), ()),
+        'tuple': TypeDefinition('tuple', (tuple,), ()),
         'type': TypeDefinition('type', (type,), ()),
     }  # type: ClassVar[TypesMapping]
     """ This mapping holds all available constraints for the type rule and
@@ -687,7 +722,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @allow_unknown.setter
     def allow_unknown(self, value: AllowUnknown) -> None:
-        self._config['allow_unknown'] = value
+        if isinstance(value, Mapping):
+            self._config['allow_unknown'] = normalize_rulesset(value)
+        elif isinstance(value, bool):
+            self._config['allow_unknown'] = value
+        else:
+            raise TypeError
 
     @property
     def errors(self) -> Any:
@@ -801,7 +841,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         elif self.is_child:
             self._schema = schema
         else:
-            self._schema = expand_schema(schema)
+            self._schema = normalize_schema(schema)
 
     @property
     def schema_registry(self) -> SchemaRegistry:
@@ -1681,13 +1721,14 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
-        """ {'type': ('list', 'string', 'type'), 'check_with': 'type_names'} """
+        """ {'type': 'tuple',
+             'itemsrules': {
+                 'oneof': [{'type': 'string', 'check_with': 'type_names'},
+                           {'type': 'type'}]}} """
         if not data_type:
             return
 
-        types = (data_type,) if isinstance(data_type, (str, type)) else data_type
-
-        for _type in types:
+        for _type in data_type:
             if isinstance(_type, str):
                 type_definition = self.types_mapping[_type]
                 if isinstance(value, type_definition.included_types) and not isinstance(

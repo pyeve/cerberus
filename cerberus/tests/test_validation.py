@@ -47,11 +47,21 @@ def test_bad_valuesrules():
     value = {schema_field: 'not an integer'}
 
     exp_child_errors = [
-        ((field, schema_field), (field, 'valuesrules', 'type'), errors.TYPE, 'integer')
+        (
+            (field, schema_field),
+            (field, 'valuesrules', 'type'),
+            errors.TYPE,
+            ('integer',),
+        )
     ]
     assert_fail(
         {field: value},
-        error=(field, (field, 'valuesrules'), errors.VALUESRULES, {'type': 'integer'}),
+        error=(
+            field,
+            (field, 'valuesrules'),
+            errors.VALUESRULES,
+            {'type': ('integer',)},
+        ),
         child_errors=exp_child_errors,
     )
 
@@ -99,18 +109,20 @@ def test_one_of_two_types(validator):
     assert_success({field: 'foo'})
     assert_success({field: ['foo', 'bar']})
     exp_child_errors = [
-        ((field, 1), (field, 'itemsrules', 'type'), errors.TYPE, 'string')
+        ((field, 1), (field, 'itemsrules', 'type'), errors.TYPE, ('string',))
     ]
     assert_fail(
         {field: ['foo', 23]},
         validator=validator,
-        error=(field, (field, 'itemsrules'), errors.ITEMSRULES, {'type': 'string'}),
+        error=(field, (field, 'itemsrules'), errors.ITEMSRULES, {'type': ('string',)}),
         child_errors=exp_child_errors,
     )
     assert_fail(
-        {field: 23}, error=((field,), (field, 'type'), errors.TYPE, ['string', 'list'])
+        {field: 23}, error=((field,), (field, 'type'), errors.TYPE, ('string', 'list'))
     )
-    assert validator.errors == {field: [{1: ['must be of string type']}]}
+    assert validator.errors == {
+        field: [{1: ["must be one of these types: ('string',)"]}]
+    }
 
 
 def test_custom_validator():

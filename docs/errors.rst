@@ -101,6 +101,6 @@ Examples
     >>> error.rule
     'type'
     >>> error.constraint
-    'integer'
+    ('integer',)
     >>> error.value
     'two'

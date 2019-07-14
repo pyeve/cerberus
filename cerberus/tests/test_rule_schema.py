@@ -31,7 +31,7 @@ def test_schema(validator):
                 (field, subschema_field),
                 (field, 'schema', subschema_field, 'type'),
                 errors.TYPE,
-                'string',
+                ('string',),
             ),
             (
                 (field, 'city'),
@@ -45,7 +45,9 @@ def test_schema(validator):
     assert field in validator.errors
     assert subschema_field in validator.errors[field][-1]
     assert (
-        errors.BasicErrorHandler.messages[errors.TYPE.code].format(constraint='string')
+        errors.BasicErrorHandler.messages[errors.TYPE.code].format(
+            constraint=('string',)
+        )
         in validator.errors[field][-1][subschema_field]
     )
     assert 'city' in validator.errors[field][-1]

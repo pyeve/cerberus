@@ -28,7 +28,7 @@ def test_itemsrules_with_schema(validator):
     assert 0 in validator.errors[field][-1]
     assert 'price' in validator.errors[field][-1][0][-1]
     exp_msg = errors.BasicErrorHandler.messages[errors.TYPE.code].format(
-        constraint='integer'
+        constraint=('integer',)
     )
     assert exp_msg in validator.errors[field][-1][0][-1]['price']
 
@@ -38,6 +38,6 @@ def test_itemsrules_with_schema(validator):
         document={field: ["not a dict"]},
         error=(field, (field, 'itemsrules'), errors.ITEMSRULES, itemsrules),
         child_errors=[
-            ((field, 0), (field, 'itemsrules', 'type'), errors.TYPE, 'dict', ())
+            ((field, 0), (field, 'itemsrules', 'type'), errors.TYPE, ('dict',), ())
         ],
     )

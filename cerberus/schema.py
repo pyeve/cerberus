@@ -1,16 +1,17 @@
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Mapping
 from copy import copy
 from typing import Dict, Hashable, MutableMapping, Sequence, Set
 
 from cerberus import errors
 from cerberus.base import (
-    expand_schema,
+    normalize_schema,
     rules_set_registry,
     RulesSetRegistry,
     SchemaError,
     SchemaRegistry,
     TypeDefinition,
     UnconcernedValidator,
+    normalize_rulesset,
 )
 from cerberus.typing import SchemaDict
 
@@ -133,22 +134,8 @@ class SchemaValidator(UnconcernedValidator):
             self.target_validator._valid_schemas.add(_hash)
 
     def _check_with_type_names(self, field, value):
-        if not isinstance(value, Iterable) or isinstance(value, str):
-            value = (value,)
-
-        invalid_constraints = set()
-        for constraint in value:
-            if (
-                isinstance(constraint, str)
-                and constraint not in self.target_validator.types
-            ):
-                invalid_constraints.add(constraint)
-
-        if invalid_constraints:
-            self._error(
-                field,
-                'Unsupported type names: {}'.format(", ".join(invalid_constraints)),
-            )
+        if value not in self.target_validator.types_mapping:
+            self._error(field, 'Unsupported type name: {}'.format(value))
 
     def _expand_rules_set_refs(self, schema):
         result = {}
@@ -215,7 +202,7 @@ class ValidatedSchema(MutableMapping):
         except Exception:
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
 
-        schema = expand_schema(schema)
+        schema = normalize_schema(schema)
         self.validate(schema)
         self.schema = schema
 
@@ -243,7 +230,7 @@ class ValidatedSchema(MutableMapping):
         return str(self)
 
     def __setitem__(self, key, value):
-        value = expand_schema({0: value})[0]
+        value = normalize_rulesset(value)
         self.validate({key: value})
         self.schema[key] = value
 
@@ -255,7 +242,7 @@ class ValidatedSchema(MutableMapping):
 
     def update(self, schema):
         try:
-            schema = expand_schema(schema)
+            schema = normalize_schema(schema)
             _new_schema = self.schema.copy()
             _new_schema.update(schema)
             self.validate(_new_schema)

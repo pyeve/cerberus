@@ -33,14 +33,37 @@ def test_unknown_rule(validator):
 
 
 def test_unknown_type(validator):
-    msg = str({'foo': [{'type': ['Unsupported type names: unknown']}]})
+    msg = str(
+        {
+            'foo': [
+                {
+                    'type': [
+                        {
+                            0: [
+                                'none or more than one rule validate',
+                                {
+                                    'oneof definition 0': [
+                                        'Unsupported type name: unknown'
+                                    ],
+                                    'oneof definition 1': [
+                                        "must be one of these types: ('type',)"
+                                    ],
+                                },
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    )
+
     with pytest.raises(SchemaError, match=re.escape(msg)):
         validator.schema = {'foo': {'type': 'unknown'}}
 
 
 def test_bad_schema_definition(validator):
     field = 'name'
-    msg = str({field: ['must be of dict type']})
+    msg = str({field: ["must be one of these types: ('dict',)"]})
     with pytest.raises(SchemaError, match=re.escape(msg)):
         validator.schema = {field: 'this should really be a dict'}
 
@@ -71,7 +94,7 @@ def test_anyof_allof_schema_validate():
 
 def test_repr():
     v = Validator({'foo': {'type': 'string'}})
-    assert repr(v.schema) == "{'foo': {'type': 'string'}}"
+    assert repr(v.schema) == "{'foo': {'type': ('string',)}}"
 
 
 def test_expansion_in_nested_schema():
@@ -82,15 +105,14 @@ def test_expansion_in_nested_schema():
     }
 
 
-def test_anyof_check_with():
+def test_shortcut_expansion():
     def foo(field, value, error):
         pass
 
     def bar(field, value, error):
         pass
 
-    schema = {'field': {'anyof_check_with': [foo, bar]}}
-    validator = Validator(schema)
+    validator = Validator({'field': {'anyof_check_with': [foo, bar]}})
 
     assert validator.schema == {
         'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}

@@ -107,7 +107,7 @@ unknown fields will be validated against it:
     >>> v.validate({'an_unknown_field': 1})
     False
     >>> v.errors
-    {'an_unknown_field': ['must be of string type']}
+    {'an_unknown_field': ["must be one of these types: ('string',)"]}
 
 ``allow_unknown`` can also be set at initialization:
 
