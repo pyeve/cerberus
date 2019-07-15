@@ -13,6 +13,7 @@ from cerberus.base import (
     UnconcernedValidator,
     normalize_rulesset,
 )
+from cerberus.platform import _GenericAlias
 from cerberus.typing import SchemaDict
 
 
@@ -25,7 +26,10 @@ class SchemaValidator(UnconcernedValidator):
         {
             "container_but_not_string": TypeDefinition(
                 "container_but_not_string", (Container,), (str,)
-            )
+            ),
+            "generic_type_alias": TypeDefinition(
+                "generic_type_alias", (_GenericAlias,), ()
+            ),
         }
     )
 

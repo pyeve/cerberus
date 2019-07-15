@@ -12,6 +12,9 @@ New
 - Classes can be used as constraint for the ``type`` rule (`#374`_)
 - The abstract base classes of the standard library's ``collections.abc``
   module are available as named types for the ``type`` rule (`#374`_)
+- Generic type aliases from the :mod:`typing` module can be used as constraints
+  for the ``type`` rule, including parametrized ones a.k.a. compound types
+  (`#374`_)
 
 Changed
 ~~~~~~~

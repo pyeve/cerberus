@@ -12,7 +12,7 @@ def test_items(validator):
             field,
             (field, 'items'),
             errors.ITEMS,
-            [{'type': ('string',)}, {'type': ('integer',)}],
+            ({'type': ('string',)}, {'type': ('integer',)}),
         ),
         child_errors=[
             ((field, 1), (field, 'items', 1, 'type'), errors.TYPE, ('integer',))
@@ -35,7 +35,7 @@ def test_items_with_extra_item():
             field,
             (field, 'items'),
             errors.ITEMS_LENGTH,
-            [{'type': ('string',)}, {'type': ('integer',)}],
+            ({'type': ('string',)}, {'type': ('integer',)}),
             (2, 3),
         ),
     )

@@ -24,7 +24,7 @@ def test_anyof_fails():
     assert_fail(
         document={'field': -1},
         schema=schema,
-        error=(('field',), ('field', 'anyof'), errors.ANYOF, [{'min': 0}, {'min': 10}]),
+        error=(('field',), ('field', 'anyof'), errors.ANYOF, ({'min': 0}, {'min': 10})),
         child_errors=[
             (('field',), ('field', 'anyof', 0, 'min'), errors.MIN_VALUE, 0),
             (('field',), ('field', 'anyof', 1, 'min'), errors.MIN_VALUE, 10),
@@ -91,10 +91,10 @@ def test_anyof_in_allof(test_function, document):
 def test_anyof_in_itemsrules(validator):
     # test that a list of schemas can be specified.
 
-    valid_parts = [
+    valid_parts = (
         {'schema': {'model number': {'type': 'string'}, 'count': {'type': 'integer'}}},
         {'schema': {'serial number': {'type': 'string'}, 'count': {'type': 'integer'}}},
-    ]
+    )
     valid_item = {'type': ['dict', 'string'], 'anyof': valid_parts}
     schema = {'parts': {'type': 'list', 'itemsrules': valid_item}}
     document = {
@@ -340,14 +340,14 @@ def test_allow_unknown_in_oneof():
     # https://github.com/pyeve/cerberus/issues/251
     schema = {
         'test': {
-            'oneof': [
+            'oneof': (
                 {
                     'type': 'dict',
                     'allow_unknown': True,
                     'schema': {'known': {'type': 'string'}},
                 },
                 {'type': 'dict', 'schema': {'known': {'type': 'string'}}},
-            ]
+            )
         }
     }
 

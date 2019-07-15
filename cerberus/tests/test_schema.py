@@ -46,7 +46,8 @@ def test_unknown_type(validator):
                                         'Unsupported type name: unknown'
                                     ],
                                     'oneof definition 1': [
-                                        "must be one of these types: ('type',)"
+                                        "must be one of these types: "
+                                        "('type', 'generic_type_alias')"
                                     ],
                                 },
                             ]
@@ -101,7 +102,7 @@ def test_expansion_in_nested_schema():
     schema = {'detroit': {'itemsrules': {'anyof_regex': ['^Aladdin', 'Sane$']}}}
     v = Validator(schema)
     assert v.schema['detroit']['itemsrules'] == {
-        'anyof': [{'regex': '^Aladdin'}, {'regex': 'Sane$'}]
+        'anyof': ({'regex': '^Aladdin'}, {'regex': 'Sane$'})
     }
 
 
@@ -115,7 +116,7 @@ def test_shortcut_expansion():
     validator = Validator({'field': {'anyof_check_with': [foo, bar]}})
 
     assert validator.schema == {
-        'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}
+        'field': {'anyof': ({'check_with': foo}, {'check_with': bar})}
     }
 
 

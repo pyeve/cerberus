@@ -751,14 +751,27 @@ as constraint.
 
 type
 ----
-Tests whether the field value's type matches the specified type. A single
-specification can either be a class, one of the names (as string) that strictly
-map to one type documented in the following table or a name of the abstract
-types from the :mod:`collections.abc` module. Note that the extent of the
-latter depends on the used Python version and the names are camel-cased (e.g.
-``Set`` or ``MutableMapping``). Named types allow the serialization of schemas
-and the exclusion of particular subtypes. You can also extend the named types
-to support :ref:`custom types <new-types>`.
+Tests whether the field value's type matches (one of) the specified type(s).
+There are several ways a type can be specified, each with dis-/advantages
+regarding different usage aspects:
+
+- any object like classes or abstract types that can be used as second argument
+  to the builtin's :func:`isinstance` function
+- strings that reference either one of the named,
+  - strict types whose mapping to actual types are documented in the table
+    below
+  - abstract types that map to the types from the :mod:`collections.abc` module
+    - their extend depends on the Python version
+    - these are are camel-cased (e.g. ``Set`` or ``MutableMapping``)
+  - :ref:`custom types <new-types>` that can be defined per
+    :class:`~cerberus.Validator` class
+- generic aliases from the :mod:`typing` module, including compound types
+  - type parameters that are given as string have Cerberus' semantics of named
+    types and are not resolved like static type checkers do, e.g.
+    ``Set["string"]`` is a valid type specification
+
+Named types allow the serialization of schemas and the exclusion of particular
+subtypes.
 
 .. list-table::
    :header-rows: 1
@@ -802,19 +815,32 @@ Here are examples of the different ways to specify a type:
 
 .. doctest::
 
-    >>> document = {"items": frozenset("a", "b", "c")}
-    >>> v.schema = {"items": {"type": frozenset}}  # class-based test
+    >>> document = {"items": frozenset(("a", "b", "c"))}
+    >>> # class-based test
+    >>> v.schema = {"items": {"type": frozenset}}
     >>> v.validate(document)
     True
-    >>> v.schema = {"items": {"type": 'frozenset'}}  # named concrete type
+    >>> # named concrete type
+    >>> v.schema = {"items": {"type": 'frozenset'}}
     >>> v.validate(document)
     True
-    >>> v.schema = {"items": {"type": 'set'}}  # also a named concrete type
+    >>> # also a named concrete type
+    >>> v.schema = {"items": {"type": 'set'}}
     >>> v.validate(document)
     False
-    >>> v.schema = {"items": {"type": 'Set'}}  # named abstract type
+    >>> # named abstract type
+    >>> v.schema = {"items": {"type": 'Set'}}
     >>> v.validate(document)
     True
+    >>> import typing
+    >>> # compound type
+    >>> v.schema = {"items": {"type": typing.Set[int]}}
+    >>> v.validate(document)
+    False
+    >>> # compound type with Cerberus' semantics for strings
+    >>> v.schema = {"items": {"type": typing.Set["integer"]}}
+    >>> v.validate(document)
+    False
 
 A list of types can be used to allow different values of different types:
 

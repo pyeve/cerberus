@@ -55,7 +55,7 @@ implications.
       the test suite to validate these.
 - [x] A wider choice of type names that are closer oriented on the builtin
       names are available. (#374)
-- [ ] Objects from the `typing` module can be used as constraints for the
+- [x] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to

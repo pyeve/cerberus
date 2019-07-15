@@ -1,4 +1,5 @@
 import re
+import typing
 from abc import abstractclassmethod
 from ast import literal_eval
 from collections import abc, ChainMap
@@ -26,12 +27,14 @@ from typing import (
 from warnings import warn
 
 from cerberus import errors
+from cerberus.platform import TYPE_ALIAS_ORIGIN_ATTRIBUTE, ForwardRef, _GenericAlias
 from cerberus.typing import (
     AllowUnknown,
     Document,
     DocumentPath,
     ErrorHandlerConfig,
     FieldName,
+    NoneType,
     RegistryItem,
     RegistryItems,
     RulesSet,
@@ -42,6 +45,9 @@ from cerberus.utils import drop_item_from_tuple, readonly_classproperty
 
 RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
 toy_error_handler = errors.ToyErrorHandler()
+
+
+_ellipsis = typing.Tuple[int, ...].__args__[-1]
 
 
 def dummy_for_rule_validation(rule_constraints: str) -> Callable:
@@ -81,32 +87,112 @@ def normalize_schema(schema: Schema) -> Schema:
     """ Transforms a schema into a canonical form. """
     # TODO add a caching mechanism
 
-    schema = _expand_schema(schema)
-
     for rules in schema.values():
         if isinstance(rules, str):
             continue
 
         if "type" in rules:
             constraint = rules["type"]
-            if isinstance(constraint, Iterable) and not isinstance(constraint, str):
-                rules["type"] = tuple(constraint)  # type: ignore
-            else:
-                rules["type"] = (constraint,)  # type: ignore
+            if not (
+                isinstance(constraint, Iterable) and not isinstance(constraint, str)
+            ):
+                rules["type"] = (constraint,)
+
+            _expand_generic_type_aliases(rules)
 
         # TODO prepare constraints of other rules to improve validation speed
 
+    _expand_schema(schema)
+
     return schema
 
 
-def _expand_schema(schema: Schema) -> Schema:
+def _expand_schema(schema: Schema) -> None:
     try:
-        schema = _expand_logical_shortcuts(schema)
-        schema = _expand_subschemas(schema)
+        _expand_logical_shortcuts(schema)
+        _expand_subschemas(schema)
     except Exception:  # failure is delayed
         pass
 
-    return schema
+
+def _expand_generic_type_aliases(rules: RulesSet) -> None:
+    compound_types = []
+    plain_types = []
+    is_nullable = False
+
+    for constraint in _flatten_Union_and_Optional(rules.pop("type")):
+
+        if isinstance(constraint, _GenericAlias):
+
+            origin = getattr(constraint, TYPE_ALIAS_ORIGIN_ATTRIBUTE)
+
+            if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
+                compound_types.append(
+                    {
+                        "type": origin,
+                        "keysrules": {"type": constraint.__args__[0]},
+                        "valuesrules": {"type": constraint.__args__[1]},
+                    }
+                )
+
+            elif (
+                issubclass(origin, (abc.MutableSequence, abc.Set))
+                and not constraint.__parameters__
+            ):
+                compound_types.append(
+                    {"type": origin, "itemsrules": {"type": constraint.__args__[0]}}
+                )
+
+            elif issubclass(origin, tuple) and constraint.__args__:
+                if constraint.__args__[-1] is _ellipsis:
+                    compound_types.append(
+                        {"type": origin, "itemsrules": {"type": constraint.__args__[0]}}
+                    )
+                else:
+                    compound_types.append(
+                        {
+                            "type": origin,
+                            "items": tuple({"type": x} for x in constraint.__args__),
+                        }
+                    )
+
+            else:
+                plain_types.append(origin)
+
+        # from typing.Optional
+        elif constraint is NoneType:  # type: ignore
+            is_nullable = True
+
+        elif isinstance(constraint, ForwardRef):
+            plain_types.append(constraint.__forward_arg__)
+
+        else:
+            plain_types.append(constraint)
+
+    if compound_types or is_nullable:
+        if "anyof" in rules:
+            raise SchemaError(
+                "The usage of the `anyof` rule is not possible in a ruleset where the"
+                "`type` rule specifies compound types as constraints."
+            )
+
+        if plain_types:
+            compound_types.append({"type": tuple(plain_types)})
+        if is_nullable:
+            compound_types.append({"nullable": True})
+
+        rules["anyof"] = tuple(compound_types)
+
+    else:
+        rules["type"] = tuple(plain_types)
+
+
+def _flatten_Union_and_Optional(type_constraints):
+    for constraint in type_constraints:
+        if getattr(constraint, "__origin__", None) is typing.Union:
+            yield from _flatten_Union_and_Optional(constraint.__args__)
+        else:
+            yield constraint
 
 
 def _expand_logical_shortcuts(schema):
@@ -128,8 +214,6 @@ def _expand_logical_shortcuts(schema):
                 normalize_rulesset({rule: x}) for x in rules[of_rule]
             )
             rules.pop(of_rule)
-
-    return schema
 
 
 def _expand_subschemas(schema):
@@ -156,8 +240,7 @@ def _expand_subschemas(schema):
             new_rules_definition = []
             for item in rules[rule]:
                 new_rules_definition.append(normalize_rulesset(item))
-            rules[rule] = new_rules_definition
-    return schema
+            rules[rule] = tuple(new_rules_definition)
 
 
 # Registries
@@ -1735,7 +1818,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
              'itemsrules': {
                  'oneof': (
                     {'type': 'string', 'check_with': 'type_names'},
-                    {'type': 'type'}
+                    {'type': ('type', 'generic_type_alias')}
                  )}} """
         if not data_type:
             return

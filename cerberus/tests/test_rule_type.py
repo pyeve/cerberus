@@ -1,10 +1,12 @@
+import typing
 from collections import abc, OrderedDict
 from datetime import date, datetime
 from types import MappingProxyType
 
-from pytest import mark
+from pytest import mark, raises
 
-from cerberus import errors
+from cerberus import errors, SchemaError
+from cerberus.base import normalize_rulesset
 from cerberus.tests import assert_fail, assert_success
 
 
@@ -141,3 +143,63 @@ def test_type_with_class_as_constraint(test_function, constraint, value):
 def test_boolean_is_not_a_number():
     # https://github.com/pyeve/cerberus/issues/144
     assert_fail(schema={'value': {'type': 'number'}}, document={'value': True})
+
+
+@mark.parametrize(
+    ("origin_type", "expected_rules"),
+    [
+        (typing.Dict, {"type": (dict,)}),
+        (
+            typing.Dict[str, int],
+            {
+                "anyof": (
+                    {
+                        "type": (dict,),
+                        "keysrules": {"type": (str,)},
+                        "valuesrules": {"type": (int,)},
+                    },
+                )
+            },
+        ),
+        (
+            typing.List[str],
+            {"anyof": ({"type": (list,), "itemsrules": {"type": (str,)}},)},
+        ),
+        (typing.Tuple, {"type": (tuple,)}),
+        (
+            typing.Tuple[int, str],
+            {
+                "anyof": (
+                    {"type": (tuple,), "items": ({"type": (int,)}, {"type": (str,)})},
+                )
+            },
+        ),
+        (
+            typing.Tuple[int, ...],
+            {"anyof": ({"type": (tuple,), "itemsrules": {"type": (int,)}},)},
+        ),
+        (typing.Union[str, int], {"type": (str, int)}),
+        (
+            typing.Union[str, int, typing.Tuple[str, ...]],
+            {
+                "anyof": (
+                    {"type": (tuple,), "itemsrules": {"type": (str,)}},
+                    {"type": (str, int)},
+                )
+            },
+        ),
+        (typing.Optional[str], {"anyof": ({"type": (str,)}, {"nullable": True})}),
+        (
+            typing.Set["integer"],  # type: ignore
+            {"anyof": ({"type": (set,), "itemsrules": {"type": ("integer",)}},)},
+        ),
+    ],
+)
+def test_normalization_of_generic_type_aliasses(origin_type, expected_rules, validator):
+    assert normalize_rulesset({"type": origin_type}) == expected_rules
+    validator.schema = {"foo": expected_rules}  # tests schema validation
+
+
+def test_compound_type_and_anyof_is_invalid(validator):
+    with raises(SchemaError):
+        validator.schema = {"field": {"type": typing.Set[int], "anyof": []}}

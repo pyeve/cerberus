@@ -24,7 +24,8 @@ ErrorHandlerConfig = Union[
     Type['BaseErrorHandler'],
     Tuple[Type['BaseErrorHandler'], Mapping[str, Any]],
 ]
-RulesSet = Mapping[str, Any]
+NoneType = type(None)
+RulesSet = Dict[str, Any]
 SchemaDict = Mapping[FieldName, RulesSet]
 Schema = Union['ValidatedSchema', SchemaDict]
 AllowUnknown = Union[bool, RulesSet]
