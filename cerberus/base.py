@@ -27,7 +27,7 @@ from typing import (
 from warnings import warn
 
 from cerberus import errors
-from cerberus.platform import TYPE_ALIAS_ORIGIN_ATTRIBUTE, ForwardRef, _GenericAlias
+from cerberus.platform import get_type_args, get_type_origin, ForwardRef, _GenericAlias
 from cerberus.typing import (
     AllowUnknown,
     Document,
@@ -124,14 +124,15 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
 
         if isinstance(constraint, _GenericAlias):
 
-            origin = getattr(constraint, TYPE_ALIAS_ORIGIN_ATTRIBUTE)
+            origin = get_type_origin(constraint)
+            args = get_type_args(constraint)
 
             if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
                 compound_types.append(
                     {
                         "type": origin,
-                        "keysrules": {"type": constraint.__args__[0]},
-                        "valuesrules": {"type": constraint.__args__[1]},
+                        "keysrules": {"type": args[0]},
+                        "valuesrules": {"type": args[1]},
                     }
                 )
 
@@ -139,21 +140,16 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
                 issubclass(origin, (abc.MutableSequence, abc.Set))
                 and not constraint.__parameters__
             ):
-                compound_types.append(
-                    {"type": origin, "itemsrules": {"type": constraint.__args__[0]}}
-                )
+                compound_types.append({"type": origin, "itemsrules": {"type": args[0]}})
 
-            elif issubclass(origin, tuple) and constraint.__args__:
-                if constraint.__args__[-1] is _ellipsis:
+            elif issubclass(origin, tuple) and args:
+                if args[-1] is _ellipsis:
                     compound_types.append(
-                        {"type": origin, "itemsrules": {"type": constraint.__args__[0]}}
+                        {"type": origin, "itemsrules": {"type": args[0]}}
                     )
                 else:
                     compound_types.append(
-                        {
-                            "type": origin,
-                            "items": tuple({"type": x} for x in constraint.__args__),
-                        }
+                        {"type": origin, "items": tuple({"type": x} for x in args)}
                     )
 
             else:
@@ -189,8 +185,8 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
 
 def _flatten_Union_and_Optional(type_constraints):
     for constraint in type_constraints:
-        if getattr(constraint, "__origin__", None) is typing.Union:
-            yield from _flatten_Union_and_Optional(constraint.__args__)
+        if get_type_origin(constraint) is typing.Union:
+            yield from _flatten_Union_and_Optional(get_type_args(constraint))
         else:
             yield constraint
 
