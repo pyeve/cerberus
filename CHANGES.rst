@@ -3,6 +3,16 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
+Version 1.3.2
+-------------
+
+Unreleased.
+
+New
+~~~
+
+- Support for Python 3.8
+
 Version 1.3.1
 -------------
 
