@@ -13,6 +13,14 @@ New
 
 - Support for Python 3.8
 
+Fixed
+~~~~~
+
+- Fixed the message of the ``BasicErrorHandler`` for an invalid amount of items
+  (`#505`_)
+
+.. _`#505`: https://github.com/pyeve/cerberus/issues/505
+
 Version 1.3.1
 -------------
 
