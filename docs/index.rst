@@ -9,7 +9,7 @@ Welcome to Cerberus
 Cerberus provides powerful yet simple and lightweight data validation
 functionality out of the box and is designed to be easily extensible, allowing
 for custom validation. It has no dependencies and is thoroughly tested
-from Python 2.7 up to 3.6, PyPy and PyPy3.
+from Python 2.7 up to 3.8, PyPy and PyPy3.
 
 At a Glance
 -----------
