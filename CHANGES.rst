@@ -18,8 +18,10 @@ Fixed
 
 - Fixed the message of the ``BasicErrorHandler`` for an invalid amount of items
   (`#505`_)
+- Added ``setuptools`` as dependency to the package metadata (`#499`_)
 
 .. _`#505`: https://github.com/pyeve/cerberus/issues/505
+.. _`#499`: https://github.com/pyeve/cerberus/issues/499
 
 Version 1.3.1
 -------------

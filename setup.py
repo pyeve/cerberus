@@ -40,7 +40,7 @@ setup(
     setup_requires=setup_requires,
     tests_require=["pytest"],
     test_suite="cerberus.tests",
-    install_requires=[],
+    install_requires=["setuptools"],
     keywords=["validation", "schema", "dictionaries", "documents", "normalization"],
     python_requires=">=2.7",
     classifiers=[
