@@ -444,7 +444,8 @@ The assigned data can be of any type.
 min, max
 --------
 
-Minimum and maximum value allowed for any types that implement comparison operators.
+Minimum and maximum value allowed for any types that implement comparison operators. See
+`\*of-rules`_ for examples.
 
 .. versionchanged:: 1.0
   Allows any type to be compared.
@@ -456,6 +457,22 @@ minlength, maxlength
 --------------------
 
 Minimum and maximum length allowed for iterables.
+
+.. doctest::
+
+    >>> schema = {'numbers': {'type': 'list', 'minlength': 1, 'maxlength': 3}}
+    >>> document = {'numbers': [256, 2048, 23]}
+
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'numbers': [256, 2048, 23, 2]}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    >>> {'numbers': ['max length is 3']}
+
 
 noneof
 ------
