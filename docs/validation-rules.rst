@@ -444,7 +444,22 @@ The assigned data can be of any type.
 min, max
 --------
 
-Minimum and maximum value allowed for any types that implement comparison operators.
+Minimum and maximum value allowed for any object whose class implements
+comparison operations (``__gt__`` & ``__lt__``).
+
+.. doctest::
+
+    >>> schema = {'weight': {'min': 10.1, 'max': 10.9}}
+    >>> document = {'weight': 10.3}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'weight': 12}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'weight': ['max value is 10.9']}
 
 .. versionchanged:: 1.0
   Allows any type to be compared.
@@ -455,7 +470,22 @@ Minimum and maximum value allowed for any types that implement comparison operat
 minlength, maxlength
 --------------------
 
-Minimum and maximum length allowed for iterables.
+Minimum and maximum length allowed for sized types that implement ``__len__``.
+
+.. doctest::
+
+    >>> schema = {'numbers': {'minlength': 1, 'maxlength': 3}}
+    >>> document = {'numbers': [256, 2048, 23]}
+    >>> v.validate(document, schema)
+    True
+
+    >>> document = {'numbers': [256, 2048, 23, 2]}
+    >>> v.validate(document, schema)
+    False
+
+    >>> v.errors
+    {'numbers': ['max length is 3']}
+
 
 noneof
 ------
