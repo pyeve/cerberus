@@ -459,14 +459,13 @@ The assigned data can be of any type.
 min, max
 --------
 
-Minimum and maximum value allowed for any types that implement comparison operators. See
-`\*of-rules`_ for examples.
+Minimum and maximum value allowed for any object whose class implements
+comparison operations (``__gt__`` & ``__lt__``).
 
 .. doctest::
 
-    >>> schema = {'weight':{'type':'float', 'min': 10.1,'max':10.9}}
+    >>> schema = {'weight': {'min': 10.1, 'max': 10.9}}
     >>> document = {'weight': 10.3}
-
     >>> v.validate(document, schema)
     True
 
@@ -486,13 +485,12 @@ Minimum and maximum value allowed for any types that implement comparison operat
 minlength, maxlength
 --------------------
 
-Minimum and maximum length allowed for any objects that implements __len__. Examples are as follows:
+Minimum and maximum length allowed for sized types that implement ``__len__``.
 
 .. doctest::
 
-    >>> schema = {'numbers': {'type': 'list', 'minlength': 1, 'maxlength': 3}}
+    >>> schema = {'numbers': {'minlength': 1, 'maxlength': 3}}
     >>> document = {'numbers': [256, 2048, 23]}
-
     >>> v.validate(document, schema)
     True
 
