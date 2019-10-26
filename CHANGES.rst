@@ -19,9 +19,17 @@ Fixed
 - Fixed the message of the ``BasicErrorHandler`` for an invalid amount of items
   (`#505`_)
 - Added ``setuptools`` as dependency to the package metadata (`#499`_)
+- The ``CHANGES.rst`` document is properly included in the package (`#493`_)
 
+Improved
+~~~~~~~~
+
+- Docs: Examples were added for the ``min``- and ``maxlength`` rules. (`#509`_)
+
+.. _`#509`: https://github.com/pyeve/cerberus/issues/509
 .. _`#505`: https://github.com/pyeve/cerberus/issues/505
 .. _`#499`: https://github.com/pyeve/cerberus/issues/499
+.. _`#493`: https://github.com/pyeve/cerberus/issues/493
 
 Version 1.3.1
 -------------
@@ -41,7 +49,7 @@ Improved
 - Add ``project_urls`` to setup.py (`#480`_)
 - Don't ignore all exceptions during coercions for nullable fields. If a
 - Coercion raises an exception for a nullable field where the field is not
-  ``None`` the validation now fails. (`#490`_)
+  ``None`` the validation now fails (`#490`_)
 
 .. _`#490`: https://github.com/pyeve/cerberus/issues/490
 .. _`#484`: https://github.com/pyeve/cerberus/issues/484
