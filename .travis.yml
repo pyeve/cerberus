@@ -5,7 +5,7 @@ cache: pip
 matrix:
   include:
     - env: TOXENV=linting
-      python: "3.7"
+      python: "3.8"
     - env: TOXENV=py27
       python: "2.7"
     - env: TOXENV=py34
@@ -17,15 +17,15 @@ matrix:
     - env: TOXENV=py37
       python: "3.7"
     - env: TOXENV=py38
-      python: "3.8-dev"
+      python: "3.8"
     - env: TOXENV=pypy
       python: "pypy2.7-6.0"
     - env: TOXENV=pypy3
       python: "pypy3.5-6.0"
     - env: TOXENV=doclinks
-      python: "3.7"
+      python: "3.8"
     - env: TOXENV=doctest
-      python: "3.7"
+      python: "3.8"
 
 install: travis_retry pip install tox
 script: tox --recreate
