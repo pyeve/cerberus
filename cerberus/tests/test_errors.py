@@ -14,7 +14,7 @@ def test__error_1():
     assert error.schema_path == ('foo', 'type')
     assert error.code == 0x24
     assert error.rule == 'type'
-    assert error.constraint == 'string'
+    assert error.constraint == ('string',)
     assert error.value == 42
     assert error.info == ('string',)
     assert not error.is_group_error
@@ -30,7 +30,7 @@ def test__error_2():
     assert error.schema_path == ('foo', 'keysrules')
     assert error.code == 0x83
     assert error.rule == 'keysrules'
-    assert error.constraint == {'type': 'integer'}
+    assert error.constraint == {'type': ('integer',)}
     assert error.value == {'0': 'bar'}
     assert error.info == ((),)
     assert error.is_group_error
@@ -38,10 +38,10 @@ def test__error_2():
 
 
 def test__error_3():
-    valids = [
+    valids = (
         {'type': 'string', 'regex': '0x[0-9a-f]{2}'},
         {'type': 'integer', 'min': 0, 'max': 255},
-    ]
+    )
     v = Validator(schema={'foo': {'oneof': valids}})
     v.document = {'foo': '0x100'}
     v._error('foo', errors.ONEOF, (), 0, 2)
@@ -300,12 +300,12 @@ def test_basic_error_handler():
 
 
 def test_basic_error_of_errors(validator):
-    schema = {'foo': {'oneof': [{'type': 'integer'}, {'type': 'string'}]}}
+    schema = {'foo': {'oneof': ({'type': 'integer'}, {'type': 'string'})}}
     document = {'foo': 23.42}
     error = ('foo', ('foo', 'oneof'), errors.ONEOF, schema['foo']['oneof'], ())
     child_errors = [
-        (error[0], error[1] + (0, 'type'), errors.TYPE, 'integer'),
-        (error[0], error[1] + (1, 'type'), errors.TYPE, 'string'),
+        (error[0], error[1] + (0, 'type'), errors.TYPE, ('integer',)),
+        (error[0], error[1] + (1, 'type'), errors.TYPE, ('string',)),
     ]
     assert_fail(
         document, schema, validator=validator, error=error, child_errors=child_errors
@@ -314,8 +314,8 @@ def test_basic_error_of_errors(validator):
         'foo': [
             errors.BasicErrorHandler.messages[0x92],
             {
-                'oneof definition 0': ['must be of integer type'],
-                'oneof definition 1': ['must be of string type'],
+                'oneof definition 0': ["must be one of these types: ('integer',)"],
+                'oneof definition 1': ["must be one of these types: ('string',)"],
             },
         ]
     }

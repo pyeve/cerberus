@@ -6,6 +6,23 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 In Development
 --------------
 
+New
+~~~
+
+- Classes can be used as constraint for the ``type`` rule (`#374`_)
+- The abstract base classes of the standard library's ``collections.abc``
+  module are available as named types for the ``type`` rule (`#374`_)
+- Generic type aliases from the :mod:`typing` module can be used as constraints
+  for the ``type`` rule, including parametrized ones a.k.a. compound types
+  (`#374`_)
+
+Changed
+~~~~~~~
+
+- Most of Python's builtin data types are available as named constraint for the
+  ``type`` rule. They do not match their builtin subtypes, e.g. ``True`` isn't
+  recognized as ``"integer"``, this also applies to ``date``. (`#374`_)
+
 Fixed
 ~~~~~~
 
@@ -14,6 +31,7 @@ Fixed
 
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
 .. _`#493`: https://github.com/pyeve/cerberus/issues/493
+.. _`#374`: https://github.com/pyeve/cerberus/issues/374
 
 Version 1.3.1
 -------------

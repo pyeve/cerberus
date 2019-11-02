@@ -16,14 +16,14 @@ def test_valuesrules_fails(validator):
             'a_dict_with_valuesrules',
             ('a_dict_with_valuesrules', 'valuesrules'),
             errors.VALUESRULES,
-            {'type': 'integer'},
+            {'type': ('integer',)},
         ),
         child_errors=[
             (
                 ('a_dict_with_valuesrules', 'a string'),
                 ('a_dict_with_valuesrules', 'valuesrules', 'type'),
                 errors.TYPE,
-                'integer',
+                ('integer',),
             )
         ],
     )

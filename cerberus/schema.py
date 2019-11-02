@@ -1,17 +1,19 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Container, Mapping
 from copy import copy
 from typing import Dict, Hashable, MutableMapping, Sequence, Set
 
 from cerberus import errors
 from cerberus.base import (
-    expand_schema,
+    normalize_schema,
     rules_set_registry,
     RulesSetRegistry,
     SchemaError,
     SchemaRegistry,
     TypeDefinition,
     UnconcernedValidator,
+    normalize_rulesset,
 )
+from cerberus.platform import _GenericAlias
 from cerberus.typing import SchemaDict
 
 
@@ -22,8 +24,12 @@ class SchemaValidator(UnconcernedValidator):
     types_mapping = UnconcernedValidator.types_mapping.copy()
     types_mapping.update(
         {
-            'callable': TypeDefinition('callable', (Callable,), ()),  # type: ignore
-            'hashable': TypeDefinition('hashable', (Hashable,), ()),
+            "container_but_not_string": TypeDefinition(
+                "container_but_not_string", (Container,), (str,)
+            ),
+            "generic_type_alias": TypeDefinition(
+                "generic_type_alias", (_GenericAlias,), ()
+            ),
         }
     )
 
@@ -132,16 +138,9 @@ class SchemaValidator(UnconcernedValidator):
         else:
             self.target_validator._valid_schemas.add(_hash)
 
-    def _check_with_type(self, field, value):
-        value = (value,) if isinstance(value, str) else value
-        invalid_constraints = ()
-        for constraint in value:
-            if constraint not in self.target_validator.types:
-                invalid_constraints += (constraint,)
-        if invalid_constraints:
-            self._error(
-                field, 'Unsupported types: {}'.format(", ".join(invalid_constraints))
-            )
+    def _check_with_type_names(self, field, value):
+        if value not in self.target_validator.types_mapping:
+            self._error(field, 'Unsupported type name: {}'.format(value))
 
     def _expand_rules_set_refs(self, schema):
         result = {}
@@ -208,7 +207,7 @@ class ValidatedSchema(MutableMapping):
         except Exception:
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
 
-        schema = expand_schema(schema)
+        schema = normalize_schema(schema)
         self.validate(schema)
         self.schema = schema
 
@@ -236,7 +235,7 @@ class ValidatedSchema(MutableMapping):
         return str(self)
 
     def __setitem__(self, key, value):
-        value = expand_schema({0: value})[0]
+        value = normalize_rulesset(value)
         self.validate({key: value})
         self.schema[key] = value
 
@@ -248,7 +247,7 @@ class ValidatedSchema(MutableMapping):
 
     def update(self, schema):
         try:
-            schema = expand_schema(schema)
+            schema = normalize_schema(schema)
             _new_schema = self.schema.copy()
             _new_schema.update(schema)
             self.validate(_new_schema)

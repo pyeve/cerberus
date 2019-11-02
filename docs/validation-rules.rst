@@ -751,7 +751,27 @@ as constraint.
 
 type
 ----
-Data type allowed for the key value. Can be one of the following names:
+Tests whether the field value's type matches (one of) the specified type(s).
+There are several ways a type can be specified, each with dis-/advantages
+regarding different usage aspects:
+
+- any object like classes or abstract types that can be used as second argument
+  to the builtin's :func:`isinstance` function
+- strings that reference either one of the named,
+  - strict types whose mapping to actual types are documented in the table
+    below
+  - abstract types that map to the types from the :mod:`collections.abc` module
+    - their extend depends on the Python version
+    - these are are camel-cased (e.g. ``Set`` or ``MutableMapping``)
+  - :ref:`custom types <new-types>` that can be defined per
+    :class:`~cerberus.Validator` class
+- generic aliases from the :mod:`typing` module, including compound types
+  - type parameters that are given as string have Cerberus' semantics of named
+    types and are not resolved like static type checkers do, e.g.
+    ``Set["string"]`` is a valid type specification
+
+Named types allow the serialization of schemas and the exclusion of particular
+subtypes.
 
 .. list-table::
    :header-rows: 1
@@ -759,35 +779,74 @@ Data type allowed for the key value. Can be one of the following names:
    * - Type Name
      - Python Type
    * - ``boolean``
-     - :class:`pybool`
-   * - ``binary``
-     - :class:`pybytes`, :class:`pybytearray`
+     - :class:`bool`
+   * - ``bytesarray``
+     - :class:`bytearray`
+   * - ``bytes``
+     - :class:`bytes`
+   * - ``complex``
+     - :class:`complex`
    * - ``date``
-     - :class:`pydatetime.date`
+     - :class:`datetime.date`, but not its subclass :class:`datetime.datetime`
    * - ``datetime``
-     - :class:`pydatetime.datetime`
+     - :class:`datetime.datetime`
    * - ``dict``
-     - :class:`pycollections.abc.Mapping`
+     - :class:`dict`
    * - ``float``
-     - :class:`pyfloat`
+     - :class:`float`
+   * - ``frozenset``
+     - :class:`frozenset`
    * - ``integer``
-     - :class:`pyint`
+     - :class:`int`, but not its subclass :class:`bool`
    * - ``list``
-     - :class:`pycollections.abc.Sequence`, excl. ``string``
+     - :class:`list`
    * - ``number``
-     - :class:`pyfloat`, :class:`pyint`, excl. :class:`pybool`
+     - :class:`float`, :class:`int`, but not  :class:`bool`
    * - ``set``
-     - :class:`pyset`
+     - :class:`set`
    * - ``string``
-     - :class:`pystr`
+     - :class:`str`
+   * - ``tuple``
+     - :class:`tuple`
+   * - ``type``
+     - :class:`type` (classes)
 
-You can extend this list and support :ref:`custom types <new-types>`.
-
-A list of types can be used to allow different values:
+Here are examples of the different ways to specify a type:
 
 .. doctest::
 
-    >>> v.schema = {'quotes': {'type': ['string', 'list']}}
+    >>> document = {"items": frozenset(("a", "b", "c"))}
+    >>> # class-based test
+    >>> v.schema = {"items": {"type": frozenset}}
+    >>> v.validate(document)
+    True
+    >>> # named concrete type
+    >>> v.schema = {"items": {"type": 'frozenset'}}
+    >>> v.validate(document)
+    True
+    >>> # also a named concrete type
+    >>> v.schema = {"items": {"type": 'set'}}
+    >>> v.validate(document)
+    False
+    >>> # named abstract type
+    >>> v.schema = {"items": {"type": 'Set'}}
+    >>> v.validate(document)
+    True
+    >>> import typing
+    >>> # compound type
+    >>> v.schema = {"items": {"type": typing.Set[int]}}
+    >>> v.validate(document)
+    False
+    >>> # compound type with Cerberus' semantics for strings
+    >>> v.schema = {"items": {"type": typing.Set["integer"]}}
+    >>> v.validate(document)
+    False
+
+A list of types can be used to allow different values of different types:
+
+.. doctest::
+
+    >>> v.schema = {'quotes': {'type': ['string', list]}}
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': ['Do not disturb my circles!', 'Heureka!']})
@@ -803,7 +862,8 @@ A list of types can be used to allow different values:
     >>> v.validate({'quotes': [1, 'Heureka!']})
     False
     >>> v.errors
-    {'quotes': [{0: ['must be of string type']}]}
+    {'quotes': [{0: ["must be one of these types: ('string',)"]}]}
+
 
 .. note::
 
