@@ -3,7 +3,7 @@ Validation Rules
 
 allow_unknown
 -------------
-This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
+This can be used in conjunction with the  `schema <schema-rule>`_ rule
 when validating a mapping in order to set the
 :attr:`~cerberus.Validator.allow_unknown` property of the validator for the
 subdocument.
@@ -13,7 +13,7 @@ For a full elaboration refer to :ref:`this paragraph <allowing-the-unknown>`.
 
 allowed
 -------
-This rule takes a :class:`py3:collectionsabc.Container` of allowed values.
+This rule takes a :class:`py:collections.abc.Container` of allowed values.
 Validates the target value if the value is in the allowed values.
 If the target value is an :term:`iterable`, all its members must be in the
 allowed values.
@@ -395,7 +395,22 @@ normalization and items of a value are not normalized when the lengths mismatch.
    >>> v.validate(document, schema)
    False
 
-See `schema (list)`_ rule for dealing with arbitrary length ``list`` types.
+See `itemsrules`_ rule for dealing with arbitrary length ``list`` types.
+
+itemsrules
+-------------
+All items of the term:`sequence` will be validated against the rules provided
+in the constraint.
+
+.. doctest::
+
+   >>> schema = {'a_list':
+   ...              {'type': 'list',
+   ...               'itemsrules': {'type': 'integer'}}
+   ...           }
+   >>> document = {'a_list': [3, 4, 5]}
+   >>> v.validate(document, schema)
+   True
 
 .. _keysrules-rule:
 
@@ -708,18 +723,21 @@ unless :meth:`~cerberus.Validator.validate` is called with ``update=True``:
 .. versionchanged:: 0.8
    Check field dependencies.
 
-.. _schema_dict-rule:
+.. _schema-rule:
 
-schema (dict)
--------------
-If a field for which a ``schema``-rule is defined has a *mapping* as value,
-that mapping will be validated against the schema that is provided as
-constraint.
+schema
+------
+A given mapping as value will be validated against the schema that is provided
+as constraint.
 
 .. doctest::
 
-    >>> schema = {'a_dict': {'type': 'dict', 'schema': {'address': {'type': 'string'},
-    ...                                                 'city': {'type': 'string', 'required': True}}}}
+    >>> schema = {'a_dict':
+    ...              {'type': 'dict',
+    ...               'schema':
+    ...                   {'address': {'type': 'string'},
+    ...                    'city': {'type': 'string', 'required': True}}
+    ...           }}
     >>> document = {'a_dict': {'address': 'my address', 'city': 'my town'}}
     >>> v.validate(document, schema)
     True
@@ -728,41 +746,6 @@ constraint.
 
     To validate *arbitrary keys* of a mapping, see keysrules-rule_, resp.
     valuesrules-rule_ for validating *arbitrary values* of a mapping.
-
-schema (list)
--------------
-If ``schema``-validation encounters an arbritrary sized *sequence* as value,
-all items of the sequence will be validated against the rules provided in
-``schema``'s constraint.
-
-.. doctest::
-
-   >>> schema = {'a_list': {'type': 'list', 'schema': {'type': 'integer'}}}
-   >>> document = {'a_list': [3, 4, 5]}
-   >>> v.validate(document, schema)
-   True
-
-The `schema` rule on ``list`` types is also the preferred method for defining
-and validating a list of dictionaries.
-
-.. note::
-
-    Using this rule should be accompanied with a ``type``-rule explicitly
-    restricting the field to the ``list``-type like in the example. Otherwise
-    false results can be expected when a mapping is validated against this rule
-    with constraints for a sequence.
-
-.. doctest::
-
-   >>> schema = {'rows': {'type': 'list',
-   ...                    'schema': {'type': 'dict', 'schema': {'sku': {'type': 'string'},
-   ...                                                          'price': {'type': 'integer'}}}}}
-   >>> document = {'rows': [{'sku': 'KT123', 'price': 100}]}
-   >>> v.validate(document, schema)
-   True
-
-.. versionchanged:: 0.0.3
-  Schema rule for ``list`` types of arbitrary length
 
 .. _type:
 
@@ -774,41 +757,29 @@ Data type allowed for the key value. Can be one of the following names:
    :header-rows: 1
 
    * - Type Name
-     - Python 2 Type
-     - Python 3 Type
+     - Python Type
    * - ``boolean``
-     - :class:`py2:bool`
-     - :class:`py3:bool`
+     - :class:`pybool`
    * - ``binary``
-     - :class:`py2:bytes` [#]_, :class:`py2:bytearray`
-     - :class:`py3:bytes`, :class:`py3:bytearray`
+     - :class:`pybytes`, :class:`pybytearray`
    * - ``date``
-     - :class:`py2:datetime.date`
-     - :class:`py3:datetime.date`
+     - :class:`pydatetime.date`
    * - ``datetime``
-     - :class:`py2:datetime.datetime`
-     - :class:`py3:datetime.datetime`
+     - :class:`pydatetime.datetime`
    * - ``dict``
-     - :class:`py2:collections.Mapping`
-     - :class:`py3:collections.abc.Mapping`
+     - :class:`pycollections.abc.Mapping`
    * - ``float``
-     - :class:`py2:float`
-     - :class:`py3:float`
+     - :class:`pyfloat`
    * - ``integer``
-     - :class:`py2:int`, :class:`py2:long`
-     - :class:`py3:int`
+     - :class:`pyint`
    * - ``list``
-     - :class:`py2:collections.Sequence`, excl. ``string``
-     - :class:`py3:collections.abc.Sequence`, excl. ``string``
+     - :class:`pycollections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`, excl. :class:`py2:bool`
-     - :class:`py3:float`, :class:`py3:int`, excl. :class:`py3:bool`
+     - :class:`pyfloat`, :class:`pyint`, excl. :class:`pybool`
    * - ``set``
-     - :class:`py2:set`
-     - :class:`py3:set`
+     - :class:`pyset`
    * - ``string``
-     - :func:`py2:basestring`
-     - :class:`py3:str`
+     - :class:`pystr`
 
 You can extend this list and support :ref:`custom types <new-types>`.
 
@@ -824,24 +795,15 @@ A list of types can be used to allow different values:
 
 .. doctest::
 
-    >>> v.schema = {'quotes': {'type': ['string', 'list'], 'schema': {'type': 'string'}}}
+    >>> v.schema = {'quotes': {'type': ['string', 'list'],
+    ...                        'itemsrules': {'type': 'string'}}
+    ...             }
     >>> v.validate({'quotes': 'Hello world!'})
     True
     >>> v.validate({'quotes': [1, 'Heureka!']})
     False
     >>> v.errors
     {'quotes': [{0: ['must be of string type']}]}
-
-.. note::
-
-    While the ``type`` rule is not required to be set at all, it is not
-    encouraged to leave it unset especially when using more complex rules such
-    as ``schema``. If you decide you still don't want to set an explicit type,
-    rules such as ``schema`` are only applied to values where the rules can
-    actually be used (such as ``dict`` and ``list``). Also, in the case of
-    ``schema``, cerberus will try to decide if a ``list`` or a ``dict`` type
-    rule is more appropriate and infer it depending on what the ``schema`` rule
-    looks like.
 
 .. note::
 
@@ -879,8 +841,6 @@ A list of types can be used to allow different values:
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
-
-.. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
 .. _valuesrules-rule:
 

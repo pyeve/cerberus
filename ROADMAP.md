@@ -42,22 +42,21 @@ implications.
 
 #### Checklist
 
-- [ ] All Python 2 related code is removed.
-- [ ] Python 3 features that allow simpler code are applied where feasible.
-  - [ ] A Python 3-style metaclass.
-  - [ ] Using `super()` to call overridden methods.
-  - [ ] Usage of dictionary comprehensions.
-- [ ] All *public* functions and methods are type annotated. MyPy is added to
+- [x] Deprecated features are removed.
+- [x] The `schema` rule only handles mappings, a new `itemrules` replaces the
+      part where `schema` tested items in sequences so far. There will be no
+      backward-compatibility for schemas. (#385)
+- [x] All Python 2 related code is removed.
+- [x] Python 3 features that allow simpler code are applied where feasible.
+  - [x] A Python 3-style metaclass.
+  - [x] Using `super()` to call overridden methods.
+  - [x] Usage of dictionary comprehensions.
+- [x] All *public* functions and methods are type annotated. MyPy is added to
       the test suite to validate these.
 - [ ] A wider choice of type names that are closer oriented on the builtin
       names are available. (#374)
 - [ ] Objects from the `typing` module can be used as constraints for the
       `type` rule. (#374)
-- [ ] The `schema` rule only handles mappings, a new `itemrules` replaces the
-      part where `schema` tested items in sequences so far. There will be no
-      backward-compatibility for schemas. (#385)
-- [ ] The rules `keyschema` and `valueschema` are renamed to `keyrules` and
-      `valuerules`, backward-compatibility for schemas will be provided. (#385)
 - [ ] Implementations of rules, coercers etc. can and the contributed should be
       qualified as such by metadata-annotating decorators. (With the intend to
       clean the code and make extensions simpler.) (#372)

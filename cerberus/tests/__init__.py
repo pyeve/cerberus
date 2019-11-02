@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import re
 
 import pytest
 
-from cerberus import errors, Validator, SchemaError, DocumentError
+from cerberus import errors, Validator, SchemaError
+from cerberus.base import DocumentError
 from cerberus.tests.conftest import sample_schema
 
 
@@ -144,12 +143,6 @@ def assert_not_has_error(_errors, *args, **kwargs):
         raise e
     else:
         raise AssertionError('An unexpected error occurred.')
-
-
-def assert_bad_type(field, data_type, value):
-    assert_fail(
-        {field: value}, error=(field, (field, 'type'), errors.BAD_TYPE, data_type)
-    )
 
 
 def assert_normalized(document, expected, schema=None, validator=None):

@@ -1,5 +1,57 @@
-Upgrading to Cerberus 1.0
-=========================
+Upgrading to Cerberus 2.0 from any 1.x version
+==============================================
+
+Major Changes and Deprecations
+------------------------------
+
+Rules
+.....
+
+A few rules have been renamed:
+
+========================  ===============
+Old name                  New name
+========================  ===============
+``keyschema``             ``keysrules``
+``schema`` for sequences  ``itemsrules``
+``validator``             ``check_with``
+``valueschema``           ``valuesrules``
+========================  ===============
+
+As a consequence custom validators' methods that are referenced by name in
+constraints for the ``check_with`` rule must be prefixed with ``_check_with_``
+instead of ``_validator_``.
+
+Errors
+......
+
+A few constant names of error definitions in the :mod:`~cerberus.errors`
+module have been renamed:
+
+=====================  ==============
+Old name               New name
+=====================  ==============
+``BAD_ITEMS``          ``ITEMS``
+``BAD_TYPE``           ``TYPE``
+``EMPTY_NOT_ALLOWED``  ``EMPTY``
+``MAPPING_SCHEMA``     ``SCHEMA``
+``NOT_NULLABLE``       ``NULLABLE``
+``SEQUENCE_SCHEMA``    ``ITEMSRULES``
+=====================  ==============
+
+The constant ``BAD_TYPE_FOR_SCHEMA`` has been removed permanently.
+
+Type checking
+.............
+
+The use of methods prefixes with ``_validate_type_`` for checking the type of
+a value has been abandoned. See :doc:`customize` how to define custom types
+with :class:`TypeDefinition` objects. If you used such methods to test more
+than the type of the value, use the ``check_with`` rules instead.
+
+
+Upgrading to Cerberus 1.0 from prior versions
+=============================================
 
 Major Additions
 ---------------

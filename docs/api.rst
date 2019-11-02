@@ -5,6 +5,8 @@ Validator Class
 ---------------
 
 .. autoclass:: cerberus.Validator
+  :show-inheritance:
+  :inherited-members:
   :members: allow_unknown, clear_caches, document, document_error_tree,
             document_path, _drop_remaining_rules, _error, error_handler,
             _errors, errors, _get_child_validator, ignore_none_values,
@@ -19,8 +21,15 @@ Validator Class
 Rules Set & Schema Registry
 ---------------------------
 
-.. autoclass:: cerberus.schema.Registry
-  :members:
+.. autoclass:: cerberus.base.Registry
+   :members:
+
+
+.. autoclass:: cerberus.schema.RulesSetRegistry
+   :show-inheritance:
+
+.. autoclass:: cerberus.schema.SchemaRegistry
+   :show-inheritance:
 
 
 Type Definitions
@@ -33,11 +42,12 @@ Error Handlers
 --------------
 
 .. autoclass:: cerberus.errors.BaseErrorHandler
-  :members:
-  :private-members:
-  :special-members:
+   :members:
+   :private-members:
+   :special-members:
 
 .. autoclass:: cerberus.errors.BasicErrorHandler
+   :show-inheritance:
 
 
 Python Error Representations
@@ -46,7 +56,7 @@ Python Error Representations
 .. autoclass:: cerberus.errors.ErrorDefinition
 
 .. autoclass:: cerberus.errors.ValidationError
-  :members:
+   :members:
 
 .. _error-codes:
 
@@ -87,11 +97,13 @@ Error Containers
 .. autoclass:: cerberus.errors.ErrorList
 
 .. autoclass:: cerberus.errors.ErrorTree
-  :members:
+   :members:
 
 .. autoclass:: cerberus.errors.DocumentErrorTree
+   :show-inheritance:
 
 .. autoclass:: cerberus.errors.SchemaErrorTree
+   :show-inheritance:
 
 
 Exceptions
@@ -105,8 +117,7 @@ Exceptions
 Utilities
 ---------
 
-.. automodule:: cerberus.utils
-  :members:
+.. autofunction:: cerberus.validator_factory
 
 
 .. _schema-validation-schema:

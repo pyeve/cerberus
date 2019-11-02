@@ -1,16 +1,16 @@
 Validation Schemas
 ==================
 
-A validation schema is a :term:`mapping`, usually a :class:`dict`. Schema keys
-are the keys allowed in the target dictionary. Schema values express the rules
-that must be matched by the corresponding target values.
+A validation schema is a :term:`mapping`, usually passed as a :class:`dict`.
+Schema keys are the keys allowed in the target dictionary. Schema values
+express the rules that must be matched by the corresponding target values.
 
 .. testcode::
 
     schema = {'name': {'type': 'string', 'maxlength': 10}}
 
-In the example above we define a target dictionary with only one key, ``name``,
-which is expected to be a string not longer than 10 characters. Something like
+In the example above we define a schema with only one key, ``name``, which is
+expected to be a string not longer than 10 characters. Something like
 ``{'name': 'john doe'}`` would validate, while something like ``{'name': 'a
 very long string'}`` or ``{'name': 99}`` would not.
 
@@ -25,10 +25,11 @@ Registries
 There are two default registries in the cerberus module namespace where you can
 store definitions for schemas and rules sets which then can be referenced in a
 validation schema. You can furthermore instantiate more
-:class:`~cerberus.Registry` objects and bind them to the
-:attr:`~cerberus.Validator.rules_set_registry` or
+:class:`~cerberus.base.RulesSetRegistry` and
+:class:`~cerberus.base.SchemaSetRegistry` objects and bind them to the
+:attr:`~cerberus.Validator.rules_set_registry` respectively
 :attr:`~cerberus.Validator.schema_registry` of a validator. You may also set
-these as keyword-arguments upon intitialization.
+these as keyword-arguments upon initialisation.
 
 Using registries is particularly interesting if
 
@@ -50,18 +51,20 @@ Using registries is particularly interesting if
 .. doctest::
 
     >>> from cerberus import rules_set_registry
-    >>> rules_set_registry.extend((('boolean', {'type': 'boolean'}),
-    ...                            ('booleans', {'valuesrules': 'boolean'})))
+    >>> rules_set_registry.extend(
+    ...     (('boolean', {'type': 'boolean'}),
+    ...     ('booleans', {'valuesrules': 'boolean'}))
+    ... )
     >>> schema = {'foo': 'booleans'}
 
 
 Validation
 ----------
 
-Validation schemas themselves are validated when passed to the validator or a
-new set of rules is set for a document's field. A :exc:`~cerberus.SchemaError`
-is raised when an invalid validation schema is encountered. See
-:ref:`schema-validation-schema` for a reference.
+Validation schemas themselves are validated by default when passed to the
+validator or a new set of rules is set for a top-level field. A
+:exc:`~cerberus.SchemaError` is raised when an invalid validation schema is
+encountered. See :ref:`schema-validation-schema` for a reference.
 
 However, be aware that no validation can be triggered for all changes below
 that level or when a used definition in a registry changes. You could therefore
@@ -87,6 +90,12 @@ trigger a validation and catch the exception:
       File "cerberus/schema.py", line 141, in _validate
         raise SchemaError(self.schema_validator.errors)
     SchemaError: {'foo': {'allowed': 'must be of container type'}}
+
+Schema validation can be disabled by using the
+:class:`~cerberus.UnconcernedValidator` or getting a validator class from
+:func:`~cerberus.validator_factory` with the argument ``validated_schema``
+set to ``False``. This can useful in an application's production environment to
+reduce startup time.
 
 
 .. _schema-serialization:

@@ -8,8 +8,8 @@ DESCRIPTION = (
     "Lightweight, extensible schema and data validation tool for "
     "Python dictionaries."
 )
-LONG_DESCRIPTION = open("README.rst").read()
-VERSION = "1.3.1"
+LONG_DESCRIPTION = open('README.rst').read()
+VERSION = '2.0.dev0'
 
 setup_requires = (
     ["pytest-runner"] if any(x in sys.argv for x in ("pytest", "test", "ptr")) else []
@@ -42,7 +42,7 @@ setup(
     test_suite="cerberus.tests",
     install_requires=[],
     keywords=["validation", "schema", "dictionaries", "documents", "normalization"],
-    python_requires=">=2.7",
+    python_requires=">=3.5",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -50,10 +50,7 @@ setup(
         "License :: OSI Approved :: ISC License (ISCL)",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

@@ -2,9 +2,8 @@
 
 Running the Tests
 -----------------
-Cerberus runs under Python 2.7, 3.4, 3.5, 3.6, PyPy and PyPy3. Therefore
-tests will be run in those four platforms in our `continuous integration
-server`_.
+Cerberus runs under Python 3.4, 3.5, 3.6 and PyPy3. Therefore test will be
+run in those platforms in our `continuous integration server`_.
 
 The easiest way to get started is to run the tests in your local environment
 with:
@@ -33,12 +32,12 @@ the following:
 .. code-block:: console
 
     _________ summary _________
-    py27: commands succeeded
-    py34: commands succeeded
     py35: commands succeeded
     py36: commands succeeded
-    pypy: commands succeeded
-    flake8: commands succeeded
+    pypy3: commands succeeded
+    doclinks: commands succeeded
+    doctest: commands succeeded
+    linting: commands succeeded
     congratulations :)
 
 If something goes **wrong** and one test fails, you might need to run that test
