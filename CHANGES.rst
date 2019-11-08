@@ -27,11 +27,37 @@ Fixed
 ~~~~~~
 
 - WARNING Unexpected keys present on Black: python_version (`#494`_)
-- CHANGES.rst is not correctly listed in MANIFEST.in (`#493`_)
 
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
-.. _`#493`: https://github.com/pyeve/cerberus/issues/493
 .. _`#374`: https://github.com/pyeve/cerberus/issues/374
+
+Version 1.3.2
+-------------
+
+Released on October 29, 2019.
+
+New
+~~~
+
+- Support for Python 3.8
+
+Fixed
+~~~~~
+
+- Fixed the message of the ``BasicErrorHandler`` for an invalid amount of items
+  (`#505`_)
+- Added ``setuptools`` as dependency to the package metadata (`#499`_)
+- The ``CHANGES.rst`` document is properly included in the package (`#493`_)
+
+Improved
+~~~~~~~~
+
+- Docs: Examples were added for the ``min``- and ``maxlength`` rules. (`#509`_)
+
+.. _`#509`: https://github.com/pyeve/cerberus/issues/509
+.. _`#505`: https://github.com/pyeve/cerberus/issues/505
+.. _`#499`: https://github.com/pyeve/cerberus/issues/499
+.. _`#493`: https://github.com/pyeve/cerberus/issues/493
 
 Version 1.3.1
 -------------
