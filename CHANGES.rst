@@ -21,7 +21,8 @@ Changed
 
 - Most of Python's builtin data types are available as named constraint for the
   ``type`` rule. They do not match their builtin subtypes, e.g. ``True`` isn't
-  recognized as ``"integer"``, this also applies to ``date``. (`#374`_)
+  recognized as ``"integer"``, this also applies to :class:`datetime.date`
+  objects. (`#374`_)
 
 Fixed
 ~~~~~~
