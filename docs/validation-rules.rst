@@ -553,8 +553,9 @@ according to the prefixes logics ``all``, ``any``, ``one`` or ``none``.
 
 .. note::
 
-    :doc:`Normalization <normalization-rules>` cannot be used in the rule sets
-    within the constraints of these rules.
+    :doc:`Normalization <normalization-rules>` can only be used with ``oneof``. 
+    They cannot be used in the rule sets within the constraints of ``allof``,
+     ``anyof`` or ``noneof`  rules.
 
 .. note::
 
