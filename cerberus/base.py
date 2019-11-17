@@ -1094,9 +1094,44 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, error, str(e))
             return value
 
+    def __normalize_oneof(self, mapping, schema, field):
+        """{'nullable':False}"""
+
+        definitions = schema[field]["oneof"]
+
+        valid_counter = 0
+        last_valid_validator = None
+
+        for i, definition in enumerate(definitions):
+            schema = {field: definition.copy()}
+            for rule in ("allow_unknown", "type"):
+                if rule not in schema[field] and rule in self.schema[field]:
+                    schema[field][rule] = self.schema[field][rule]
+            if "allow_unknown" not in schema[field]:
+                schema[field]["allow_unknown"] = self.allow_unknown
+
+            validator = self._get_child_validator(
+                schema_crumb=(field, "oneof", i), schema=schema, allow_unknown=True
+            )
+            if validator(self.document, update=self.update, normalize=True):
+                valid_counter += 1
+                last_valid_validator = validator
+            else:
+                self._drop_nodes_from_errorpaths(validator._errors, [], [3])
+
+        if valid_counter == 1:
+            if field in mapping:
+                norm = last_valid_validator.normalized({field: mapping[field]})[field]
+            else:
+                norm = last_valid_validator.normalized({})[field]
+            mapping[field] = norm
+
     def __normalize_containers(self, mapping, schema):
         for field in mapping:
             rules = set(schema.get(field, ()))
+
+            if "oneof" in rules:
+                self.__normalize_oneof(mapping, schema, field)
 
             if isinstance(mapping[field], Mapping):
                 if 'keysrules' in rules:
@@ -1278,6 +1313,14 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         fields_with_default = [x for x in empty_fields if 'default' in schema[x]]
         for field in fields_with_default:
             self._normalize_default(mapping, schema, field)
+
+        fields_with_oneof = [
+            x
+            for x in empty_fields
+            if "default" not in schema[x] and "oneof" in schema[x]
+        ]
+        for field in fields_with_oneof:
+            self.__normalize_oneof(mapping, schema, field)
 
         known_fields_states = set()
         fields_with_default_setter = [
@@ -1662,7 +1705,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.NONEOF, _errors, valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
-        """ {'type': 'Sequence', 'logical': 'oneof'} """
+        """ {'type': 'Sequence'} """
+        # TODO: "'logical': 'oneof'" can no longer be used in aboves schema since
+        # it doesn't allow 'default' as rule
         valids, _errors = self.__validate_logical('oneof', definitions, field, value)
         if valids != 1:
             self._error(field, errors.ONEOF, _errors, valids, len(definitions))
