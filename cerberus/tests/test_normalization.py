@@ -89,3 +89,58 @@ def test_purge_unknown_in_subschema():
     document = {'foo': {'bar': ''}}
     expected = {'foo': {}}
     assert_normalized(document, expected, schema)
+
+
+def test_oneof_normalization():
+    # inserting a default
+    schema = {
+        'foo': {'type': 'string'},
+        'bar': {
+            'oneof': [
+                {'dependencies': {"foo": "B"}, 'default': "B"},
+                {'dependencies': {"foo": "A"}, 'default': "C"},
+            ]
+        },
+    }
+    document = {'foo': 'A'}
+    expected = {'foo': 'A', 'bar': "C"}
+    assert_normalized(document, expected, schema)
+
+    # overwriting None if not nullable
+    document = {'foo': 'A', 'bar': None}
+    assert_normalized(document, expected, schema)
+
+    # using a sub-schema inside oneof
+    subschema = {
+        "field1": {"type": "number"},
+        "field2": {"type": "number", 'default': 2},
+    }
+    schema = {
+        'foo': {'type': 'string'},
+        'bar': {
+            'type': 'dict',
+            'oneof': [
+                {'dependencies': {"^foo": "B"}, 'schema': subschema},
+                {'dependencies': {"^foo": "A"}, 'default': "C"},
+            ],
+        },
+    }
+    document = {'foo': 'B', 'bar': {"field1": 1}}
+    expected = {'foo': 'B', 'bar': {"field1": 1, "field2": 2}}
+    assert_normalized(document, expected, schema)
+
+    # do not normalize if oneof is not fullfilled
+    schema = {
+        'foo': {'type': 'string'},
+        'bar': {
+            'oneof': [
+                {'dependencies': {"foo": "A"}, 'default': "B"},
+                {'dependencies': {"foo": "A"}, 'default': "C"},
+            ]
+        },
+    }
+    expected = {'foo': 'A', 'bar': None}
+    document = {'foo': 'A', 'bar': None}
+
+    validator = Validator(schema)
+    assert validator.normalized(document) == expected
