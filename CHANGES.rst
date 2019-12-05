@@ -388,7 +388,7 @@ Codename: 'Mastrolindo'.
   (Frank Sachsenheim).
 - Change: 'type' can also be a list of types (Frank Sachsenheim).
 
-- Fix: useages of 'document' to 'self.document' in '_validate' (Frank
+- Fix: usage of 'document' to 'self.document' in '_validate' (Frank
   Sachsenheim).
 - Fix: when 'items' is applied to a list, field name is used as key for
   'validator.errors', and offending field indexes are used as keys for field
