@@ -1439,7 +1439,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': 'container_but_not_string'} """
         if isinstance(value, Iterable) and not isinstance(value, str):
-            unallowed = [v for v in value if v not in allowed_values]
+            unallowed = tuple(x for x in value if x not in allowed_values)
             if unallowed:
                 self._error(field, errors.UNALLOWED_VALUES, unallowed)
         else:
