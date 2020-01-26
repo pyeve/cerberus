@@ -62,3 +62,18 @@ def test_allowed_with_unicode_chars():
     schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
     doc = {'letters': '♄εℓł☺'}
     assert_success(doc, schema)
+
+
+def test_allowed_when_passing_list_of_dicts():
+    # https://github.com/pyeve/cerberus/issues/524
+    field = 'letters'
+    allowed = ['a', 'b', 'c']
+    value = [{'some': 'dict'}]
+    doc = {'letters': value}
+    schema = {field: {'type': 'list', 'allowed': allowed}}
+
+    assert_fail(
+        doc,
+        schema,
+        error=(field, (field, 'allowed'), errors.UNALLOWED_VALUES, allowed, value,),
+    )
