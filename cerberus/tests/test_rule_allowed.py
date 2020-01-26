@@ -25,7 +25,7 @@ def test_allowed_with_list_value():
             (field, 'allowed'),
             errors.UNALLOWED_VALUES,
             ['agent', 'client', 'vendor'],
-            ['profit'],
+            (('profit',),),
         ),
     )
 
@@ -62,3 +62,21 @@ def test_allowed_with_unicode_chars():
     schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
     doc = {'letters': '♄εℓł☺'}
     assert_success(doc, schema)
+
+
+def test_allowed_when_passing_list_of_dicts():
+    # https://github.com/pyeve/cerberus/issues/524
+    doc = {'letters': [{'some': 'dict'}]}
+    schema = {'letters': {'type': 'list', 'allowed': ['a', 'b', 'c']}}
+
+    assert_fail(
+        doc,
+        schema,
+        error=(
+            'letters',
+            ('letters', 'allowed'),
+            errors.UNALLOWED_VALUES,
+            ['a', 'b', 'c'],
+            (({'some': 'dict'},),),
+        ),
+    )
