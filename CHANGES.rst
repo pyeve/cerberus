@@ -6,12 +6,17 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 Version 1.3.3
 -------------
 
-unreleased
+Fixed
+~~~~~~
+
+- Fixed crash when submitting non-hashable values to ``allowed`` (`#524`_)
+
+.. _`#524`: https://github.com/pyeve/cerberus/issues/524
 
 Version 1.3.2
 -------------
 
-Releases on October 29, 2019.
+Released on October 29, 2019.
 
 New
 ~~~
@@ -54,7 +59,7 @@ Improved
 - Add ``project_urls`` to setup.py (`#480`_)
 - Don't ignore all exceptions during coercions for nullable fields. If a
 - Coercion raises an exception for a nullable field where the field is not
-  ``None`` the validation now fails (`#490`_)
+  ``None`` the validation now fails. (`#490`_)
 
 .. _`#490`: https://github.com/pyeve/cerberus/issues/490
 .. _`#484`: https://github.com/pyeve/cerberus/issues/484
@@ -388,7 +393,7 @@ Codename: 'Mastrolindo'.
   (Frank Sachsenheim).
 - Change: 'type' can also be a list of types (Frank Sachsenheim).
 
-- Fix: usage of 'document' to 'self.document' in '_validate' (Frank
+- Fix: useages of 'document' to 'self.document' in '_validate' (Frank
   Sachsenheim).
 - Fix: when 'items' is applied to a list, field name is used as key for
   'validator.errors', and offending field indexes are used as keys for field

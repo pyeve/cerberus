@@ -1946,3 +1946,21 @@ def test_require_all_and_exclude():
     assert_success({'foo': 'value'}, schema, validator)
     assert_success({'bar': 'value'}, schema, validator)
     assert_fail({'foo': 'value', 'bar': 'value'}, schema, validator)
+
+
+def test_allowed_when_passing_list_of_dicts():
+    # https://github.com/pyeve/cerberus/issues/524
+    doc = {'letters': [{'some': 'dict'}]}
+    schema = {'letters': {'type': 'list', 'allowed': ['a', 'b', 'c']}}
+
+    assert_fail(
+        doc,
+        schema,
+        error=(
+            'letters',
+            ('letters', 'allowed'),
+            errors.UNALLOWED_VALUES,
+            ['a', 'b', 'c'],
+            (({'some': 'dict'},),),
+        ),
+    )
