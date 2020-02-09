@@ -3,6 +3,11 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
+Version 1.3.3
+-------------
+
+unreleased
+
 Version 1.3.2
 -------------
 
