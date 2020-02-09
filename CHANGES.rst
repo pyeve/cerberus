@@ -28,9 +28,11 @@ Fixed
 ~~~~~~
 
 - WARNING Unexpected keys present on Black: python_version (`#494`_)
+- Fixed crash when submitting non-hashable values to ``allowed`` (`#524`_)
 
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
 .. _`#374`: https://github.com/pyeve/cerberus/issues/374
+.. _`#524`: https://github.com/pyeve/cerberus/issues/524
 
 Version 1.3.2
 -------------

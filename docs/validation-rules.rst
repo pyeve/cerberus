@@ -27,7 +27,7 @@ allowed values.
     >>> v.validate({'role': ['intern']})
     False
     >>> v.errors
-    {'role': ["unallowed values ['intern']"]}
+    {'role': ["unallowed values ('intern',)"]}
 
     >>> v.schema = {'role': {'type': 'string', 'allowed': ['agent', 'client', 'supplier']}}
     >>> v.validate({'role': 'supplier'})
