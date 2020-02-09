@@ -479,7 +479,7 @@ def test_array_unallowed():
             (field, 'allowed'),
             errors.UNALLOWED_VALUES,
             ['agent', 'client', 'vendor'],
-            ['profit'],
+            (('profit',),),
         ),
     )
 
