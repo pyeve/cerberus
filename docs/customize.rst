@@ -2,9 +2,9 @@ Extending Cerberus
 ==================
 
 Though you can use functions in conjunction with the ``coerce`` and the
-``validator`` rules, you can easily extend the :class:`~cerberus.Validator`
-class with custom `rules`, `types`, `validators`, `coercers` and
-`default_setters`.
+``check_with`` rules, you can easily extend the :class:`~cerberus.Validator`
+class with custom ``rules``, ``types``, ``check_with`` handlers, ``coercers``
+and ``default_setters``.
 While the function-based style is more suitable for special and one-off uses,
 a custom class leverages these possibilities:
 
@@ -14,19 +14,19 @@ a custom class leverages these possibilities:
     * schemas are serializable
 
 The references in schemas to these custom methods can use space characters
-instead of underscores, e.g. ``{'foo': {'validator': 'is odd'}}`` is an alias
-for ``{'foo': {'validator': 'is_odd'}}``.
+instead of underscores, e.g. ``{'foo': {'check_with': 'is odd'}}`` is an alias
+for ``{'foo': {'check_with': 'is_odd'}}``.
 
 
 Custom Rules
 ------------
 Suppose that in our use case some values can only be expressed as odd integers,
-therefore we decide to add support for a new ``isodd`` rule to our validation
+therefore we decide to add support for a new ``is_odd`` rule to our validation
 schema:
 
 .. testcode::
 
-    schema = {'amount': {'isodd': True, 'type': 'integer'}}
+    schema = {'amount': {'is odd': True, 'type': 'integer'}}
 
 This is how we would go to implement that:
 
@@ -35,18 +35,18 @@ This is how we would go to implement that:
     from cerberus import Validator
 
     class MyValidator(Validator):
-        def _validate_isodd(self, isodd, field, value):
+        def _validate_is_odd(self, constraint, field, value):
             """ Test the oddity of a value.
 
             The rule's arguments are validated against this schema:
             {'type': 'boolean'}
             """
-            if isodd and not bool(value & 1):
+            if constraint is True and not bool(value & 1):
                 self._error(field, "Must be an odd number")
 
 By subclassing Cerberus :class:`~cerberus.Validator` class and adding the custom
 ``_validate_<rulename>`` method, we just enhanced Cerberus to suit our needs.
-The custom rule ``isodd`` is now available in our schema and, what really
+The custom rule ``is_odd`` is now available in our schema and, what really
 matters, we can use it to validate all odd values:
 
 .. doctest::
@@ -228,7 +228,12 @@ an example pattern:
         def additional_context(self):
             return self._config.get('additional_context', 'bar')
 
-        def _validator_foo(self, field, value):
+        # an optional property setter if you deal with state
+        @additional_context.setter
+        def additional_context(self, value):
+            self._config["additional_context"] = value
+
+        def _check_with_foo(self, field, value):
             make_use_of(self.additional_context)
 
 .. warning::
