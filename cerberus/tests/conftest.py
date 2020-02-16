@@ -25,7 +25,7 @@ sample_schema = {
     'a_bytestring': {'type': 'bytes', 'minlength': 2, 'maxlength': 10},
     'a_nullable_integer': {'type': 'integer', 'nullable': True},
     'an_integer': {'type': 'integer', 'min': 1, 'max': 100},
-    'a_boolean': {'type': 'boolean', 'meta': 'can haz two distinct states'},
+    'a_boolean': {'type': 'boolean', 'meta': 'can have two distinct states'},
     'a_datetime': {'type': 'datetime', 'meta': {'format': '%a, %d. %b %Y'}},
     'a_float': {'type': 'float', 'min': 1, 'max': 100},
     'a_number': {'type': 'number', 'min': 1, 'max': 100},
