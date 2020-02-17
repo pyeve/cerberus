@@ -40,6 +40,8 @@ is used against a varying set of documents.
 - [ ] The module `dataclasses` is implemented. This may get postponed 'til a
       following minor release. (#397)
 - [ ] The `DocumentError` exception is replaced with an error. (#141)
+- [ ] Remove change related markup from the documentation prose.
+- [ ] Thoroughly review the documentation.
 - [ ] Update `docs/index.rst` regarding the supported branches.
 - [ ] Include an optimized validator that essentially reduces lookups and
       execution frames by code generation as *experimental* feature.
