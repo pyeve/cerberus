@@ -18,6 +18,7 @@ develop-eggs
 pip-log.txt
 
 # Testing
+.benchmarks/
 .cache
 .coverage
 .mypy_cache/
