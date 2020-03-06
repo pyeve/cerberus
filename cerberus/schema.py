@@ -177,6 +177,11 @@ class SchemaValidator(UnconcernedValidator):
             else:
                 self.target_validator._valid_schemas.add(_hash)
 
+    # FIXME this rule seems to be called with very unexpected values
+    # def _validate_type(self, data_type, field, value):
+    #     assert isinstance(value, tuple), (self.schema_path, value)
+    #     return super()._validate_type(data_type, field, value)
+
 
 class ValidatedSchema(MutableMapping):
     """ A dict-subclass for caching of validated schemas. """

@@ -151,4 +151,3 @@ def test_schema_normalization_does_not_abort(rule):
         schema={"field": {rule: {"type": "string"}, "schema": "schema_ref",},}  # noqa
     )
     assert validator.schema["field"][rule]["type"] == ("string",)
-
