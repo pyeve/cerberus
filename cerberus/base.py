@@ -1,6 +1,6 @@
 import re
 import typing
-from abc import abstractclassmethod
+from abc import abstractmethod
 from ast import literal_eval
 from collections import abc, ChainMap
 from copy import copy
@@ -263,7 +263,8 @@ class Registry(Generic[RegistryItem]):
         self._storage = {}  # type: Dict[str, RegistryItem]
         self.extend(definitions)
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def _expand_definition(cls, definition: RegistryItem) -> RegistryItem:
         pass
 
