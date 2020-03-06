@@ -12,12 +12,11 @@ import json
 from collections import Counter
 from pathlib import Path
 from random import choice, randrange
-from typing import Callable, List
+from typing import Callable, Dict, List, Mapping, Optional, Union
+from typing import Counter as CounterType
 
 from cerberus import rules_set_registry, schema_registry, TypeDefinition, Validator
 from cerberus.benchmarks import DOCUMENTS_PATH
-
-import pytest
 
 
 rules_set_registry.add("path_rules", {"coerce": Path, "type": "path"})
@@ -35,7 +34,7 @@ schema_registry.add(
                 {"type": "string"},
                 {"type": ["integer", "string"]},
             ],
-            "schema": {"nullable": True},
+            "itemsrules": {"nullable": True},
         },
     },
 )
@@ -70,7 +69,7 @@ schema_1 = {
         },
     },
     "field_2": {
-        "type": "dict",
+        "type": Mapping,
         "allow_unknown": False,
         "schema": {
             "field_21": {
@@ -110,9 +109,9 @@ def load_documents_1():
     return documents
 
 
-def validate_documents(init_validator: Callable, documents: List[dict]):
+def validate_documents(init_validator: Callable, documents: List[dict]) -> None:
     doc_count = failed_count = 0
-    error_paths = Counter()
+    error_paths: CounterType[tuple] = Counter()
     validator = init_validator()
 
     def count_errors(errors):
@@ -157,7 +156,7 @@ def generate_sample_document_1() -> dict:
 
 
 def generate_document_1_field_1() -> dict:
-    result = {"field_11": randrange(100), "field_13": 0}
+    result: Dict[str, Optional[int]] = {"field_11": randrange(100), "field_13": 0}
     if randrange(100):
         result["field_12"] = 0
     if not randrange(100):
@@ -169,7 +168,7 @@ def generate_document_1_field_1() -> dict:
 
 def generate_document_1_field_2() -> dict:
     x = "*" if not randrange(50) else " "
-    result = {"field_21": x + str(randrange(100)) + x}
+    result: Dict[str, Union[int, str, None]] = {"field_21": x + str(randrange(100)) + x}
 
     if randrange(100):
         result["field_22"] = None
@@ -180,7 +179,7 @@ def generate_document_1_field_2() -> dict:
 
 
 def generate_document_1_field_3() -> dict:
-    result = {}
+    result: Dict[str, Optional[list]] = {}
     if randrange(100):
         result["field_31"] = [randrange(2) for _ in range(randrange(20))]
     else:
