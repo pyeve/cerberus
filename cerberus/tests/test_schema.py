@@ -1,34 +1,40 @@
 import re
 
-import pytest
+from pytest import mark, raises
 
-from cerberus import Validator, errors, SchemaError, UnconcernedValidator
+from cerberus import (
+    errors,
+    schema_registry,
+    SchemaError,
+    UnconcernedValidator,
+    Validator,
+)
 from cerberus.tests import assert_schema_error, assert_success
 
 
 def test_empty_schema():
     validator = Validator()
-    with pytest.raises(SchemaError, match=errors.MISSING_SCHEMA):
+    with raises(SchemaError, match=errors.MISSING_SCHEMA):
         validator({}, schema=None)
 
 
 def test_bad_schema_type(validator):
     schema = "this string should really be dict"
     msg = errors.SCHEMA_TYPE.format(schema)
-    with pytest.raises(SchemaError, match=msg):
+    with raises(SchemaError, match=msg):
         validator.schema = schema
 
 
 def test_bad_schema_type_field(validator):
     field = 'foo'
     schema = {field: {'schema': {'bar': {'type': 'strong'}}}}
-    with pytest.raises(SchemaError):
+    with raises(SchemaError):
         validator.schema = schema
 
 
 def test_unknown_rule(validator):
     msg = "{'foo': [{'unknown': ['unknown rule']}]}"
-    with pytest.raises(SchemaError, match=re.escape(msg)):
+    with raises(SchemaError, match=re.escape(msg)):
         validator.schema = {'foo': {'unknown': 'rule'}}
 
 
@@ -58,14 +64,14 @@ def test_unknown_type(validator):
         }
     )
 
-    with pytest.raises(SchemaError, match=re.escape(msg)):
+    with raises(SchemaError, match=re.escape(msg)):
         validator.schema = {'foo': {'type': 'unknown'}}
 
 
 def test_bad_schema_definition(validator):
     field = 'name'
     msg = str({field: ["must be one of these types: ('dict',)"]})
-    with pytest.raises(SchemaError, match=re.escape(msg)):
+    with raises(SchemaError, match=re.escape(msg)):
         validator.schema = {field: 'this should really be a dict'}
 
 
@@ -132,3 +138,17 @@ def test_rulename_space_is_normalized():
         schema={"field": {"default setter": lambda x: x, "type": "string"}}
     )
     assert "default_setter" in validator.schema["field"]
+
+
+@mark.parametrize("rule", ("itemsrules", "keysrules", "valuesrules"))
+def test_schema_normalization_does_not_abort(rule):
+    schema_registry.clear()
+    schema_registry.add(
+        "schema_ref", {},
+    )
+
+    validator = Validator(
+        schema={"field": {rule: {"type": "string"}, "schema": "schema_ref",},}  # noqa
+    )
+    assert validator.schema["field"][rule]["type"] == ("string",)
+

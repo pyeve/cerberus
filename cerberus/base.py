@@ -77,6 +77,8 @@ class SchemaError(Exception):
 
 # Schema mangling
 
+# TODO make the returned mapping values clearly a mutable copy
+
 
 def normalize_rulesset(rulesset: RulesSet) -> RulesSet:
     """ Transforms a set of rules into a canonical form. """
@@ -85,10 +87,10 @@ def normalize_rulesset(rulesset: RulesSet) -> RulesSet:
 
 def normalize_schema(schema: Schema) -> Schema:
     """ Transforms a schema into a canonical form. """
-    # TODO add a caching mechanism
+    # TODO add a caching mechanism, mind exceptions?
 
     for rules in schema.values():
-        if isinstance(rules, str):
+        if not isinstance(rules, abc.MutableMapping):
             continue
 
         rules_with_whitespace = [x for x in rules if " " in x]
@@ -103,7 +105,8 @@ def normalize_schema(schema: Schema) -> Schema:
             ):
                 rules["type"] = (constraint,)
 
-            _expand_generic_type_aliases(rules)
+            # FIXME remove ignored type check
+            _expand_generic_type_aliases(rules)  # type: ignore
 
         # TODO prepare constraints of other rules to improve validation speed
 
@@ -113,17 +116,17 @@ def normalize_schema(schema: Schema) -> Schema:
 
 
 def _expand_schema(schema: Schema) -> None:
-    try:
-        _expand_logical_shortcuts(schema)
-        _expand_subschemas(schema)
-    except Exception:  # failure is delayed
-        pass
+    _expand_logical_shortcuts(schema)
+    _expand_subschemas(schema)
 
 
 def _expand_generic_type_aliases(rules: RulesSet) -> None:
     compound_types = []
     plain_types = []
     is_nullable = False
+
+    # TODO remove eventually
+    assert isinstance(rules, abc.MutableMapping)
 
     for constraint in _flatten_Union_and_Optional(rules.pop("type")):
 
@@ -204,43 +207,48 @@ def _expand_logical_shortcuts(schema):
     """
 
     for rules in schema.values():
-        if isinstance(rules, str):
+        if not isinstance(rules, abc.Mapping):
             continue
 
-        for of_rule in (
+        composed_rules = [
             x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
-        ):
-            operator, rule = of_rule.split('_', 1)
-            rules[operator] = tuple(
-                normalize_rulesset({rule: x}) for x in rules[of_rule]
+        ]
+        if not composed_rules:
+            continue
+
+        for composed_rule in composed_rules:
+            of_rule, rule = composed_rule.split('_', 1)
+            rules[of_rule] = tuple(
+                normalize_rulesset({rule: x}) for x in rules[composed_rule]
             )
-            rules.pop(of_rule)
+
+        for rule in composed_rules:
+            rules.pop(rule)
 
 
 def _expand_subschemas(schema):
     for rules in schema.values():
-        if isinstance(rules, str):
+        if not isinstance(rules, abc.Mapping):
             continue
 
-        if 'schema' in rules:
+        if isinstance(rules.get("schema"), abc.Mapping):
             rules['schema'] = normalize_schema(rules['schema'])
 
-        for rule in (
-            x for x in ('itemsrules', 'keysrules', 'valuesrules') if x in rules
-        ):
-            rules[rule] = normalize_rulesset(rules[rule])
+        for rule in ('itemsrules', 'keysrules', 'valuesrules'):
+            if isinstance(rules.get(rule), abc.Mapping):
+                rules[rule] = normalize_rulesset(rules[rule])
 
         if isinstance(rules.get("allow_unknown", None), Mapping):
             rules["allow_unknown"] = normalize_rulesset(rules["allow_unknown"])
 
-        for rule in (
-            x for x in ('allof', 'anyof', 'items', 'noneof', 'oneof') if x in rules
-        ):
-            if not isinstance(rules[rule], Sequence):
+        for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
+            if not isinstance(rules.get(rule), Sequence):
                 continue
             new_rules_definition = []
             for item in rules[rule]:
-                new_rules_definition.append(normalize_rulesset(item))
+                if isinstance(item, abc.Mapping):
+                    item = normalize_rulesset(item)
+                new_rules_definition.append(item)
             rules[rule] = tuple(new_rules_definition)
 
 
