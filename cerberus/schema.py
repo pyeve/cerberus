@@ -208,7 +208,9 @@ class ValidatedSchema(MutableMapping):
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
 
         schema = normalize_schema(schema)
+        self._repr = ("unvalidated schema: {}", schema)
         self.validate(schema)
+        self._repr = ("{}", schema)
         self.schema = schema
 
     def __delitem__(self, key):
@@ -232,6 +234,7 @@ class ValidatedSchema(MutableMapping):
         return len(self.schema)
 
     def __repr__(self):
+        # TODO include id
         return str(self)
 
     def __setitem__(self, key, value):
@@ -240,7 +243,7 @@ class ValidatedSchema(MutableMapping):
         self.schema[key] = value
 
     def __str__(self):
-        return str(self.schema)
+        return self._repr[0].format(self._repr[1])
 
     def copy(self):
         return self.__class__(self.validator, self.schema.copy())
@@ -277,7 +280,7 @@ class ValidatedSchema(MutableMapping):
         """ Validates a schema that defines rules against supported rules.
 
         :param schema: The schema to be validated as a legal cerberus schema
-                       according to the rules of this Validator object.
+                       according to the rules of the related Validator object.
         """
         if isinstance(schema, str):
             schema = self.validator.schema_registry.get(schema, schema)
