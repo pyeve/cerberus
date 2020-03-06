@@ -91,6 +91,11 @@ def normalize_schema(schema: Schema) -> Schema:
         if isinstance(rules, str):
             continue
 
+        rules_with_whitespace = [x for x in rules if " " in x]
+        if rules_with_whitespace:
+            for rule in rules_with_whitespace:
+                rules[rule.replace(" ", "_")] = rules.pop(rule)
+
         if "type" in rules:
             constraint = rules["type"]
             if not (
