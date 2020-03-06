@@ -130,6 +130,8 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
             origin = get_type_origin(constraint)
             args = get_type_args(constraint)
 
+            # TODO annotate
+
             if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
                 compound_types.append(
                     {
@@ -804,6 +806,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return None
 
     # Properties
+    # TODO replace a lot with __getattr__ and __setattr__
 
     @property
     def allow_unknown(self) -> AllowUnknown:
