@@ -125,3 +125,10 @@ def test_expansion_with_unvalidated_schema():
         {"field": {'allof_regex': ['^Aladdin .*', '.* Sane$']}}
     )
     assert_success(document={"field": "Aladdin Sane"}, validator=validator)
+
+
+def test_rulename_space_is_normalized():
+    validator = Validator(
+        schema={"field": {"default setter": lambda x: x, "type": "string"}}
+    )
+    assert "default_setter" in validator.schema["field"]
