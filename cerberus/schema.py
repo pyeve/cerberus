@@ -269,12 +269,17 @@ class DefinitionSchema(MutableMapping):
         if schema is None:
             raise SchemaError(errors.SCHEMA_ERROR_MISSING)
 
-        schema = copy(schema)
-        for field in schema:
-            if isinstance(schema[field], _str_type):
-                schema[field] = rules_set_registry.get(schema[field], schema[field])
+        test_schema = {}
+        for field, rules in schema.items():
+            if isinstance(rules, _str_type):
+                test_schema[field] = rules_set_registry.get(rules, rules)
+            else:
+                test_rules = {}
+                for rule, constraint in rules.items():
+                    test_rules[rule.replace(" ", "_")] = constraint
+                test_schema[field] = test_rules
 
-        if not self.schema_validator(schema, normalize=False):
+        if not self.schema_validator(test_schema, normalize=False):
             raise SchemaError(self.schema_validator.errors)
 
 

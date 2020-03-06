@@ -172,3 +172,9 @@ def test_anyof_check_with():
     assert validator.schema == {
         'field': {'anyof': [{'check_with': foo}, {'check_with': bar}]}
     }
+
+
+def test_rulename_space_is_normalized():
+    validator = Validator(
+        schema={"field": {"default setter": lambda x: x, "type": "string"}}
+    )

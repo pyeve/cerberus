@@ -6,12 +6,18 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 Version 1.3.3
 -------------
 
+Unreleased.
+
 Fixed
 ~~~~~~
 
 - Fixed crash when submitting non-hashable values to ``allowed`` (`#524`_)
+- Fixed schema validation for rules specifications with space (`#527`)
+- Replaced deprecated rule name ``validator`` with ``check_with`` in the docs
+  (`#527`)
 
 .. _`#524`: https://github.com/pyeve/cerberus/issues/524
+.. _`#527`: https://github.com/pyeve/cerberus/issues/527
 
 Version 1.3.2
 -------------
