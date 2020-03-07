@@ -998,13 +998,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             If no arguments are given, the whole queue is emptied.
         """
         if rules:
-            for rule in rules:
-                try:
-                    self._remaining_rules.remove(rule)
-                except ValueError:
-                    pass
+            for rule in (x for x in rules if x in self._remaining_rules):
+                self._remaining_rules.remove(rule)
         else:
-            self._remaining_rules = []
+            self._remaining_rules.clear()
 
     # # Normalizing
 

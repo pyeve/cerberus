@@ -206,28 +206,18 @@ class ValidatedSchema(MutableMapping):
 
         if isinstance(schema, str):
             schema = validator.schema_registry.get(schema, schema)
-
-        try:
-            schema = dict(schema)  # type: ignore
-        except Exception:
+        if not isinstance(schema, Mapping):
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
+        else:
+            schema = normalize_schema(schema)
 
-        schema = normalize_schema(schema)
         self._repr = ("unvalidated schema: {}", schema)
         self.validate(schema)
         self._repr = ("{}", schema)
         self.schema = schema
 
     def __delitem__(self, key):
-        _new_schema = self.schema.copy()
-        try:
-            del _new_schema[key]
-        except ValueError:
-            raise SchemaError("Schema has no field '{}' defined".format(key))
-        except Exception:
-            raise
-        else:
-            del self.schema[key]
+        self.schema.pop(key)
 
     def __getitem__(self, item):
         return self.schema[item]
@@ -261,8 +251,6 @@ class ValidatedSchema(MutableMapping):
             self.validate(_new_schema)
         except ValueError:
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
-        except Exception as e:
-            raise e
         else:
             self.schema = _new_schema
 

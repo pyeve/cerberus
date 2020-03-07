@@ -99,9 +99,7 @@ def assert_has_error(_errors, d_path, s_path, error_def, constraint, info=()):
             if not error.is_group_error:
                 assert error.info == info
         except AssertionError:
-            pass
-        except Exception:
-            raise
+            continue
         else:
             break
     else:
@@ -139,8 +137,6 @@ def assert_not_has_error(_errors, *args, **kwargs):
         assert_has_error(_errors, *args, **kwargs)
     except AssertionError:
         pass
-    except Exception as e:
-        raise e
     else:
         raise AssertionError('An unexpected error occurred.')
 
