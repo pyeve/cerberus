@@ -1363,12 +1363,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self._unrequired_by_excludes = set()  # type: Set[FieldName]
 
         self.__init_processing(document, schema)
+        del schema, document
+
         if normalize:
             self.__normalize_mapping(self.document, self.schema)
 
         for field in self.document:  # type: ignore
-            if self.ignore_none_values and self.document[field] is None:  # type: ignore
-                continue
             definitions = self.schema.get(field)  # type: ignore
             if definitions is not None:
                 self.__validate_definitions(definitions, field)
@@ -1718,7 +1718,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
         if value is None:
-            if not nullable:
+            if not (nullable or self.ignore_none_values):
                 self._error(field, errors.NULLABLE)
             self._drop_remaining_rules(
                 'allowed',
