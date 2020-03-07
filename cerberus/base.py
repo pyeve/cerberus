@@ -1103,6 +1103,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
         try:
             return processor(value)
+        except RuntimeError:
+            raise
         except Exception as e:
             if not (nullable and value is None):
                 self._error(field, error, str(e))
@@ -1303,6 +1305,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._normalize_default_setter(mapping, schema, field)
             except KeyError:
                 fields_with_default_setter.append(field)
+            except RuntimeError:
+                raise
             except Exception as e:
                 self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
 
