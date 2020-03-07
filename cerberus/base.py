@@ -381,36 +381,38 @@ class ValidatorMeta(type):
 
         super().__init__(name, bases, namespace)
 
-        cls.validation_rules = {
+        validation_rules = {
             attribute: cls.__get_rule_schema('_validate_' + attribute)
             for attribute in attributes_with_prefix('validate')
         }
 
         cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
-        x = cls.validation_rules['check_with']['oneof']
+        x = validation_rules['check_with']['oneof']
         x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
 
         for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
-            cls.validation_rules[rule]['required'] = True
+            validation_rules[rule]['required'] = True
 
-        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
+        cls.coercers, cls.default_setters, normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
                 cls.coercers += (attribute[len('coerce_') :],)
             elif attribute.startswith('default_setter_'):
                 cls.default_setters += (attribute[len('default_setter_') :],)
             else:
-                cls.normalization_rules[attribute] = cls.__get_rule_schema(
+                normalization_rules[attribute] = cls.__get_rule_schema(
                     '_normalize_' + attribute
                 )
 
         for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['oneof']
+            x = normalization_rules[rule]['oneof']
             x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1][
+        normalization_rules['default_setter']['oneof'][1][
             'allowed'
         ] = cls.default_setters
 
+        cls.normalization_rules = normalize_schema(normalization_rules)
+        cls.validation_rules = normalize_schema(validation_rules)
         cls.rules = ChainMap(cls.normalization_rules, cls.validation_rules)
 
     def __get_rule_schema(mcls, method_name):

@@ -62,7 +62,7 @@ class SchemaValidator(UnconcernedValidator):
         elif isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema={'valuesrules': {'type': 'list'}},
+                schema={'valuesrules': {'type': ('list',)}},
                 allow_unknown=True,
             )
             if not validator(value, normalize=False):
@@ -258,7 +258,7 @@ class ValidatedSchema(MutableMapping):
         self.validation_schema = {
             'allow_unknown': False,
             'schema': self.validator.rules,
-            'type': 'dict',
+            'type': ('Mapping',),
         }
 
     def validate(self, schema=None):
