@@ -1,11 +1,9 @@
-from collections.abc import Container, Mapping
-from copy import copy
-from typing import Dict, Hashable, MutableMapping, Sequence, Set
+from collections import abc, ChainMap
+from typing import Dict, Hashable, Mapping, MutableMapping, Sequence, Set
 
 from cerberus import errors
 from cerberus.base import (
     normalize_schema,
-    rules_set_registry,
     RulesSetRegistry,
     SchemaError,
     SchemaRegistry,
@@ -25,7 +23,7 @@ class SchemaValidator(UnconcernedValidator):
     types_mapping.update(
         {
             "container_but_not_string": TypeDefinition(
-                "container_but_not_string", (Container,), (str,)
+                "container_but_not_string", (abc.Container,), (str,)
             ),
             "generic_type_alias": TypeDefinition(
                 "generic_type_alias", (_GenericAlias,), ()
@@ -56,7 +54,7 @@ class SchemaValidator(UnconcernedValidator):
     def _check_with_dependencies(self, field, value):
         if isinstance(value, str):
             return
-        elif isinstance(value, Mapping):
+        elif isinstance(value, abc.Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema={'valuesrules': {'type': ('list',)}},
@@ -204,7 +202,7 @@ class ValidatedSchema(MutableMapping):
 
         if isinstance(schema, str):
             schema = validator.schema_registry.get(schema, schema)
-        if not isinstance(schema, Mapping):
+        if not isinstance(schema, abc.Mapping):
             raise SchemaError(errors.SCHEMA_TYPE.format(schema))
         else:
             schema = normalize_schema(schema)
@@ -241,15 +239,12 @@ class ValidatedSchema(MutableMapping):
         return self.__class__(self.validator, self.schema.copy())
 
     def update(self, schema):
-        try:
-            schema = normalize_schema(schema)
-            _new_schema = self.schema.copy()
-            _new_schema.update(schema)
-            self.validate(_new_schema)
-        except ValueError:
-            raise SchemaError(errors.SCHEMA_TYPE.format(schema))
-        else:
-            self.schema = _new_schema
+        if not isinstance(schema, abc.Mapping):
+            raise TypeError("Value must be of Mapping Type.")
+
+        new_schema = ChainMap(schema, self.schema)
+        self.validate(new_schema)
+        self.schema = new_schema
 
     def regenerate_validation_schema(self):
         self.validation_schema = {
@@ -278,12 +273,13 @@ class ValidatedSchema(MutableMapping):
         if schema is None:
             raise SchemaError(errors.SCHEMA_MISSING)
 
-        schema = copy(schema)
-        for field in schema:
-            if isinstance(schema[field], str):
-                schema[field] = rules_set_registry.get(schema[field], schema[field])
+        resolved = {
+            k: self.validator.rules_set_registry.get(v, v)
+            for k, v in schema.items()
+            if isinstance(v, str)
+        }
 
-        if not self.schema_validator(schema, normalize=False):
+        if not self.schema_validator(ChainMap(resolved, schema), normalize=False):
             raise SchemaError(self.schema_validator.errors)
 
 
@@ -298,7 +294,7 @@ def mapping_to_frozenset(schema: Mapping) -> frozenset:
         container type. """
     schema_copy = {}  # type: Dict[Hashable, Hashable]
     for key, value in schema.items():
-        if isinstance(value, Mapping):
+        if isinstance(value, abc.Mapping):
             schema_copy[key] = mapping_to_frozenset(value)
         elif isinstance(value, Sequence):
             value = list(value)
