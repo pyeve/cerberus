@@ -993,9 +993,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
         if isinstance(schema, str):
             schema = self._resolve_schema(schema)
-        schema = schema.copy()
-        for field in schema:
-            schema[field] = self._resolve_rules_set(schema[field])
+        schema = {k: self._resolve_rules_set(v) for k, v in schema.items()}
 
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown and not self.allow_unknown:
@@ -1106,21 +1104,19 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
-        for k in result:
-            if k == result[k]:
-                continue
-            if result[k] in mapping[field]:
+        for _in, out in ((k, v) for k, v in result.items() if k != v):
+            if out in mapping[field]:
                 warn(
                     "Normalizing keys of {path}: {key} already exists, "
                     "its value is replaced.".format(
                         path='.'.join(str(x) for x in self.document_path + (field,)),
-                        key=k,
+                        key=_in,
                     )
                 )
-                mapping[field][result[k]] = mapping[field][k]
+                mapping[field][out] = mapping[field][_in]
             else:
-                mapping[field][result[k]] = mapping[field][k]
-                del mapping[field][k]
+                mapping[field][out] = mapping[field][_in]
+                del mapping[field][_in]
 
     def __normalize_mapping_per_valuesrules(self, field, mapping, value_rules):
         schema = {k: value_rules for k in mapping[field]}
@@ -1169,7 +1165,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(validator._errors)
 
     def __normalize_sequence_per_itemsrules(self, field, mapping, schema):
-        schema = {k: schema[field]['itemsrules'] for k in range(len(mapping[field]))}
+        constraint = schema[field]['itemsrules']
+        schema = {k: constraint for k in range(len(mapping[field]))}
         document = {k: v for k, v in enumerate(mapping[field])}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'itemsrules'), schema=schema
@@ -1250,8 +1247,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             )  # noqa: W503
         ]
 
-        fields_with_default = [x for x in empty_fields if 'default' in schema[x]]
-        for field in fields_with_default:
+        for field in (x for x in empty_fields if 'default' in schema[x]):
             self._normalize_default(mapping, schema, field)
 
         known_fields_states = set()
@@ -1547,7 +1543,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         if isinstance(value, str):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
-        elif isinstance(value, Sequence):
+        elif isinstance(value, Iterable):
             forbidden = set(value) & set(forbidden_values)
             if forbidden:
                 self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
@@ -1605,9 +1601,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         for i, definition in enumerate(definitions):
             schema = {field: definition.copy()}
             for rule in ('allow_unknown', 'type'):
-                if rule not in schema[field] and rule in self.schema[field]:
+                if rule not in definition and rule in self.schema[field]:
                     schema[field][rule] = self.schema[field][rule]
-            if 'allow_unknown' not in schema[field]:
+            if 'allow_unknown' not in definition:
                 schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(
@@ -1747,7 +1743,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             field
             for field, definition in self.schema.items()
             if self._resolve_rules_set(definition).get('required', self.require_all)
-            is True
         )
         required -= self._unrequired_by_excludes
         missing = required - set(
@@ -1814,8 +1809,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_valuesrules(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'check_with': 'rulesset',
             'forbidden': ['rename', 'rename_handler']} """
-        schema_crumb = (field, 'valuesrules')
         if isinstance(value, Mapping):
+            schema_crumb = (field, 'valuesrules')
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=schema_crumb,
