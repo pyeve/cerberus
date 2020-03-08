@@ -8,11 +8,11 @@ def test_itemsrules():
 
 def test_itemsrules_with_schema(validator):
     field = 'a_list_of_dicts'
-    maping_schema = {
-        'sku': {'type': 'string'},
-        'price': {'type': 'integer', 'required': True},
+    mapping_schema = {
+        'sku': {'type': ('string',)},
+        'price': {'type': ('integer',), 'required': True},
     }
-    itemsrules = {'type': 'dict', 'schema': maping_schema}
+    itemsrules = {'type': ('dict',), 'schema': mapping_schema}
 
     assert_fail(
         schema={field: {'type': 'list', 'itemsrules': itemsrules}},
@@ -20,7 +20,7 @@ def test_itemsrules_with_schema(validator):
         validator=validator,
         error=(field, (field, 'itemsrules'), errors.ITEMSRULES, itemsrules),
         child_errors=[
-            ((field, 0), (field, 'itemsrules', 'schema'), errors.SCHEMA, maping_schema)
+            ((field, 0), (field, 'itemsrules', 'schema'), errors.SCHEMA, mapping_schema)
         ],
     )
 

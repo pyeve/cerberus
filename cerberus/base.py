@@ -77,56 +77,44 @@ class SchemaError(Exception):
 
 # Schema mangling
 
-# TODO make the returned mapping values clearly a mutable copy
 
-
-def normalize_rulesset(rulesset: RulesSet) -> RulesSet:
+def normalize_rulesset(rules: RulesSet) -> RulesSet:
     """ Transforms a set of rules into a canonical form. """
-    return normalize_schema({0: rulesset})[0]
+    # TODO add a caching mechanism
+    if not isinstance(rules, abc.Mapping):
+        return rules
+
+    rules = dict(rules)
+
+    rules_with_whitespace = [x for x in rules if " " in x]
+    if rules_with_whitespace:
+        for rule in rules_with_whitespace:
+            rules[rule.replace(" ", "_")] = rules.pop(rule)
+
+    if "type" in rules:
+        constraint = rules["type"]
+        if not (isinstance(constraint, Iterable) and not isinstance(constraint, str)):
+            rules["type"] = (constraint,)
+
+        _expand_generic_type_aliases(rules)
+
+    # TODO prepare constraints of other rules to improve validation speed
+
+    _expand_composed_of_rules(rules)
+    _normalize_contained_rulessets(rules)
+    return rules
 
 
 def normalize_schema(schema: Schema) -> Schema:
     """ Transforms a schema into a canonical form. """
-    # TODO add a caching mechanism, mind exceptions?
-
-    for rules in schema.values():
-        if not isinstance(rules, abc.MutableMapping):
-            continue
-
-        rules_with_whitespace = [x for x in rules if " " in x]
-        if rules_with_whitespace:
-            for rule in rules_with_whitespace:
-                rules[rule.replace(" ", "_")] = rules.pop(rule)
-
-        if "type" in rules:
-            constraint = rules["type"]
-            if not (
-                isinstance(constraint, Iterable) and not isinstance(constraint, str)
-            ):
-                rules["type"] = (constraint,)
-
-            # FIXME remove ignored type check
-            _expand_generic_type_aliases(rules)  # type: ignore
-
-        # TODO prepare constraints of other rules to improve validation speed
-
-    _expand_schema(schema)
-
-    return schema
+    # TODO add a caching mechanism?
+    return {field: normalize_rulesset(rules) for field, rules in schema.items()}
 
 
-def _expand_schema(schema: Schema) -> None:
-    _expand_logical_shortcuts(schema)
-    _expand_subschemas(schema)
-
-
-def _expand_generic_type_aliases(rules: RulesSet) -> None:
+def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
     compound_types = []
     plain_types = []
     is_nullable = False
-
-    # TODO remove eventually
-    assert isinstance(rules, abc.MutableMapping)
 
     for constraint in _flatten_Union_and_Optional(rules.pop("type")):
 
@@ -178,7 +166,7 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
     if compound_types or is_nullable:
         if "anyof" in rules:
             raise SchemaError(
-                "The usage of the `anyof` rule is not possible in a ruleset where the"
+                "The usage of the `anyof` rule is not possible in a rulesset where the"
                 "`type` rule specifies compound types as constraints."
             )
 
@@ -201,57 +189,34 @@ def _flatten_Union_and_Optional(type_constraints):
             yield constraint
 
 
-def _expand_logical_shortcuts(schema):
-    """ Expand agglutinated rules in a definition-schema.
+def _expand_composed_of_rules(rules: Dict[str, Any]) -> None:
+    """ Expands of-rules that have another rule agglutinated in a rules set. """
+    composed_rules = [
+        x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
+    ]
+    if not composed_rules:
+        return
 
-    :param schema: The schema-definition to expand.
-    :return: The expanded schema-definition.
-    """
+    for composed_rule in composed_rules:
+        of_rule, rule = composed_rule.split('_', 1)
+        rules[of_rule] = tuple({rule: x} for x in rules[composed_rule])
 
-    for rules in schema.values():
-        if not isinstance(rules, abc.Mapping):
+    for rule in composed_rules:
+        rules.pop(rule)
+
+
+def _normalize_contained_rulessets(rules: Dict[str, Any]) -> None:
+    if isinstance(rules.get("schema"), abc.Mapping):
+        rules['schema'] = normalize_schema(rules['schema'])
+
+    for rule in ("allow_unknown", "itemsrules", "keysrules", "valuesrules"):
+        if rule in rules:
+            rules[rule] = normalize_rulesset(rules[rule])
+
+    for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
+        if not isinstance(rules.get(rule), Sequence):
             continue
-
-        composed_rules = [
-            x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
-        ]
-        if not composed_rules:
-            continue
-
-        for composed_rule in composed_rules:
-            of_rule, rule = composed_rule.split('_', 1)
-            rules[of_rule] = tuple(
-                normalize_rulesset({rule: x}) for x in rules[composed_rule]
-            )
-
-        for rule in composed_rules:
-            rules.pop(rule)
-
-
-def _expand_subschemas(schema):
-    for rules in schema.values():
-        if not isinstance(rules, abc.Mapping):
-            continue
-
-        if isinstance(rules.get("schema"), abc.Mapping):
-            rules['schema'] = normalize_schema(rules['schema'])
-
-        for rule in ('itemsrules', 'keysrules', 'valuesrules'):
-            if isinstance(rules.get(rule), abc.Mapping):
-                rules[rule] = normalize_rulesset(rules[rule])
-
-        if isinstance(rules.get("allow_unknown", None), Mapping):
-            rules["allow_unknown"] = normalize_rulesset(rules["allow_unknown"])
-
-        for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
-            if not isinstance(rules.get(rule), Sequence):
-                continue
-            new_rules_definition = []
-            for item in rules[rule]:
-                if isinstance(item, abc.Mapping):
-                    item = normalize_rulesset(item)
-                new_rules_definition.append(item)
-            rules[rule] = tuple(new_rules_definition)
+        rules[rule] = tuple(normalize_rulesset(x) for x in rules[rule])
 
 
 # Registries

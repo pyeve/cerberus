@@ -92,10 +92,15 @@ def test_anyof_in_itemsrules(validator):
     # test that a list of schemas can be specified.
 
     valid_parts = (
-        {'schema': {'model number': {'type': 'string'}, 'count': {'type': 'integer'}}},
-        {'schema': {'serial number': {'type': 'string'}, 'count': {'type': 'integer'}}},
+        {
+            'schema': {
+                'model number': {'type': ('string',)},
+                'count': {'type': ('integer',)},
+            }
+        },
+        {'schema': {'serial number': {'type': (str,)}, 'count': {'type': (int,)}}},
     )
-    valid_item = {'type': ['dict', 'string'], 'anyof': valid_parts}
+    valid_item = {'type': ('dict', 'string'), 'anyof': valid_parts}
     schema = {'parts': {'type': 'list', 'itemsrules': valid_item}}
     document = {
         'parts': [
@@ -342,11 +347,11 @@ def test_allow_unknown_in_oneof():
         'test': {
             'oneof': (
                 {
-                    'type': 'dict',
+                    'type': ('dict',),
                     'allow_unknown': True,
-                    'schema': {'known': {'type': 'string'}},
+                    'schema': {'known': {'type': ('string',)}},
                 },
-                {'type': 'dict', 'schema': {'known': {'type': 'string'}}},
+                {'type': ('dict',), 'schema': {'known': {'type': ('string',)}}},
             )
         }
     }
