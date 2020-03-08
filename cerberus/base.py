@@ -2,7 +2,6 @@ import re
 import typing
 from ast import literal_eval
 from collections import abc, ChainMap
-from copy import copy
 from datetime import date, datetime
 from typing import (
     Any,
@@ -930,7 +929,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
-        self.document = copy(document)
         if not self.is_child:
             self._is_normalized = False
 
@@ -946,6 +944,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
             raise DocumentError(errors.DOCUMENT_FORMAT.format(document))
+        self.document = document
         self.error_handler.start(self)
 
     def __init_schema(self, schema):
@@ -984,7 +983,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                  error occurred during normalization.
         """
         self.__init_processing(document, schema)
-        self.__normalize_mapping(self.document, self.schema)
+        self.document = self.__normalize_mapping(document, self.schema)
         self.error_handler.end(self)
         self._errors.sort()
         if self._errors and not always_return_document:
@@ -993,6 +992,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             return self.document
 
     def __normalize_mapping(self, mapping, schema):
+        mapping = mapping.copy()
+
         if isinstance(schema, str):
             schema = self._resolve_schema(schema)
         schema = schema.copy()
@@ -1322,10 +1323,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self._unrequired_by_excludes = set()  # type: Set[FieldName]
 
         self.__init_processing(document, schema)
-        del schema, document
+        del document, schema
 
         if normalize:
-            self.__normalize_mapping(self.document, self.schema)
+            self.document = self.__normalize_mapping(self.document, self.schema)
 
         for field in self.document:  # type: ignore
             definitions = self.schema.get(field)  # type: ignore
