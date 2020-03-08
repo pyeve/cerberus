@@ -193,6 +193,7 @@ class ValidatedSchema(MutableMapping):
         :param schema: A definition-schema as ``dict``. Defaults to an empty
                        one.
         """
+        self._repr = ("unvalidated schema: {}", schema)
         if not isinstance(validator, UnconcernedValidator):
             raise RuntimeError('validator argument must be a Validator-' 'instance.')
         self.validator = validator
@@ -211,7 +212,6 @@ class ValidatedSchema(MutableMapping):
         else:
             schema = normalize_schema(schema)
 
-        self._repr = ("unvalidated schema: {}", schema)
         self.validate(schema)
         self._repr = ("{}", schema)
         self.schema = schema
