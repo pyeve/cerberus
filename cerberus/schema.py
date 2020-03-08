@@ -33,23 +33,20 @@ class SchemaValidator(UnconcernedValidator):
         }
     )
 
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("known_rules_set_refs", set())
+        kwargs.setdefault("known_schema_refs", set())
+        super().__init__(*args, **kwargs)
+
     @property
     def known_rules_set_refs(self):
         """ The encountered references to rules set registry items. """
-        return self._config.get('known_rules_set_refs', ())
-
-    @known_rules_set_refs.setter
-    def known_rules_set_refs(self, value):
-        self._config['known_rules_set_refs'] = value
+        return self._config["known_rules_set_refs"]
 
     @property
     def known_schema_refs(self):
         """ The encountered references to schema registry items. """
-        return self._config.get('known_schema_refs', ())
-
-    @known_schema_refs.setter
-    def known_schema_refs(self, value):
-        self._config['known_schema_refs'] = value
+        return self._config["known_schema_refs"]
 
     @property
     def target_validator(self):
@@ -83,7 +80,7 @@ class SchemaValidator(UnconcernedValidator):
             if value in self.known_rules_set_refs:
                 return
             else:
-                self.known_rules_set_refs += (value,)
+                self.known_rules_set_refs.add(value)
             definition = self.target_validator.rules_set_registry.get(value)
             if definition is None:
                 self._error(field, "Rules set definition '{}' not found.".format(value))
@@ -114,7 +111,7 @@ class SchemaValidator(UnconcernedValidator):
             if value in self.known_schema_refs:
                 return
 
-            self.known_schema_refs += (value,)
+            self.known_schema_refs.add(value)
             definition = self.target_validator.schema_registry.get(value)
             if definition is None:
                 path = self.document_path + (field,)
