@@ -932,7 +932,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         if not self.is_child:
             self._is_normalized = False
 
-        self.__init_schema(schema)
+        if schema is not None:
+            self.schema = schema
 
         if self.schema is None:
             if isinstance(self.allow_unknown, Mapping):
@@ -946,10 +947,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             raise DocumentError(errors.DOCUMENT_FORMAT.format(document))
         self.document = document
         self.error_handler.start(self)
-
-    def __init_schema(self, schema):
-        if schema is not None:
-            self.schema = schema
 
     def _drop_remaining_rules(self, *rules):
         """ Drops rules from the queue of the rules that still need to be

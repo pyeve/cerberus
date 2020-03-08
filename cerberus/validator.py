@@ -13,10 +13,6 @@ from cerberus.schema import ValidatedSchema
 
 
 class Validator(UnconcernedValidator):
-    def __init_schema(self, schema):
-        if schema is not None:
-            self.schema = ValidatedSchema(self, schema)
-
     @property
     def allow_unknown(self):
         """ If ``True`` unknown fields that are not defined in the schema will
