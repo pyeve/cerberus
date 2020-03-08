@@ -607,7 +607,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         """
         if len(args) == 1:
             self._errors.extend(args[0])
-            self._errors.sort()
             for error in args[0]:
                 self.document_error_tree.add(error)
                 self.schema_error_tree.add(error)
@@ -987,6 +986,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self.__init_processing(document, schema)
         self.__normalize_mapping(self.document, self.schema)
         self.error_handler.end(self)
+        self._errors.sort()
         if self._errors and not always_return_document:
             return None
         else:
@@ -1338,6 +1338,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self.__validate_required_fields(self.document)
 
         self.error_handler.end(self)
+        self._errors.sort()
 
         return not bool(self._errors)
 
