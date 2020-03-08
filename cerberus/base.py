@@ -1,6 +1,5 @@
 import re
 import typing
-from abc import abstractmethod
 from ast import literal_eval
 from collections import abc, ChainMap
 from copy import copy
@@ -235,11 +234,6 @@ class Registry(Generic[RegistryItem]):
         self._storage = {}  # type: Dict[str, RegistryItem]
         self.extend(definitions)
 
-    @classmethod
-    @abstractmethod
-    def _expand_definition(cls, definition: RegistryItem) -> RegistryItem:
-        pass
-
     def add(self, name: str, definition: RegistryItem) -> None:
         """ Register a definition to the registry. Existing definitions are
         replaced silently.
@@ -248,7 +242,11 @@ class Registry(Generic[RegistryItem]):
                      schema.
         :param definition: The definition.
         """
-        self._storage[name] = self._expand_definition(definition)
+        if not isinstance(definition, abc.Mapping):
+            raise TypeError("Value must be of Mapping type.")
+        # TODO add `_normalize_value: staticmethod` as class attribute declaration when
+        #      Python3.5 was dropped and remove this # type: ignore
+        self._storage[name] = self._normalize_value(definition)  # type: ignore
 
     def all(self) -> RegistryItems:
         """ Returns a :class:`dict` with all registered definitions mapped to
@@ -289,15 +287,11 @@ class Registry(Generic[RegistryItem]):
 
 
 class SchemaRegistry(Registry):
-    @classmethod
-    def _expand_definition(cls, definition):
-        return normalize_schema(definition)
+    _normalize_value = staticmethod(normalize_schema)
 
 
 class RulesSetRegistry(Registry):
-    @classmethod
-    def _expand_definition(cls, definition):
-        return normalize_rulesset(definition)
+    _normalize_value = staticmethod(normalize_rulesset)
 
 
 schema_registry, rules_set_registry = SchemaRegistry(), RulesSetRegistry()
