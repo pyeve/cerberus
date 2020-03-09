@@ -89,14 +89,20 @@ def normalize_rulesset(rules: RulesSet) -> RulesSet:
         for rule in rules_with_whitespace:
             rules[rule.replace(" ", "_")] = rules.pop(rule)
 
+    if isinstance(rules.get("dependencies"), str):
+        rules["dependencies"] = (rules["dependencies"],)
+
+    if "excludes" in rules:
+        constraint = rules["excludes"]
+        if isinstance(constraint, str) or not isinstance(constraint, Container):
+            rules["excludes"] = (constraint,)
+
     if "type" in rules:
         constraint = rules["type"]
         if not (isinstance(constraint, Iterable) and not isinstance(constraint, str)):
             rules["type"] = (constraint,)
 
         _expand_generic_type_aliases(rules)
-
-    # TODO prepare constraints of other rules to improve validation speed
 
     _expand_composed_of_rules(rules)
     _normalize_contained_rulessets(rules)
@@ -244,7 +250,7 @@ class Registry(Generic[RegistryItem]):
         if not isinstance(definition, abc.Mapping):
             raise TypeError("Value must be of Mapping type.")
         # TODO add `_normalize_value: staticmethod` as class attribute declaration when
-        #      Python3.5 was dropped and remove this # type: ignore
+        # Python3.5 was dropped and remove this # type: ignore
         self._storage[name] = self._normalize_value(definition)  # type: ignore
 
     def all(self) -> RegistryItems:

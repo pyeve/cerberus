@@ -141,7 +141,7 @@ def test_dependencies_of_single_field(test_function, document):
 
 def test_dependencies_relative_to_document_root():
     # https://github.com/pyeve/cerberus/issues/288
-    subschema = {'version': {'dependencies': '^repo'}}
+    subschema = {'version': {'dependencies': ('^repo',)}}
     schema = {'package': {'allow_unknown': True, 'schema': subschema}, 'repo': {}}
 
     assert_success({'repo': 'somewhere', 'package': {'version': 1}}, schema)
@@ -155,7 +155,7 @@ def test_dependencies_relative_to_document_root():
                 ('package', 'version'),
                 ('package', 'schema', 'version', 'dependencies'),
                 errors.DEPENDENCIES_FIELD,
-                '^repo',
+                ('^repo',),
                 ('^repo',),
             )
         ],
