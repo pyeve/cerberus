@@ -1,5 +1,5 @@
 from collections import abc, ChainMap
-from typing import Dict, Hashable, Mapping, MutableMapping, Sequence, Set
+from typing import Hashable, MutableMapping, Sequence
 
 from cerberus import errors
 from cerberus.base import (
@@ -12,7 +12,7 @@ from cerberus.base import (
     normalize_rulesset,
 )
 from cerberus.platform import _GenericAlias
-from cerberus.typing import SchemaDict
+from cerberus.utils import schema_hash
 
 
 class SchemaValidator(UnconcernedValidator):
@@ -281,35 +281,6 @@ class ValidatedSchema(MutableMapping):
 
         if not self.schema_validator(ChainMap(resolved, schema), normalize=False):
             raise SchemaError(self.schema_validator.errors)
-
-
-def schema_hash(schema: SchemaDict) -> int:
-    return hash(mapping_to_frozenset(schema))
-
-
-def mapping_to_frozenset(schema: Mapping) -> frozenset:
-    """ Be aware that this treats any sequence type with the equal members as
-        equal. As it is used to identify equality of schemas, this can be
-        considered okay as definitions are semantically equal regardless the
-        container type. """
-    schema_copy = {}  # type: Dict[Hashable, Hashable]
-    for key, value in schema.items():
-        if isinstance(value, abc.Mapping):
-            schema_copy[key] = mapping_to_frozenset(value)
-        elif isinstance(value, Sequence):
-            value = list(value)
-            for i, item in enumerate(value):
-                if isinstance(item, (ValidatedSchema, Dict)):
-                    value[i] = mapping_to_frozenset(item)
-            schema_copy[key] = tuple(value)
-        elif isinstance(value, Set):
-            schema_copy[key] = frozenset(value)
-        elif isinstance(value, Hashable):
-            schema_copy[key] = value
-        else:
-            raise TypeError("All schema contents must be hashable.")
-
-    return frozenset(schema_copy.items())
 
 
 __all__ = (RulesSetRegistry.__name__, SchemaRegistry.__name__)

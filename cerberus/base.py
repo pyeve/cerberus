@@ -39,7 +39,7 @@ from cerberus.typing import (
     Schema,
     TypesMapping,
 )
-from cerberus.utils import drop_item_from_tuple, readonly_classproperty
+from cerberus.utils import drop_item_from_tuple, readonly_classproperty, schema_hash
 
 RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
 toy_error_handler = errors.ToyErrorHandler()
@@ -76,11 +76,17 @@ class SchemaError(Exception):
 # Schema mangling
 
 
+_normalized_rulesset_cache = {}  # type: Dict[int, Dict[str, Any]]
+
+
 def normalize_rulesset(rules: RulesSet) -> RulesSet:
     """ Transforms a set of rules into a canonical form. """
-    # TODO add a caching mechanism
     if not isinstance(rules, abc.Mapping):
         return rules
+
+    _hash = schema_hash(rules)
+    if _hash in _normalized_rulesset_cache:
+        return _normalized_rulesset_cache[_hash]
 
     rules = dict(rules)
 
@@ -106,12 +112,12 @@ def normalize_rulesset(rules: RulesSet) -> RulesSet:
 
     _expand_composed_of_rules(rules)
     _normalize_contained_rulessets(rules)
+    _normalized_rulesset_cache[_hash] = rules
     return rules
 
 
 def normalize_schema(schema: Schema) -> Schema:
     """ Transforms a schema into a canonical form. """
-    # TODO add a caching mechanism?
     return {field: normalize_rulesset(rules) for field, rules in schema.items()}
 
 
