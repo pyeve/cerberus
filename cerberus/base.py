@@ -133,8 +133,7 @@ def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
             origin = get_type_origin(constraint)
             args = get_type_args(constraint)
 
-            # TODO annotate
-
+            # mappings, e.g. Mapping[int, str]
             if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
                 compound_types.append(
                     {
@@ -144,17 +143,21 @@ def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
                     }
                 )
 
+            # list-like and sets, e.g. List[str]
             elif (
                 issubclass(origin, (abc.MutableSequence, abc.Set))
                 and not constraint.__parameters__
             ):
                 compound_types.append({"type": origin, "itemsrules": {"type": args[0]}})
 
+            # tuples
             elif issubclass(origin, tuple) and args:
+                # e.g. Tuple[str, ...]
                 if args[-1] is _ellipsis:
                     compound_types.append(
                         {"type": origin, "itemsrules": {"type": args[0]}}
                     )
+                # e.g. Tuple[int, str, Tuple]
                 else:
                     compound_types.append(
                         {"type": origin, "items": tuple({"type": x} for x in args)}
