@@ -504,6 +504,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         purge_unknown: bool = False,
         purge_readonly: bool = False,
         require_all: bool = False,
+        rules_set_registry: RulesSetRegistry = rules_set_registry,
+        schema_registry: SchemaRegistry = schema_registry,
         **extra_config: Any
     ):
         self._config = extra_config  # type: Dict[str, Any]
@@ -511,12 +513,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             initialize the :class:`Validator` instance except the ``error_handler``. """
         self._config.update(
             {
-                'allow_unknown': allow_unknown,
-                'error_handler': error_handler,
-                'ignore_none_values': ignore_none_values,
-                'purge_readonly': purge_readonly,
-                'purge_unknown': purge_unknown,
-                'require_all': require_all,
+                "error_handler": error_handler,
+                "ignore_none_values": ignore_none_values,
+                "purge_readonly": purge_readonly,
+                "purge_unknown": purge_unknown,
+                "require_all": require_all,
+                "rules_set_registry": rules_set_registry,
+                "schema_registry": schema_registry,
             }
         )
 
@@ -863,7 +866,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def require_all(self) -> bool:
         """ If ``True`` known fields that are defined in the schema will
             be required. Type: :class:`bool` """
-        return self._config.get('require_all', False)
+        return self._config["require_all"]
 
     @require_all.setter
     def require_all(self, value: bool) -> None:
@@ -891,7 +894,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def rules_set_registry(self) -> RulesSetRegistry:
         """ The registry that holds referenced rules sets.
             Type: :class:`~cerberus.Registry` """
-        return self._config.get('rules_set_registry', rules_set_registry)
+        return self._config["rules_set_registry"]
 
     @rules_set_registry.setter
     def rules_set_registry(self, registry: RulesSetRegistry) -> None:
@@ -923,7 +926,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def schema_registry(self) -> SchemaRegistry:
         """ The registry that holds referenced schemas.
             Type: :class:`~cerberus.Registry` """
-        return self._config.get('schema_registry', schema_registry)
+        return self._config["schema_registry"]
 
     @schema_registry.setter
     def schema_registry(self, registry: SchemaRegistry) -> None:
