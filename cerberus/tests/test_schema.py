@@ -175,6 +175,4 @@ def test_anyof_check_with():
 
 
 def test_rulename_space_is_normalized():
-    validator = Validator(
-        schema={"field": {"default setter": lambda x: x, "type": "string"}}
-    )
+    Validator(schema={"field": {"default setter": lambda x: x, "type": "string"}})

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from copy import copy
 from warnings import warn
 
 from cerberus import errors
