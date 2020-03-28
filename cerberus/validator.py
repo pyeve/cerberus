@@ -8,15 +8,11 @@
     Full documentation is available at http://python-cerberus.org
 """
 
-from cerberus.base import UnconcernedValidator
+from cerberus.base import normalize_rulesset, UnconcernedValidator
 from cerberus.schema import ValidatedSchema
 
 
 class Validator(UnconcernedValidator):
-    def __init_schema(self, schema):
-        if schema is not None:
-            self.schema = ValidatedSchema(self, schema)
-
     @property
     def allow_unknown(self):
         """ If ``True`` unknown fields that are not defined in the schema will
@@ -29,6 +25,7 @@ class Validator(UnconcernedValidator):
     @allow_unknown.setter
     def allow_unknown(self, value):
         if not (self.is_child or isinstance(value, (bool, ValidatedSchema))):
+            value = normalize_rulesset(value)
             ValidatedSchema(self, {'allow_unknown': value})
         self._config['allow_unknown'] = value
 

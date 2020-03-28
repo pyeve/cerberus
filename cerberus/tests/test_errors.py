@@ -39,8 +39,8 @@ def test__error_2():
 
 def test__error_3():
     valids = (
-        {'type': 'string', 'regex': '0x[0-9a-f]{2}'},
-        {'type': 'integer', 'min': 0, 'max': 255},
+        {'type': ('string',), 'regex': '0x[0-9a-f]{2}'},
+        {'type': ('integer',), 'min': 0, 'max': 255},
     )
     v = Validator(schema={'foo': {'oneof': valids}})
     v.document = {'foo': '0x100'}
@@ -300,7 +300,7 @@ def test_basic_error_handler():
 
 
 def test_basic_error_of_errors(validator):
-    schema = {'foo': {'oneof': ({'type': 'integer'}, {'type': 'string'})}}
+    schema = {'foo': {'oneof': ({'type': ('integer',)}, {'type': ('string',)})}}
     document = {'foo': 23.42}
     error = ('foo', ('foo', 'oneof'), errors.ONEOF, schema['foo']['oneof'], ())
     child_errors = [

@@ -70,7 +70,7 @@ def test_unknown_type(validator):
 
 def test_bad_schema_definition(validator):
     field = 'name'
-    msg = str({field: ["must be one of these types: ('dict',)"]})
+    msg = str({field: ["must be one of these types: ('Mapping',)"]})
     with raises(SchemaError, match=re.escape(msg)):
         validator.schema = {field: 'this should really be a dict'}
 

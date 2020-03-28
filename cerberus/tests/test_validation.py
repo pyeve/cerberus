@@ -143,13 +143,18 @@ def test_custom_validator():
 
 
 def test_ignore_none_values():
+    # original commits:
+    # 96532fc8efbc0b057dd6cd23d0324c8c5a929456
+    # d6422991c41587467673716cb6e4e929fa9d7b77
+
     field = 'test'
-    schema = {field: {'type': 'string', 'empty': False, 'required': False}}
+    schema = {field: {'type': ('string',), 'empty': False, 'required': False}}
     document = {field: None}
 
     # Test normal behaviour
     validator = Validator(schema, ignore_none_values=False)
     assert_fail(document, validator=validator)
+
     validator.schema[field]['required'] = True
     validator.schema.validate()
     _errors = assert_fail(document, validator=validator)
@@ -162,8 +167,10 @@ def test_ignore_none_values():
     validator.schema[field]['required'] = False
     validator.schema.validate()
     assert_success(document, validator=validator)
+
     validator.schema[field]['required'] = True
-    _errors = assert_fail(schema=schema, document=document, validator=validator)
+    assert validator.schema[field].get('required') is True
+    _errors = assert_fail(document=document, validator=validator)
     assert_has_error(_errors, field, (field, 'required'), errors.REQUIRED_FIELD, True)
     assert_not_has_error(_errors, field, (field, 'type'), errors.TYPE, 'string')
 

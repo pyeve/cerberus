@@ -1,9 +1,7 @@
 import re
 import typing
-from abc import abstractmethod
 from ast import literal_eval
 from collections import abc, ChainMap
-from copy import copy
 from datetime import date, datetime
 from typing import (
     Any,
@@ -41,7 +39,7 @@ from cerberus.typing import (
     Schema,
     TypesMapping,
 )
-from cerberus.utils import drop_item_from_tuple, readonly_classproperty
+from cerberus.utils import drop_item_from_tuple, readonly_classproperty, schema_hash
 
 RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:"
 toy_error_handler = errors.ToyErrorHandler()
@@ -77,56 +75,56 @@ class SchemaError(Exception):
 
 # Schema mangling
 
-# TODO make the returned mapping values clearly a mutable copy
+
+_normalized_rulesset_cache = {}  # type: Dict[int, Dict[str, Any]]
 
 
-def normalize_rulesset(rulesset: RulesSet) -> RulesSet:
+def normalize_rulesset(rules: RulesSet) -> RulesSet:
     """ Transforms a set of rules into a canonical form. """
-    return normalize_schema({0: rulesset})[0]
+    if not isinstance(rules, abc.Mapping):
+        return rules
+
+    _hash = schema_hash(rules)
+    if _hash in _normalized_rulesset_cache:
+        return _normalized_rulesset_cache[_hash]
+
+    rules = dict(rules)
+
+    rules_with_whitespace = [x for x in rules if " " in x]
+    if rules_with_whitespace:
+        for rule in rules_with_whitespace:
+            rules[rule.replace(" ", "_")] = rules.pop(rule)
+
+    if isinstance(rules.get("dependencies"), str):
+        rules["dependencies"] = (rules["dependencies"],)
+
+    if "excludes" in rules:
+        constraint = rules["excludes"]
+        if isinstance(constraint, str) or not isinstance(constraint, Container):
+            rules["excludes"] = (constraint,)
+
+    if "type" in rules:
+        constraint = rules["type"]
+        if not (isinstance(constraint, Iterable) and not isinstance(constraint, str)):
+            rules["type"] = (constraint,)
+
+        _expand_generic_type_aliases(rules)
+
+    _expand_composed_of_rules(rules)
+    _normalize_contained_rulessets(rules)
+    _normalized_rulesset_cache[_hash] = rules
+    return rules
 
 
 def normalize_schema(schema: Schema) -> Schema:
     """ Transforms a schema into a canonical form. """
-    # TODO add a caching mechanism, mind exceptions?
-
-    for rules in schema.values():
-        if not isinstance(rules, abc.MutableMapping):
-            continue
-
-        rules_with_whitespace = [x for x in rules if " " in x]
-        if rules_with_whitespace:
-            for rule in rules_with_whitespace:
-                rules[rule.replace(" ", "_")] = rules.pop(rule)
-
-        if "type" in rules:
-            constraint = rules["type"]
-            if not (
-                isinstance(constraint, Iterable) and not isinstance(constraint, str)
-            ):
-                rules["type"] = (constraint,)
-
-            # FIXME remove ignored type check
-            _expand_generic_type_aliases(rules)  # type: ignore
-
-        # TODO prepare constraints of other rules to improve validation speed
-
-    _expand_schema(schema)
-
-    return schema
+    return {field: normalize_rulesset(rules) for field, rules in schema.items()}
 
 
-def _expand_schema(schema: Schema) -> None:
-    _expand_logical_shortcuts(schema)
-    _expand_subschemas(schema)
-
-
-def _expand_generic_type_aliases(rules: RulesSet) -> None:
+def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
     compound_types = []
     plain_types = []
     is_nullable = False
-
-    # TODO remove eventually
-    assert isinstance(rules, abc.MutableMapping)
 
     for constraint in _flatten_Union_and_Optional(rules.pop("type")):
 
@@ -135,8 +133,7 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
             origin = get_type_origin(constraint)
             args = get_type_args(constraint)
 
-            # TODO annotate
-
+            # mappings, e.g. Mapping[int, str]
             if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
                 compound_types.append(
                     {
@@ -146,17 +143,21 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
                     }
                 )
 
+            # list-like and sets, e.g. List[str]
             elif (
                 issubclass(origin, (abc.MutableSequence, abc.Set))
                 and not constraint.__parameters__
             ):
                 compound_types.append({"type": origin, "itemsrules": {"type": args[0]}})
 
+            # tuples
             elif issubclass(origin, tuple) and args:
+                # e.g. Tuple[str, ...]
                 if args[-1] is _ellipsis:
                     compound_types.append(
                         {"type": origin, "itemsrules": {"type": args[0]}}
                     )
+                # e.g. Tuple[int, str, Tuple]
                 else:
                     compound_types.append(
                         {"type": origin, "items": tuple({"type": x} for x in args)}
@@ -178,7 +179,7 @@ def _expand_generic_type_aliases(rules: RulesSet) -> None:
     if compound_types or is_nullable:
         if "anyof" in rules:
             raise SchemaError(
-                "The usage of the `anyof` rule is not possible in a ruleset where the"
+                "The usage of the `anyof` rule is not possible in a rulesset where the"
                 "`type` rule specifies compound types as constraints."
             )
 
@@ -201,57 +202,34 @@ def _flatten_Union_and_Optional(type_constraints):
             yield constraint
 
 
-def _expand_logical_shortcuts(schema):
-    """ Expand agglutinated rules in a definition-schema.
+def _expand_composed_of_rules(rules: Dict[str, Any]) -> None:
+    """ Expands of-rules that have another rule agglutinated in a rules set. """
+    composed_rules = [
+        x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
+    ]
+    if not composed_rules:
+        return
 
-    :param schema: The schema-definition to expand.
-    :return: The expanded schema-definition.
-    """
+    for composed_rule in composed_rules:
+        of_rule, rule = composed_rule.split('_', 1)
+        rules[of_rule] = tuple({rule: x} for x in rules[composed_rule])
 
-    for rules in schema.values():
-        if not isinstance(rules, abc.Mapping):
+    for rule in composed_rules:
+        rules.pop(rule)
+
+
+def _normalize_contained_rulessets(rules: Dict[str, Any]) -> None:
+    if isinstance(rules.get("schema"), abc.Mapping):
+        rules['schema'] = normalize_schema(rules['schema'])
+
+    for rule in ("allow_unknown", "itemsrules", "keysrules", "valuesrules"):
+        if rule in rules:
+            rules[rule] = normalize_rulesset(rules[rule])
+
+    for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
+        if not isinstance(rules.get(rule), Sequence):
             continue
-
-        composed_rules = [
-            x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
-        ]
-        if not composed_rules:
-            continue
-
-        for composed_rule in composed_rules:
-            of_rule, rule = composed_rule.split('_', 1)
-            rules[of_rule] = tuple(
-                normalize_rulesset({rule: x}) for x in rules[composed_rule]
-            )
-
-        for rule in composed_rules:
-            rules.pop(rule)
-
-
-def _expand_subschemas(schema):
-    for rules in schema.values():
-        if not isinstance(rules, abc.Mapping):
-            continue
-
-        if isinstance(rules.get("schema"), abc.Mapping):
-            rules['schema'] = normalize_schema(rules['schema'])
-
-        for rule in ('itemsrules', 'keysrules', 'valuesrules'):
-            if isinstance(rules.get(rule), abc.Mapping):
-                rules[rule] = normalize_rulesset(rules[rule])
-
-        if isinstance(rules.get("allow_unknown", None), Mapping):
-            rules["allow_unknown"] = normalize_rulesset(rules["allow_unknown"])
-
-        for rule in ('allof', 'anyof', 'items', 'noneof', 'oneof'):
-            if not isinstance(rules.get(rule), Sequence):
-                continue
-            new_rules_definition = []
-            for item in rules[rule]:
-                if isinstance(item, abc.Mapping):
-                    item = normalize_rulesset(item)
-                new_rules_definition.append(item)
-            rules[rule] = tuple(new_rules_definition)
+        rules[rule] = tuple(normalize_rulesset(x) for x in rules[rule])
 
 
 # Registries
@@ -270,11 +248,6 @@ class Registry(Generic[RegistryItem]):
         self._storage = {}  # type: Dict[str, RegistryItem]
         self.extend(definitions)
 
-    @classmethod
-    @abstractmethod
-    def _expand_definition(cls, definition: RegistryItem) -> RegistryItem:
-        pass
-
     def add(self, name: str, definition: RegistryItem) -> None:
         """ Register a definition to the registry. Existing definitions are
         replaced silently.
@@ -283,7 +256,11 @@ class Registry(Generic[RegistryItem]):
                      schema.
         :param definition: The definition.
         """
-        self._storage[name] = self._expand_definition(definition)
+        if not isinstance(definition, abc.Mapping):
+            raise TypeError("Value must be of Mapping type.")
+        # TODO add `_normalize_value: staticmethod` as class attribute declaration when
+        # Python3.5 was dropped and remove this # type: ignore
+        self._storage[name] = self._normalize_value(definition)  # type: ignore
 
     def all(self) -> RegistryItems:
         """ Returns a :class:`dict` with all registered definitions mapped to
@@ -324,15 +301,11 @@ class Registry(Generic[RegistryItem]):
 
 
 class SchemaRegistry(Registry):
-    @classmethod
-    def _expand_definition(cls, definition):
-        return normalize_schema(definition)
+    _normalize_value = staticmethod(normalize_schema)
 
 
 class RulesSetRegistry(Registry):
-    @classmethod
-    def _expand_definition(cls, definition):
-        return normalize_rulesset(definition)
+    _normalize_value = staticmethod(normalize_rulesset)
 
 
 schema_registry, rules_set_registry = SchemaRegistry(), RulesSetRegistry()
@@ -381,36 +354,38 @@ class ValidatorMeta(type):
 
         super().__init__(name, bases, namespace)
 
-        cls.validation_rules = {
+        validation_rules = {
             attribute: cls.__get_rule_schema('_validate_' + attribute)
             for attribute in attributes_with_prefix('validate')
         }
 
         cls.checkers = tuple(x for x in attributes_with_prefix('check_with'))
-        x = cls.validation_rules['check_with']['oneof']
+        x = validation_rules['check_with']['oneof']
         x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.checkers
 
         for rule in (x for x in cls.mandatory_validations if x != 'nullable'):
-            cls.validation_rules[rule]['required'] = True
+            validation_rules[rule]['required'] = True
 
-        cls.coercers, cls.default_setters, cls.normalization_rules = (), (), {}
+        cls.coercers, cls.default_setters, normalization_rules = (), (), {}
         for attribute in attributes_with_prefix('normalize'):
             if attribute.startswith('coerce_'):
                 cls.coercers += (attribute[len('coerce_') :],)
             elif attribute.startswith('default_setter_'):
                 cls.default_setters += (attribute[len('default_setter_') :],)
             else:
-                cls.normalization_rules[attribute] = cls.__get_rule_schema(
+                normalization_rules[attribute] = cls.__get_rule_schema(
                     '_normalize_' + attribute
                 )
 
         for rule in ('coerce', 'rename_handler'):
-            x = cls.normalization_rules[rule]['oneof']
+            x = normalization_rules[rule]['oneof']
             x[1]['itemsrules']['oneof'][1]['allowed'] = x[2]['allowed'] = cls.coercers
-        cls.normalization_rules['default_setter']['oneof'][1][
+        normalization_rules['default_setter']['oneof'][1][
             'allowed'
         ] = cls.default_setters
 
+        cls.normalization_rules = normalize_schema(normalization_rules)
+        cls.validation_rules = normalize_schema(validation_rules)
         cls.rules = ChainMap(cls.normalization_rules, cls.validation_rules)
 
     def __get_rule_schema(mcls, method_name):
@@ -529,6 +504,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         purge_unknown: bool = False,
         purge_readonly: bool = False,
         require_all: bool = False,
+        rules_set_registry: RulesSetRegistry = rules_set_registry,
+        schema_registry: SchemaRegistry = schema_registry,
         **extra_config: Any
     ):
         self._config = extra_config  # type: Dict[str, Any]
@@ -536,12 +513,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             initialize the :class:`Validator` instance except the ``error_handler``. """
         self._config.update(
             {
-                'allow_unknown': allow_unknown,
-                'error_handler': error_handler,
-                'ignore_none_values': ignore_none_values,
-                'purge_readonly': purge_readonly,
-                'purge_unknown': purge_unknown,
-                'require_all': require_all,
+                "error_handler": error_handler,
+                "ignore_none_values": ignore_none_values,
+                "purge_readonly": purge_readonly,
+                "purge_unknown": purge_unknown,
+                "require_all": require_all,
+                "rules_set_registry": rules_set_registry,
+                "schema_registry": schema_registry,
             }
         )
 
@@ -646,7 +624,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         """
         if len(args) == 1:
             self._errors.extend(args[0])
-            self._errors.sort()
             for error in args[0]:
                 self.document_error_tree.add(error)
                 self.schema_error_tree.add(error)
@@ -889,7 +866,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def require_all(self) -> bool:
         """ If ``True`` known fields that are defined in the schema will
             be required. Type: :class:`bool` """
-        return self._config.get('require_all', False)
+        return self._config["require_all"]
 
     @require_all.setter
     def require_all(self, value: bool) -> None:
@@ -917,7 +894,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def rules_set_registry(self) -> RulesSetRegistry:
         """ The registry that holds referenced rules sets.
             Type: :class:`~cerberus.Registry` """
-        return self._config.get('rules_set_registry', rules_set_registry)
+        return self._config["rules_set_registry"]
 
     @rules_set_registry.setter
     def rules_set_registry(self, registry: RulesSetRegistry) -> None:
@@ -949,7 +926,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def schema_registry(self) -> SchemaRegistry:
         """ The registry that holds referenced schemas.
             Type: :class:`~cerberus.Registry` """
-        return self._config.get('schema_registry', schema_registry)
+        return self._config["schema_registry"]
 
     @schema_registry.setter
     def schema_registry(self, registry: SchemaRegistry) -> None:
@@ -970,11 +947,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self.recent_error = None
         self.document_error_tree = errors.DocumentErrorTree()
         self.schema_error_tree = errors.SchemaErrorTree()
-        self.document = copy(document)
         if not self.is_child:
             self._is_normalized = False
 
-        self.__init_schema(schema)
+        if schema is not None:
+            self.schema = schema
 
         if self.schema is None:
             if isinstance(self.allow_unknown, Mapping):
@@ -986,11 +963,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             raise DocumentError(errors.DOCUMENT_MISSING)
         if not isinstance(document, Mapping):
             raise DocumentError(errors.DOCUMENT_FORMAT.format(document))
+        self.document = document
         self.error_handler.start(self)
-
-    def __init_schema(self, schema):
-        if schema is not None:
-            self.schema = schema
 
     def _drop_remaining_rules(self, *rules):
         """ Drops rules from the queue of the rules that still need to be
@@ -998,13 +972,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             If no arguments are given, the whole queue is emptied.
         """
         if rules:
-            for rule in rules:
-                try:
-                    self._remaining_rules.remove(rule)
-                except ValueError:
-                    pass
+            for rule in (x for x in rules if x in self._remaining_rules):
+                self._remaining_rules.remove(rule)
         else:
-            self._remaining_rules = []
+            self._remaining_rules.clear()
 
     # # Normalizing
 
@@ -1027,19 +998,20 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                  error occurred during normalization.
         """
         self.__init_processing(document, schema)
-        self.__normalize_mapping(self.document, self.schema)
+        self.document = self.__normalize_mapping(document, self.schema)
         self.error_handler.end(self)
+        self._errors.sort()
         if self._errors and not always_return_document:
             return None
         else:
             return self.document
 
     def __normalize_mapping(self, mapping, schema):
+        mapping = mapping.copy()
+
         if isinstance(schema, str):
             schema = self._resolve_schema(schema)
-        schema = schema.copy()
-        for field in schema:
-            schema[field] = self._resolve_rules_set(schema[field])
+        schema = {k: self._resolve_rules_set(v) for k, v in schema.items()}
 
         self.__normalize_rename_fields(mapping, schema)
         if self.purge_unknown and not self.allow_unknown:
@@ -1106,6 +1078,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
         try:
             return processor(value)
+        except RuntimeError:
+            raise
         except Exception as e:
             if not (nullable and value is None):
                 self._error(field, error, str(e))
@@ -1148,21 +1122,19 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2, 4])
             self._error(validator._errors)
-        for k in result:
-            if k == result[k]:
-                continue
-            if result[k] in mapping[field]:
+        for _in, out in ((k, v) for k, v in result.items() if k != v):
+            if out in mapping[field]:
                 warn(
                     "Normalizing keys of {path}: {key} already exists, "
                     "its value is replaced.".format(
                         path='.'.join(str(x) for x in self.document_path + (field,)),
-                        key=k,
+                        key=_in,
                     )
                 )
-                mapping[field][result[k]] = mapping[field][k]
+                mapping[field][out] = mapping[field][_in]
             else:
-                mapping[field][result[k]] = mapping[field][k]
-                del mapping[field][k]
+                mapping[field][out] = mapping[field][_in]
+                del mapping[field][_in]
 
     def __normalize_mapping_per_valuesrules(self, field, mapping, value_rules):
         schema = {k: value_rules for k in mapping[field]}
@@ -1211,7 +1183,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(validator._errors)
 
     def __normalize_sequence_per_itemsrules(self, field, mapping, schema):
-        schema = {k: schema[field]['itemsrules'] for k in range(len(mapping[field]))}
+        constraint = schema[field]['itemsrules']
+        schema = {k: constraint for k in range(len(mapping[field]))}
         document = {k: v for k, v in enumerate(mapping[field])}
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'itemsrules'), schema=schema
@@ -1292,8 +1265,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             )  # noqa: W503
         ]
 
-        fields_with_default = [x for x in empty_fields if 'default' in schema[x]]
-        for field in fields_with_default:
+        for field in (x for x in empty_fields if 'default' in schema[x]):
             self._normalize_default(mapping, schema, field)
 
         known_fields_states = set()
@@ -1306,6 +1278,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._normalize_default_setter(mapping, schema, field)
             except KeyError:
                 fields_with_default_setter.append(field)
+            except RuntimeError:
+                raise
             except Exception as e:
                 self._error(field, errors.SETTING_DEFAULT_FAILED, str(e))
 
@@ -1360,12 +1334,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self._unrequired_by_excludes = set()  # type: Set[FieldName]
 
         self.__init_processing(document, schema)
+        del document, schema
+
         if normalize:
-            self.__normalize_mapping(self.document, self.schema)
+            self.document = self.__normalize_mapping(self.document, self.schema)
 
         for field in self.document:  # type: ignore
-            if self.ignore_none_values and self.document[field] is None:  # type: ignore
-                continue
             definitions = self.schema.get(field)  # type: ignore
             if definitions is not None:
                 self.__validate_definitions(definitions, field)
@@ -1376,6 +1350,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self.__validate_required_fields(self.document)
 
         self.error_handler.end(self)
+        self._errors.sort()
 
         return not bool(self._errors)
 
@@ -1586,7 +1561,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         if isinstance(value, str):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
-        elif isinstance(value, Sequence):
+        elif isinstance(value, Iterable):
             forbidden = set(value) & set(forbidden_values)
             if forbidden:
                 self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
@@ -1644,9 +1619,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         for i, definition in enumerate(definitions):
             schema = {field: definition.copy()}
             for rule in ('allow_unknown', 'type'):
-                if rule not in schema[field] and rule in self.schema[field]:
+                if rule not in definition and rule in self.schema[field]:
                     schema[field][rule] = self.schema[field][rule]
-            if 'allow_unknown' not in schema[field]:
+            if 'allow_unknown' not in definition:
                 schema[field]['allow_unknown'] = self.allow_unknown
 
             validator = self._get_child_validator(
@@ -1715,7 +1690,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
         if value is None:
-            if not nullable:
+            if not (nullable or self.ignore_none_values):
                 self._error(field, errors.NULLABLE)
             self._drop_remaining_rules(
                 'allowed',
@@ -1786,7 +1761,6 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             field
             for field, definition in self.schema.items()
             if self._resolve_rules_set(definition).get('required', self.require_all)
-            is True
         )
         required -= self._unrequired_by_excludes
         missing = required - set(
@@ -1853,8 +1827,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     def _validate_valuesrules(self, schema, field, value):
         """ {'type': ['dict', 'string'], 'check_with': 'rulesset',
             'forbidden': ['rename', 'rename_handler']} """
-        schema_crumb = (field, 'valuesrules')
         if isinstance(value, Mapping):
+            schema_crumb = (field, 'valuesrules')
             validator = self._get_child_validator(
                 document_crumb=field,
                 schema_crumb=schema_crumb,
