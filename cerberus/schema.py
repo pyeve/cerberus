@@ -271,7 +271,7 @@ class ValidatedSchema(MutableMapping):
             schema = self.validator.schema_registry.get(schema, schema)
 
         if schema is None:
-            raise SchemaError(errors.SCHEMA_MISSING)
+            raise SchemaError(errors.MISSING_SCHEMA)
 
         resolved = {
             k: self.validator.rules_set_registry.get(v, v)
