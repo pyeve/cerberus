@@ -153,9 +153,9 @@ class ValidationError(object):
 
     @property
     def definitions_errors(self):
-        """ Dictionary with errors of an *of-rule mapped to the index of the
+        """ Dictionary with errors of an \*of-rule mapped to the index of the
             definition it occurred in. Returns :obj:`None` if not applicable.
-            """
+	"""
         if not self.is_logic_error:
             return None
 
@@ -181,7 +181,8 @@ class ValidationError(object):
     @property
     def is_logic_error(self):
         """ ``True`` for validation errors against different schemas with
-            *of-rules. """
+            \*of-rules.
+        """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
     @property

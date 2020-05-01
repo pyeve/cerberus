@@ -86,8 +86,8 @@ documentation framework and a theme:
 
 .. code-block:: console
 
-    $ # in the project's root directory
-    $ pip install -r requirements-docs.txt
+    $ # in 'docs'-folder
+    $ pip install -r requirements.txt
 
 The HTML build is triggered with:
 

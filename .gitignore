@@ -36,3 +36,5 @@ _build
 
 # Jetbrains
 .idea
+.vscode/
+.devcontainer/
