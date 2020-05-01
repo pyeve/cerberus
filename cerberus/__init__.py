@@ -37,6 +37,7 @@ def validator_factory(
     """ Dynamically create a :class:`~cerberus.Validator` subclass.
         Docstrings of mixin-classes will be added to the resulting
         class' one if ``__doc__`` is not in :obj:`namespace`.
+
     :param name: The name of the new class.
     :param bases: Class(es) with additional and overriding attributes.
     :param namespace: Attributes for the new class.
