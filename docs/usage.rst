@@ -173,7 +173,7 @@ However, you can require all document keys pairs by setting
 or change it latter via attribute access (``v.require_all = True``).
 ``require_all`` can also be set :ref:`as rule <require_all>` to configure a
 validator for a subdocument that is checked against the
-:ref:`schema <schema_dict-rule>` rule:
+:ref:`schema <schema-rule>` rule:
 
 .. doctest::
 

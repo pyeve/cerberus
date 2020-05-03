@@ -105,7 +105,7 @@ items (for mappings)
 The usage of the ``items``-rule is restricted to sequences.
 If you still had schemas that used that rule to validate
 :term:`mappings <mapping>`, just rename these instances to ``schema``
-(:ref:`docs <schema_dict-rule>`).
+(:ref:`docs <schema-rule>`).
 
 keyschema & valueschema
 ~~~~~~~~~~~~~~~~~~~~~~~

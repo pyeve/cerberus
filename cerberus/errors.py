@@ -177,7 +177,7 @@ class ValidationError:
 
     @property
     def definitions_errors(self) -> Optional[DefaultDict[int, "ErrorList"]]:
-        r"""
+        """
         Dictionary with errors of an \*of-rule mapped to the index of the definition it
         occurred in. Returns :obj:`None` if not applicable.
         """
@@ -205,8 +205,9 @@ class ValidationError:
 
     @property
     def is_logic_error(self) -> bool:
-        r""" ``True`` for validation errors against different schemas with
-            \*of-rules. """
+        """
+        ``True`` for validation errors against different schemas with \*of-rules.
+        """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
     @property
