@@ -3,7 +3,7 @@ Validation Rules
 
 allow_unknown
 -------------
-This can be used in conjunction with the  `schema <schema-rule>`_ rule
+This can be used in conjunction with the  :ref:`schema <schema-rule>` rule
 when validating a mapping in order to set the
 :attr:`~cerberus.Validator.allow_unknown` property of the validator for the
 subdocument.
@@ -788,6 +788,7 @@ regarding different usage aspects:
 - any object like classes or abstract types that can be used as second argument
   to the builtin's :func:`isinstance` function
 - strings that reference either one of the named,
+
   - strict types whose mapping to actual types are documented in the table
     below
   - abstract types that map to the types from the :mod:`collections.abc` module
@@ -795,7 +796,9 @@ regarding different usage aspects:
     - these are are camel-cased (e.g. ``Set`` or ``MutableMapping``)
   - :ref:`custom types <new-types>` that can be defined per
     :class:`~cerberus.Validator` class
+
 - generic aliases from the :mod:`typing` module, including compound types
+
   - type parameters that are given as string have Cerberus' semantics of named
     types and are not resolved like static type checkers do, e.g.
     ``Set["string"]`` is a valid type specification
