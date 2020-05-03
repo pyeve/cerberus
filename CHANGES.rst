@@ -294,7 +294,7 @@ Released on September 1, 2016.
   fields. (Frank Sachsenheim)
 - New: 'coerce', 'rename_handler' and 'validator' can use class-methods (Frank
   Sachsenheim).
-- New: '*of'-rules can be extended by concatenating another rule. (Frank
+- New: '\*of'-rules can be extended by concatenating another rule. (Frank
   Sachsenheim)
 - New: Allows various error output with error handlers (Frank Sachsenheim).
 - New: Available rules etc. of a Validator-instance are accessible as
@@ -312,7 +312,7 @@ Released on September 1, 2016.
 - New: Add testing with Docker. (Frank Sachsenheim)
 - New: Support CPython 3.5. (Frank Sachsenheim)
 
-- Fix: 'allow_unknown' inside *of rule is ignored. Closes #251. (Davis
+- Fix: 'allow_unknown' inside \*of rule is ignored. Closes #251. (Davis
   Kirkendall)
 - Fix: unexpected TypeError when using allow_unknown in a schema defining
   a list of dicts. Closes :issue:`250`. (Davis Kirkendall)

@@ -2,7 +2,8 @@
 
 Running the Tests
 -----------------
-Cerberus runs under Python 3.4, 3.5, 3.6 and PyPy3. Therefore test will be
+
+Cerberus runs under Python 3.5 to 3.8 and PyPy3. Therefore test will be
 run in those platforms in our `continuous integration server`_.
 
 The easiest way to get started is to run the tests in your local environment
@@ -14,11 +15,11 @@ with:
 
 Testing with other Python versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Before you submit a pull request, make sure your tests and changes run in
 all supported python versions. Instead of creating all those environments by
-hand, Cerberus uses tox_.
-
-Make sure you have all required python versions installed and run:
+hand, you can use tox_ that automatically manages virtual environments. Mind
+that the interpreters themselves need to be available on the system.
 
 .. code-block:: console
 
@@ -34,6 +35,8 @@ the following:
     _________ summary _________
     py35: commands succeeded
     py36: commands succeeded
+    py37: commands succeeded
+    py38: commands succeeded
     pypy3: commands succeeded
     doclinks: commands succeeded
     doctest: commands succeeded
@@ -42,23 +45,22 @@ the following:
 
 If something goes **wrong** and one test fails, you might need to run that test
 in the specific python version. You can use the created environments to run
-some specific tests. For example, if a test suite fails in Python 3.4:
+some specific tests. For example, if a test suite fails in Python 3.5:
 
 .. code-block:: console
 
-    $ # From the project folder
-    $ tox -e py34
+    $ tox -e py35
 
-Have a look at ``/tox.ini`` for the available test environments and their workings.
+Have a look at ``tox.ini`` for the available test environments and their workings.
 
 Using Pytest
 ~~~~~~~~~~~~
+
 You also choose to run the whole test suite using pytest_:
 
 .. code-block:: console
 
-    $ # Run the whole test suite
-    $ py.test
+    $ pytest cerberus/tests
 
 Using Docker
 ~~~~~~~~~~~~
@@ -69,13 +71,22 @@ to ``tox``:
 
 .. code-block:: console
 
-    $ # in the project's root directory
     $ ./run-docker-tests -e pypy3 -e doctest
 
 You can run the script without any arguments to test the project exactly as
 `Continuous Integration`_ does without having to setup anything.
 The ``tox`` environments are preserved in a volume named ``cerberus-tox``, just
 remove it with ``docker volume rm`` to clean them.
+
+Running the benchmarks
+~~~~~~~~~~~~~~~~~~~~~~
+
+There's a benchmark suite that you can use to measure how changes imapact
+Cerberus' performance:
+
+.. code-block:: console
+
+    $ pytest cerberus/benchmarks
 
 Building the HTML-documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,20 +96,19 @@ documentation framework and a theme:
 
 .. code-block:: console
 
-    $ # in the project's root directory
-    $ pip install -r requirements-docs.txt
+    $ pip install -r docs/requirements.txt
 
 The HTML build is triggered with:
 
 .. code-block:: console
 
-    $ # in 'docs'-folder
-    $ make html
+    $ make -C docs html
 
 The result can be accessed by opening ``docs/_build/html/index.html``.
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~
+
 Each time code is pushed to the ``master``  branch the whole test-suite is
 executed on Travis-CI_.
 This is also the case for pull-requests. A box at the bottom of its
@@ -110,6 +120,7 @@ test links and sample-code in the documentation.
 
 Source Code
 -----------
+
 Source code is available at `GitHub
 <https://github.com/pyeve/cerberus>`_.
 

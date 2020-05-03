@@ -70,11 +70,11 @@ Some codes are actually reserved to mark a shared property of different errors.
 These are useful as bitmasks while processing errors. This is the list of the
 reserved codes:
 
-============= ======== === ==================================================
+============= ======== === ===================================================
 ``0110 0000`` ``0x60``  96 An error that occurred during normalization.
 ``1000 0000`` ``0x80`` 128 An error that contains child errors.
-``1001 0000`` ``0x90`` 144 An error that was emitted by one of the *of-rules.
-============= ======== === ==================================================
+``1001 0000`` ``0x90`` 144 An error that was emitted by one of the \*of-rules.
+============= ======== === ===================================================
 
 None of these bits in the upper nibble must be used to enumerate error
 definitions, but only to mark one with the associated property.
