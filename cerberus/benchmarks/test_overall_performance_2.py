@@ -1,28 +1,23 @@
 import json
 from collections import Counter
-from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Callable, List
 from typing import Counter as CounterType
 
-from cerberus import TypeDefinition, Validator
+from pytest import mark
 
-from cerberus.benchmarks.schemas.overalll_schema_2 import group_schema, product_schema
+from cerberus import Validator
+from cerberus.benchmarks.schemas.overalll_schema_2 import product_schema
 from cerberus.benchmarks import DOCUMENTS_PATH
 
-def init_validator_1():
-    class TestValidator(Validator):
-        types_mapping = {
-            **Validator.types_mapping,
-            "path": TypeDefinition("path", (Path,), ()),
-        }
 
-    return TestValidator(product_schema, purge_unknown=True)
+def init_validator():
+    return Validator(product_schema, purge_unknown=True)
 
 
-def load_documents_1():
-  f = open(DOCUMENTS_PATH + 'data.json',   'r')
-  documents = json.load(f)
-  return documents
+def load_documents():
+    with (DOCUMENTS_PATH / "overall_documents_2.json").open() as f:
+        documents = json.load(f)
+    return documents
 
 
 def validate_documents(init_validator: Callable, documents: List[dict]) -> None:
@@ -54,8 +49,6 @@ def validate_documents(init_validator: Callable, documents: List[dict]) -> None:
         print(f"{count}: {path}")
 
 
-def test_overall_performance(benchmark):
-    benchmark.pedantic(
-        validate_documents, (init_validator_1, load_documents_1()), rounds=1
-    )
-
+@mark.benchmark(group="overall-2")
+def test_overall_performance_2(benchmark):
+    benchmark.pedantic(validate_documents, (init_validator, load_documents()), rounds=5)
