@@ -14,6 +14,8 @@ from pathlib import Path
 from random import choice, randrange
 from typing import Callable, List
 
+from pytest import mark
+
 from cerberus import rules_set_registry, schema_registry, TypeDefinition, Validator
 from cerberus.benchmarks import DOCUMENTS_PATH
 
@@ -92,7 +94,7 @@ schema_1 = {
 }
 
 
-def init_validator_1():
+def init_validator():
     class TestValidator(Validator):
         types_mapping = {
             **Validator.types_mapping,
@@ -102,7 +104,7 @@ def init_validator_1():
     return TestValidator(schema_1, purge_unknown=True)
 
 
-def load_documents_1():
+def load_documents():
     with (DOCUMENTS_PATH / "overall_documents_1.json").open() as f:
         documents = json.load(f)
     return documents
@@ -137,10 +139,9 @@ def validate_documents(init_validator: Callable, documents: List[dict]):
         print(f"{count}: {path}")
 
 
-def test_overall_performance(benchmark):
-    benchmark.pedantic(
-        validate_documents, (init_validator_1, load_documents_1()), rounds=5
-    )
+@mark.benchmark(group="overall-1")
+def test_overall_performance_1(benchmark):
+    benchmark.pedantic(validate_documents, (init_validator, load_documents()), rounds=5)
 
 
 #
