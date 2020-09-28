@@ -156,7 +156,7 @@ Docs
 - Update README link; make it point to the new PyPI website
 
 .. _`#472`: https://github.com/pyeve/cerberus/pull/472
-.. _`#454`: https://github.com/pyeve/cerberus/pull/454
+.. _`#454`: https://github.com/pyeve/cerberus/issues/454
 .. _`#451`: https://github.com/pyeve/cerberus/pull/451
 .. _`#449`: https://github.com/pyeve/cerberus/pull/449
 .. _`#435`: https://github.com/pyeve/cerberus/pull/435
@@ -608,4 +608,4 @@ Released on October 16 2012.
 First public preview release.
 
 .. _`upgrade notes`: upgrading
-.. _`funding page`: http://docs.python-cerberus.org/en/stable/funding.html
+.. _`funding page`: https://docs.python-cerberus.org/en/stable/funding.html

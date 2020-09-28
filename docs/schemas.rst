@@ -132,4 +132,4 @@ You don't have to use YAML of course, you can use your favorite serializer.
 For populating and dumping one of the registries, use
 :meth:`~cerberus.Registry.extend` and :meth:`~cerberus.Registry.all`.
 
-.. _PyYAML: http://pyyaml.org
+.. _PyYAML: https://pyyaml.org

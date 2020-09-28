@@ -30,7 +30,7 @@ Support Cerberus development
 You can support Cerberus development by pledging on Patreon or donating on PayPal.
 
 - `Become a Backer <https://www.patreon.com/nicolaiarocci>`_ (recurring pledge)
-- `Donate via PayPal <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7U7G7EWU7EPNW>`_ (one time)
+- `Donate via PayPal <https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=7U7G7EWU7EPNW>`_ (one time)
 
 Generous Backers
 ----------------

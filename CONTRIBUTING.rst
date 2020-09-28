@@ -90,11 +90,11 @@ excellent `Effective Guide to Pull Requests`_
 .. _AUTHORS: https://github.com/pyeve/cerberus/blob/master/AUTHORS
 .. _`open issues`: https://github.com/pyeve/cerberus/issues
 .. _`new issue`: https://github.com/pyeve/cerberus/issues/new
-.. _Fork: https://help.github.com/articles/fork-a-repo
-.. _`proper format`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-.. _help: https://help.github.com/
-.. _`Effective Guide to Pull Requests`: http://codeinthehole.com/writing/pull-requests-and-other-good-practices-for-teams-using-github/
-.. _`fork and edit`: https://github.com/blog/844-forking-with-the-edit-button
-.. _`Pull Request`: https://help.github.com/articles/creating-a-pull-request
+.. _Fork: https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo
+.. _`proper format`: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+.. _help: https://docs.github.com/
+.. _`Effective Guide to Pull Requests`: https://codeinthehole.com/writing/pull-requests-and-other-good-practices-for-teams-using-github/
+.. _`fork and edit`: https://github.blog/2011-04-26-forking-with-the-edit-button/
+.. _`Pull Request`: https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request
 .. _mypy: https://mypy.readthedocs.io/
 .. _cast: https://docs.python.org/3/library/typing.html#typing.cast
