@@ -9,8 +9,10 @@ from cerberus.tests.conftest import sample_schema
 
 
 def assert_exception(exception, document={}, schema=None, validator=None, msg=None):
-    """ Tests whether a specific exception is raised. Optionally also tests
-        whether the exception message is as expected. """
+    """
+    Tests whether a specific exception is raised. Optionally also tests whether the
+    exception message is as expected.
+    """
     if validator is None:
         validator = Validator()
     if msg is None:
@@ -22,14 +24,12 @@ def assert_exception(exception, document={}, schema=None, validator=None, msg=No
 
 
 def assert_schema_error(*args):
-    """ Tests whether a validation raises an exception due to a malformed
-        schema. """
+    """ Tests whether a validation raises an exception due to a malformed schema. """
     assert_exception(SchemaError, *args)
 
 
 def assert_document_error(*args):
-    """ Tests whether a validation raises an exception due to a malformed
-        document. """
+    """ Tests whether a validation raises an exception due to a malformed document. """
     assert_exception(DocumentError, *args)
 
 

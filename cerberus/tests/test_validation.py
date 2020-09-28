@@ -1114,8 +1114,8 @@ def test_options_passed_to_nested_validators(validator):
 
 
 def test_self_root_document():
-    """ Make sure self.root_document is always the root document.
-    See:
+    """
+    Make sure self.root_document is always the root document. See:
     * https://github.com/pyeve/cerberus/pull/42
     * https://github.com/pyeve/eve/issues/295
     """
@@ -1251,8 +1251,10 @@ def test_unicode_allowed():
 
 @mark.skipif(sys.version_info[0] < 3, reason='requires python 3.x')
 def test_unicode_allowed_py3():
-    """ All strings are unicode in Python 3.x. Input doc and schema
-    have equal strings and validation yield success."""
+    """
+    All strings are unicode in Python 3.x. Input doc and schema have equal strings and
+    validation yield success.
+    """
 
     # issue 280
     doc = {'letters': u'♄εℓł☺'}
@@ -1262,9 +1264,11 @@ def test_unicode_allowed_py3():
 
 @mark.skipif(sys.version_info[0] > 2, reason='requires python 2.x')
 def test_unicode_allowed_py2():
-    """ Python 2.x encodes value of allowed using default encoding if
-    the string includes characters outside ASCII range. Produced string
-    does not match input which is an unicode string."""
+    """
+    Python 2.x encodes value of allowed using default encoding if the string includes
+    characters outside ASCII range. Produced string does not match input which is an
+    unicode string.
+    """
 
     # issue 280
     doc = {'letters': u'♄εℓł☺'}

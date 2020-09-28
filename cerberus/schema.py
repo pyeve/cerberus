@@ -24,8 +24,9 @@ class _Abort(Exception):
 
 
 class SchemaError(Exception):
-    """ Raised when the validation schema is missing, has the wrong format or
-        contains errors. """
+    """
+    Raised when the validation schema is missing, has the wrong format or contains
+    errors."""
 
     pass
 
@@ -133,7 +134,8 @@ class DefinitionSchema(MutableMapping):
 
     @classmethod
     def _expand_logical_shortcuts(cls, schema):
-        """ Expand agglutinated rules in a definition-schema.
+        """
+        Expand agglutinated rules in a definition-schema.
 
         :param schema: The schema-definition to expand.
         :return: The expanded schema-definition.
@@ -159,8 +161,10 @@ class DefinitionSchema(MutableMapping):
             return isinstance(schema[field], Mapping) and 'schema' in schema[field]
 
         def has_mapping_schema():
-            """ Tries to determine heuristically if the schema-constraints are
-                aimed to mappings. """
+            """
+            Tries to determine heuristically if the schema-constraints are aimed to
+            mappings.
+            """
             try:
                 return all(
                     isinstance(x, Mapping) for x in schema[field]['schema'].values()
@@ -248,12 +252,14 @@ class DefinitionSchema(MutableMapping):
         self.validation_schema = SchemaValidationSchema(self.validator)
 
     def validate(self, schema=None):
-        """ Validates a schema that defines rules against supported rules.
+        """
+        Validates a schema that defines rules against supported rules.
 
         :param schema: The schema to be validated as a legal cerberus schema
                        according to the rules of the assigned Validator object.
                        Raises a :class:`~cerberus.base.SchemaError` when an invalid
-                       schema is encountered. """
+                       schema is encountered.
+        """
         if schema is None:
             schema = self.schema
         _hash = (mapping_hash(schema), mapping_hash(self.validator.types_mapping))
@@ -307,8 +313,10 @@ class SchemaValidationSchema(UnvalidatedSchema):
 
 
 class SchemaValidatorMixin(object):
-    """ This validator mixin provides mechanics to validate schemas passed to a Cerberus
-        validator. """
+    """
+    This validator mixin provides mechanics to validate schemas passed to a Cerberus
+    validator.
+    """
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('known_rules_set_refs', set())
@@ -468,30 +476,35 @@ class SchemaValidatorMixin(object):
 
 
 class Registry(object):
-    """ A registry to store and retrieve schemas and parts of it by a name
-    that can be used in validation schemas.
+    """
+    A registry to store and retrieve schemas and parts of it by a name that can be used
+    in validation schemas.
 
     :param definitions: Optional, initial definitions.
-    :type definitions: any :term:`mapping` """
+    :type definitions: any :term:`mapping`
+    """
 
     def __init__(self, definitions={}):
         self._storage = {}
         self.extend(definitions)
 
     def add(self, name, definition):
-        """ Register a definition to the registry. Existing definitions are
-        replaced silently.
+        """
+        Register a definition to the registry. Existing definitions are replaced
+        silently.
 
         :param name: The name which can be used as reference in a validation
                      schema.
         :type name: :class:`str`
         :param definition: The definition.
-        :type definition: any :term:`mapping` """
+        :type definition: any :term:`mapping`
+        """
         self._storage[name] = self._expand_definition(definition)
 
     def all(self):
-        """ Returns a :class:`dict` with all registered definitions mapped to
-        their name. """
+        """
+        Returns a :class:`dict` with all registered definitions mapped to their name.
+        """
         return self._storage
 
     def clear(self):
@@ -499,28 +512,34 @@ class Registry(object):
         self._storage.clear()
 
     def extend(self, definitions):
-        """ Add several definitions at once. Existing definitions are
+        """
+        Add several definitions at once. Existing definitions are
         replaced silently.
 
         :param definitions: The names and definitions.
         :type definitions: a :term:`mapping` or an :term:`iterable` with
-                           two-value :class:`tuple` s """
+                           two-value :class:`tuple` s
+        """
         for name, definition in dict(definitions).items():
             self.add(name, definition)
 
     def get(self, name, default=None):
-        """ Retrieve a definition from the registry.
+        """
+        Retrieve a definition from the registry.
 
         :param name: The reference that points to the definition.
         :type name: :class:`str`
-        :param default: Return value if the reference isn't registered. """
+        :param default: Return value if the reference isn't registered.
+        """
         return self._storage.get(name, default)
 
     def remove(self, *names):
-        """ Unregister definitions from the registry.
+        """
+        Unregister definitions from the registry.
 
         :param names: The names of the definitions that are to be
-                      unregistered. """
+                      unregistered.
+        """
         for name in names:
             self._storage.pop(name, None)
 

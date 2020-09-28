@@ -153,9 +153,10 @@ class ValidationError(object):
 
     @property
     def definitions_errors(self):
-        """ Dictionary with errors of an \*of-rule mapped to the index of the
-            definition it occurred in. Returns :obj:`None` if not applicable.
-	"""
+        """
+        Dictionary with errors of an \*of-rule mapped to the index of the definition it
+        occurred in. Returns :obj:`None` if not applicable.
+        """
         if not self.is_logic_error:
             return None
 
@@ -180,8 +181,8 @@ class ValidationError(object):
 
     @property
     def is_logic_error(self):
-        """ ``True`` for validation errors against different schemas with
-            \*of-rules.
+        """
+        ``True`` for validation errors against different schemas with \*of-rules.
         """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
@@ -192,9 +193,10 @@ class ValidationError(object):
 
 
 class ErrorList(list):
-    """ A list for :class:`~cerberus.errors.ValidationError` instances that
-        can be queried with the ``in`` keyword for a particular
-        :class:`~cerberus.errors.ErrorDefinition`. """
+    """
+    A list for :class:`~cerberus.errors.ValidationError` instances that can be queried
+    with the ``in`` keyword for a particular :class:`~cerberus.errors.ErrorDefinition`.
+    """
 
     def __contains__(self, error_definition):
         if not isinstance(error_definition, ErrorDefinition):
@@ -278,8 +280,10 @@ class ErrorTreeNode(MutableMapping):
 
 
 class ErrorTree(ErrorTreeNode):
-    """ Base class for :class:`~cerberus.errors.DocumentErrorTree` and
-        :class:`~cerberus.errors.SchemaErrorTree`. """
+    """
+    Base class for :class:`~cerberus.errors.DocumentErrorTree` and
+    :class:`~cerberus.errors.SchemaErrorTree`.
+    """
 
     def __init__(self, errors=()):
         self.parent_node = None
@@ -291,7 +295,8 @@ class ErrorTree(ErrorTreeNode):
             self.add(error)
 
     def add(self, error):
-        """ Add an error to the tree.
+        """
+        Add an error to the tree.
 
         :param error: :class:`~cerberus.errors.ValidationError`
         """
@@ -302,7 +307,8 @@ class ErrorTree(ErrorTreeNode):
             super(ErrorTree, self).add(error)
 
     def fetch_errors_from(self, path):
-        """ Returns all errors for a particular path.
+        """
+        Returns all errors for a particular path.
 
         :param path: :class:`tuple` of :term:`hashable` s.
         :rtype: :class:`~cerberus.errors.ErrorList`
@@ -314,7 +320,8 @@ class ErrorTree(ErrorTreeNode):
             return ErrorList()
 
     def fetch_node_from(self, path):
-        """ Returns a node for a path.
+        """
+        Returns a node for a path.
 
         :param path: Tuple of :term:`hashable` s.
         :rtype: :class:`~cerberus.errors.ErrorTreeNode` or :obj:`None`
@@ -328,29 +335,34 @@ class ErrorTree(ErrorTreeNode):
 
 
 class DocumentErrorTree(ErrorTree):
-    """ Implements a dict-like class to query errors by indexes following the
-        structure of a validated document. """
+    """
+    Implements a dict-like class to query errors by indexes following the structure of a
+    validated document.
+    """
 
     tree_type = 'document'
 
 
 class SchemaErrorTree(ErrorTree):
-    """ Implements a dict-like class to query errors by indexes following the
-        structure of the used schema. """
+    """
+    Implements a dict-like class to query errors by indexes following the structure of
+    the used schema.
+    """
 
     tree_type = 'schema'
 
 
 class BaseErrorHandler(object):
-    """ Base class for all error handlers.
-        Subclasses are identified as error-handlers with an instance-test. """
+    """Base class for all error handlers.
+    Subclasses are identified as error-handlers with an instance-test."""
 
     def __init__(self, *args, **kwargs):
         """ Optionally initialize a new instance. """
         pass
 
     def __call__(self, errors):
-        """ Returns errors in a handler-specific format.
+        """
+        Returns errors in a handler-specific format.
 
         :param errors: An object containing the errors.
         :type errors: :term:`iterable` of
@@ -364,7 +376,8 @@ class BaseErrorHandler(object):
         raise NotImplementedError
 
     def add(self, error):
-        """ Add an error to the errors' container object of a handler.
+        """
+        Add an error to the errors' container object of a handler.
 
         :param error: The error to add.
         :type error: :class:`~cerberus.errors.ValidationError`
@@ -372,8 +385,9 @@ class BaseErrorHandler(object):
         raise NotImplementedError
 
     def emit(self, error):
-        """ Optionally emits an error in the handler's format to a stream.
-            Or light a LED, or even shut down a power plant.
+        """
+        Optionally emits an error in the handler's format to a stream. Or light a LED,
+        or even shut down a power plant.
 
         :param error: The error to emit.
         :type error: :class:`~cerberus.errors.ValidationError`
@@ -381,14 +395,17 @@ class BaseErrorHandler(object):
         pass
 
     def end(self, validator):
-        """ Gets called when a validation ends.
+        """
+        Gets called when a validation ends.
 
         :param validator: The calling validator.
-        :type validator: :class:`~cerberus.Validator` """
+        :type validator: :class:`~cerberus.Validator`
+        """
         pass
 
     def extend(self, errors):
-        """ Adds all errors to the handler's container object.
+        """
+        Adds all errors to the handler's container object.
 
         :param errors: The errors to add.
         :type errors: :term:`iterable` of
@@ -398,7 +415,8 @@ class BaseErrorHandler(object):
             self.add(error)
 
     def start(self, validator):
-        """ Gets called when a validation starts.
+        """
+        Gets called when a validation starts.
 
         :param validator: The calling validator.
         :type validator: :class:`~cerberus.Validator`
@@ -442,9 +460,9 @@ def encode_unicode(f):
 
 
 class BasicErrorHandler(BaseErrorHandler):
-    """ Models cerberus' legacy. Returns a :class:`dict`. When mangled
-        through :class:`str` a pretty-formatted representation of that
-        tree is returned.
+    """
+    Models cerberus' legacy. Returns a :class:`dict`. When mangled through :class:`str`
+    a pretty-formatted representation of that tree is returned.
     """
 
     messages = {
@@ -533,7 +551,8 @@ class BasicErrorHandler(BaseErrorHandler):
         )
 
     def _insert_error(self, path, node):
-        """ Adds an error or sub-tree to :attr:tree.
+        """
+        Adds an error or sub-tree to :attr:tree.
 
         :param path: Path to the error.
         :type path: Tuple of strings and integers.

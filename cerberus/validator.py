@@ -58,14 +58,17 @@ class DocumentError(Exception):
 
 
 class _SchemaRuleTypeError(Exception):
-    """ Raised when a schema (list) validation encounters a mapping.
-        Not supposed to be used outside this module. """
+    """
+    Raised when a schema (list) validation encounters a mapping.
+    Not supposed to be used outside this module.
+    """
 
     pass
 
 
 class BareValidator(object):
-    """ Validator class. Normalizes and/or validates any mapping against a
+    """
+    Validator class. Normalizes and/or validates any mapping against a
     validation-schema which is provided as an argument at class instantiation
     or upon calling the :meth:`~cerberus.Validator.validate`,
     :meth:`~cerberus.Validator.validated` or
@@ -112,12 +115,16 @@ class BareValidator(object):
     """  # noqa: E501
 
     mandatory_validations = ('nullable',)
-    """ Rules that are evaluated on any field, regardless whether defined in
-        the schema or not.
-        Type: :class:`tuple` """
+    """
+    Rules that are evaluated on any field, regardless whether defined in the schema or
+    not.
+    Type: :class:`tuple`
+    """
     priority_validations = ('nullable', 'readonly', 'type', 'empty')
-    """ Rules that will be processed in that order before any other.
-        Type: :class:`tuple` """
+    """
+    Rules that will be processed in that order before any other.
+    Type: :class:`tuple`
+    """
     types_mapping = {
         'binary': TypeDefinition('binary', (bytes, bytearray), ()),
         'boolean': TypeDefinition('boolean', (bool,), ()),
@@ -132,14 +139,19 @@ class BareValidator(object):
         'set': TypeDefinition('set', (set,), ()),
         'string': TypeDefinition('string', (_str_type), ()),
     }
-    """ This mapping holds all available constraints for the type rule and
-        their assigned :class:`~cerberus.TypeDefinition`. """
+    """
+    This mapping holds all available constraints for the type rule and their assigned
+    :class:`~cerberus.TypeDefinition`.
+    """
     _valid_schemas = set()
-    """ A :class:`set` of hashes derived from validation schemas that are
-        legit for a particular ``Validator`` class. """
+    """
+    A :class:`set` of hashes derived from validation schemas that are legit for a
+    particular ``Validator`` class.
+    """
 
     def __init__(self, *args, **kwargs):
-        """ The arguments will be treated as with this signature:
+        """
+        The arguments will be treated as with this signature:
 
         __init__(self, schema=None, ignore_none_values=False,
                  allow_unknown=False, require_all=False,
@@ -230,7 +242,8 @@ class BareValidator(object):
         cls._valid_schemas.clear()
 
     def _error(self, *args):
-        """ Creates and adds one or multiple errors.
+        """
+        Creates and adds one or multiple errors.
 
         :param args: Accepts different argument's signatures.
 
@@ -308,9 +321,10 @@ class BareValidator(object):
             self._error([self.recent_error])
 
     def _get_child_validator(self, document_crumb=None, schema_crumb=None, **kwargs):
-        """ Creates a new instance of Validator-(sub-)class. All initial
-            parameters of the parent are passed to the initialization, unless
-            a parameter is given as an explicit *keyword*-parameter.
+        """
+        Creates a new instance of Validator-(sub-)class. All initial parameters of the
+        parent are passed to the initialization, unless a parameter is given as an
+        explicit *keyword*-parameter.
 
         :param document_crumb: Extends the
                                :attr:`~cerberus.Validator.document_path`
@@ -364,8 +378,8 @@ class BareValidator(object):
         return result
 
     def _drop_nodes_from_errorpaths(self, _errors, dp_items, sp_items):
-        """ Removes nodes by index from an errorpath, relatively to the
-            basepaths of self.
+        """
+        Removes nodes by index from an errorpath, relatively to the basepaths of self.
 
         :param errors: A list of :class:`errors.ValidationError` instances.
         :param dp_items: A list of integers, pointing at the nodes to drop from
@@ -387,8 +401,9 @@ class BareValidator(object):
                 self._drop_nodes_from_errorpaths(error.child_errors, dp_items, sp_items)
 
     def _lookup_field(self, path):
-        """ Searches for a field as defined by path. This method is used by the
-            ``dependency`` evaluation logic.
+        """
+        Searches for a field as defined by path. This method is used by the
+        ``dependency`` evaluation logic.
 
         :param path: Path elements are separated by a ``.``. A leading ``^``
                      indicates that the path relates to the document root,
@@ -433,11 +448,12 @@ class BareValidator(object):
 
     @property
     def allow_unknown(self):
-        """ If ``True`` unknown fields that are not defined in the schema will
-            be ignored. If a mapping with a validation schema is given, any
-            undefined field will be validated against its rules.
-            Also see :ref:`allowing-the-unknown`.
-            Type: :class:`bool` or any :term:`mapping` """
+        """
+        If ``True`` unknown fields that are not defined in the schema will be ignored.
+        If a mapping with a validation schema is given, any undefined field will be
+        validated against its rules. Also see :ref:`allowing-the-unknown`.
+        Type: :class:`bool` or any :term:`mapping`
+        """
         return self._config.get('allow_unknown', False)
 
     @allow_unknown.setter
@@ -448,9 +464,10 @@ class BareValidator(object):
 
     @property
     def require_all(self):
-        """ If ``True`` known fields that are defined in the schema will
-            be required.
-            Type: :class:`bool` """
+        """
+        If ``True`` known fields that are defined in the schema will be required.
+        Type: :class:`bool`
+        """
         return self._config.get('require_all', False)
 
     @require_all.setter
@@ -459,14 +476,18 @@ class BareValidator(object):
 
     @property
     def errors(self):
-        """ The errors of the last processing formatted by the handler that is
-            bound to :attr:`~cerberus.Validator.error_handler`. """
+        """
+        The errors of the last processing formatted by the handler that is bound to
+        :attr:`~cerberus.Validator.error_handler`.
+        """
         return self.error_handler(self._errors)
 
     @property
     def ignore_none_values(self):
-        """ Whether to not process :obj:`None`-values in a document or not.
-            Type: :class:`bool` """
+        """
+        Whether to not process :obj:`None`-values in a document or not.
+        Type: :class:`bool`
+        """
         return self._config.get('ignore_none_values', False)
 
     @ignore_none_values.setter
@@ -475,9 +496,11 @@ class BareValidator(object):
 
     @property
     def is_child(self):
-        """ ``True`` for child-validators obtained with
+        """
+        ``True`` for child-validators obtained with
         :meth:`~cerberus.Validator._get_child_validator`.
-        Type: :class:`bool` """
+        Type: :class:`bool`
+        """
         return self._config.get('is_child', False)
 
     @property
@@ -491,9 +514,12 @@ class BareValidator(object):
 
     @property
     def purge_unknown(self):
-        """ If ``True``, unknown fields will be deleted from the document
-            unless a validation is called with disabled normalization.
-            Also see :ref:`purging-unknown-fields`. Type: :class:`bool` """
+        """
+        If ``True``, unknown fields will be deleted from the document unless a
+        validation is called with disabled normalization. Also see
+        :ref:`purging-unknown-fields`.
+        Type: :class:`bool`
+        """
         return self._config.get('purge_unknown', False)
 
     @purge_unknown.setter
@@ -502,9 +528,11 @@ class BareValidator(object):
 
     @property
     def purge_readonly(self):
-        """ If ``True``, fields declared as readonly will be deleted from the
-            document unless a validation is called with disabled normalization.
-            Type: :class:`bool` """
+        """
+        If ``True``, fields declared as readonly will be deleted from the document
+        unless a validation is called with disabled normalization.
+        Type: :class:`bool`
+        """
         return self._config.get('purge_readonly', False)
 
     @purge_readonly.setter
@@ -513,26 +541,34 @@ class BareValidator(object):
 
     @property
     def root_allow_unknown(self):
-        """ The :attr:`~cerberus.Validator.allow_unknown` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.allow_unknown` attribute of the first level
+        ancestor of a child validator.
+        """
         return self._config.get('root_allow_unknown', self.allow_unknown)
 
     @property
     def root_require_all(self):
-        """ The :attr:`~cerberus.Validator.require_all` attribute of
-            the first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.require_all` attribute of the first level
+        ancestor of a child validator.
+        """
         return self._config.get('root_require_all', self.require_all)
 
     @property
     def root_document(self):
-        """ The :attr:`~cerberus.Validator.document` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.document` attribute of the first level ancestor
+        of a child validator.
+        """
         return self._config.get('root_document', self.document)
 
     @property
     def rules_set_registry(self):
-        """ The registry that holds referenced rules sets.
-            Type: :class:`~cerberus.Registry` """
+        """
+        The registry that holds referenced rules sets.
+        Type: :class:`~cerberus.Registry`
+        """
         return self._config.get('rules_set_registry', rules_set_registry)
 
     @rules_set_registry.setter
@@ -541,15 +577,19 @@ class BareValidator(object):
 
     @property
     def root_schema(self):
-        """ The :attr:`~cerberus.Validator.schema` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.schema` attribute of the first level ancestor of
+        a child validator.
+        """
         return self._config.get('root_schema', self.schema)
 
     @property
     def schema(self):
-        """ The validation schema of a validator. When a schema is passed to
-            a method, it replaces this attribute.
-            Type: any :term:`mapping` or :obj:`None` """
+        """
+        The validation schema of a validator. When a schema is passed to a method, it
+        replaces this attribute.
+        Type: any :term:`mapping` or :obj:`None`
+        """
         return self._schema
 
     @schema.setter
@@ -563,8 +603,10 @@ class BareValidator(object):
 
     @property
     def schema_registry(self):
-        """ The registry that holds referenced schemas.
-            Type: :class:`~cerberus.Registry` """
+        """
+        The registry that holds referenced schemas.
+        Type: :class:`~cerberus.Registry`
+        """
         return self._config.get('schema_registry', schema_registry)
 
     @schema_registry.setter
@@ -575,8 +617,10 @@ class BareValidator(object):
     #       in the API docs
     @readonly_classproperty
     def types(cls):
-        """ The constraints that can be used for the 'type' rule.
-            Type: A tuple of strings. """
+        """
+        The constraints that can be used for the 'type' rule.
+        Type: A tuple of strings.
+        """
         redundant_types = set(cls.types_mapping) & set(cls._types_from_methods)
         if redundant_types:
             warn(
@@ -611,9 +655,10 @@ class BareValidator(object):
         self.error_handler.start(self)
 
     def _drop_remaining_rules(self, *rules):
-        """ Drops rules from the queue of the rules that still need to be
-            evaluated for the currently processed field.
-            If no arguments are given, the whole queue is emptied.
+        """
+        Drops rules from the queue of the rules that still need to be evaluated for the
+        currently processed field. If no arguments are given, the whole queue is
+        emptied.
         """
         if rules:
             for rule in rules:
@@ -627,8 +672,8 @@ class BareValidator(object):
     # # Normalizing
 
     def normalized(self, document, schema=None, always_return_document=False):
-        """ Returns the document normalized according to the specified rules
-        of a schema.
+        """
+        Returns the document normalized according to the specified rules of a schema.
 
         :param document: The document to normalize.
         :type document: any :term:`mapping`
@@ -673,13 +718,15 @@ class BareValidator(object):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
-        """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'schema': {'oneof': [{'type': 'callable'},
-                                      {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'callable'},
+            {'type': 'list',
+             'schema': {'oneof': [{'type': 'callable'},
+                                  {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
+        """
 
         error = errors.COERCION_FAILED
         for field in mapping:
@@ -879,13 +926,15 @@ class BareValidator(object):
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
-        """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'schema': {'oneof': [{'type': 'callable'},
-                                      {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'callable'},
+            {'type': 'list',
+             'schema': {'oneof': [{'type': 'callable'},
+                                  {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
+        """
         if 'rename_handler' not in schema[field]:
             return
         new_name = self.__normalize_coerce(
@@ -951,10 +1000,12 @@ class BareValidator(object):
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
-        """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'callable'},
+            {'type': 'string'}
+        ]}
+        """
         if 'default_setter' in schema[field]:
             setter = schema[field]['default_setter']
             if isinstance(setter, _str_type):
@@ -964,8 +1015,8 @@ class BareValidator(object):
     # # Validating
 
     def validate(self, document, schema=None, update=False, normalize=True):
-        """ Normalizes and validates a mapping against a validation-schema of
-        defined rules.
+        """
+        Normalizes and validates a mapping against a validation-schema of defined rules.
 
         :param document: The document to normalize.
         :type document: any :term:`mapping`
@@ -1008,9 +1059,10 @@ class BareValidator(object):
     __call__ = validate
 
     def validated(self, *args, **kwargs):
-        """ Wrapper around :meth:`~cerberus.Validator.validate` that returns
-            the normalized and validated document or :obj:`None` if validation
-            failed. """
+        """
+        Wrapper around :meth:`~cerberus.Validator.validate` that returns the normalized
+        and validated document or :obj:`None` if validation failed.
+        """
         always_return_document = kwargs.pop('always_return_document', False)
         self.validate(*args, **kwargs)
         if self._errors and not always_return_document:
@@ -1092,13 +1144,15 @@ class BareValidator(object):
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
     def _validate_check_with(self, checks, field, value):
-        """ {'oneof': [
-                {'type': 'callable'},
-                {'type': 'list',
-                 'schema': {'oneof': [{'type': 'callable'},
-                                      {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'callable'},
+            {'type': 'list',
+             'schema': {'oneof': [{'type': 'callable'},
+                                  {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
+        """
         if isinstance(checks, _str_type):
             try:
                 value_checker = self.__get_rule_handler('check_with', checks)
@@ -1134,8 +1188,7 @@ class BareValidator(object):
             self._error(field, errors.MISSING_MEMBERS, missing_values)
 
     def _validate_dependencies(self, dependencies, field, value):
-        """ {'type': ('dict', 'hashable', 'list'),
-             'check_with': 'dependencies'} """
+        """ {'type': ('dict', 'hashable', 'list'), 'check_with': 'dependencies'} """
         if isinstance(dependencies, _str_type) or not isinstance(
             dependencies, (Iterable, Mapping)
         ):
@@ -1193,8 +1246,7 @@ class BareValidator(object):
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excluded_fields, field, value):
-        """ {'type': ('hashable', 'list'),
-             'schema': {'type': 'hashable'}} """
+        """ {'type': ('hashable', 'list'), 'schema': {'type': 'hashable'}} """
         if isinstance(excluded_fields, Hashable):
             excluded_fields = [excluded_fields]
 
@@ -1247,8 +1299,10 @@ class BareValidator(object):
                 self._error(field, errors.BAD_ITEMS, validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
-        """ Validates value against all definitions and logs errors according
-            to the operator. """
+        """
+        Validates value against all definitions and logs errors according to the
+        operator.
+        """
         valid_counter = 0
         _errors = errors.ErrorList()
 
@@ -1345,8 +1399,11 @@ class BareValidator(object):
             )
 
     def _validate_keysrules(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
-            'forbidden': ['rename', 'rename_handler']} """
+        """
+        {'type': ['dict', 'string'],
+         'check_with': 'bulk_schema',
+         'forbidden': ['rename', 'rename_handler']}
+        """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
@@ -1389,7 +1446,8 @@ class BareValidator(object):
     _validate_require_all = dummy_for_rule_validation(""" {'type': 'boolean'} """)
 
     def __validate_required_fields(self, document):
-        """ Validates that required fields are not missing.
+        """
+        Validates that required fields are not missing.
 
         :param document: The document being validated.
         """
@@ -1424,9 +1482,11 @@ class BareValidator(object):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
-        """ {'type': ['dict', 'string'],
-             'anyof': [{'check_with': 'schema'},
-                       {'check_with': 'bulk_schema'}]} """
+        """
+        {'type': ['dict', 'string'],
+         'anyof': [{'check_with': 'schema'},
+                   {'check_with': 'bulk_schema'}]}
+        """
         if schema is None:
             return
 
@@ -1472,8 +1532,10 @@ class BareValidator(object):
             self._error(field, errors.SEQUENCE_SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
-        """ {'type': ['string', 'list'],
-             'check_with': 'type'} """
+        """
+        {'type': ['string', 'list'],
+         'check_with': 'type'}
+        """
         if not data_type:
             return
 
@@ -1504,8 +1566,11 @@ class BareValidator(object):
         self._drop_remaining_rules()
 
     def _validate_valuesrules(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'check_with': 'bulk_schema',
-            'forbidden': ['rename', 'rename_handler']} """
+        """
+        {'type': ['dict', 'string'],
+         'check_with': 'bulk_schema',
+         'forbidden': ['rename', 'rename_handler']}
+        """
         schema_crumb = (field, 'valuesrules')
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
