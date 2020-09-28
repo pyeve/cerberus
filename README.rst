@@ -106,7 +106,7 @@ for more information.
 .. _end of life: https://devguide.python.org/#status-of-python-branches
 .. _funding page: http://docs.python-cerberus.org/en/latest/funding.html
 .. _license: https://github.com/pyeve/cerberus/blob/master/LICENSE
-.. _Nicola Iarocci: http://nicolaiarocci.com/
+.. _Nicola Iarocci: https://nicolaiarocci.com/
 .. _PyPI: https://pypi.python.org/
 .. _semantic versioning: https://semver.org/
 

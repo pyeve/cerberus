@@ -10,7 +10,7 @@ there are several options:
 
 Blog
 ----
-New releases are usually announced on `my Website <http://nicolaiarocci.com/tags/cerberus>`_.
+New releases are usually announced on `my Website <https://nicolaiarocci.com/tags/cerberus>`_.
 
 Twitter
 -------

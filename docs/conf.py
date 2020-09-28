@@ -298,7 +298,10 @@ intersphinx_mapping = {
 
 # -- Options for doclinks extension --------------------------------------------
 
-linkcheck_ignore = ['https://groups.google.com/forum/#!forum/.*']
+linkcheck_ignore = [
+    r'https://github.com/pyeve/cerberus/issues/\d+',
+    r'https://groups.google.com/forum/#!forum/.*'
+]
 linkcheck_anchors = True
 
 # -- Options for doctest extension ---------------------------------------------

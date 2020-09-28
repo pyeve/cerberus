@@ -67,7 +67,7 @@ Table of Contents
 Copyright Notice
 ----------------
 Cerberus is an open source project by `Nicola Iarocci
-<http://nicolaiarocci.com>`_. See the original `LICENSE
+<https://nicolaiarocci.com>`_. See the original `LICENSE
 <https://github.com/pyeve/cerberus/blob/master/LICENSE>`_ for more
 information.
 
