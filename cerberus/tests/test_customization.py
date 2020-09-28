@@ -32,7 +32,8 @@ def test_docstring_parsing():
             pass
 
         def _validate_bar(self, value):
-            """ Test the barreness of a value.
+            """
+            Test the barreness of a value.
 
             The rule's arguments are validated against this schema:
                 {'type': 'boolean'}

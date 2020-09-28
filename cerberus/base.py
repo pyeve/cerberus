@@ -69,8 +69,10 @@ class DocumentError(Exception):
 
 
 class SchemaError(Exception):
-    """ Raised when the validation schema is missing, has the wrong format or
-        contains errors. """
+    """
+    Raised when the validation schema is missing, has the wrong format or contains
+    errors.
+    """
 
 
 # Schema mangling
@@ -236,8 +238,9 @@ def _normalize_contained_rulessets(rules: Dict[str, Any]) -> None:
 
 
 class Registry(Generic[RegistryItem]):
-    """ A registry to store and retrieve schemas and parts of it by a name
-    that can be used in validation schemas.
+    """
+    A registry to store and retrieve schemas and parts of it by a name that can be used
+    in validation schemas.
 
     :param definitions: Optional, initial definitions.
     """
@@ -249,8 +252,9 @@ class Registry(Generic[RegistryItem]):
         self.extend(definitions)
 
     def add(self, name: str, definition: RegistryItem) -> None:
-        """ Register a definition to the registry. Existing definitions are
-        replaced silently.
+        """
+        Register a definition to the registry. Existing definitions are replaced
+        silently.
 
         :param name: The name which can be used as reference in a validation
                      schema.
@@ -263,8 +267,9 @@ class Registry(Generic[RegistryItem]):
         self._storage[name] = self._normalize_value(definition)  # type: ignore
 
     def all(self) -> RegistryItems:
-        """ Returns a :class:`dict` with all registered definitions mapped to
-        their name. """
+        """
+        Returns a :class:`dict` with all registered definitions mapped to their name.
+        """
         return self._storage
 
     def clear(self):
@@ -274,8 +279,8 @@ class Registry(Generic[RegistryItem]):
     def extend(
         self, definitions: Union[RegistryItems, Iterable[Tuple[str, RegistryItem]]]
     ) -> None:
-        """ Add several definitions at once. Existing definitions are
-        replaced silently.
+        """
+        Add several definitions at once. Existing definitions are replaced silently.
 
         :param definitions: The names and definitions.
         """
@@ -285,17 +290,19 @@ class Registry(Generic[RegistryItem]):
     def get(
         self, name: str, default: Optional[RegistryItem] = None
     ) -> Optional[RegistryItem]:
-        """ Retrieve a definition from the registry.
+        """
+        Retrieve a definition from the registry.
 
         :param name: The reference that points to the definition.
-        :param default: Return value if the reference isn't registered. """
+        :param default: Return value if the reference isn't registered."""
         return self._storage.get(name, default)
 
     def remove(self, *names: str) -> None:
-        """ Unregister definitions from the registry.
+        """Unregister definitions from the registry.
 
         :param names: The names of the definitions that are to be
-                      unregistered. """
+                      unregistered.
+        """
         for name in names:
             self._storage.pop(name, None)
 
@@ -410,12 +417,12 @@ class ValidatorMeta(type):
 
 
 class UnconcernedValidator(metaclass=ValidatorMeta):
-    """ Validator class. Normalizes and/or validates any mapping against a
-    validation-schema which is provided as an argument at class instantiation
-    or upon calling the :meth:`~cerberus.Validator.validate`,
-    :meth:`~cerberus.Validator.validated` or
-    :meth:`~cerberus.Validator.normalized` method. An instance itself is
-    callable and executes a validation.
+    """
+    Validator class. Normalizes and/or validates any mapping against a validation-schema
+    which is provided as an argument at class instantiation or upon calling the
+    :meth:`~cerberus.Validator.validate`, :meth:`~cerberus.Validator.validated` or
+    :meth:`~cerberus.Validator.normalized` method. An instance itself is callable and
+    executes a validation.
 
     All instantiation parameters are optional.
 
@@ -423,9 +430,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     :attr:`coercers`, :attr:`default_setters`, :attr:`rules`,
     :attr:`normalization_rules` and :attr:`validation_rules`.
 
-    The attributes reflecting the available rules are assembled considering
-    constraints that are defined in the docstrings of rules' methods and is
-    effectively used as validation schema for :attr:`schema`.
+    The attributes reflecting the available rules are assembled considering constraints
+    that are defined in the docstrings of rules' methods and is effectively used as
+    validation schema for :attr:`schema`.
 
     :param schema: See :attr:`~cerberus.Validator.schema`.
                    Defaults to :obj:`None`.
@@ -441,15 +448,17 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                            normalization phase.
     :param error_handler: The error handler that formats the result of
                           :attr:`~cerberus.Validator.errors`.
-                          When given as two-value tuple with an error-handler
-                          class and a dictionary, the latter is passed to the
-                          initialization of the error handler.
+                          When given as two-value tuple with an error-handler class and
+                          a dictionary, the latter is passed to the initialization of
+                          the error handler.
                           Default: :class:`~cerberus.errors.BasicErrorHandler`.
     """
 
     mandatory_validations = ('nullable',)  # type: ClassVar[Tuple[str, ...]]
-    """ Rules that are evaluated on any field, regardless whether defined in
-        the schema or not."""
+    """
+    Rules that are evaluated on any field, regardless whether defined in the schema or
+    not.
+    """
     priority_validations = (
         'nullable',
         'readonly',
@@ -475,8 +484,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         'tuple': TypeDefinition('tuple', (tuple,), ()),
         'type': TypeDefinition('type', (type,), ()),
     }  # type: ClassVar[TypesMapping]
-    """ This mapping holds all available constraints for the type rule and
-        their assigned :class:`~cerberus.TypeDefinition`. """
+    """
+    This mapping holds all available constraints for the type rule and their assigned
+    :class:`~cerberus.TypeDefinition`.
+    """
     types_mapping.update(
         (x, TypeDefinition(x, (getattr(abc, x),), ()))
         for x in abc.__all__  # type: ignore
@@ -586,7 +597,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         cls._valid_schemas.clear()
 
     def _error(self, *args):
-        """ Creates and adds one or multiple errors.
+        """
+        Creates and adds one or multiple errors.
 
         :param args: Accepts different argument's signatures.
 
@@ -604,11 +616,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
                      - the error message
 
-                     A custom error containing the message will be created and
-                     added to :attr:`~cerberus.Validator._errors`.
-                     There will however be fewer information contained in the
-                     error (no reference to the violated rule and its
-                     constraint).
+                     A custom error containing the message will be created and added to
+                     :attr:`~cerberus.Validator._errors`.
+                     There will however be fewer information contained in the error (no
+                     reference to the violated rule and its constraint).
 
                      *3. Defined error:*
 
@@ -618,9 +629,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
                      - arbitrary, supplemental information about the error
 
-                     A :class:`~cerberus.errors.ValidationError` instance will
-                     be created and added to
-                     :attr:`~cerberus.Validator._errors`.
+                     A :class:`~cerberus.errors.ValidationError` instance will be
+                     created and added to :attr:`~cerberus.Validator._errors`.
         """
         if len(args) == 1:
             self._errors.extend(args[0])
@@ -668,9 +678,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         schema_crumb: Union[FieldName, Iterable[FieldName], None] = None,
         **kwargs: Any
     ) -> 'UnconcernedValidator':
-        """ Creates a new instance of Validator-(sub-)class. All initial parameters of
-            the parent are passed to the initialization, unless a parameter is given as
-            an explicit *keyword*-parameter.
+        """
+        Creates a new instance of Validator-(sub-)class. All initial parameters of the
+        parent are passed to the initialization, unless a parameter is given as an
+        explicit *keyword*-parameter.
+
         :param document_crumb: Extends the :attr:`~cerberus.Validator.document_path`
                                of the child-validator.
         :param schema_crumb: Extends the :attr:`~cerberus.Validator.schema_path`
@@ -722,12 +734,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         dp_items: Iterable[int],
         sp_items: Iterable[int],
     ) -> None:
-        """ Removes nodes by index from an errorpath, relatively to the
-            basepaths of self.
+        """
+        Removes nodes by index from an errorpath, relatively to the basepaths of self.
 
         :param errors: A list of :class:`errors.ValidationError` instances.
-        :param dp_items: A list of integers, pointing at the nodes to drop from
-                         the :attr:`document_path`.
+        :param dp_items: A list of integers, pointing at the nodes to drop from the
+                         :attr:`document_path`.
         :param sp_items: Alike ``dp_items``, but for :attr:`schema_path`.
         """
         dp_basedepth = len(self.document_path)
@@ -745,18 +757,17 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._drop_nodes_from_errorpaths(error.child_errors, dp_items, sp_items)
 
     def _lookup_field(self, path):
-        """ Searches for a field as defined by path. This method is used by the
-            ``dependency`` evaluation logic.
+        """
+        Searches for a field as defined by path. This method is used by the
+        ``dependency`` evaluation logic.
 
-        :param path: Path elements are separated by a ``.``. A leading ``^``
-                     indicates that the path relates to the document root,
-                     otherwise it relates to the currently evaluated document,
-                     which is possibly a subdocument.
-                     The sequence ``^^`` at the start will be interpreted as a
-                     literal ``^``.
+        :param path: Path elements are separated by a ``.``. A leading ``^`` indicates
+                     that the path relates to the document root, otherwise it relates to
+                     the currently evaluated document, which is possibly a subdocument.
+                     The sequence ``^^`` at the start will be interpreted as a literal
+                     ``^``.
         :type path: :class:`str`
-        :returns: Either the found field name and its value or :obj:`None` for
-                  both.
+        :returns: Either the found field name and its value or :obj:`None` for both.
         :rtype: A two-value :class:`tuple`.
         """
         if path.startswith('^'):
@@ -792,11 +803,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def allow_unknown(self) -> AllowUnknown:
-        """ If ``True`` unknown fields that are not defined in the schema will
-            be ignored. If a mapping with a validation schema is given, any
-            undefined field will be validated against its rules.
-            Also see :ref:`allowing-the-unknown`.
-            Type: :class:`bool` or any :term:`mapping` """
+        """
+        If ``True`` unknown fields that are not defined in the schema will be ignored.
+        If a mapping with a validation schema is given, any undefined field will be
+        validated against its rules. Also see :ref:`allowing-the-unknown`.
+
+        Type: :class:`bool` or any :term:`mapping`
+        """
         return self._config.get('allow_unknown', False)
 
     @allow_unknown.setter
@@ -810,14 +823,19 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def errors(self) -> Any:
-        """ The errors of the last processing formatted by the handler that is
-            bound to :attr:`~cerberus.Validator.error_handler`. """
+        """
+        The errors of the last processing formatted by the handler that is bound to
+        :attr:`~cerberus.Validator.error_handler`.
+        """
         return self.error_handler(self._errors)
 
     @property
     def ignore_none_values(self) -> bool:
-        """ Whether to not process :obj:`None`-values in a document or not.
-            Type: :class:`bool` """
+        """
+        Whether to not process :obj:`None`-values in a document or not.
+
+        Type: :class:`bool`
+        """
         return self._config.get('ignore_none_values', False)
 
     @ignore_none_values.setter
@@ -826,9 +844,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def is_child(self) -> bool:
-        """ ``True`` for child-validators obtained with
+        """
+        ``True`` for child-validators obtained with
         :meth:`~cerberus.Validator._get_child_validator`.
-        Type: :class:`bool` """
+
+        Type: :class:`bool`
+        """
         return self._config.get('is_child', False)
 
     @property
@@ -842,9 +863,13 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def purge_unknown(self) -> bool:
-        """ If ``True``, unknown fields will be deleted from the document
-            unless a validation is called with disabled normalization.
-            Also see :ref:`purging-unknown-fields`. Type: :class:`bool` """
+        """
+        If ``True``, unknown fields will be deleted from the document unless a
+        validation is called with disabled normalization. Also see
+        :ref:`purging-unknown-fields`.
+
+        Type: :class:`bool`
+        """
         return self._config.get('purge_unknown', False)
 
     @purge_unknown.setter
@@ -853,9 +878,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def purge_readonly(self) -> bool:
-        """ If ``True``, fields declared as readonly will be deleted from the
-            document unless a validation is called with disabled normalization.
-            Type: :class:`bool` """
+        """
+        If ``True``, fields declared as readonly will be deleted from the document
+        unless a validation is called with disabled normalization.
+
+        Type: :class:`bool`
+        """
         return self._config.get('purge_readonly', False)
 
     @purge_readonly.setter
@@ -864,8 +892,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def require_all(self) -> bool:
-        """ If ``True`` known fields that are defined in the schema will
-            be required. Type: :class:`bool` """
+        """
+        If ``True`` known fields that are defined in the schema will be required.
+
+        Type: :class:`bool`
+        """
         return self._config["require_all"]
 
     @require_all.setter
@@ -874,26 +905,35 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def root_allow_unknown(self) -> AllowUnknown:
-        """ The :attr:`~cerberus.Validator.allow_unknown` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.allow_unknown` attribute of the first level
+        ancestor of a child validator.
+        """
         return self._config.get('root_allow_unknown', self.allow_unknown)
 
     @property
     def root_require_all(self) -> bool:
-        """ The :attr:`~cerberus.Validator.require_all` attribute of
-            the first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.require_all` attribute of the first level
+        ancestor of a child validator.
+        """
         return self._config.get('root_require_all', self.require_all)
 
     @property
     def root_document(self) -> Document:
-        """ The :attr:`~cerberus.Validator.document` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.document` attribute of the first level ancestor
+        of a child validator.
+        """
         return self._config.get('root_document', self.document)
 
     @property
     def rules_set_registry(self) -> RulesSetRegistry:
-        """ The registry that holds referenced rules sets.
-            Type: :class:`~cerberus.Registry` """
+        """
+        The registry that holds referenced rules sets.
+
+        Type: :class:`~cerberus.Registry`
+        """
         return self._config["rules_set_registry"]
 
     @rules_set_registry.setter
@@ -902,15 +942,20 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def root_schema(self) -> Optional[Schema]:
-        """ The :attr:`~cerberus.Validator.schema` attribute of the
-            first level ancestor of a child validator. """
+        """
+        The :attr:`~cerberus.Validator.schema` attribute of the first level ancestor of
+        a child validator.
+        """
         return self._config.get('root_schema', self.schema)
 
     @property  # type: ignore
     def schema(self):
-        """ The validation schema of a validator. When a schema is passed to
-            a validator method (e.g. ``validate``), it replaces this attribute.
-            Type: any :term:`mapping` or :obj:`None` """
+        """
+        The validation schema of a validator. When a schema is passed to a validator
+        method (e.g. ``validate``), it replaces this attribute.
+
+        Type: any :term:`mapping` or :obj:`None`
+        """
         return self._schema
 
     @schema.setter
@@ -924,8 +969,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def schema_registry(self) -> SchemaRegistry:
-        """ The registry that holds referenced schemas.
-            Type: :class:`~cerberus.Registry` """
+        """
+        The registry that holds referenced schemas.
+
+        Type: :class:`~cerberus.Registry`
+        """
         return self._config["schema_registry"]
 
     @schema_registry.setter
@@ -936,8 +984,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     #       in the API docs
     @readonly_classproperty
     def types(cls) -> Tuple[str, ...]:
-        """ The constraints that can be used for the 'type' rule.
-            Type: A tuple of strings. """
+        """
+        The constraints that can be used for the 'type' rule.
+
+        Type: A tuple of strings.
+        """
         return tuple(cls.types_mapping)
 
     # Document processing
@@ -967,9 +1018,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self.error_handler.start(self)
 
     def _drop_remaining_rules(self, *rules):
-        """ Drops rules from the queue of the rules that still need to be
-            evaluated for the currently processed field.
-            If no arguments are given, the whole queue is emptied.
+        """
+        Drops rules from the queue of the rules that still need to be evaluated for the
+        currently processed field. If no arguments are given, the whole queue is
+        emptied.
         """
         if rules:
             for rule in (x for x in rules if x in self._remaining_rules):
@@ -1029,13 +1081,15 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return mapping
 
     def _normalize_coerce(self, mapping, schema):
-        """ {'oneof': [
-                {'type': 'Callable'},
-                {'type': 'Iterable',
-                 'itemsrules': {'oneof': [{'type': 'Callable'},
-                                          {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'Callable'},
+            {'type': 'Iterable',
+             'itemsrules': {'oneof': [{'type': 'Callable'},
+                                      {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
+        """
 
         error = errors.COERCION_FAILED
         for field in mapping:
@@ -1230,13 +1284,15 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             del mapping[field]
 
     def _normalize_rename_handler(self, mapping, schema, field):
-        """ {'oneof': [
-                {'type': 'Callable'},
-                {'type': 'Iterable',
-                 'itemsrules': {'oneof': [{'type': 'Callable'},
-                                          {'type': 'string'}]}},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'Callable'},
+            {'type': 'Iterable',
+             'itemsrules': {'oneof': [{'type': 'Callable'},
+                                      {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
+        """
         if 'rename_handler' not in schema[field]:
             return
         new_name = self.__normalize_coerce(
@@ -1300,10 +1356,12 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
-        """ {'oneof': [
-                {'type': 'Callable'},
-                {'type': 'string'}
-                ]} """
+        """
+        {'oneof': [
+            {'type': 'Callable'},
+            {'type': 'string'}
+        ]}
+        """
         if 'default_setter' in schema[field]:
             setter = schema[field]['default_setter']
             if isinstance(setter, str):
@@ -1439,13 +1497,14 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.UNALLOWED_VALUE, value)
 
     def _validate_check_with(self, checks, field, value):
-        """ {'oneof': [
-                {'type': 'Callable'},
-                {'type': 'Iterable',
-                 'itemsrules': {'oneof': [{'type': 'Callable'},
-                                          {'type': 'string'}]}},
-                {'type': 'string'}
-                ]}
+        """
+        {'oneof': [
+            {'type': 'Callable'},
+            {'type': 'Iterable',
+             'itemsrules': {'oneof': [{'type': 'Callable'},
+                                      {'type': 'string'}]}},
+            {'type': 'string'}
+        ]}
         """
         if isinstance(checks, str):
             value_checker = self.__get_rule_handler('check_with', checks)
@@ -1473,8 +1532,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.MISSING_MEMBERS, missing_values)
 
     def _validate_dependencies(self, dependencies, field, value):
-        """ {'type': ('Hashable', 'Iterable', 'Mapping'),
-             'check_with': 'dependencies'} """
+        """
+        {'type': ('Hashable', 'Iterable', 'Mapping'),
+         'check_with': 'dependencies'}
+        """
         if isinstance(dependencies, str):
             dependencies = (dependencies,)
 
@@ -1530,8 +1591,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.EMPTY)
 
     def _validate_excludes(self, excluded_fields, field, value):
-        """ {'type': ('Hashable', 'Iterable'),
-             'itemsrules': {'type': 'Hashable'}} """
+        """
+        {'type': ('Hashable', 'Iterable'),
+         'itemsrules': {'type': 'Hashable'}}
+        """
 
         if isinstance(excluded_fields, str) or not isinstance(
             excluded_fields, Container
@@ -1589,8 +1652,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.ITEMS, validator._errors)
 
     def _validate_itemsrules(self, rulesset, field, value):
-        """ {'type': ('dict', 'string'),
-             'check_with': 'rulesset'} """
+        """
+        {'type': ('dict', 'string'),
+         'check_with': 'rulesset'}
+        """
 
         if not isinstance(value, Sequence):
             return
@@ -1611,8 +1676,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.ITEMSRULES, validator._errors)
 
     def __validate_logical(self, operator, definitions, field, value):
-        """ Validates value against all definitions and logs errors according
-            to the operator. """
+        """
+        Validates value against all definitions and logs errors according to the
+        operator.
+        """
         valid_counter = 0
         _errors = errors.ErrorList()
 
@@ -1709,8 +1776,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             )
 
     def _validate_keysrules(self, schema, field, value):
-        """ {'type': ('Mapping', 'string'), 'check_with': 'rulesset',
-            'forbidden': ('rename', 'rename_handler')} """
+        """
+        {'type': ('Mapping', 'string'),
+         'check_with': 'rulesset',
+         'forbidden': ('rename', 'rename_handler')}
+        """
         if isinstance(value, Mapping):
             validator = self._get_child_validator(
                 document_crumb=field,
@@ -1753,7 +1823,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     _validate_require_all = dummy_for_rule_validation(""" {'type': 'boolean'} """)
 
     def __validate_required_fields(self, document):
-        """ Validates that required fields are not missing.
+        """
+        Validates that required fields are not missing.
 
         :param document: The document being validated.
         """
@@ -1781,8 +1852,10 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                     self._error(field, errors.REQUIRED_FIELD)
 
     def _validate_schema(self, schema, field, value):
-        """ {'type': ('Mapping', 'string'),
-             'check_with': 'schema'} """
+        """
+        {'type': ('Mapping', 'string'),
+         'check_with': 'schema'}
+        """
 
         if not isinstance(value, Mapping):
             return
@@ -1801,12 +1874,14 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.SCHEMA, validator._errors)
 
     def _validate_type(self, data_type, field, value):
-        """ {'type': 'tuple',
-             'itemsrules': {
-                 'oneof': (
-                    {'type': 'string', 'check_with': 'type_names'},
-                    {'type': ('type', 'generic_type_alias')}
-                 )}} """
+        """
+        {'type': 'tuple',
+            'itemsrules': {
+                'oneof': (
+                   {'type': 'string', 'check_with': 'type_names'},
+                   {'type': ('type', 'generic_type_alias')}
+        )}}
+        """
         if not data_type:
             return
 
@@ -1825,8 +1900,11 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         self._drop_remaining_rules()
 
     def _validate_valuesrules(self, schema, field, value):
-        """ {'type': ['dict', 'string'], 'check_with': 'rulesset',
-            'forbidden': ['rename', 'rename_handler']} """
+        """
+        {'type': ['dict', 'string'],
+         'check_with': 'rulesset',
+         'forbidden': ['rename', 'rename_handler']}
+        """
         if isinstance(value, Mapping):
             schema_crumb = (field, 'valuesrules')
             validator = self._get_child_validator(

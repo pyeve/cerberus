@@ -33,10 +33,11 @@ def drop_item_from_tuple(t, i):
 
 
 def mapping_to_frozenset(schema: Mapping) -> frozenset:
-    """ Be aware that this treats any sequence type with the equal members as
-        equal. As it is used to identify equality of schemas, this can be
-        considered okay as definitions are semantically equal regardless the
-        container type. """
+    """
+    Be aware that this treats any sequence type with the equal members as equal. As it
+    is used to identify equality of schemas, this can be considered okay as definitions
+    are semantically equal regardless the container type.
+    """
     schema_copy = {}  # type: Dict[Hashable, Hashable]
     for key, value in schema.items():
         if isinstance(value, abc.Mapping):

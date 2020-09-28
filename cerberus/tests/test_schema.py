@@ -144,10 +144,16 @@ def test_rulename_space_is_normalized():
 def test_schema_normalization_does_not_abort(rule):
     schema_registry.clear()
     schema_registry.add(
-        "schema_ref", {},
+        "schema_ref",
+        {},
     )
 
     validator = Validator(
-        schema={"field": {rule: {"type": "string"}, "schema": "schema_ref",},}  # noqa
+        schema={
+            "field": {
+                rule: {"type": "string"},
+                "schema": "schema_ref",
+            },
+        }
     )
     assert validator.schema["field"][rule]["type"] == ("string",)

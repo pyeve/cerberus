@@ -241,8 +241,8 @@ def test_callable_validator():
 
 
 def test_self_root_document():
-    """ Make sure self.root_document is always the root document.
-    See:
+    """
+    Make sure self.root_document is always the root document. See:
     * https://github.com/pyeve/cerberus/pull/42
     * https://github.com/pyeve/eve/issues/295
     """

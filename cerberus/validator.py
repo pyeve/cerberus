@@ -15,11 +15,13 @@ from cerberus.schema import ValidatedSchema
 class Validator(UnconcernedValidator):
     @property
     def allow_unknown(self):
-        """ If ``True`` unknown fields that are not defined in the schema will
-            be ignored. If a mapping with a validation schema is given, any
-            undefined field will be validated against its rules.
-            Also see :ref:`allowing-the-unknown`.
-            Type: :class:`bool` or any :term:`mapping` """
+        """
+        If ``True`` unknown fields that are not defined in the schema will be ignored.
+        If a mapping with a validation schema is given, any undefined field will be
+        validated against its rules. Also see :ref:`allowing-the-unknown`.
+
+        Type: :class:`bool` or any :term:`mapping`
+        """
         return self._config.get('allow_unknown', False)
 
     @allow_unknown.setter
@@ -31,9 +33,12 @@ class Validator(UnconcernedValidator):
 
     @property  # type: ignore
     def schema(self):
-        """ The validation schema of a validator. When a schema is passed to
-            a validator method (e.g. ``validate``), it replaces this attribute.
-            Type: any :term:`mapping` or :obj:`None` """
+        """
+        The validation schema of a validator. When a schema is passed to a validator
+        method (e.g. ``validate``), it replaces this attribute.
+
+        Type: any :term:`mapping` or :obj:`None`
+        """
         return self._schema
 
     @schema.setter

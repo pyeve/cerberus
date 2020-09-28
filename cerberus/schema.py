@@ -16,8 +16,10 @@ from cerberus.utils import schema_hash
 
 
 class SchemaValidator(UnconcernedValidator):
-    """ This validator provides mechanics to validate schemas passed to a Cerberus
-        validator. """
+    """
+    This validator provides mechanics to validate schemas passed to a Cerberus
+    validator.
+    """
 
     types_mapping = UnconcernedValidator.types_mapping.copy()
     types_mapping.update(
@@ -262,7 +264,8 @@ class ValidatedSchema(MutableMapping):
             self.validator._valid_schemas.add(_hash)
 
     def _validate(self, schema):
-        """ Validates a schema that defines rules against supported rules.
+        """
+        Validates a schema that defines rules against supported rules.
 
         :param schema: The schema to be validated as a legal cerberus schema
                        according to the rules of the related Validator object.

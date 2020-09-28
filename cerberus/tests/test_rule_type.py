@@ -190,7 +190,7 @@ def test_boolean_is_not_a_number():
         ),
         (typing.Optional[str], {"anyof": ({"type": (str,)}, {"nullable": True})}),
         (
-            typing.Set["integer"],  # type: ignore
+            typing.Set["integer"],  # type: ignore  # noqa: F821
             {"anyof": ({"type": (set,), "itemsrules": {"type": ("integer",)}},)},
         ),
     ],

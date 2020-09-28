@@ -217,9 +217,10 @@ class ValidationError:
 
 
 class ErrorList(list):
-    """ A list for :class:`~cerberus.errors.ValidationError` instances that
-        can be queried with the ``in`` keyword for a particular
-        :class:`~cerberus.errors.ErrorDefinition`. """
+    """
+    A list for :class:`~cerberus.errors.ValidationError` instances that can be queried
+    with the ``in`` keyword for a particular :class:`~cerberus.errors.ErrorDefinition`.
+    """
 
     def __contains__(self, error_definition):
         if not isinstance(error_definition, ErrorDefinition):
@@ -305,8 +306,10 @@ class ErrorTreeNode(MutableMapping):
 
 
 class ErrorTree(ErrorTreeNode):
-    """ Base class for :class:`~cerberus.errors.DocumentErrorTree` and
-        :class:`~cerberus.errors.SchemaErrorTree`. """
+    """
+    Base class for :class:`~cerberus.errors.DocumentErrorTree` and
+    :class:`~cerberus.errors.SchemaErrorTree`.
+    """
 
     depth = 0
     parent = None
@@ -346,15 +349,19 @@ class ErrorTree(ErrorTreeNode):
 
 
 class DocumentErrorTree(ErrorTree):
-    """ Implements a dict-like class to query errors by indexes following the
-        structure of a validated document. """
+    """
+    Implements a dict-like class to query errors by indexes following the structure of a
+    validated document.
+    """
 
     tree_type = 'document'
 
 
 class SchemaErrorTree(ErrorTree):
-    """ Implements a dict-like class to query errors by indexes following the
-        structure of the used schema. """
+    """
+    Implements a dict-like class to query errors by indexes following the structure of
+    the used schema.
+    """
 
     tree_type = 'schema'
 
@@ -377,22 +384,25 @@ class BaseErrorHandler(ABC):
 
     @abstractmethod
     def add(self, error: ValidationError) -> None:
-        """ Add an error to the errors' container object of a handler.
+        """
+        Add an error to the errors' container object of a handler.
 
         :param error: The error to add.
         """
         pass
 
     def emit(self, error: ValidationError) -> None:
-        """ Optionally emits an error in the handler's format to a stream.
-            Or light a LED, or even shut down a power plant.
+        """
+        Optionally emits an error in the handler's format to a stream. Or light a LED,
+        or even shut down a power plant.
 
         :param error: The error to emit.
         """
         pass
 
     def end(self, validator: "UnconcernedValidator") -> None:
-        """ Gets called when a validation ends.
+        """
+        Gets called when a validation ends.
 
         :param validator: The calling validator.
         """
@@ -404,7 +414,8 @@ class BaseErrorHandler(ABC):
             self.add(error)
 
     def start(self, validator: "UnconcernedValidator") -> None:
-        """ Gets called when a validation starts.
+        """
+        Gets called when a validation starts.
 
         :param validator: The calling validator.
         """
@@ -419,9 +430,9 @@ class ToyErrorHandler(BaseErrorHandler):
 
 
 class BasicErrorHandler(BaseErrorHandler):
-    """ Models cerberus' legacy. Returns a :class:`dict`. When mangled
-        through :class:`str` a pretty-formatted representation of that
-        tree is returned.
+    """
+    Models cerberus' legacy. Returns a :class:`dict`. When mangled through :class:`str`
+    a pretty-formatted representation of that tree is returned.
     """
 
     messages = {
@@ -508,7 +519,8 @@ class BasicErrorHandler(BaseErrorHandler):
         )
 
     def _insert_error(self, path, node):
-        """ Adds an error or sub-tree to :attr:tree.
+        """
+        Adds an error or sub-tree to :attr:tree.
 
         :param path: Path to the error.
         :type path: Tuple of strings and integers.
