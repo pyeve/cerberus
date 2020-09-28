@@ -1612,4 +1612,7 @@ class InspectedValidator(type):
         return result
 
 
-Validator = InspectedValidator('Validator', (BareValidator,), {})
+if __debug__:
+    Validator = InspectedValidator('Validator', (BareValidator,), {})
+else:
+    Validator = BareValidator
