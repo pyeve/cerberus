@@ -137,7 +137,7 @@ class BareValidator(object):
         'list': TypeDefinition('list', (Sequence,), (_str_type,)),
         'number': TypeDefinition('number', (_int_types, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
-        'string': TypeDefinition('string', (_str_type), ()),
+        'string': TypeDefinition('string', (_str_type,), ()),
     }
     """
     This mapping holds all available constraints for the type rule and their assigned
