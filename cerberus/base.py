@@ -655,7 +655,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             if not rule:
                 constraint = None
             else:
-                field_definitions = self._resolve_rules_set(self.schema[field])
+                schema = self._resolve_schema(self.schema)
+                field_definitions = self._resolve_rules_set(schema[field])
                 if rule == 'nullable':
                     constraint = field_definitions.get(rule, False)
                 elif rule == 'required':

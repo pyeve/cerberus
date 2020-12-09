@@ -410,3 +410,35 @@ def test_novalidate_noerrors(validator):
     validation had been performed yet.
     """
     assert validator.errors == {}
+
+
+def test_errors_in_nested_schemas():
+    class CustomValidator(Validator):
+        def _normalize_coerce_custom(self, value):
+            raise Exception("Failed coerce")
+
+    validator = CustomValidator()
+    validator.schema_registry.add(
+        "schema1",
+        {
+            "child": {"type": "boolean", "coerce": "custom"}
+        }
+    )
+    validator.schema = {
+        "parent": {"schema": "schema1"}
+    }
+    validator.validate({
+        "parent": {
+            "child": "["
+        }
+    })
+
+    expected = {'parent': [
+        {
+            'child': [
+                "must be one of these types: ('boolean',)",
+                "field 'child' cannot be coerced: Failed coerce"
+            ]
+        }
+    ]}
+    assert validator.errors == expected
