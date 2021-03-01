@@ -16,6 +16,8 @@ New
 Fixed
 ~~~~~
 
+- Fixed unresolved registry references when getting a constraint for an error.
+  (`#562`_)
 - Fixed crash when submitting non-hashable values to ``allowed`` (`#524`_)
 - Fixed schema validation for rules specifications with space (`#527`_)
 - Replaced deprecated rule name ``validator`` with ``check_with`` in the docs
@@ -24,6 +26,7 @@ Fixed
 .. _`#524`: https://github.com/pyeve/cerberus/issues/524
 .. _`#527`: https://github.com/pyeve/cerberus/issues/527
 .. _`#531`: https://github.com/pyeve/cerberus/issues/531
+.. _`#562`: https://github.com/pyeve/cerberus/issues/562
 
 Version 1.3.2
 -------------

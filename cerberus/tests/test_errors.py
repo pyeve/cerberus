@@ -241,6 +241,31 @@ def test_nested_error_paths(validator):
     assert _set['a_list']['schema']['oneof'][1]['regex'].errors[0] == _ref_err
 
 
+def test_path_resolution_for_registry_references():
+    class CustomValidator(Validator):
+        def _normalize_coerce_custom(self, value):
+            raise Exception("Failed coerce")
+
+    validator = CustomValidator()
+    validator.schema_registry.add(
+        "schema1", {"child": {"type": "boolean", "coerce": "custom"}}
+    )
+    validator.schema = {"parent": {"schema": "schema1"}}
+    validator.validate({"parent": {"child": "["}})
+
+    expected = {
+        'parent': [
+            {
+                'child': [
+                    "must be of boolean type",
+                    "field 'child' cannot be coerced: Failed coerce",
+                ]
+            }
+        ]
+    }
+    assert validator.errors == expected
+
+
 def test_queries():
     schema = {'foo': {'type': 'dict', 'schema': {'bar': {'type': 'number'}}}}
     document = {'foo': {'bar': 'zero'}}

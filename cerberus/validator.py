@@ -303,15 +303,17 @@ class BareValidator(object):
             if not rule:
                 constraint = None
             else:
-                field_definitions = self._resolve_rules_set(self.schema[field])
+                rules_set = self._resolve_rules_set(
+                    self._resolve_schema(self.schema)[field]
+                )
                 if rule == 'nullable':
-                    constraint = field_definitions.get(rule, False)
+                    constraint = rules_set.get(rule, False)
                 elif rule == 'required':
-                    constraint = field_definitions.get(rule, self.require_all)
-                    if rule not in field_definitions:
+                    constraint = rules_set.get(rule, self.require_all)
+                    if rule not in rules_set:
                         schema_path = "__require_all__"
                 else:
-                    constraint = field_definitions[rule]
+                    constraint = rules_set[rule]
 
             value = self.document.get(field)
 
