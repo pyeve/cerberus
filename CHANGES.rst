@@ -15,6 +15,7 @@ New
 - Generic type aliases from the :mod:`typing` module can be used as constraints
   for the ``type`` rule, including parametrized ones a.k.a. compound types
   (`#374`_)
+- Adds support for Python 3.9
 
 Changed
 ~~~~~~~
@@ -412,7 +413,7 @@ Codename: 'Mastrolindo'.
   (Frank Sachsenheim).
 - Change: 'type' can also be a list of types (Frank Sachsenheim).
 
-- Fix: usage of 'document' to 'self.document' in '_validate' (Frank
+- Fix: useages of 'document' to 'self.document' in '_validate' (Frank
   Sachsenheim).
 - Fix: when 'items' is applied to a list, field name is used as key for
   'validator.errors', and offending field indexes are used as keys for field

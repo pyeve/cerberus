@@ -11,7 +11,7 @@ from cerberus.base import (
     UnconcernedValidator,
     normalize_rulesset,
 )
-from cerberus.platform import _GenericAlias
+from cerberus.platform import GenericAlias
 from cerberus.utils import schema_hash
 
 
@@ -28,7 +28,7 @@ class SchemaValidator(UnconcernedValidator):
                 "container_but_not_string", (abc.Container,), (str,)
             ),
             "generic_type_alias": TypeDefinition(
-                "generic_type_alias", (_GenericAlias,), ()
+                "generic_type_alias", (GenericAlias,), ()
             ),
         }
     )

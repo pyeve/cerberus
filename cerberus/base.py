@@ -25,7 +25,13 @@ from typing import (
 from warnings import warn
 
 from cerberus import errors
-from cerberus.platform import get_type_args, get_type_origin, ForwardRef, _GenericAlias
+from cerberus.platform import (
+    get_type_args,
+    get_type_origin,
+    has_concrete_args,
+    ForwardRef,
+    GenericAlias,
+)
 from cerberus.typing import (
     AllowUnknown,
     Document,
@@ -45,7 +51,7 @@ RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:
 toy_error_handler = errors.ToyErrorHandler()
 
 
-_ellipsis = typing.Tuple[int, ...].__args__[-1]
+_ellipsis = typing.Tuple[int, ...].__args__[-1]  # type: ignore
 
 
 def dummy_for_rule_validation(rule_constraints: str) -> Callable:
@@ -125,18 +131,19 @@ def normalize_schema(schema: Schema) -> Schema:
 
 def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
     compound_types = []
-    plain_types = []
+    plain_types: List[Union[str, Type]] = []
     is_nullable = False
 
     for constraint in _flatten_Union_and_Optional(rules.pop("type")):
 
-        if isinstance(constraint, _GenericAlias):
+        if isinstance(constraint, GenericAlias):
 
             origin = get_type_origin(constraint)
+            assert isinstance(origin, type)
             args = get_type_args(constraint)
 
             # mappings, e.g. Mapping[int, str]
-            if issubclass(origin, abc.Mapping) and not constraint.__parameters__:
+            if issubclass(origin, abc.Mapping) and has_concrete_args(constraint):
                 compound_types.append(
                     {
                         "type": origin,
@@ -146,10 +153,9 @@ def _expand_generic_type_aliases(rules: Dict[str, Any]) -> None:
                 )
 
             # list-like and sets, e.g. List[str]
-            elif (
-                issubclass(origin, (abc.MutableSequence, abc.Set))
-                and not constraint.__parameters__
-            ):
+            elif issubclass(
+                origin, (abc.MutableSequence, abc.Set)
+            ) and has_concrete_args(constraint):
                 compound_types.append({"type": origin, "itemsrules": {"type": args[0]}})
 
             # tuples
