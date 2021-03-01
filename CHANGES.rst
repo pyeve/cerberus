@@ -12,6 +12,7 @@ New
 ~~~
 
 - Adds a benchmark to observe overall performance between code changes (`#531`_)
+- Adds support for Python 3.9
 
 Fixed
 ~~~~~
