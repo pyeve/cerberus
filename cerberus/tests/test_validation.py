@@ -1968,35 +1968,3 @@ def test_allowed_when_passing_list_of_dicts():
             (({'some': 'dict'},),),
         ),
     )
-
-
-def test_errors_in_nested_schemas():
-    class CustomValidator(Validator):
-        def _normalize_coerce_custom(self, value):
-            raise Exception("Failed coerce")
-
-    validator = CustomValidator()
-    validator.schema_registry.add(
-        "schema1",
-        {
-            "child": {"type": "boolean", "coerce": "custom"}
-        }
-    )
-    validator.schema = {
-        "parent": {"schema": "schema1"}
-    }
-    validator.validate({
-        "parent": {
-            "child": "["
-        }
-    })
-
-    expected = {'parent': [
-        {
-            'child': [
-                "must be of boolean type",
-                "field 'child' cannot be coerced: Failed coerce"
-            ]
-        }
-    ]}
-    assert validator.errors == expected
