@@ -15,7 +15,7 @@ New
 - Generic type aliases from the :mod:`typing` module can be used as constraints
   for the ``type`` rule, including parametrized ones a.k.a. compound types
   (`#374`_)
-- Adds support for Python 3.9
+- Support for Python 3.5 is removed.
 
 Changed
 ~~~~~~~
