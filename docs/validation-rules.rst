@@ -654,7 +654,7 @@ fields that have this rule defined positively.
 
 regex
 -----
-The validation will fail if the field's value does not match the provided
+The validation will fail if the field's value does not *match* the provided
 regular expression. It is only tested on string values.
 
 .. doctest::
@@ -676,6 +676,11 @@ regular expression. It is only tested on string values.
     >>> v.errors
     {'email': ["value does not match regex '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$'"]}
 
+A trailing ``$`` is ensured for all patterns in order to encourage users to
+write complete patterns for matching (and not a searching) strings. The
+implementation is inconsistent with regards to a leading ``^``, these are not
+enforced. That inconsistency will not be fixed for the ``1.3.x`` release
+series.
 For details on regular expression syntax, see the documentation on the standard
 library's :mod:`re`-module.
 

@@ -596,6 +596,11 @@ def test_regex(validator):
     )
 
 
+def test_regex_with_flag():
+    assert_success({"item": "hOly grAil"}, {"item": {"regex": "(?i)holy grail"}})
+    assert_fail({"item": "hOly grAil"}, {"item": {"regex": "holy grail"}})
+
+
 def test_a_list_of_dicts():
     assert_success(
         {
