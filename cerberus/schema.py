@@ -271,9 +271,6 @@ class DefinitionSchema(MutableMapping):
         if isinstance(schema, _str_type):
             schema = self.validator.schema_registry.get(schema, schema)
 
-        if schema is None:
-            raise SchemaError(errors.SCHEMA_ERROR_MISSING)
-
         test_schema = {}
         for field, rules in schema.items():
             if isinstance(rules, _str_type):
