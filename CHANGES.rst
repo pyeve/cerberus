@@ -6,27 +6,32 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 Version 1.3.3
 -------------
 
-Unreleased.
+Released on April 11, 2021.
 
 New
 ~~~
 
 - Adds a benchmark to observe overall performance between code changes (`#531`_)
 - Adds support for Python 3.9
+- The Continuous Integration now runs on GitHub Actions
 
 Fixed
 ~~~~~
 
-- Fixed unresolved registry references when getting a constraint for an error.
+- Fixed unresolved registry references when getting a constraint for an error
   (`#562`_)
 - Fixed crash when submitting non-hashable values to ``allowed`` (`#524`_)
 - Fixed schema validation for rules specifications with space (`#527`_)
 - Replaced deprecated rule name ``validator`` with ``check_with`` in the docs
-  (`#527`)
+  (`#527`_)
+- Use the UnconcernedValidator when the Python interpreter is executed with
+  an optimization flag (`#557`_)
+- Several fixes and refinements of the docs
 
 .. _`#524`: https://github.com/pyeve/cerberus/issues/524
 .. _`#527`: https://github.com/pyeve/cerberus/issues/527
 .. _`#531`: https://github.com/pyeve/cerberus/issues/531
+.. _`#557`: https://github.com/pyeve/cerberus/issues/557
 .. _`#562`: https://github.com/pyeve/cerberus/issues/562
 
 Version 1.3.2
