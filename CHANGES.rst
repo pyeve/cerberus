@@ -3,6 +3,18 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
+Version 1.3.4
+-------------
+
+Released on May 5, 2021.
+
+Fixed
+~~~~~
+
+- Reverts the unsatisfying fix for `#557`_,
+- instead a ``RuntimeError`` is thrown when Python is running with optimization
+  level 2 (`#567`_)
+
 Version 1.3.3
 -------------
 
