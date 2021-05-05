@@ -33,6 +33,19 @@ Fixed
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
 .. _`#374`: https://github.com/pyeve/cerberus/issues/374
 
+Version 1.3.4
+-------------
+
+Released on May 5, 2021.
+
+Fixed
+~~~~~
+
+- Reverts the unsatisfying fix for `#557`_,
+- instead a ``RuntimeError`` is thrown when Python is running with optimization
+  level 2 (`#567`_)
+
+.. _`#567`: https://github.com/pyeve/cerberus/issues/567
 
 Version 1.3.3
 -------------
