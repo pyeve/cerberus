@@ -15,6 +15,8 @@ Fixed
 - instead a ``RuntimeError`` is thrown when Python is running with optimization
   level 2 (`#567`_)
 
+.. _`#567`: https://github.com/pyeve/cerberus/issues/567
+
 Version 1.3.3
 -------------
 
