@@ -28,7 +28,7 @@ def test_contextual_data_preservation():
 def test_docstring_parsing():
     class CustomValidator(cerberus.Validator):
         def _validate_foo(self, argument, field, value):
-            """ {'type': 'zap'} """
+            """{'type': 'zap'}"""
             pass
 
         def _validate_bar(self, value):
@@ -84,7 +84,7 @@ def test_custom_datatype_rule():
         types_mapping['number'] = cerberus.TypeDefinition('number', (int,), ())
 
         def _validate_min_number(self, min_number, field, value):
-            """ {'type': 'number'} """
+            """{'type': 'number'}"""
             if value < min_number:
                 self._error(field, 'Below the min')
 

@@ -71,7 +71,7 @@ def dummy_for_rule_validation(rule_constraints: str) -> Callable:
 
 
 class DocumentError(Exception):
-    """ Raised when the target document is missing or has the wrong format """
+    """Raised when the target document is missing or has the wrong format"""
 
 
 class SchemaError(Exception):
@@ -88,7 +88,7 @@ _normalized_rulesset_cache = {}  # type: Dict[int, Dict[str, Any]]
 
 
 def normalize_rulesset(rules: RulesSet) -> RulesSet:
-    """ Transforms a set of rules into a canonical form. """
+    """Transforms a set of rules into a canonical form."""
     if not isinstance(rules, abc.Mapping):
         return rules
 
@@ -125,7 +125,7 @@ def normalize_rulesset(rules: RulesSet) -> RulesSet:
 
 
 def normalize_schema(schema: Schema) -> Schema:
-    """ Transforms a schema into a canonical form. """
+    """Transforms a schema into a canonical form."""
     return {field: normalize_rulesset(rules) for field, rules in schema.items()}
 
 
@@ -211,7 +211,7 @@ def _flatten_Union_and_Optional(type_constraints):
 
 
 def _expand_composed_of_rules(rules: Dict[str, Any]) -> None:
-    """ Expands of-rules that have another rule agglutinated in a rules set. """
+    """Expands of-rules that have another rule agglutinated in a rules set."""
     composed_rules = [
         x for x in rules if x.startswith(('allof_', 'anyof_', 'noneof_', 'oneof_'))
     ]
@@ -279,7 +279,7 @@ class Registry(Generic[RegistryItem]):
         return self._storage
 
     def clear(self):
-        """ Purge all definitions in the registry. """
+        """Purge all definitions in the registry."""
         self._storage.clear()
 
     def extend(
@@ -350,7 +350,7 @@ contained in ``excluded_types``.
 
 
 class ValidatorMeta(type):
-    """ Metaclass for all validators """
+    """Metaclass for all validators"""
 
     def __new__(mcls, name, bases, namespace):
         if '__doc__' not in namespace:
@@ -599,7 +599,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @classmethod
     def clear_caches(cls):
-        """ Purge the cache of known valid schemas. """
+        """Purge the cache of known valid schemas."""
         cls._valid_schemas.clear()
 
     def _error(self, *args):
@@ -860,7 +860,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @property
     def _is_normalized(self) -> bool:
-        """ ``True`` if the document is already normalized. """
+        """``True`` if the document is already normalized."""
         return self._config.get('_is_normalized', False)
 
     @_is_normalized.setter
@@ -1264,7 +1264,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
 
     @staticmethod
     def _normalize_purge_unknown(mapping, schema):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         for field in [x for x in mapping if x not in schema]:
             mapping.pop(field)
         return mapping
@@ -1284,7 +1284,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
-        """ {'type': 'Hashable'} """
+        """{'type': 'Hashable'}"""
         if 'rename' in schema[field]:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
@@ -1358,7 +1358,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 known_fields_states.add(fields_processing_state)
 
     def _normalize_default(self, mapping, schema, field):
-        """ {'nullable': True} """
+        """{'nullable': True}"""
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
@@ -1456,7 +1456,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.UNKNOWN_FIELD)
 
     def __validate_definitions(self, definitions, field):
-        """ Validate a field's value against its defined rules. """
+        """Validate a field's value against its defined rules."""
 
         definitions = self._resolve_rules_set(definitions)
         value = self.document[field]
@@ -1493,7 +1493,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
     )
 
     def _validate_allowed(self, allowed_values, field, value):
-        """ {'type': 'container_but_not_string'} """
+        """{'type': 'container_but_not_string'}"""
         if isinstance(value, Iterable) and not isinstance(value, str):
             unallowed = tuple(x for x in value if x not in allowed_values)
             if unallowed:
@@ -1522,7 +1522,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             checks(field, value, self._error)
 
     def _validate_contains(self, expected_values, field, value):
-        """ {'empty': False } """
+        """{'empty': False }"""
         if not isinstance(value, Container):
             return
 
@@ -1582,7 +1582,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.DEPENDENCIES_FIELD, dependency)
 
     def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if isinstance(value, Sized) and len(value) == 0:
             self._drop_remaining_rules(
                 'allowed',
@@ -1626,7 +1626,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
-        """ {'type': 'Container'} """
+        """{'type': 'Container'}"""
         if isinstance(value, str):
             if value in forbidden_values:
                 self._error(field, errors.FORBIDDEN_VALUE, value)
@@ -1639,7 +1639,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
     def _validate_items(self, items, field, values):
-        """ {'type': 'Sequence', 'check_with': 'items'} """
+        """{'type': 'Sequence', 'check_with': 'items'}"""
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -1709,31 +1709,31 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         return valid_counter, _errors
 
     def _validate_anyof(self, definitions, field, value):
-        """ {'type': 'Sequence', 'logical': 'anyof'} """
+        """{'type': 'Sequence', 'logical': 'anyof'}"""
         valids, _errors = self.__validate_logical('anyof', definitions, field, value)
         if valids < 1:
             self._error(field, errors.ANYOF, _errors, valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
-        """ {'type': 'Sequence', 'logical': 'allof'} """
+        """{'type': 'Sequence', 'logical': 'allof'}"""
         valids, _errors = self.__validate_logical('allof', definitions, field, value)
         if valids < len(definitions):
             self._error(field, errors.ALLOF, _errors, valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
-        """ {'type': 'Sequence', 'logical': 'noneof'} """
+        """{'type': 'Sequence', 'logical': 'noneof'}"""
         valids, _errors = self.__validate_logical('noneof', definitions, field, value)
         if valids > 0:
             self._error(field, errors.NONEOF, _errors, valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
-        """ {'type': 'Sequence', 'logical': 'oneof'} """
+        """{'type': 'Sequence', 'logical': 'oneof'}"""
         valids, _errors = self.__validate_logical('oneof', definitions, field, value)
         if valids != 1:
             self._error(field, errors.ONEOF, _errors, valids, len(definitions))
 
     def _validate_max(self, max_value, field, value):
-        """ {'nullable': False } """
+        """{'nullable': False }"""
         try:
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
@@ -1741,7 +1741,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             pass
 
     def _validate_min(self, min_value, field, value):
-        """ {'nullable': False } """
+        """{'nullable': False }"""
         try:
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
@@ -1749,19 +1749,19 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             pass
 
     def _validate_maxlength(self, max_length, field, value):
-        """ {'type': 'integer'} """
+        """{'type': 'integer'}"""
         if isinstance(value, Iterable) and len(value) > max_length:
             self._error(field, errors.MAX_LENGTH, len(value))
 
     _validate_meta = dummy_for_rule_validation('')
 
     def _validate_minlength(self, min_length, field, value):
-        """ {'type': 'integer'} """
+        """{'type': 'integer'}"""
         if isinstance(value, Iterable) and len(value) < min_length:
             self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if value is None:
             if not (nullable or self.ignore_none_values):
                 self._error(field, errors.NULLABLE)
@@ -1798,7 +1798,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._error(field, errors.KEYSRULES, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if readonly:
             if not self._is_normalized:
                 self._error(field, errors.READONLY_FIELD)
@@ -1815,7 +1815,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 self._drop_remaining_rules()
 
     def _validate_regex(self, pattern, field, value):
-        """ {'type': 'string'} """
+        """{'type': 'string'}"""
         if not isinstance(value, str):
             return
         if not pattern.endswith('$'):

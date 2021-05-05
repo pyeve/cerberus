@@ -40,17 +40,17 @@ class SchemaValidator(UnconcernedValidator):
 
     @property
     def known_rules_set_refs(self):
-        """ The encountered references to rules set registry items. """
+        """The encountered references to rules set registry items."""
         return self._config["known_rules_set_refs"]
 
     @property
     def known_schema_refs(self):
-        """ The encountered references to schema registry items. """
+        """The encountered references to schema registry items."""
         return self._config["known_schema_refs"]
 
     @property
     def target_validator(self):
-        """ The validator whose schema is being validated. """
+        """The validator whose schema is being validated."""
         return self._config['target_validator']
 
     def _check_with_dependencies(self, field, value):
@@ -149,7 +149,7 @@ class SchemaValidator(UnconcernedValidator):
         return result
 
     def _validate_logical(self, rule, field, value):
-        """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
+        """{'allowed': ('allof', 'anyof', 'noneof', 'oneof')}"""
         if not isinstance(value, Sequence):
             self._error(field, errors.TYPE)
             return
@@ -181,7 +181,7 @@ class SchemaValidator(UnconcernedValidator):
 
 
 class ValidatedSchema(MutableMapping):
-    """ A dict-subclass for caching of validated schemas. """
+    """A dict-subclass for caching of validated schemas."""
 
     def __init__(self, validator, schema=None):
         """
