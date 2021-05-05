@@ -61,9 +61,7 @@ Validation
 Validation schemas themselves are validated when passed to the validator or a
 new set of rules is set for a document's field. A :exc:`~cerberus.SchemaError`
 is raised when an invalid validation schema is encountered. See
-:ref:`schema-validation-schema` for a reference of the schema that provided
-schemas must pass. This feature is not available when the used Python
-interpreter is invoked with any optimization level.
+:ref:`schema-validation-schema` for a reference.
 
 However, be aware that no validation can be triggered for all changes below
 that level or when a used definition in a registry changes. You could therefore
