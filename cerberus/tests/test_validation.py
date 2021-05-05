@@ -747,7 +747,7 @@ def test_custom_datatype():
 def test_custom_datatype_rule():
     class MyValidator(Validator):
         def _validate_min_number(self, min_number, field, value):
-            """ {'type': 'number'} """
+            """{'type': 'number'}"""
             if value < min_number:
                 self._error(field, 'Below the min')
 
@@ -774,7 +774,7 @@ def test_custom_datatype_rule():
 def test_custom_validator():
     class MyValidator(Validator):
         def _validate_isodd(self, isodd, field, value):
-            """ {'type': 'boolean'} """
+            """{'type': 'boolean'}"""
             if isodd and not bool(value & 1):
                 self._error(field, 'Not an odd number')
 
@@ -1127,7 +1127,7 @@ def test_self_root_document():
 
     class MyValidator(Validator):
         def _validate_root_doc(self, root_doc, field, value):
-            """ {'type': 'boolean'} """
+            """{'type': 'boolean'}"""
             if 'sub' not in self.root_document or len(self.root_document['sub']) != 2:
                 self._error(field, 'self.context is not the root doc!')
 
@@ -1655,7 +1655,7 @@ def test_dependencies_on_boolean_field_with_value_in_list():
 def test_document_path():
     class DocumentPathTester(Validator):
         def _validate_trail(self, constraint, field, value):
-            """ {'type': 'boolean'} """
+            """{'type': 'boolean'}"""
             test_doc = self.root_document
             for crumb in self.document_path:
                 test_doc = test_doc[crumb]

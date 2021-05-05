@@ -89,7 +89,7 @@ SCHEMA_ERROR_MISSING = "validation schema missing"
 
 
 class ValidationError(object):
-    """ A simple class to store and query basic error information. """
+    """A simple class to store and query basic error information."""
 
     def __init__(self, document_path, schema_path, code, rule, constraint, value, info):
         self.document_path = document_path
@@ -111,11 +111,11 @@ class ValidationError(object):
             Type: :class:`tuple` """
 
     def __eq__(self, other):
-        """ Assumes the errors relate to the same document and schema. """
+        """Assumes the errors relate to the same document and schema."""
         return hash(self) == hash(other)
 
     def __hash__(self):
-        """ Expects that all other properties are transitively determined. """
+        """Expects that all other properties are transitively determined."""
         return hash(self.document_path) ^ hash(self.schema_path) ^ hash(self.code)
 
     def __lt__(self, other):
@@ -168,7 +168,7 @@ class ValidationError(object):
 
     @property
     def field(self):
-        """ Field of the contextual mapping, possibly :obj:`None`. """
+        """Field of the contextual mapping, possibly :obj:`None`."""
         if self.document_path:
             return self.document_path[-1]
         else:
@@ -176,7 +176,7 @@ class ValidationError(object):
 
     @property
     def is_group_error(self):
-        """ ``True`` for errors of bulk validations. """
+        """``True`` for errors of bulk validations."""
         return bool(self.code & ERROR_GROUP.code)
 
     @property
@@ -188,7 +188,7 @@ class ValidationError(object):
 
     @property
     def is_normalization_error(self):
-        """ ``True`` for normalization errors. """
+        """``True`` for normalization errors."""
         return bool(self.code & NORMALIZATION.code)
 
 
@@ -357,7 +357,7 @@ class BaseErrorHandler(object):
     Subclasses are identified as error-handlers with an instance-test."""
 
     def __init__(self, *args, **kwargs):
-        """ Optionally initialize a new instance. """
+        """Optionally initialize a new instance."""
         pass
 
     def __call__(self, errors):
@@ -372,7 +372,7 @@ class BaseErrorHandler(object):
         raise NotImplementedError
 
     def __iter__(self):
-        """ Be a superhero and implement an iterator over errors. """
+        """Be a superhero and implement an iterator over errors."""
         raise NotImplementedError
 
     def add(self, error):

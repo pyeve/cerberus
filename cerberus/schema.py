@@ -32,7 +32,7 @@ class SchemaError(Exception):
 
 
 class DefinitionSchema(MutableMapping):
-    """ A dict-subclass for caching of validated schemas. """
+    """A dict-subclass for caching of validated schemas."""
 
     def __new__(cls, *args, **kwargs):
         if 'SchemaValidator' not in globals():
@@ -322,22 +322,22 @@ class SchemaValidatorMixin(object):
 
     @property
     def known_rules_set_refs(self):
-        """ The encountered references to rules set registry items. """
+        """The encountered references to rules set registry items."""
         return self._config['known_rules_set_refs']
 
     @property
     def known_schema_refs(self):
-        """ The encountered references to schema registry items. """
+        """The encountered references to schema registry items."""
         return self._config['known_schema_refs']
 
     @property
     def target_schema(self):
-        """ The schema that is being validated. """
+        """The schema that is being validated."""
         return self._config['target_schema']
 
     @property
     def target_validator(self):
-        """ The validator whose schema is being validated. """
+        """The validator whose schema is being validated."""
         return self._config['target_validator']
 
     def _check_with_bulk_schema(self, field, value):
@@ -443,7 +443,7 @@ class SchemaValidatorMixin(object):
         return definition
 
     def _validate_logical(self, rule, field, value):
-        """ {'allowed': ('allof', 'anyof', 'noneof', 'oneof')} """
+        """{'allowed': ('allof', 'anyof', 'noneof', 'oneof')}"""
         if not isinstance(value, Sequence):
             self._error(field, errors.BAD_TYPE)
             return
@@ -505,7 +505,7 @@ class Registry(object):
         return self._storage
 
     def clear(self):
-        """ Purge all definitions in the registry. """
+        """Purge all definitions in the registry."""
         self._storage.clear()
 
     def extend(self, definitions):

@@ -52,7 +52,7 @@ def dummy_for_rule_validation(rule_constraints):
 
 
 class DocumentError(Exception):
-    """ Raised when the target document is missing or has the wrong format """
+    """Raised when the target document is missing or has the wrong format"""
 
     pass
 
@@ -217,7 +217,7 @@ class BareValidator(object):
             raise RuntimeError('Invalid error_handler.')
 
     def __store_config(self, args, kwargs):
-        """ Assign args to kwargs and store configuration. """
+        """Assign args to kwargs and store configuration."""
         signature = (
             'schema',
             'ignore_none_values',
@@ -238,7 +238,7 @@ class BareValidator(object):
 
     @classmethod
     def clear_caches(cls):
-        """ Purge the cache of known valid schemas. """
+        """Purge the cache of known valid schemas."""
         cls._valid_schemas.clear()
 
     def _error(self, *args):
@@ -507,7 +507,7 @@ class BareValidator(object):
 
     @property
     def _is_normalized(self):
-        """ ``True`` if the document is already normalized. """
+        """``True`` if the document is already normalized."""
         return self._config.get('_is_normalized', False)
 
     @_is_normalized.setter
@@ -902,7 +902,7 @@ class BareValidator(object):
 
     @staticmethod
     def _normalize_purge_unknown(mapping, schema):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         for field in [x for x in mapping if x not in schema]:
             mapping.pop(field)
         return mapping
@@ -922,7 +922,7 @@ class BareValidator(object):
         return mapping
 
     def _normalize_rename(self, mapping, schema, field):
-        """ {'type': 'hashable'} """
+        """{'type': 'hashable'}"""
         if 'rename' in schema[field]:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
@@ -998,7 +998,7 @@ class BareValidator(object):
                 known_fields_states.add(fields_processing_state)
 
     def _normalize_default(self, mapping, schema, field):
-        """ {'nullable': True} """
+        """{'nullable': True}"""
         mapping[field] = schema[field]['default']
 
     def _normalize_default_setter(self, mapping, schema, field):
@@ -1088,7 +1088,7 @@ class BareValidator(object):
             self._error(field, errors.UNKNOWN_FIELD)
 
     def __validate_definitions(self, definitions, field):
-        """ Validate a field's value against its defined rules. """
+        """Validate a field's value against its defined rules."""
 
         def validate_rule(rule):
             validator = self.__get_rule_handler('validate', rule)
@@ -1136,7 +1136,7 @@ class BareValidator(object):
     )
 
     def _validate_allowed(self, allowed_values, field, value):
-        """ {'type': 'container'} """
+        """{'type': 'container'}"""
         if isinstance(value, Iterable) and not isinstance(value, _str_type):
             unallowed = tuple(x for x in value if x not in allowed_values)
             if unallowed:
@@ -1174,7 +1174,7 @@ class BareValidator(object):
             checks(field, value, self._error)
 
     def _validate_contains(self, expected_values, field, value):
-        """ {'empty': False } """
+        """{'empty': False }"""
         if not isinstance(value, Iterable):
             return
 
@@ -1190,7 +1190,7 @@ class BareValidator(object):
             self._error(field, errors.MISSING_MEMBERS, missing_values)
 
     def _validate_dependencies(self, dependencies, field, value):
-        """ {'type': ('dict', 'hashable', 'list'), 'check_with': 'dependencies'} """
+        """{'type': ('dict', 'hashable', 'list'), 'check_with': 'dependencies'}"""
         if isinstance(dependencies, _str_type) or not isinstance(
             dependencies, (Iterable, Mapping)
         ):
@@ -1233,7 +1233,7 @@ class BareValidator(object):
                 self._error(field, errors.DEPENDENCIES_FIELD, dependency)
 
     def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if isinstance(value, Sized) and len(value) == 0:
             self._drop_remaining_rules(
                 'allowed',
@@ -1248,7 +1248,7 @@ class BareValidator(object):
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_excludes(self, excluded_fields, field, value):
-        """ {'type': ('hashable', 'list'), 'schema': {'type': 'hashable'}} """
+        """{'type': ('hashable', 'list'), 'schema': {'type': 'hashable'}}"""
         if isinstance(excluded_fields, Hashable):
             excluded_fields = [excluded_fields]
 
@@ -1271,7 +1271,7 @@ class BareValidator(object):
             self._error(field, errors.EXCLUDES_FIELD, exclusion_str)
 
     def _validate_forbidden(self, forbidden_values, field, value):
-        """ {'type': 'list'} """
+        """{'type': 'list'}"""
         if isinstance(value, Sequence) and not isinstance(value, _str_type):
             forbidden = set(value) & set(forbidden_values)
             if forbidden:
@@ -1281,7 +1281,7 @@ class BareValidator(object):
                 self._error(field, errors.FORBIDDEN_VALUE, value)
 
     def _validate_items(self, items, field, values):
-        """ {'type': 'list', 'check_with': 'items'} """
+        """{'type': 'list', 'check_with': 'items'}"""
         if len(items) != len(values):
             self._error(field, errors.ITEMS_LENGTH, len(items), len(values))
         else:
@@ -1328,31 +1328,31 @@ class BareValidator(object):
         return valid_counter, _errors
 
     def _validate_anyof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'anyof'} """
+        """{'type': 'list', 'logical': 'anyof'}"""
         valids, _errors = self.__validate_logical('anyof', definitions, field, value)
         if valids < 1:
             self._error(field, errors.ANYOF, _errors, valids, len(definitions))
 
     def _validate_allof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'allof'} """
+        """{'type': 'list', 'logical': 'allof'}"""
         valids, _errors = self.__validate_logical('allof', definitions, field, value)
         if valids < len(definitions):
             self._error(field, errors.ALLOF, _errors, valids, len(definitions))
 
     def _validate_noneof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'noneof'} """
+        """{'type': 'list', 'logical': 'noneof'}"""
         valids, _errors = self.__validate_logical('noneof', definitions, field, value)
         if valids > 0:
             self._error(field, errors.NONEOF, _errors, valids, len(definitions))
 
     def _validate_oneof(self, definitions, field, value):
-        """ {'type': 'list', 'logical': 'oneof'} """
+        """{'type': 'list', 'logical': 'oneof'}"""
         valids, _errors = self.__validate_logical('oneof', definitions, field, value)
         if valids != 1:
             self._error(field, errors.ONEOF, _errors, valids, len(definitions))
 
     def _validate_max(self, max_value, field, value):
-        """ {'nullable': False } """
+        """{'nullable': False }"""
         try:
             if value > max_value:
                 self._error(field, errors.MAX_VALUE)
@@ -1360,7 +1360,7 @@ class BareValidator(object):
             pass
 
     def _validate_min(self, min_value, field, value):
-        """ {'nullable': False } """
+        """{'nullable': False }"""
         try:
             if value < min_value:
                 self._error(field, errors.MIN_VALUE)
@@ -1368,19 +1368,19 @@ class BareValidator(object):
             pass
 
     def _validate_maxlength(self, max_length, field, value):
-        """ {'type': 'integer'} """
+        """{'type': 'integer'}"""
         if isinstance(value, Iterable) and len(value) > max_length:
             self._error(field, errors.MAX_LENGTH, len(value))
 
     _validate_meta = dummy_for_rule_validation('')
 
     def _validate_minlength(self, min_length, field, value):
-        """ {'type': 'integer'} """
+        """{'type': 'integer'}"""
         if isinstance(value, Iterable) and len(value) < min_length:
             self._error(field, errors.MIN_LENGTH, len(value))
 
     def _validate_nullable(self, nullable, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if value is None:
             if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
@@ -1417,7 +1417,7 @@ class BareValidator(object):
                 self._error(field, errors.KEYSRULES, validator._errors)
 
     def _validate_readonly(self, readonly, field, value):
-        """ {'type': 'boolean'} """
+        """{'type': 'boolean'}"""
         if readonly:
             if not self._is_normalized:
                 self._error(field, errors.READONLY_FIELD)
@@ -1434,7 +1434,7 @@ class BareValidator(object):
                 self._drop_remaining_rules()
 
     def _validate_regex(self, pattern, field, value):
-        """ {'type': 'string'} """
+        """{'type': 'string'}"""
         if not isinstance(value, _str_type):
             return
         if not pattern.endswith('$'):
@@ -1590,7 +1590,7 @@ RULE_SCHEMA_SEPARATOR = "The rule's arguments are validated against this schema:
 
 
 class InspectedValidator(type):
-    """ Metaclass for all validators """
+    """Metaclass for all validators"""
 
     def __new__(cls, *args):
         if '__doc__' not in args[2]:
