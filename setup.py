@@ -40,7 +40,7 @@ setup(
     setup_requires=setup_requires,
     tests_require=["pytest"],
     test_suite="cerberus.tests",
-    install_requires=["setuptools"],
+    install_requires=["importlib-metadata; python_version < '3.8'"],
     keywords=["validation", "schema", "dictionaries", "documents", "normalization"],
     python_requires=">=2.7",
     classifiers=[

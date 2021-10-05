@@ -10,15 +10,15 @@ PYTHON_VERSION = float(sys.version_info[0]) + float(sys.version_info[1]) / 10
 
 
 if PYTHON_VERSION < 3:
-    _str_type = basestring  # noqa: F821
     _int_types = (int, long)  # noqa: F821
+    _str_type = basestring  # noqa: F821
 else:
-    _str_type = str
     _int_types = (int,)
+    _str_type = str
 
 
 if PYTHON_VERSION < 3.3:
-    from collections import (  # noqa: F401
+    from collections import (
         Callable,
         Container,
         Hashable,
@@ -30,7 +30,7 @@ if PYTHON_VERSION < 3.3:
         Sized,
     )
 else:
-    from collections.abc import (  # noqa: F401
+    from collections.abc import (
         Callable,
         Container,
         Hashable,
@@ -41,3 +41,24 @@ else:
         Set,
         Sized,
     )
+
+if PYTHON_VERSION < 3.8:
+    import importlib_metadata
+else:
+    import importlib.metadata as importlib_metadata
+
+
+__all__ = (
+    "_int_types",
+    "_str_type",
+    "importlib_metadata",
+    Callable.__name__,
+    Container.__name__,
+    Hashable.__name__,
+    Iterable.__name__,
+    Mapping.__name__,
+    MutableMapping.__name__,
+    Sequence.__name__,
+    Set.__name__,
+    Sized.__name__,
+)
