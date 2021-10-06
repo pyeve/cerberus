@@ -4,6 +4,7 @@ import sys
 
 
 if sys.version_info < (3, 7):
+    import importlib_metadata
     from typing import _ForwardRef as ForwardRef, GenericMeta as GenericAlias
     from typing import _Union, Union
 
@@ -24,6 +25,7 @@ if sys.version_info < (3, 7):
 
 
 elif sys.version_info < (3, 8):
+    import importlib_metadata
     from typing import ForwardRef, _GenericAlias as GenericAlias
 
     def get_type_args(tp):
@@ -41,6 +43,7 @@ elif sys.version_info < (3, 8):
 
 
 elif sys.version_info < (3, 9):
+    import importlib.metadata as importlib_metadata
     from typing import ForwardRef, _GenericAlias as GenericAlias  # type: ignore
     from typing import get_args as get_type_args
     from typing import get_origin as get_type_origin
@@ -50,6 +53,7 @@ elif sys.version_info < (3, 9):
 
 
 else:
+    import importlib.metadata as importlib_metadata
     from typing import ForwardRef, _BaseGenericAlias as GenericAlias
     from typing import get_args as get_type_args
     from typing import get_origin as get_type_origin
