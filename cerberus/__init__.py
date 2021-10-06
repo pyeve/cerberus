@@ -8,7 +8,6 @@
 
 """
 
-import sys
 from typing import Dict, Optional, Tuple, Union
 
 from cerberus.base import (
@@ -21,15 +20,15 @@ from cerberus.base import (
 from cerberus.schema import SchemaError
 from cerberus.validator import Validator
 
-if sys.version_info >= (3, 8, 0):
-    from importlib.metadata import version
-    __version__ = version("Cerberus")
-else:
-    from pkg_resources import get_distribution, DistributionNotFound
-    try:
-        __version__ = get_distribution("Cerberus").version
-    except DistributionNotFound:
-        __version__ = "unknown"
+
+try:
+    # Python 3.8+
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # <Python 3.7 and lower
+    import importlib_metadata
+
+__version__ = importlib_metadata.version("Cerberus")
 
 
 def validator_factory(
