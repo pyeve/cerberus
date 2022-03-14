@@ -49,3 +49,55 @@ def test_nullable_skips_allowed():
 def test_nullable_skips_type(validator):
     assert_fail({'an_integer': None}, validator=validator)
     assert validator.errors == {'an_integer': ['null value not allowed']}
+
+
+def test_nullable_skips_allof_schema():
+    assert_success(
+        schema={
+            'foo': {
+                'type': 'dict',
+                'nullable': True,
+                'allof_schema': [{'bar': {'type': 'string'}}],
+            }
+        },
+        document={'foo': None},
+    )
+
+
+def test_nullable_skips_anyof_schema():
+    assert_success(
+        schema={
+            'foo': {
+                'type': 'dict',
+                'nullable': True,
+                'anyof_schema': [{'bar': {'type': 'string'}}],
+            }
+        },
+        document={'foo': None},
+    )
+
+
+def test_nullable_skips_noneof_schema():
+    assert_success(
+        schema={
+            'foo': {
+                'type': 'dict',
+                'nullable': True,
+                'noneof_schema': [{'bar': {'type': 'string'}}],
+            }
+        },
+        document={'foo': None},
+    )
+
+
+def test_nullable_skips_oneof_schema():
+    assert_success(
+        schema={
+            'foo': {
+                'type': 'dict',
+                'nullable': True,
+                'oneof_schema': [{'bar': {'type': 'string'}}],
+            }
+        },
+        document={'foo': None},
+    )

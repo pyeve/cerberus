@@ -1766,7 +1766,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             if not (nullable or self.ignore_none_values):
                 self._error(field, errors.NULLABLE)
             self._drop_remaining_rules(
+                'allof',
                 'allowed',
+                'anyof',
                 'empty',
                 'forbidden',
                 'items',
@@ -1775,6 +1777,8 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
                 'max',
                 'minlength',
                 'maxlength',
+                'noneof',
+                'oneof',
                 'regex',
                 'schema',
                 'type',
