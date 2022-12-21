@@ -1,7 +1,7 @@
 # mind that a similar file exists for linting usage
 repos:
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 22.12.0
     hooks:
       - id: black
         args: [--quiet]
