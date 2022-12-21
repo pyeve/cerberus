@@ -516,6 +516,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
         schema: Schema = None,
         *,
         allow_unknown: AllowUnknown = False,
+        document_validations: Dict = None,
         error_handler: ErrorHandlerConfig = errors.BasicErrorHandler,
         ignore_none_values: bool = False,
         purge_unknown: bool = False,
@@ -572,6 +573,7 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             Type: :class:`~cerberus.errors.BaseErrorHandler` """
         self.schema = schema
         self.allow_unknown = allow_unknown
+        self.document_validations = document_validations
         self._remaining_rules = []  # type: List[str]
         """ Keeps track of the rules that are next in line to be evaluated during the
             validation of a field. Type: :class:`list` """
@@ -1410,6 +1412,9 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             else:
                 self.__validate_unknown_fields(field)
 
+        if self.document_validations:
+            self.__validate_document()
+
         if not self.update:
             self.__validate_required_fields(self.document)
 
@@ -1482,6 +1487,17 @@ class UnconcernedValidator(metaclass=ValidatorMeta):
             rule = self._remaining_rules.pop(0)
             rule_handler = self.__get_rule_handler('validate', rule)
             rule_handler(definitions.get(rule, None), field, value)
+
+    def __validate_document(self):
+        """Validate a field's value against its defined rules."""
+
+        definitions = self._resolve_rules_set(self.document_validations)
+        self._remaining_rules = [x for x in definitions]
+
+        while self._remaining_rules:
+            rule = self._remaining_rules.pop(0)
+            rule_handler = self.__get_rule_handler('validate_document', rule)
+            rule_handler(definitions.get(rule, None))
 
     # Remember to keep the validation methods below this line
     # sorted alphabetically

@@ -8,7 +8,7 @@ In Development
 
 New
 ~~~
-
+- Document level validation (`#444`_)
 - Classes can be used as constraint for the ``type`` rule (`#374`_)
 - The abstract base classes of the standard library's ``collections.abc``
   module are available as named types for the ``type`` rule (`#374`_)
@@ -31,6 +31,7 @@ Fixed
 - WARNING Unexpected keys present on Black: python_version (`#494`_)
 
 .. _`#494`: https://github.com/pyeve/cerberus/issues/494
+.. _`#444`: https://github.com/pyeve/cerberus/issues/444
 .. _`#374`: https://github.com/pyeve/cerberus/issues/374
 
 Version 1.3.4

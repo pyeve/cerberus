@@ -195,6 +195,51 @@ setters.
    {'creation_date': datetime.datetime(...)}
 
 
+Document Level Validation
+-------------------------
+If you need to consider the document as a whole, i.e. more than one field at a time,
+you can create document level validations.  Subclass :class:`cerberus.Validator`
+as usual.  Document level method names are prefixed with ``_validate_document_``.
+Instead of including the validation in a field in the schema, include it in the validator
+constructor so it can consider all relevant fields.
+
+For example, let's say a drink order for an alcoholic beverage is valid only if the customer's
+age is 21 or over.  To perform this validation requires looking at two fields:
+`beverage` and `customer_age`.
+
+.. testcode::
+
+    class MyValidator(Validator):
+        def _validate_document_allowed_drinking_age(self, allowed_drinking_age):
+            """ Ensure only those of allowed drinking age or older can order alcohol
+
+            The rule's arguments are validated against this schema:
+            {'type': 'integer'}
+            """
+            if not allowed_drinking_age:
+                return
+            is_valid = True
+            beverage = self.document.get('beverage')
+            age = self.document.get('customer_age', 0)
+            if beverage in ['beer', 'wine']:
+                is_valid = age >= allowed_drinking_age
+            if not is_valid:
+                self._error('_document', f'Invalid order: Cannot order {beverage} at age {age} (must be {allowed_drinking_age} or over)')
+
+.. doctest::
+
+    >>> schema = {'beverage': {'type': 'string', 'allowed': ['beer', 'wine', 'water', 'soda']},'customer_age': {'type': 'integer'}}
+    >>> v = MyValidator(schema, document_validations={'allowed_drinking_age': 21})
+    >>> v.validate({'beverage': 'beer', 'customer_age': 22})
+    True
+    >>> v.validate({'beverage': 'soda', 'customer_age': 10})
+    True
+    >>> v.validate({'beverage': 'beer', 'customer_age': 12})
+    False
+    >>>v.errors
+    {'_document': ['Invalid order: Cannot order beer at age 12 (must be 21 or over)']}
+
+
 Limitations
 -----------
 It may be a bad idea to overwrite particular contributed rules.

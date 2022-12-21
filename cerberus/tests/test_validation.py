@@ -410,3 +410,86 @@ def test_novalidate_noerrors(validator):
     validation had been performed yet.
     """
     assert validator.errors == {}
+
+
+def test_document_level_validation():
+    class MyValidator(Validator):
+        def _validate_document_allowed_drinking_age(self, allowed_drinking_age):
+            """ Ensure only those of allowed drinking age or older can order alcohol
+
+            The rule's arguments are validated against this schema:
+            {'type': 'integer'}
+            """
+            if not allowed_drinking_age:
+                return
+            is_valid = True
+            beverage = self.document.get('beverage')
+            age = self.document.get('customer_age', 0)
+            if beverage in ['beer', 'wine']:
+                is_valid = age >= 21
+            if not is_valid:
+                self._error(None, f'Invalid order: Cannot order {beverage} at age {age} '
+                                  f'(must be {allowed_drinking_age} or over)')
+
+    schema = {
+        'beverage': {'type': 'string', 'allowed': ['beer', 'wine', 'water', 'soda']},
+        'customer_age': {'type': 'integer'}
+    }
+
+    drink_order = {
+        'beverage': 'beer',
+        'customer_age': 12  # INVALID - must be <= 21 to order alcohol
+    }
+    validator = MyValidator(schema, document_validations={'allowed_drinking_age': 21})
+    assert_fail(drink_order, validator=validator)
+
+
+def test_multiple_document_level_validations():
+    class MyValidator(Validator):
+        def _validate_document_allowed_drinking_age(self, allowed_drinking_age):
+            """ Ensure only those of allowed drinking age or older can order alcohol
+
+            The rule's arguments are validated against this schema:
+            {'type': 'integer'}
+            """
+            if not allowed_drinking_age:
+                return
+            is_valid = True
+            beverage = self.document.get('beverage')
+            age = self.document.get('customer_age', 0)
+            if beverage in ['beer', 'wine']:
+                is_valid = age >= 21
+            if not is_valid:
+                self._error(None, f'Invalid order: Cannot order {beverage} at age {age} '
+                                  f'(must be {allowed_drinking_age} or over)')
+
+        def _validate_document_check_times(self, check_times):
+            """ {'type': 'boolean'} """
+            served_time = self.document.get('served_time')
+            if served_time is None:
+                return
+
+            placed_time = self.document.get('placed_time')
+            if placed_time is None:
+                return
+
+            if not (check_times and served_time < placed_time):
+                self._error(None, 'Invalid order: Order cannot be served before it is placed.')
+
+    schema = {
+        'beverage': {'type': 'string', 'allowed': ['beer', 'wine', 'water', 'soda']},
+        'customer_age': {'type': 'integer'},
+        'placed_time': {'type': 'datetime'},
+        'served_time': {'type': 'datetime'}
+    }
+
+    drink_order = {
+        'beverage': 'beer',
+        'customer_age': 12,  # INVALID - must be <= 21 to order alcohol
+        'placed_time': datetime(2022, 5, 16, 9, 30, 0),  # order placed at 9:30
+        'served_time': datetime(2022, 5, 16, 9, 20, 0)  # order served at 9:20 - INVALID!
+    }
+
+    doc_vals = {'allowed_drinking_age': 21, 'check_times': True}
+    validator = MyValidator(schema, document_validations=doc_vals)
+    assert_fail(drink_order, validator=validator)
