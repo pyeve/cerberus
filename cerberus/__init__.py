@@ -8,7 +8,7 @@
 
 """
 
-from pkg_resources import get_distribution, DistributionNotFound
+from importlib.metadata import version
 from typing import Dict, Optional, Tuple, Union
 
 from cerberus.base import (
@@ -22,10 +22,7 @@ from cerberus.schema import SchemaError
 from cerberus.validator import Validator
 
 
-try:
-    __version__ = get_distribution("Cerberus").version
-except DistributionNotFound:
-    __version__ = "unknown"
+__version__ = version("Cerberus")
 
 
 def validator_factory(
