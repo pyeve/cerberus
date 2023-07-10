@@ -93,12 +93,10 @@ ONEOF = ErrorDefinition(0x92, 'oneof')
 ANYOF = ErrorDefinition(0x93, 'anyof')
 ALLOF = ErrorDefinition(0x94, 'allof')
 
-
 """ SchemaError messages """
 
 MISSING_SCHEMA = "validation schema missing"
 SCHEMA_TYPE = "schema definition for field '{0}' must be a dict"
-
 
 """ Error representations """
 
@@ -107,14 +105,14 @@ class ValidationError:
     """A simple class to store and query basic error information."""
 
     def __init__(
-        self,
-        document_path: DocumentPath,
-        schema_path: DocumentPath,
-        code: int,
-        rule: str,
-        constraint: Any,
-        value: Any,
-        info: Any,
+            self,
+            document_path: DocumentPath,
+            schema_path: DocumentPath,
+            code: int,
+            rule: str,
+            constraint: Any,
+            value: Any,
+            info: Any,
     ) -> None:
         self.document_path = document_path
         """ The path to the field within the document that caused the error.
@@ -177,8 +175,8 @@ class ValidationError:
 
     @property
     def definitions_errors(self) -> Optional[DefaultDict[int, "ErrorList"]]:
-        r"""
-        Dictionary with errors of an \*of-rule mapped to the index of the definition it
+        """
+        Dictionary with errors of an of-rule mapped to the index of the definition it
         occurred in. Returns :obj:`None` if not applicable.
         """
         if not self.is_logic_error:
@@ -205,8 +203,8 @@ class ValidationError:
 
     @property
     def is_logic_error(self) -> bool:
-        r"""
-        ``True`` for validation errors against different schemas with \*of-rules.
+        """
+        ``True`` for validation errors against different schemas with of-rules.
         """
         return bool(self.code & LOGICAL.code - ERROR_GROUP.code)
 
@@ -253,7 +251,7 @@ class ErrorTreeNode(MutableMapping):
         return iter(self.errors)
 
     def __getitem__(
-        self, item: Union[ErrorDefinition, FieldName]
+            self, item: Union[ErrorDefinition, FieldName]
     ) -> Union[Optional[ValidationError], Optional['ErrorTreeNode']]:
         if isinstance(item, ErrorDefinition):
             for error in self.errors:
