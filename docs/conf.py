@@ -67,7 +67,7 @@ copyright = u'2012-2016, Nicola Iarocci'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = __import__('cerberus').__version__
+release = importlib_metadata.version("Cerberus")
 # The short X.Y version.
 version = release.split('-dev')[0]
 

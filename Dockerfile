@@ -1,9 +1,11 @@
-FROM funkyfuture/nest-of-serpents
+FROM fedora:35
 
 ENTRYPOINT tox
 WORKDIR /src
 
-RUN pip3.7 install black flake8 pre-commit pytest tox PyYAML Sphinx \
+RUN dnf -y install python3-devel python3-pip
+
+RUN pip3 install black flake8 pre-commit pytest tox PyYAML Sphinx \
  && mkdir /home/tox \
  && mv /root/.cache /home/tox/
 
