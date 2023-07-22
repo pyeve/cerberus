@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ inputs.ref || github.ref }}
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip setuptools tox
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ inputs.ref || github.ref }}
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
       - run: python -m pip install --upgrade pip setuptools tox
       - run: tox -e ${{ matrix.environment }}
 
