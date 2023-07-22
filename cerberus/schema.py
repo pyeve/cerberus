@@ -218,7 +218,6 @@ class DefinitionSchema(MutableMapping):
     @staticmethod
     def _rename_deprecated_rulenames(schema):
         for field, rules in schema.items():
-
             if isinstance(rules, str):  # registry reference
                 continue
 
@@ -227,7 +226,6 @@ class DefinitionSchema(MutableMapping):
                 ('validator', 'check_with'),
                 ('valueschema', 'valuesrules'),
             ):
-
                 if old not in rules:
                     continue
 
