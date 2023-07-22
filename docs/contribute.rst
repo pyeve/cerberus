@@ -63,22 +63,6 @@ You also choose to run the whole test suite using pytest_:
 
     $ pytest cerberus/tests
 
-Using Docker
-~~~~~~~~~~~~
-
-If you have a running Docker_-daemon running you can run tests from a container
-that has the necessary interpreters and packages installed and pass arguments
-to ``tox``:
-
-.. code-block:: console
-
-    $ ./run-docker-tests -e pypy3 -e doctest
-
-You can run the script without any arguments to test the project exactly as
-`Continuous Integration`_ does without having to setup anything.
-The ``tox`` environments are preserved in a volume named ``cerberus-tox``, just
-remove it with ``docker volume rm`` to clean them.
-
 Running the benchmarks
 ~~~~~~~~~~~~~~~~~~~~~~
 
