@@ -22,8 +22,8 @@ Making Changes
 --------------
 * Fork_ the repository on GitHub.
 * Create a topic branch from where you want to base your work.
-* This is usually the ``master`` branch.
-* Please avoid working directly on ``master`` branch.
+* This is usually the ``1.3.x`` branch.
+* Please avoid working directly on this branch, use a new branch created from it.
 * Make commits of logical units (if needed rebase your feature branch before
   submitting it).
 * Make sure your commit messages are in the `proper format`_.
@@ -60,7 +60,7 @@ any error), why not help with that? In any case, other than GitHub help_ pages,
 you might want to check this excellent `Effective Guide to Pull Requests`_
 
 .. _`the repository`: https://github.com/pyeve/cerberus
-.. _AUTHORS: https://github.com/pyeve/cerberus/blob/master/AUTHORS
+.. _AUTHORS: https://github.com/pyeve/cerberus/blob/1.3.x/AUTHORS
 .. _`open issues`: https://github.com/pyeve/cerberus/issues
 .. _`new issue`: https://github.com/pyeve/cerberus/issues/new
 .. _Fork: https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/fork-a-repo

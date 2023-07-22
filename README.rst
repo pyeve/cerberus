@@ -99,10 +99,10 @@ Cerberus is an open source project by `Nicola Iarocci`_. See the license_ file
 for more information.
 
 
-.. _Contribution Guidelines: https://github.com/pyeve/cerberus/blob/master/CONTRIBUTING.rst
+.. _Contribution Guidelines: https://github.com/pyeve/cerberus/blob/1.3.x/CONTRIBUTING.rst
 .. _end of life: https://devguide.python.org/#status-of-python-branches
 .. _funding page: http://docs.python-cerberus.org/en/latest/funding.html
-.. _license: https://github.com/pyeve/cerberus/blob/master/LICENSE
+.. _license: https://github.com/pyeve/cerberus/blob/1.3.x/LICENSE
 .. _Nicola Iarocci: https://nicolaiarocci.com/
 .. _PyPI: https://pypi.python.org/
 .. _semantic versioning: https://semver.org/
@@ -110,7 +110,7 @@ for more information.
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :alt: Black code style
    :target: https://black.readthedocs.io/
-.. |build-status| image:: https://travis-ci.org/pyeve/cerberus.svg?branch=master
+.. |build-status| image:: https://travis-ci.org/pyeve/cerberus.svg?branch=1.3.x
    :alt: Build status
    :target: https://travis-ci.org/pyeve/cerberus
 .. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
@@ -118,7 +118,7 @@ for more information.
    :target: https://pypi.org/project/cerberus
 .. |license| image:: https://img.shields.io/pypi/l/cerberus.svg
    :alt: Software license
-   :target: https://github.com/pyeve/cerberus/blob/master/LICENSE
+   :target: https://github.com/pyeve/cerberus/blob/1.3.x/LICENSE
 .. |python-support| image:: https://img.shields.io/pypi/pyversions/cerberus.svg
    :target: https://pypi.python.org/pypi/cerberus
    :alt: Python versions
