@@ -1,11 +1,11 @@
 # mind that a similar file exists for pre-commit usage
 repos:
-  - repo: https://github.com/ambv/black
+  - repo: https://github.com/psf/black
     rev: stable
     hooks:
       - id: black
         args: [--check]
-        python_version: python3.6
+        language_version: python3.11
         types:
           - python
         exclude: ^docs/conf.py$
