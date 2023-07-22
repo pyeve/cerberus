@@ -3,7 +3,7 @@ Validation Rules
 
 allow_unknown
 -------------
-This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
+This can be used in conjunction with the  `schema (dict)`_ rule
 when validating a mapping in order to set the
 :attr:`~cerberus.Validator.allow_unknown` property of the validator for the
 subdocument.
@@ -699,10 +699,9 @@ library's :mod:`re`-module.
 
 require_all
 -----------
-This can be used in conjunction with the  `schema <schema_dict-rule>`_ rule
-when validating a mapping in order to set the
-:attr:`~cerberus.Validator.require_all` property of the validator for the
-subdocument.
+This can be used in conjunction with the `schema (dict)`_ rule when validating
+a mapping in order to set the :attr:`~cerberus.Validator.require_all` property
+of the validator for the subdocument.
 For a full elaboration refer to :ref:`this paragraph <requiring-all>`.
 
 .. _required:
