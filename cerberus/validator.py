@@ -1,13 +1,3 @@
-"""
-    Extensible validation for Python dictionaries.
-    This module implements Cerberus Validator class
-
-    :copyright: 2012-2016 by Nicola Iarocci.
-    :license: ISC, see LICENSE for more details.
-
-    Full documentation is available at http://python-cerberus.org
-"""
-
 from __future__ import absolute_import
 
 from ast import literal_eval
