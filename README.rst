@@ -23,9 +23,6 @@ yours.
 Versioning & Interpreter support
 --------------------------------
 
-The Cerberus `1.x` versions can be used with Python 2 while version `2.0` and
-later rely on Python 3 features.
-
 Starting with Cerberus 1.2, it is maintained according to
 `semantic versioning`_. So, a major release sheds off the old and defines a
 space for the new, minor releases ship further new features and improvements

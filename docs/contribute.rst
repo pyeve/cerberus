@@ -24,32 +24,17 @@ that the interpreters themselves need to be available on the system.
    $ tox
 
 This might take some time the first run as the different virtual environments
-are created and dependencies are installed. If everything is ok, you will see
-the following:
-
-.. code-block:: console
-
-    _________ summary _________
-    py27: commands succeeded
-    py34: commands succeeded
-    py35: commands succeeded
-    py36: commands succeeded
-    pypy: commands succeeded
-    pypy3: commands succeeded
-    doclinks: commands succeeded
-    doctest: commands succeeded
-    linting: commands succeeded
-    congratulations :)
+are created and dependencies are installed.
 
 If something goes **wrong** and one test fails, you might need to run that test
 in the specific python version. You can use the created environments to run
-some specific tests. For example, if a test suite fails in Python 3.5:
+some specific tests. For example, if a test suite fails in Python 3.11:
 
 .. code-block:: console
 
-    $ tox -e py35
+    $ tox -e py311
 
-Have a look at ``tox.ini`` for the available test environments and their workings.
+Have a look at ``tox.ini`` for the available test environments and their setup.
 
 Using Pytest
 ~~~~~~~~~~~~
