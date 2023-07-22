@@ -2,9 +2,6 @@
 
 Running the Tests
 -----------------
-Cerberus runs under Python 2.7, 3.4, 3.5, 3.6, PyPy and PyPy3. Therefore
-tests will be run in those four platforms in our `continuous integration
-server`_.
 
 The easiest way to get started is to run the tests in your local environment
 with:
@@ -91,28 +88,10 @@ The HTML build is triggered with:
 
 The result can be accessed by opening ``docs/_build/html/index.html``.
 
-Continuous Integration
-~~~~~~~~~~~~~~~~~~~~~~
-
-Each time code is pushed to the ``master``  branch the whole test-suite is
-executed on Travis-CI_.
-This is also the case for pull-requests. A box at the bottom of its
-conversation-view will inform about the tests' status.
-The contributor can then fix the code, add commits, squash_ the commits and
-push again.
-The CI will also run flake8_ so make sure that your code complies to PEP8 and
-test links and sample-code in the documentation.
-
 Source Code
 -----------
 
-Source code is available at `GitHub
-<https://github.com/pyeve/cerberus>`_.
+Source code is available at `GitHub <https://github.com/pyeve/cerberus>`_.
 
-.. _`continuous integration server`: https://travis-ci.org/pyeve/cerberus/
-.. _Docker: https://www.docker.com
-.. _flake8: https://flake8.readthedocs.org
 .. _pytest: https://pytest.org
-.. _squash: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
 .. _tox: https://tox.readthedocs.io
-.. _Travis-CI: https://travis-ci.org
