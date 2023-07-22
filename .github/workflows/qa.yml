@@ -26,7 +26,7 @@ jobs:
           - pypy3.8
           - pypy3.9
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref || github.ref }}
       - uses: actions/setup-python@v4
@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref || github.ref }}
       - name: Initialize CodeQL
@@ -60,7 +60,7 @@ jobs:
           - environment: doctest
           - environment: linting
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref || github.ref }}
       - uses: actions/setup-python@v4
