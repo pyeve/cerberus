@@ -80,6 +80,20 @@ def test_nullable_skips_allowed():
     assert_success({'role': None}, schema)
 
 
+@mark.parametrize("rule", ("all", "any", "none", "one"))
+def test_nullable_skips_of_roles(rule):
+    assert_success(
+        schema={
+            "foo": {
+                "type": "dict",
+                "nullable": True,
+                rule + "of_schema": [{"bar": {"type": "string"}}],
+            }
+        },
+        document={"foo": None},
+    )
+
+
 def test_readonly_field():
     field = 'a_readonly_string'
     assert_fail(

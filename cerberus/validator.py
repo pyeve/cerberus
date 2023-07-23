@@ -1374,7 +1374,9 @@ class BareValidator(object):
             if not nullable:
                 self._error(field, errors.NOT_NULLABLE)
             self._drop_remaining_rules(
+                "allof",
                 'allowed',
+                "anyof",
                 'empty',
                 'forbidden',
                 'items',
@@ -1383,6 +1385,8 @@ class BareValidator(object):
                 'max',
                 'minlength',
                 'maxlength',
+                "noneof",
+                "oneof",
                 'regex',
                 'schema',
                 'type',
