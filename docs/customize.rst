@@ -171,7 +171,7 @@ a method as ``rename_handler``. The method name must be prefixed with
 
    >>> schema = {'foo': {'coerce': 'multiply'}}
    >>> document = {'foo': 2}
-   >>> MyNormalizer(2).normalized(document, schema)
+   >>> MyNormalizer(multiplier=2).normalized(document, schema)
    {'foo': 4}
 
 
