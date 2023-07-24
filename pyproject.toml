@@ -1,4 +1,58 @@
-[tool.black]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "Cerberus"
+version = "1.3.5dev0"
+description = """\
+Lightweight, extensible schema and data validation tool for Python\
+dictionaries.\
+"""
+authors = [
+    {name = "Nicola Iarocci", email = "nicola@nicolaiarocci.com"},
+]
+maintainers = [
+    {name = "Frank Sachsenheim", email = "funkyfuture@riseup.net"},
+]
+license = {file = "LICENSE"}
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+keywords = [
+    "validation",
+    "schema",
+    "dictionaries",
+    "documents",
+    "normalization"
+]
+dependencies = ["importlib-metadata; python_version < '3.8'"]
+
+[project.urls]
+Documentation = "http://docs.python-cerberus.org"
+Repository = "https://github.com/pyeve/cerberus"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["cerberus"]
+exclude = ["*.benchmarks", "*.tests"]
+
+[tool.black]
 safe = true
 skip-string-normalization = true

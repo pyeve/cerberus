@@ -34,8 +34,18 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install --upgrade pip setuptools tox
+      - run: python -m pip install tox
       - run: tox -e py
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - run: pip install --upgrade build pip
+      - run: python -m build
+      - run: pip install dist/*.whl
 
   CodeQL:
     runs-on: ubuntu-latest
@@ -68,7 +78,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: python -m pip install --upgrade pip setuptools tox
+      - run: python -m pip install tox
       - run: tox -e ${{ matrix.environment }}
 
 ...

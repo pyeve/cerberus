@@ -34,7 +34,7 @@ Get the git checkout in a new virtualenv and run in development mode.
     New python executable in venv/bin/python
     Installing distribute............done.
     $ . venv/bin/activate
-    $ python setup.py install
+    $ pip install -e .
     ...
     Finished processing dependencies for Cerberus
 

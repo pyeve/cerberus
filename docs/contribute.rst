@@ -4,11 +4,11 @@ Running the Tests
 -----------------
 
 The easiest way to get started is to run the tests in your local environment
-with:
+with pytest_:
 
 .. code-block:: console
 
-   $ python setup.py test
+   $ pytest cerberus/tests
 
 Testing with other Python versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,15 +35,6 @@ some specific tests. For example, if a test suite fails in Python 3.11:
     $ tox -e py311
 
 Have a look at ``tox.ini`` for the available test environments and their setup.
-
-Using Pytest
-~~~~~~~~~~~~
-
-You also choose to run the whole test suite using pytest_:
-
-.. code-block:: console
-
-    $ pytest cerberus/tests
 
 Running the benchmarks
 ~~~~~~~~~~~~~~~~~~~~~~
