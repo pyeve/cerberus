@@ -15,8 +15,6 @@ import sys
 import importlib
 from pathlib import Path
 
-import alabaster
-
 if sys.version_info < (3, 6):
     raise RuntimeError(
         'Requires Python 3.6 or later, running on %s atm.' % '.'.join(sys.version_info)
@@ -43,7 +41,6 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,7 +97,8 @@ exclude_patterns = ['_build', 'includes']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
+pygments_dark_style = "monokai"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -110,40 +108,27 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'logo': 'cerberus.png',
-    'logo_name': True,
-    'logo_text_align': 'center',
-    'github_user': 'pyeve',
-    'github_repo': 'cerberus',
-    'github_type': 'star',
-    'show_powered_by': False,
-    'description': 'Cerberus is a lightweight and extensible data validation library for Python',
-    # 'travis_button': True,
-    # 'show_related': True,
-    # 'travis_button': True,
+    "navigation_with_keys": True,
 }
-
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [alabaster.get_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = (
-    'Cerberus is a lightweight and extensible data validation library for Python'
-)
+html_title = "Cerberus — Data validation for Python"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = None
+html_logo = "_static/cerberus.png"
+
+html_css_files = ["style.css"]
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -164,16 +149,7 @@ html_static_path = ['_static']
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {
-    '**': [
-        'about.html',
-        'sidebarintro.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-        'donate.html',
-    ]
-}
+# html_sidebars = {}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

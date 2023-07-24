@@ -1,0 +1,2 @@
+@media (prefers-color-scheme: dark) {body:not([data-theme="light"]) .sidebar-logo {filter: invert(1);}}
+.sidebar-logo {max-height: 8em;}

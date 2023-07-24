@@ -1,2 +1,1 @@
-# requirements to build documentation
-Sphinx
+furo

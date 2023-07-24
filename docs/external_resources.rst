@@ -5,6 +5,13 @@ Here are some recommended resources that deal with Cerberus.
 If you find something interesting on the web, please amend it to this document
 and open a pull request (see :doc:`contribute`).
 
+Community forums
+----------------
+
+There's a `cerberus tag <https://stackoverflow.com/questions/tagged/cerberus>`_
+on the Question & Answers platform *Stackoverflow*. The
+`Google Group <https://groups.google.com/forum/?hl=en#!forum/python-eve>`_
+regarding the mother project *Eve* may also a spot to seek these.
 
 7 Best Python Libraries For Validating Data (February 2018)
 -----------------------------------------------------------

@@ -45,6 +45,7 @@ To join the backer ranks, check out `Cerberus campaign on Patreon`_.
 Table of Contents
 -----------------
 .. toctree::
+    :maxdepth: 2
 
     Installation <install>
     Usage <usage>
