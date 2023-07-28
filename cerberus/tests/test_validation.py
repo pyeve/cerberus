@@ -9,7 +9,7 @@ from string import ascii_lowercase
 
 from pytest import mark
 
-from cerberus import errors, Validator
+from cerberus import errors, rules_set_registry, Validator
 from cerberus.tests import (
     assert_bad_type,
     assert_document_error,
@@ -1986,4 +1986,21 @@ def test_allowed_when_passing_list_of_dicts():
             ['a', 'b', 'c'],
             (({'some': 'dict'},),),
         ),
+    )
+
+
+def test_schema_validation_from_rules_set():
+    # https://github.com/pyeve/cerberus/issues/599
+    rules_set_registry.add(
+        'addr',
+        {
+            'type': 'dict',
+            'schema': {
+                'address': {'type': 'string'},
+                'city': {'type': 'string', 'required': True},
+            },
+        },
+    )
+    Validator(schema={'a_dict': 'addr'}).validate(
+        {'a_dict': {'address': 'my address', 'city': 'my town'}}
     )

@@ -1492,14 +1492,13 @@ class BareValidator(object):
 
     def __validate_schema_mapping(self, field, schema, value):
         schema = self._resolve_schema(schema)
-        allow_unknown = self.schema[field].get('allow_unknown', self.allow_unknown)
-        require_all = self.schema[field].get('require_all', self.require_all)
+        field_rules = self._resolve_rules_set(self.schema[field])
         validator = self._get_child_validator(
             document_crumb=field,
             schema_crumb=(field, 'schema'),
             schema=schema,
-            allow_unknown=allow_unknown,
-            require_all=require_all,
+            allow_unknown=field_rules.get('allow_unknown', self.allow_unknown),
+            require_all=field_rules.get('require_all', self.require_all),
         )
         try:
             if not validator(value, update=self.update, normalize=False):
