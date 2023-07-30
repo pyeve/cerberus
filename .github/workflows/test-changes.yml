@@ -1,10 +1,12 @@
 ---
 
-name: Quality Assurance
+name: Test changes
 
 on:
   pull_request:
   push:
+    branches:
+      - 1.3.x
   workflow_dispatch:
     inputs:
       ref:
@@ -47,28 +49,11 @@ jobs:
       - run: python -m build
       - run: pip install dist/*.whl
 
-  CodeQL:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.ref || github.ref }}
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: 'python'
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
   other:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - environment: doclinks
           - environment: doctest
           - environment: linting
     steps:
