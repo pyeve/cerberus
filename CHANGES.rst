@@ -3,6 +3,32 @@ Cerberus Changelog
 
 Cerberus is a collaboratively funded project, see the `funding page`_.
 
+Version 1.3.5
+-------------
+
+Unreleased.
+
+New
+~~~
+
+- Support for Python 3.10 & 3.11
+- The HTML documentation uses the *furo* theme
+
+Fixed
+~~~~~
+
+- ``*of`` rules are skipped for ``None`` values (`#582`_)
+- Validations of mappings would raise an exception when the field's rules were
+  provided as reference to a registry item (`#599`_)
+
+.. _`#582`: https://github.com/pyeve/cerberus/issues/582
+.. _`#599`: https://github.com/pyeve/cerberus/issues/599
+
+Improved
+~~~~~~~~
+
+- Various minor improvements of the documentation
+
 Version 1.3.4
 -------------
 
