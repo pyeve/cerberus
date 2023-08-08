@@ -1,12 +1,13 @@
 ---
 
-name: Test changes
+name: Run tests
 
 on:
   pull_request:
   push:
     branches:
       - 1.3.x
+  workflow_call:
   workflow_dispatch:
     inputs:
       ref:
