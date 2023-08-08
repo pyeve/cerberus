@@ -46,7 +46,7 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.ref }}
       - run: pip install --upgrade build pip
-      - run: python -m build
+      - run: python -m build --wheel
       - run: pip install dist/*.whl
 
   other:
