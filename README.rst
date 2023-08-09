@@ -1,6 +1,6 @@
 Cerberus |latest-version|
 =========================
-|build-status| |python-support| |black|
+|python-support| |black|
 
 Cerberus is a lightweight and extensible data validation library for Python.
 
@@ -110,9 +110,6 @@ for more information.
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :alt: Black code style
    :target: https://black.readthedocs.io/
-.. |build-status| image:: https://travis-ci.org/pyeve/cerberus.svg?branch=1.3.x
-   :alt: Build status
-   :target: https://travis-ci.org/pyeve/cerberus
 .. |latest-version| image:: https://img.shields.io/pypi/v/cerberus.svg
    :alt: Latest version on PyPI
    :target: https://pypi.org/project/cerberus
