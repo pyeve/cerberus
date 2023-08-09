@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Cerberus"
-version = "1.3.5dev0"
+version = "1.3.5"
 description = """\
 Lightweight, extensible schema and data validation tool for Python\
 dictionaries.\
