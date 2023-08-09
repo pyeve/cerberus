@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from decimal import Decimal
 
 from pytest import mark
@@ -8,12 +9,12 @@ from cerberus import TypeDefinition, Validator
 from cerberus.tests import assert_fail, assert_success
 from cerberus.utils import validator_factory
 from cerberus.validator import BareValidator
-from cerberus.platform import PYTHON_VERSION, importlib_metadata
+from cerberus.platform import importlib_metadata
 
 
-if PYTHON_VERSION > 3 and PYTHON_VERSION < 3.4:
+if (3,) < sys.version_info < (3, 4):
     from imp import reload
-elif PYTHON_VERSION >= 3.4:
+elif sys.version_info >= (3, 4):
     from importlib import reload
 else:
     pass  # Python 2.x

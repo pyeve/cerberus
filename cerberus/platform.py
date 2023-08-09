@@ -6,10 +6,7 @@ if sys.flags.optimize == 2:
     raise RuntimeError("Cerberus can't be run with Python's optimization level 2.")
 
 
-PYTHON_VERSION = float(sys.version_info[0]) + float(sys.version_info[1]) / 10
-
-
-if PYTHON_VERSION < 3:
+if sys.version_info < (3,):
     _int_types = (int, long)  # noqa: F821
     _str_type = basestring  # noqa: F821
 else:
@@ -17,7 +14,7 @@ else:
     _str_type = str
 
 
-if PYTHON_VERSION < 3.3:
+if sys.version_info < (3, 3):
     from collections import (
         Callable,
         Container,
@@ -42,7 +39,7 @@ else:
         Sized,
     )
 
-if PYTHON_VERSION < 3.8:
+if sys.version_info < (3, 8):
     import importlib_metadata
 else:
     import importlib.metadata as importlib_metadata

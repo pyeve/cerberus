@@ -3,12 +3,13 @@
 
 from __future__ import absolute_import
 
+import sys
 from collections import defaultdict, namedtuple
 from copy import copy, deepcopy
 from functools import wraps
 from pprint import pformat
 
-from cerberus.platform import PYTHON_VERSION, MutableMapping
+from cerberus.platform import MutableMapping
 from cerberus.utils import compare_paths_lt, quote_string
 
 
@@ -456,7 +457,7 @@ def encode_unicode(f):
         error.info = _encode(error.info)
         return f(obj, error)
 
-    return wrapped if PYTHON_VERSION < 3 else f
+    return wrapped if sys.version_info < (3,) else f
 
 
 class BasicErrorHandler(BaseErrorHandler):

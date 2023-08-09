@@ -6,7 +6,7 @@ Cerberus is a collaboratively funded project, see the `funding page`_.
 Version 1.3.5
 -------------
 
-Unreleased.
+Released on August 9, 2023.
 
 New
 ~~~
