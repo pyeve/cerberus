@@ -649,5 +649,5 @@ Released on October 16 2012.
 
 First public preview release.
 
-.. _`upgrade notes`: upgrading
-.. _`funding page`: https://docs.python-cerberus.org/en/stable/funding.html
+.. _`upgrade notes`: https://docs.python-cerberus.org/upgrading.html
+.. _`funding page`: https://docs.python-cerberus.org/funding.html
