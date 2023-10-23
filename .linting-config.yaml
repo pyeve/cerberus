@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: black
         args: [--check]
-        language_version: python3.11
+        language_version: python3.12
         types:
           - python
         exclude: ^docs/conf.py$
