@@ -276,6 +276,8 @@ linkcheck_ignore = [
     r"https://groups.google.com/forum/#!forum/.*",
     r"https://docs.python.org/(2|3)/glossary.html#.*",
     r"https://docs.python.org/(2|3)/library/.*",
+    # they seem to block traffic from Github Actions runners, fair choice:
+    r"https://stackoverflow.com/.*",
 ]
 linkcheck_anchors = True
 
