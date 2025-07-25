@@ -1,4 +1,4 @@
-""" Platform-dependent objects """
+"""Platform-dependent objects"""
 
 import sys
 

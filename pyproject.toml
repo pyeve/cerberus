@@ -51,7 +51,6 @@ Repository = "https://github.com/pyeve/cerberus"
 
 
 [tool.black]
-safe = true
 skip-string-normalization = true
 
 

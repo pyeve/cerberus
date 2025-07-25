@@ -1,5 +1,5 @@
 # -*-: coding utf-8 -*-
-""" This module contains the error-related constants and classes. """
+"""This module contains the error-related constants and classes."""
 
 from __future__ import absolute_import
 
