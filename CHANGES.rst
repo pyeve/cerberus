@@ -1,6 +1,17 @@
 Cerberus Changelog
 ==================
 
+Version 1.3.8
+-------------
+
+Released on November 6, 2025.
+
+New
+~~~
+
+- Support for Python 3.14
+
+
 Version 1.3.7
 -------------
 
