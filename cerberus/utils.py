@@ -21,7 +21,7 @@ def compare_paths_lt(x, y):
     min_length = min(len(x), len(y))
 
     if x[:min_length] == y[:min_length]:
-        return len(x) == min_length
+        return len(x) < len(y)
 
     for i in range(min_length):
         a, b = x[i], y[i]
