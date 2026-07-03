@@ -438,6 +438,56 @@ def test_issue_250_no_type_fail_pass_on_other():
     assert_normalized(document, document, schema)
 
 
+def test_mapping_for_list_schema_reports_type_error():
+    # https://github.com/pyeve/cerberus/issues/545
+    # A mapping supplied where a list with an item schema is expected used to
+    # raise a bare TypeError during the rename normalization step (the item
+    # schema was resolved against the mapping's keys, yielding None rules sets).
+    # It must instead report the field as being of the wrong type.
+    schema = {
+        'list': {
+            'type': 'list',
+            'schema': {'type': 'dict', 'schema': {'width': {'type': 'integer'}}},
+        }
+    }
+    document = {'list': {'type': 'error'}}
+    assert_fail(
+        document,
+        schema,
+        error=('list', ('list', 'type'), errors.BAD_TYPE, schema['list']['type']),
+    )
+
+
+def test_mapping_for_nested_list_schema_reports_type_error():
+    # https://github.com/pyeve/cerberus/issues/545
+    # The reporter's original, deeply nested reproduction.
+    schema = {
+        'metadata': {
+            'type': 'dict',
+            'nullable': True,
+            'schema': {
+                'image_thumb': {
+                    'type': 'list',
+                    'required': False,
+                    'default': [],
+                    'minlength': 0,
+                    'maxlength': 10,
+                    'schema': {
+                        'type': 'dict',
+                        'default': None,
+                        'nullable': True,
+                        'schema': {'width': {'type': 'integer', 'required': True}},
+                    },
+                }
+            },
+        }
+    }
+    document = {'metadata': {'image_thumb': {'type': 'error'}}}
+    validator = Validator(schema)
+    assert validator.validate(document) is False
+    assert validator.errors == {'metadata': [{'image_thumb': ['must be of list type']}]}
+
+
 def test_allow_unknown_with_of_rules():
     # https://github.com/pyeve/cerberus/issues/251
     schema = {
