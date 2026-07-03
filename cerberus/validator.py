@@ -900,6 +900,8 @@ class BareValidator(object):
     def __normalize_rename_fields(self, mapping, schema):
         for field in tuple(mapping):
             if field in schema:
+                if schema[field] is None:
+                    raise _SchemaRuleTypeError
                 self._normalize_rename(mapping, schema, field)
                 self._normalize_rename_handler(mapping, schema, field)
             elif (
