@@ -27,7 +27,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
-      - run: python -m pip install tox
+      - run: python -m pip install check-python-versions tox
+      # unlike the pre-commit hook, this runs the tool's latest release
+      - run: check-python-versions
       - run: tox -e doclinks
 
 ...
