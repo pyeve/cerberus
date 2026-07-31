@@ -9,7 +9,6 @@ from cerberus import TypeDefinition, Validator
 from cerberus.tests import assert_fail, assert_success
 from cerberus.utils import validator_factory
 from cerberus.validator import BareValidator
-from cerberus.platform import importlib_metadata
 
 
 if (3,) < sys.version_info < (3, 4):
@@ -18,30 +17,6 @@ elif sys.version_info >= (3, 4):
     from importlib import reload
 else:
     pass  # Python 2.x
-
-
-def test_pkgresources_version(monkeypatch):
-    def return_fake_version(name):
-        assert name == "Cerberus"
-        return "1.2.3"
-
-    with monkeypatch.context() as m:
-        cerberus = __import__("cerberus")
-        m.setattr("cerberus.importlib_metadata.version", return_fake_version)
-        reload(cerberus)
-        assert cerberus.__version__ == "1.2.3"
-
-
-def test_version_not_found(monkeypatch):
-    def raise_package_not_found_error(name):
-        assert name == "Cerberus"
-        raise importlib_metadata.PackageNotFoundError
-
-    with monkeypatch.context() as m:
-        cerberus = __import__("cerberus")
-        m.setattr("cerberus.importlib_metadata.version", raise_package_not_found_error)
-        reload(cerberus)
-        assert cerberus.__version__ == "unknown"
 
 
 def test_clear_cache(validator):

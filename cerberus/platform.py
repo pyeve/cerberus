@@ -39,16 +39,10 @@ else:
         Sized,
     )
 
-if sys.version_info < (3, 8):
-    import importlib_metadata
-else:
-    import importlib.metadata as importlib_metadata
-
 
 __all__ = (
     "_int_types",
     "_str_type",
-    "importlib_metadata",
     Callable.__name__,
     Container.__name__,
     Hashable.__name__,

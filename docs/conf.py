@@ -11,14 +11,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import importlib
+import importlib.metadata
+import importlib.util
 from pathlib import Path
-
-if sys.version_info < (3, 6):
-    raise RuntimeError(
-        'Requires Python 3.6 or later, running on %s atm.' % '.'.join(sys.version_info)
-    )
 
 
 module_spec = importlib.util.spec_from_file_location(
@@ -64,7 +59,8 @@ copyright = u'2012-2023, Nicola Iarocci'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = __import__('cerberus').__version__
+release = importlib.metadata.version("Cerberus")
+
 # The short X.Y version.
 version = release.split('-dev')[0]
 
