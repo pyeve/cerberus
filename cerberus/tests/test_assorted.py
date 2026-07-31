@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import sys
 from decimal import Decimal
 
 from pytest import mark
@@ -9,14 +6,6 @@ from cerberus import TypeDefinition, Validator
 from cerberus.tests import assert_fail, assert_success
 from cerberus.utils import validator_factory
 from cerberus.validator import BareValidator
-
-
-if (3,) < sys.version_info < (3, 4):
-    from imp import reload
-elif sys.version_info >= (3, 4):
-    from importlib import reload
-else:
-    pass  # Python 2.x
 
 
 def test_clear_cache(validator):

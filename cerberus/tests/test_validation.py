@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import itertools
 import re
-import sys
 from datetime import datetime, date
 from random import choice
 from string import ascii_lowercase
@@ -199,8 +196,7 @@ def test_not_a_string():
 
 
 def test_not_a_binary():
-    # 'u' literal prefix produces type `str` in Python 3
-    assert_bad_type('a_binary', 'binary', u"i'm not a binary")
+    assert_bad_type('a_binary', 'binary', "i'm not a binary")
 
 
 def test_not_a_integer():
@@ -1269,44 +1265,13 @@ def test_allof():
 
 def test_unicode_allowed():
     # issue 280
-    doc = {'letters': u'♄εℓł☺'}
+    doc = {'letters': '♄εℓł☺'}
 
     schema = {'letters': {'type': 'string', 'allowed': ['a', 'b', 'c']}}
     assert_fail(doc, schema)
 
-    schema = {'letters': {'type': 'string', 'allowed': [u'♄εℓł☺']}}
-    assert_success(doc, schema)
-
-    schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
-    doc = {'letters': '♄εℓł☺'}
-    assert_success(doc, schema)
-
-
-@mark.skipif(sys.version_info[0] < 3, reason='requires python 3.x')
-def test_unicode_allowed_py3():
-    """
-    All strings are unicode in Python 3.x. Input doc and schema have equal strings and
-    validation yield success.
-    """
-
-    # issue 280
-    doc = {'letters': u'♄εℓł☺'}
     schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
     assert_success(doc, schema)
-
-
-@mark.skipif(sys.version_info[0] > 2, reason='requires python 2.x')
-def test_unicode_allowed_py2():
-    """
-    Python 2.x encodes value of allowed using default encoding if the string includes
-    characters outside ASCII range. Produced string does not match input which is an
-    unicode string.
-    """
-
-    # issue 280
-    doc = {'letters': u'♄εℓł☺'}
-    schema = {'letters': {'type': 'string', 'allowed': ['♄εℓł☺']}}
-    assert_fail(doc, schema)
 
 
 def test_oneof():

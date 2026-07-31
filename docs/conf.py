@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Cerberus documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 11 15:52:25 2012.
@@ -259,7 +258,6 @@ texinfo_documents = [
 # -- Options for intersphinx extension -----------------------------------------
 
 intersphinx_mapping = {
-    'py2': ('https://docs.python.org/2', None),
     'py3': ('https://docs.python.org/3', None),
 }
 
@@ -270,8 +268,8 @@ linkcheck_ignore = [
     r"^#",
     r"https://github.com/pyeve/cerberus/(issues|pull)/\d+",
     r"https://groups.google.com/forum/#!forum/.*",
-    r"https://docs.python.org/(2|3)/glossary.html#.*",
-    r"https://docs.python.org/(2|3)/library/.*",
+    r"https://docs.python.org/3/glossary.html#.*",
+    r"https://docs.python.org/3/library/.*",
     # they seem to block traffic from Github Actions runners, fair choice:
     r"https://stackoverflow.com/.*",
 ]

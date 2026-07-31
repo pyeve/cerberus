@@ -8,8 +8,6 @@ Full documentation is available at https://python-cerberus.org/
 
 """
 
-from __future__ import absolute_import
-
 from cerberus.schema import rules_set_registry, schema_registry, SchemaError
 from cerberus.utils import TypeDefinition
 from cerberus.validator import DocumentError, Validator

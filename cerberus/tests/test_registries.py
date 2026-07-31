@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from cerberus import schema_registry, rules_set_registry, Validator
 from cerberus.tests import (
     assert_fail,
