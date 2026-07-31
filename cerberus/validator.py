@@ -1,22 +1,12 @@
-from __future__ import absolute_import
-
 from ast import literal_eval
+from collections.abc import Container, Hashable, Iterable, Mapping, Sequence, Sized
 from copy import copy
 from datetime import date, datetime
 import re
+import sys
 from warnings import warn
 
 from cerberus import errors
-from cerberus.platform import (
-    _int_types,
-    _str_type,
-    Container,
-    Hashable,
-    Iterable,
-    Mapping,
-    Sequence,
-    Sized,
-)
 from cerberus.schema import (
     schema_registry,
     rules_set_registry,
@@ -24,6 +14,11 @@ from cerberus.schema import (
     SchemaError,
 )
 from cerberus.utils import drop_item_from_tuple, readonly_classproperty, TypeDefinition
+
+if sys.flags.optimize == 2:
+    # the constraints of the validation rules are stored in the docstrings of their
+    # implementing methods, and these are stripped at this optimization level
+    raise RuntimeError("Cerberus can't be run with Python's optimization level 2.")
 
 toy_error_handler = errors.ToyErrorHandler()
 
@@ -118,16 +113,16 @@ class BareValidator(object):
     types_mapping = {
         'binary': TypeDefinition('binary', (bytes, bytearray), ()),
         'boolean': TypeDefinition('boolean', (bool,), ()),
-        'container': TypeDefinition('container', (Container,), (_str_type,)),
+        'container': TypeDefinition('container', (Container,), (str,)),
         'date': TypeDefinition('date', (date,), ()),
         'datetime': TypeDefinition('datetime', (datetime,), ()),
         'dict': TypeDefinition('dict', (Mapping,), ()),
-        'float': TypeDefinition('float', (float, _int_types), ()),
-        'integer': TypeDefinition('integer', (_int_types,), ()),
-        'list': TypeDefinition('list', (Sequence,), (_str_type,)),
-        'number': TypeDefinition('number', (_int_types, float), (bool,)),
+        'float': TypeDefinition('float', (float, int), ()),
+        'integer': TypeDefinition('integer', (int,), ()),
+        'list': TypeDefinition('list', (Sequence,), (str,)),
+        'number': TypeDefinition('number', (int, float), (bool,)),
         'set': TypeDefinition('set', (set,), ()),
-        'string': TypeDefinition('string', (_str_type,), ()),
+        'string': TypeDefinition('string', (str,), ()),
     }
     """
     This mapping holds all available constraints for the type rule and their assigned
@@ -276,7 +271,7 @@ class BareValidator(object):
                 self.document_error_tree.add(error)
                 self.schema_error_tree.add(error)
                 self.error_handler.emit(error)
-        elif len(args) == 2 and isinstance(args[1], _str_type):
+        elif len(args) == 2 and isinstance(args[1], str):
             self._error(args[0], errors.CUSTOM, args[1])
         elif len(args) >= 2:
             field = args[0]
@@ -425,14 +420,14 @@ class BareValidator(object):
     def _resolve_rules_set(self, rules_set):
         if isinstance(rules_set, Mapping):
             return rules_set
-        elif isinstance(rules_set, _str_type):
+        elif isinstance(rules_set, str):
             return self.rules_set_registry.get(rules_set)
         return None
 
     def _resolve_schema(self, schema):
         if isinstance(schema, Mapping):
             return schema
-        elif isinstance(schema, _str_type):
+        elif isinstance(schema, str):
             return self.schema_registry.get(schema)
         return None
 
@@ -688,7 +683,7 @@ class BareValidator(object):
             return self.document
 
     def __normalize_mapping(self, mapping, schema):
-        if isinstance(schema, _str_type):
+        if isinstance(schema, str):
             schema = self._resolve_schema(schema)
         schema = schema.copy()
         for field in schema:
@@ -743,7 +738,7 @@ class BareValidator(object):
                 )
 
     def __normalize_coerce(self, processor, field, value, nullable, error):
-        if isinstance(processor, _str_type):
+        if isinstance(processor, str):
             processor = self.__get_rule_handler('normalize_coerce', processor)
 
         elif isinstance(processor, Iterable):
@@ -788,7 +783,7 @@ class BareValidator(object):
                     except _SchemaRuleTypeError:
                         pass
 
-            elif isinstance(mapping[field], _str_type):
+            elif isinstance(mapping[field], str):
                 continue
 
             elif isinstance(mapping[field], Sequence):
@@ -1000,7 +995,7 @@ class BareValidator(object):
         """
         if 'default_setter' in schema[field]:
             setter = schema[field]['default_setter']
-            if isinstance(setter, _str_type):
+            if isinstance(setter, str):
                 setter = self.__get_rule_handler('normalize_default_setter', setter)
             mapping[field] = setter(mapping)
 
@@ -1065,7 +1060,7 @@ class BareValidator(object):
     def __validate_unknown_fields(self, field):
         if self.allow_unknown:
             value = self.document[field]
-            if isinstance(self.allow_unknown, (Mapping, _str_type)):
+            if isinstance(self.allow_unknown, (Mapping, str)):
                 # validate that unknown fields matches the schema
                 # for unknown_fields
                 schema_crumb = 'allow_unknown' if self.is_child else '__allow_unknown__'
@@ -1127,7 +1122,7 @@ class BareValidator(object):
 
     def _validate_allowed(self, allowed_values, field, value):
         """{'type': 'container'}"""
-        if isinstance(value, Iterable) and not isinstance(value, _str_type):
+        if isinstance(value, Iterable) and not isinstance(value, str):
             unallowed = tuple(x for x in value if x not in allowed_values)
             if unallowed:
                 self._error(field, errors.UNALLOWED_VALUES, unallowed)
@@ -1145,7 +1140,7 @@ class BareValidator(object):
             {'type': 'string'}
         ]}
         """
-        if isinstance(checks, _str_type):
+        if isinstance(checks, str):
             try:
                 value_checker = self.__get_rule_handler('check_with', checks)
             # TODO remove on next major release
@@ -1169,7 +1164,7 @@ class BareValidator(object):
             return
 
         if not isinstance(expected_values, Iterable) or isinstance(
-            expected_values, _str_type
+            expected_values, str
         ):
             expected_values = set((expected_values,))
         else:
@@ -1181,7 +1176,7 @@ class BareValidator(object):
 
     def _validate_dependencies(self, dependencies, field, value):
         """{'type': ('dict', 'hashable', 'list'), 'check_with': 'dependencies'}"""
-        if isinstance(dependencies, _str_type) or not isinstance(
+        if isinstance(dependencies, str) or not isinstance(
             dependencies, (Iterable, Mapping)
         ):
             dependencies = (dependencies,)
@@ -1204,7 +1199,7 @@ class BareValidator(object):
         error_info = {}
         for dependency_name, dependency_values in dependencies.items():
             if not isinstance(dependency_values, Sequence) or isinstance(
-                dependency_values, _str_type
+                dependency_values, str
             ):
                 dependency_values = [dependency_values]
 
@@ -1261,7 +1256,7 @@ class BareValidator(object):
 
     def _validate_forbidden(self, forbidden_values, field, value):
         """{'type': 'list'}"""
-        if isinstance(value, Sequence) and not isinstance(value, _str_type):
+        if isinstance(value, Sequence) and not isinstance(value, str):
             forbidden = set(value) & set(forbidden_values)
             if forbidden:
                 self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
@@ -1428,7 +1423,7 @@ class BareValidator(object):
 
     def _validate_regex(self, pattern, field, value):
         """{'type': 'string'}"""
-        if not isinstance(value, _str_type):
+        if not isinstance(value, str):
             return
         if not pattern.endswith('$'):
             pattern += '$'
@@ -1485,7 +1480,7 @@ class BareValidator(object):
         if schema is None:
             return
 
-        if isinstance(value, Sequence) and not isinstance(value, _str_type):
+        if isinstance(value, Sequence) and not isinstance(value, str):
             self.__validate_schema_sequence(field, schema, value)
         elif isinstance(value, Mapping):
             self.__validate_schema_mapping(field, schema, value)
@@ -1533,7 +1528,7 @@ class BareValidator(object):
         if not data_type:
             return
 
-        types = (data_type,) if isinstance(data_type, _str_type) else data_type
+        types = (data_type,) if isinstance(data_type, str) else data_type
 
         for _type in types:
             # TODO remove this block on next major release

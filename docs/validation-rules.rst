@@ -808,40 +808,28 @@ Data type allowed for the key value. Can be one of the following names:
    :header-rows: 1
 
    * - Type Name
-     - Python 2 Type
-     - Python 3 Type
+     - Python Type
    * - ``boolean``
-     - :class:`py2:bool`
      - :class:`py3:bool`
    * - ``binary``
-     - :class:`py2:bytes` [#]_, :class:`py2:bytearray`
      - :class:`py3:bytes`, :class:`py3:bytearray`
    * - ``date``
-     - :class:`py2:datetime.date`
      - :class:`py3:datetime.date`
    * - ``datetime``
-     - :class:`py2:datetime.datetime`
      - :class:`py3:datetime.datetime`
    * - ``dict``
-     - :class:`py2:collections.Mapping`
      - :class:`py3:collections.abc.Mapping`
    * - ``float``
-     - :class:`py2:float`
      - :class:`py3:float`
    * - ``integer``
-     - :class:`py2:int`, :class:`py2:long`
      - :class:`py3:int`
    * - ``list``
-     - :class:`py2:collections.Sequence`, excl. ``string``
      - :class:`py3:collections.abc.Sequence`, excl. ``string``
    * - ``number``
-     - :class:`py2:float`, :class:`py2:int`, :class:`py2:long`, excl. :class:`py2:bool`
      - :class:`py3:float`, :class:`py3:int`, excl. :class:`py3:bool`
    * - ``set``
-     - :class:`py2:set`
      - :class:`py3:set`
    * - ``string``
-     - :func:`py2:basestring`
      - :class:`py3:str`
 
 You can extend this list and support :ref:`custom types <new-types>`.
@@ -913,8 +901,6 @@ A list of types can be used to allow different values:
 
 .. versionchanged:: 0.3.0
    Added the ``float`` data type.
-
-.. [#] This is actually an alias of :class:`py2:str` in Python 2.
 
 .. _valuesrules-rule:
 

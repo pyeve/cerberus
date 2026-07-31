@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Cerberus documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 11 15:52:25 2012.
@@ -11,14 +10,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import importlib
+import importlib.metadata
+import importlib.util
 from pathlib import Path
-
-if sys.version_info < (3, 6):
-    raise RuntimeError(
-        'Requires Python 3.6 or later, running on %s atm.' % '.'.join(sys.version_info)
-    )
 
 
 module_spec = importlib.util.spec_from_file_location(
@@ -64,7 +58,8 @@ copyright = u'2012-2023, Nicola Iarocci'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = __import__('cerberus').__version__
+release = importlib.metadata.version("Cerberus")
+
 # The short X.Y version.
 version = release.split('-dev')[0]
 
@@ -263,7 +258,6 @@ texinfo_documents = [
 # -- Options for intersphinx extension -----------------------------------------
 
 intersphinx_mapping = {
-    'py2': ('https://docs.python.org/2', None),
     'py3': ('https://docs.python.org/3', None),
 }
 
@@ -274,8 +268,8 @@ linkcheck_ignore = [
     r"^#",
     r"https://github.com/pyeve/cerberus/(issues|pull)/\d+",
     r"https://groups.google.com/forum/#!forum/.*",
-    r"https://docs.python.org/(2|3)/glossary.html#.*",
-    r"https://docs.python.org/(2|3)/library/.*",
+    r"https://docs.python.org/3/glossary.html#.*",
+    r"https://docs.python.org/3/library/.*",
     # they seem to block traffic from Github Actions runners, fair choice:
     r"https://stackoverflow.com/.*",
 ]

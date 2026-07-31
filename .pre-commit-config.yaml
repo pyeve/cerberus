@@ -22,3 +22,8 @@ repos:
         types:
           - python
         exclude: ^docs/conf.py$
+  # keeps the Python versions in pyproject.toml, tox.ini and the workflows in sync
+  - repo: https://github.com/mgedmin/check-python-versions
+    rev: '0.24.2'
+    hooks:
+      - id: check-python-versions
