@@ -136,4 +136,33 @@ is processed through that chain of coercers.
    >>> v.document
    {'flag': True}
 
+Coercion is also applied to :obj:`None` values when ``nullable`` is ``True``.
+If the callable succeeds, its return value replaces :obj:`None`. For example,
+``str(None)`` returns the string ``'None'``. If the callable raises an exception
+for a :obj:`None` value and the field is nullable, the exception is ignored and
+the value remains :obj:`None`, as with ``int(None)``:
+
+.. doctest::
+
+   >>> v.schema = {'foo': {'type': 'string', 'nullable': True, 'coerce': str}}
+   >>> v.normalized({'foo': None})
+   {'foo': 'None'}
+   >>> v.schema = {'foo': {'type': 'integer', 'nullable': True, 'coerce': int}}
+   >>> v.normalized({'foo': None})
+   {'foo': None}
+   >>> v.errors
+   {}
+
+To preserve :obj:`None` values explicitly, use a callable that returns
+:obj:`None` unchanged:
+
+.. doctest::
+
+   >>> to_string = lambda value: str(value) if value is not None else None
+   >>> v.schema = {'foo': {'type': 'string', 'nullable': True, 'coerce': to_string}}
+   >>> v.normalized({'foo': None})
+   {'foo': None}
+   >>> v.normalized({'foo': 1})
+   {'foo': '1'}
+
 .. versionadded:: 0.9
