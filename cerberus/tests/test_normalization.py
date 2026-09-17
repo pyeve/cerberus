@@ -338,6 +338,24 @@ def test_default_none_default_value():
     assert_normalized(document, expected, schema)
 
 
+def test_default_with_mutable_value_is_not_shared_between_documents():
+    # A mutable 'default' (list, dict, ...) is defined once on the schema,
+    # so every normalized document must get its own copy of it. Otherwise
+    # mutating the default on one document leaks into every other document
+    # normalized against the same schema.
+    schema = {'tags': {'type': 'list', 'default': []}}
+    validator = Validator(schema)
+
+    first = validator.normalized({})
+    first['tags'].append('a')
+
+    second = validator.normalized({})
+
+    assert first['tags'] == ['a']
+    assert second['tags'] == []
+    assert first['tags'] is not second['tags']
+
+
 @mark.parametrize(
     'default', ({'default': 'bar_value'}, {'default_setter': lambda doc: 'bar_value'})
 )

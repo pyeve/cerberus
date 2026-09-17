@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from ast import literal_eval
-from copy import copy
+from copy import copy, deepcopy
 from datetime import date, datetime
 import re
 from warnings import warn
@@ -989,7 +989,7 @@ class BareValidator(object):
 
     def _normalize_default(self, mapping, schema, field):
         """{'nullable': True}"""
-        mapping[field] = schema[field]['default']
+        mapping[field] = deepcopy(schema[field]['default'])
 
     def _normalize_default_setter(self, mapping, schema, field):
         """
