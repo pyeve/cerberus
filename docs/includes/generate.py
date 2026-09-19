@@ -7,7 +7,6 @@ from pprint import pformat
 from textwrap import indent
 from types import SimpleNamespace
 
-
 INCLUDES_DIR = Path(__file__).parent.resolve()
 CERBERUS_DIR = INCLUDES_DIR.parent.parent / 'cerberus'
 
@@ -39,9 +38,7 @@ with (INCLUDES_DIR / 'error-codes.rst').open('wt') as f:
    * - Code (dec.)
      - Code (hex.)
      - Name
-     - Rule""".lstrip(
-            '\n'
-        ),
+     - Rule""".lstrip('\n'),
         file=f,
     )
     for error_definition in error_definitions:
@@ -50,9 +47,7 @@ with (INCLUDES_DIR / 'error-codes.rst').open('wt') as f:
    * - {error_definition.code}
      - {hex(error_definition.code)}
      - {error_definition.name}
-     - {error_definition.rule}""".lstrip(
-                '\n'
-            ),
+     - {error_definition.rule}""".lstrip('\n'),
             file=f,
         )
 
