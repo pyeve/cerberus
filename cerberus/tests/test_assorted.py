@@ -11,7 +11,6 @@ from cerberus.utils import validator_factory
 from cerberus.validator import BareValidator
 from cerberus.platform import importlib_metadata
 
-
 if (3,) < sys.version_info < (3, 4):
     from imp import reload
 elif sys.version_info >= (3, 4):

@@ -1,6 +1,5 @@
 import uuid
 
-
 P_TYPES = ['ONE', 'TWO']
 T_TYPES = ['NO', 'V20']
 

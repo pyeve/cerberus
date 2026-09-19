@@ -4,7 +4,6 @@ from collections import namedtuple
 
 from cerberus.platform import _int_types, _str_type, Mapping, Sequence, Set
 
-
 TypeDefinition = namedtuple('TypeDefinition', 'name,included_types,excluded_types')
 """
 This class is used to define types that can be used as value in the

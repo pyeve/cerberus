@@ -15,7 +15,6 @@ from cerberus.schema import rules_set_registry, schema_registry, SchemaError
 from cerberus.utils import TypeDefinition
 from cerberus.validator import DocumentError, Validator
 
-
 try:
     __version__ = importlib_metadata.version("Cerberus")
 except importlib_metadata.PackageNotFoundError:

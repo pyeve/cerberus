@@ -3,7 +3,6 @@
 from cerberus import Validator, errors
 from cerberus.tests import assert_fail
 
-
 ValidationError = errors.ValidationError
 
 

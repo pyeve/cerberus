@@ -12,7 +12,6 @@ from pprint import pformat
 from cerberus.platform import MutableMapping
 from cerberus.utils import compare_paths_lt, quote_string
 
-
 ErrorDefinition = namedtuple('ErrorDefinition', 'code, rule')
 """
 This class is used to define possible errors. Each distinguishable error is
