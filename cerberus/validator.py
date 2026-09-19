@@ -1127,7 +1127,7 @@ class BareValidator(object):
 
     def _validate_allowed(self, allowed_values, field, value):
         """{'type': 'container'}"""
-        if isinstance(value, Iterable) and not isinstance(value, _str_type):
+        if isinstance(value, Sequence) and not isinstance(value, _str_type):
             unallowed = tuple(x for x in value if x not in allowed_values)
             if unallowed:
                 self._error(field, errors.UNALLOWED_VALUES, unallowed)

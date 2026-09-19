@@ -2003,6 +2003,40 @@ def test_allowed_when_passing_list_of_dicts():
     )
 
 
+def test_allowed_consistency_with_forbidden_for_dict_values():
+    # _validate_allowed used Iterable (which includes Mapping) while
+    # _validate_forbidden used Sequence (which excludes Mapping).
+    # This caused 'allowed' to iterate over dict keys instead of checking
+    # the dict as a single value, inconsistent with 'forbidden'.
+    schema_allowed = {'field': {'allowed': [{'key': 'val'}]}}
+    schema_forbidden = {'field': {'forbidden': [{'key': 'val'}]}}
+
+    # With the fix, allowed checks dict as a whole (matching forbidden)
+    assert_success({'field': {'key': 'val'}}, schema_allowed)
+    assert_fail({'field': {'key': 'val'}}, schema_forbidden)
+
+    # allowed should still reject a dict not in the list
+    assert_fail({'field': {'other': 'val'}}, schema_allowed)
+
+    # allowed should still check sequence elements individually
+    assert_success({'field': [1, 2]}, {'field': {'allowed': [1, 2, 3]}})
+    assert_fail(
+        {'field': [1, 4]},
+        {'field': {'allowed': [1, 2, 3]}},
+        error=(
+            'field',
+            ('field', 'allowed'),
+            errors.UNALLOWED_VALUES,
+            [1, 2, 3],
+            ((4,),),
+        ),
+    )
+
+    # forbidden should still check sequence elements individually
+    assert_success({'field': [4, 5]}, {'field': {'forbidden': [1, 2, 3]}})
+    assert_fail({'field': [1, 4]}, {'field': {'forbidden': [1, 2, 3]}})
+
+
 def test_schema_validation_from_rules_set():
     # https://github.com/pyeve/cerberus/issues/599
     rules_set_registry.add(
