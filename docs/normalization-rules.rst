@@ -9,6 +9,8 @@ in definitions for testing variants like with ``anyof`` are not processed.
 The normalizations are applied as given in this document for each level in the
 mapping, traversing depth-first.
 
+.. _renaming-fields:
+
 Renaming Of Fields
 ------------------
 You can define a field to be renamed before any further processing.
@@ -18,6 +20,34 @@ You can define a field to be renamed before any further processing.
    >>> v = Validator({'foo': {'rename': 'bar'}})
    >>> v.normalized({'foo': 0})
    {'bar': 0}
+
+.. important::
+
+   Renaming happens before other normalization rules. After a field is renamed,
+   its value is processed using the rules for the **new** name. Rules such as
+   ``coerce`` on the original field definition do not follow the renamed field.
+   Validation also uses the normalized document and the new field name.
+
+For example, a coercion on the original field does not convert the renamed value:
+
+.. doctest::
+
+   >>> v = Validator({'foo': {'rename': 'bar', 'coerce': int}})
+   >>> v.normalized({'foo': '123'})
+   {'bar': '123'}
+
+Put the coercion and validation rules on the destination field instead:
+
+.. doctest::
+
+   >>> v = Validator({'foo': {'rename': 'bar'},
+   ...                'bar': {'coerce': int, 'type': 'integer'}})
+   >>> v.validated({'foo': '123'})
+   {'bar': 123}
+
+If the new name is not defined in the schema, it is treated as an unknown field.
+It may be rejected during validation or removed by
+:ref:`purging-unknown-fields`, depending on the validator's configuration.
 
 To let a callable rename a field or arbitrary fields, you can define a handler
 for renaming. If the constraint is a string, it points to a

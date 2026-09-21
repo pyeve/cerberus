@@ -1,9 +1,11 @@
-Validation Schemas
-==================
+.. _validation-schemas:
 
-A validation schema is a :term:`mapping`, usually a :class:`dict`. Schema keys
-are the keys allowed in the target dictionary. Schema values express the rules
-that must be matched by the corresponding target values.
+Schemas
+========
+
+A schema is a :term:`mapping`, usually a :class:`dict`. Schema keys are field
+names, and schema values define the normalization and validation rules for
+those fields.
 
 .. testcode::
 
@@ -17,6 +19,13 @@ very long string'}`` or ``{'name': 99}`` would not.
 By default all keys in a document are optional unless the :ref:`required`-rule
 is set ``True`` for individual fields or the validator's :attr:~cerberus.Validator.require_all
 is set to ``True`` in order to expect all schema-defined fields to be present in the document.
+
+
+.. important::
+
+   Validation rules are applied to the normalized document. If normalization
+   renames a field, define its subsequent normalization and validation rules
+   under the new name. See :ref:`renaming-fields` for an example.
 
 
 Registries
