@@ -238,7 +238,10 @@ It can be useful for flows like this:
                        if x is not None]
 
 If a coercion callable or method raises an exception then the exception will
-be caught and the validation with fail.
+be caught and the validation will fail, unless the value being coerced is
+:obj:`None` and the field has ``nullable`` set to ``True``. In that case, the
+value remains :obj:`None` and no coercion error is recorded (see
+:ref:`type-coercion`).
 
 .. versionadded:: 0.9
 
