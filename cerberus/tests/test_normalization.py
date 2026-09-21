@@ -3,6 +3,7 @@
 from copy import deepcopy
 from tempfile import NamedTemporaryFile
 
+import pytest
 from pytest import mark
 
 from cerberus import Validator, errors
@@ -270,6 +271,20 @@ def test_coerce_in_keysrules():
     document = {'thing': {'5': 'foo'}}
     expected = {'thing': {5: 'foo'}}
     assert_normalized(document, expected, schema)
+
+
+def _coerce_to_x(key):
+    return 'x'
+
+
+def test_coerce_in_keysrules_collision_drops_original_key():
+    # A colliding source key must not be left behind in the mapping.
+    schema = {'thing': {'type': 'dict', 'keysrules': {'coerce': _coerce_to_x}}}
+    document = {'thing': {'a': 1, 'b': 2}}
+    validator = Validator(schema)
+    with pytest.warns(UserWarning, match='already exists'):
+        result = validator.normalized(document)
+    assert result == {'thing': {'x': 2}}
 
 
 def test_coercion_of_sequence_items(validator):
