@@ -43,7 +43,6 @@ keywords = [
     "documents",
     "normalization"
 ]
-requires-python = ">=3.7"
 dependencies = ["importlib-metadata; python_version < '3.8'"]
 
 [project.urls]

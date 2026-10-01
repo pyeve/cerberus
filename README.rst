@@ -23,19 +23,9 @@ yours.
 Versioning & Interpreter support
 --------------------------------
 
-Starting with Cerberus 1.2, it is maintained according to
-`semantic versioning`_. So, a major release sheds off the old and defines a
-space for the new, minor releases ship further new features and improvements
-(you know the drill, new bugs are inevitable too), and micro releases polish a
-definite amount of features to glory.
-
-We intend to test Cerberus against all CPython interpreters at least until half
-a year after their `end of life`_ and against the most recent PyPy interpreter
-as a requirement for a release. If you still need to use it with a potential
-security hole in your setup, it should most probably work with the latest
-minor version branch from the time when the interpreter was still tested.
-Subsequent minor versions have good chances as well. In any case, you are
-advised to run the contributed test suite on your target system.
+The 1.3.x series of releases will try to sustain support for Python 2.7 as well
+as all releases from 3.4 onwards. Note that it's not guaranteed that tests are
+run against unmaintained Python versions.
 
 
 Documentation
