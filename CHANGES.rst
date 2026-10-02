@@ -1,6 +1,19 @@
 Cerberus Changelog
 ==================
 
+Unreleased
+----------
+
+Fixed
+~~~~~
+
+- Report a type error instead of raising ``TypeError`` when a mapping is
+  provided for a field declared as a ``list`` with an item ``schema``
+  (`#545`_)
+
+.. _`#545`: https://github.com/pyeve/cerberus/issues/545
+
+
 Version 1.3.8
 -------------
 
