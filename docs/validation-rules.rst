@@ -518,6 +518,10 @@ defaults ``False``.
    >>> v.errors
    {'an_integer': ['null value not allowed']}
 
+This rule does not prevent :ref:`type-coercion` from being applied to
+:obj:`None` values. A successful coercion can replace :obj:`None` even when
+``nullable`` is ``True``.
+
 .. versionchanged:: 0.7 ``nullable`` is valid on fields lacking type definition.
 .. versionadded:: 0.3.0
 
