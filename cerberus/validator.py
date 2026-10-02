@@ -818,10 +818,10 @@ class BareValidator(object):
                         key=k,
                     )
                 )
-                mapping[field][result[k]] = mapping[field][k]
-            else:
-                mapping[field][result[k]] = mapping[field][k]
-                del mapping[field][k]
+            # The `continue` above guarantees k != result[k], so the original
+            # key must always be dropped after the rename.
+            mapping[field][result[k]] = mapping[field][k]
+            del mapping[field][k]
 
     def __normalize_mapping_per_valuesrules(self, field, mapping, value_rules):
         schema = dict(((k, value_rules) for k in mapping[field]))

@@ -1,6 +1,17 @@
 Cerberus Changelog
 ==================
 
+Unreleased
+----------
+
+Fixed
+~~~~~
+
+- Normalizing dictionary keys with ``keysrules`` no longer leaves the
+  original key behind when two keys are coerced to the same target; the
+  colliding source key is now dropped like in the non-colliding case.
+
+
 Version 1.3.8
 -------------
 
