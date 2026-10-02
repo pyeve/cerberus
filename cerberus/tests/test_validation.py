@@ -1772,6 +1772,18 @@ def test_boolean_is_not_a_number():
     assert_fail({'value': True}, {'value': {'type': 'number'}})
 
 
+def test_boolean_is_not_an_integer():
+    # bool is a subclass of int; reject so True/False are not valid integers
+    assert_fail({'value': True}, {'value': {'type': 'integer'}})
+    assert_fail({'value': False}, {'value': {'type': 'integer'}})
+
+
+def test_boolean_is_not_a_float():
+    # float type accepts ints but must still exclude bool (like number)
+    assert_fail({'value': True}, {'value': {'type': 'float'}})
+    assert_fail({'value': False}, {'value': {'type': 'float'}})
+
+
 def test_min_max_date():
     schema = {'date': {'min': date(1900, 1, 1), 'max': date(1999, 12, 31)}}
     assert_success({'date': date(1945, 5, 8)}, schema)
