@@ -18,7 +18,7 @@ Making Changes
 * Run all the tests to assure nothing else was accidentally broken.
 * Install and enable pre-commit_ (``pip install pre-commit``, then ``pre-commit
   install``) to ensure styleguides and codechecks are followed.
-* Don't forget to add yourself to the ``AUTHORS.rst`` document.
+* Don't forget to add yourself to the ``AUTHORS`` document.
 
 These guidelines also apply when helping with documentation (actually, for
 typos and minor additions you might choose to `fork and edit`_).
