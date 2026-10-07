@@ -82,8 +82,9 @@ Additional types can be added on the fly by assigning a
 .. testcode::
 
     from decimal import Decimal
+    from cerberus import TypeDefinition, Validator
 
-    decimal_type = cerberus.TypeDefinition('decimal', (Decimal,), ())
+    decimal_type = TypeDefinition('decimal', (Decimal,), ())
 
     Validator.types_mapping['decimal'] = decimal_type
 
@@ -97,8 +98,9 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
 .. testcode::
 
     from decimal import Decimal
+    from cerberus import TypeDefinition, Validator
 
-    decimal_type = cerberus.TypeDefinition('decimal', (Decimal,), ())
+    decimal_type = TypeDefinition('decimal', (Decimal,), ())
 
     class MyValidator(Validator):
         types_mapping = Validator.types_mapping.copy()
