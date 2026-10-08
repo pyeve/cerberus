@@ -86,7 +86,7 @@ for more information.
 
 
 .. _Contribution Guidelines: https://github.com/pyeve/cerberus/blob/1.3.x/CONTRIBUTING.rst
-.. _end of life: https://devguide.python.org/#status-of-python-branches
+.. _end of life: https://devguide.python.org/versions/
 .. _license: https://github.com/pyeve/cerberus/blob/1.3.x/LICENSE
 .. _Nicola Iarocci: https://nicolaiarocci.com/
 .. _PyPI: https://pypi.python.org/
