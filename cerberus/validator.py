@@ -1209,7 +1209,7 @@ class BareValidator(object):
                 dependency_values = [dependency_values]
 
             wanted_field, wanted_field_value = self._lookup_field(dependency_name)
-            if wanted_field_value in dependency_values:
+            if wanted_field is not None and wanted_field_value in dependency_values:
                 validated_dependencies_counter += 1
             else:
                 error_info.update({dependency_name: wanted_field_value})

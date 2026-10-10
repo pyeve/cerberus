@@ -2018,3 +2018,23 @@ def test_schema_validation_from_rules_set():
     Validator(schema={'a_dict': 'addr'}).validate(
         {'a_dict': {'address': 'my address', 'city': 'my town'}}
     )
+
+
+@pytest.mark.parametrize('constraint', [None, [None], [None, 'ready']])
+def test_dependencies_dict_requires_present_nullable_field(constraint):
+    schema = {
+        'action': {'dependencies': {'status': constraint}},
+        'status': {'nullable': True},
+    }
+    assert_success({'action': True, 'status': None}, schema)
+    assert_fail({'action': True}, schema)
+
+
+def test_dependencies_dict_requires_present_nullable_subfield():
+    schema = {
+        'action': {'dependencies': {'metadata.status': [None]}},
+        'metadata': {'type': 'dict', 'schema': {'status': {'nullable': True}}},
+    }
+    assert_success({'action': True, 'metadata': {'status': None}}, schema)
+    assert_fail({'action': True, 'metadata': {}}, schema)
+    assert_fail({'action': True}, schema)
