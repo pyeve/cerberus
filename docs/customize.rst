@@ -104,6 +104,46 @@ They can also be defined for subclasses of :class:`~cerberus.Validator`:
         types_mapping = Validator.types_mapping.copy()
         types_mapping['decimal'] = decimal_type
 
+Use a type definition to check which Python classes are accepted, and a
+separate rule to check properties of their values. For example, a measurement
+type can accept objects with different units while a custom rule selects the
+unit required by each field:
+
+.. testcode::
+
+    from collections import namedtuple
+
+    Measurement = namedtuple('Measurement', 'magnitude unit')
+
+    class MeasurementValidator(Validator):
+        types_mapping = Validator.types_mapping.copy()
+        types_mapping['measurement'] = cerberus.TypeDefinition(
+            'measurement', (Measurement,), ())
+
+        def _validate_unit(self, constraint, field, value):
+            """{'type': 'string'}"""
+            if value.unit != constraint:
+                self._error(field, 'Must use unit ' + constraint)
+
+.. doctest::
+
+    >>> schema = {'duration': {'type': 'measurement', 'unit': 's'}}
+    >>> v = MeasurementValidator(schema)
+    >>> v.validate({'duration': Measurement(5, 's')})
+    True
+    >>> v.validate({'duration': Measurement(5, 'm')})
+    False
+    >>> v.errors
+    {'duration': ['Must use unit s']}
+    >>> v.validate({'duration': 5})
+    False
+    >>> v.errors
+    {'duration': ['must be of measurement type']}
+
+The type check runs before the custom rule, so an object of the wrong type
+does not reach the unit check. Keeping the checks separate also lets schemas
+reuse the measurement type with different unit constraints.
+
 
 .. versionadded:: 0.0.2
 
