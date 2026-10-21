@@ -1171,11 +1171,15 @@ class BareValidator(object):
         if not isinstance(expected_values, Iterable) or isinstance(
             expected_values, _str_type
         ):
-            expected_values = set((expected_values,))
+            expected_values = (expected_values,)
         else:
-            expected_values = set(expected_values)
+            expected_values = tuple(expected_values)
 
-        missing_values = expected_values - set(value)
+        value = tuple(value)
+        try:
+            missing_values = set(expected_values) - set(value)
+        except TypeError:
+            missing_values = tuple(x for x in expected_values if x not in value)
         if missing_values:
             self._error(field, errors.MISSING_MEMBERS, missing_values)
 

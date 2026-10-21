@@ -1889,6 +1889,24 @@ def test_contains(constraint):
     assert any(x in missing_actors for x in ('Eric Idle', 'Terry Gilliam'))
 
 
+def test_contains_with_unhashable_document_members():
+    validator = Validator({'records': {'contains': 'required'}})
+    assert validator({'records': ['required', {'id': 1}]})
+    assert not validator({'records': [{'id': 1}]})
+    assert validator.document_error_tree['records'][errors.MISSING_MEMBERS].info[0] == (
+        'required',
+    )
+
+
+def test_contains_with_unhashable_constraint_members():
+    validator = Validator({'records': {'contains': [{'id': 1}]}})
+    assert validator({'records': [{'id': 1}, {'id': 2}]})
+    assert not validator({'records': [{'id': 2}]})
+    assert validator.document_error_tree['records'][errors.MISSING_MEMBERS].info[0] == (
+        {'id': 1},
+    )
+
+
 def test_require_all_simple():
     schema = {'foo': {'type': 'string'}}
     validator = Validator(require_all=True)
