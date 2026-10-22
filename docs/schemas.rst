@@ -1,9 +1,11 @@
-Validation Schemas
-==================
+.. _validation-schemas:
 
-A validation schema is a :term:`mapping`, usually a :class:`dict`. Schema keys
-are the keys allowed in the target dictionary. Schema values express the rules
-that must be matched by the corresponding target values.
+Schemas
+========
+
+A schema is a :term:`mapping`, usually a :class:`dict`. Schema keys are field
+names in the document. Schema values define the normalization and validation
+rules applied to those fields.
 
 .. testcode::
 
@@ -18,13 +20,19 @@ By default all keys in a document are optional unless the :ref:`required`-rule
 is set ``True`` for individual fields or the validator's :attr:~cerberus.Validator.require_all
 is set to ``True`` in order to expect all schema-defined fields to be present in the document.
 
+.. note::
+   When normalization is enabled, validation rules are checked against the
+   normalized document. For a renamed field, define its subsequent normalization
+   and validation rules under the destination name. See :ref:`renaming-fields`
+   for an example.
+
 
 Registries
 ----------
 
 There are two default registries in the cerberus module namespace where you can
 store definitions for schemas and rules sets which then can be referenced in a
-validation schema. You can furthermore instantiate more
+schema. You can furthermore instantiate more
 :class:`~cerberus.Registry` objects and bind them to the
 :attr:`~cerberus.Validator.rules_set_registry` or
 :attr:`~cerberus.Validator.schema_registry` of a validator. You may also set
@@ -58,9 +66,9 @@ Using registries is particularly interesting if
 Validation
 ----------
 
-Validation schemas themselves are validated when passed to the validator or a
+Schemas themselves are validated when passed to the validator or a
 new set of rules is set for a document's field. A :exc:`~cerberus.SchemaError`
-is raised when an invalid validation schema is encountered. See
+is raised when an invalid schema is encountered. See
 :ref:`schema-validation-schema` for a reference.
 
 However, be aware that no validation can be triggered for all changes below
