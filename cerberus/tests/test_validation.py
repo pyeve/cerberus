@@ -616,6 +616,31 @@ def test_regex_with_flag():
     assert_fail({"item": "hOly grAil"}, {"item": {"regex": "holy grail"}})
 
 
+@mark.parametrize(
+    'pattern, value',
+    (
+        (r'\$', '$'),
+        (r'foo\$', 'foo$'),
+        (r'.+\$', 'foo$'),
+        (r'(?i)foo\$', 'fOo$'),
+        (r'foo', 'foo'),
+        (r'foo$', 'foo'),
+        (r'foo$$', 'foo'),
+        (r'foo\$$', 'foo$'),
+        (r'foo\\$', 'foo\\'),
+    ),
+)
+def test_regex_end_anchor(pattern, value):
+    schema = {'item': {'regex': pattern}}
+    assert_success({'item': value}, schema)
+    assert_success({'item': value + '\n'}, schema)
+    assert_fail(
+        {'item': value + 'extra'},
+        schema,
+        error=('item', ('item', 'regex'), errors.REGEX_MISMATCH, pattern),
+    )
+
+
 def test_a_list_of_dicts():
     assert_success(
         {
