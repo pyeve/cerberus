@@ -25,6 +25,25 @@ def test_coerce():
     assert_normalized(document, expected, schema)
 
 
+@mark.parametrize('nested', (False, True))
+def test_allow_unknown_coerce_leaves_known_fields_unchanged(nested):
+    schema = {
+        'name': {'type': 'string'},
+        'note': {'nullable': True},
+        'count': {'type': 'integer', 'coerce': int},
+    }
+    document = {'name': 'Ada', 'note': None, 'count': '2', 'extra': '3'}
+    expected = {'name': 'Ada', 'note': None, 'count': 2, 'extra': 3}
+    if nested:
+        schema = {'record': {'type': 'dict', 'schema': schema}}
+        document = {'record': document}
+        expected = {'record': expected}
+
+    validator = Validator(schema, allow_unknown={'type': 'integer', 'coerce': int})
+    assert validator.validate(document)
+    assert validator.document == expected
+
+
 def test_coerce_in_dictschema():
     schema = {'thing': {'type': 'dict', 'schema': {'amount': {'coerce': int}}}}
     document = {'thing': {'amount': '2'}}

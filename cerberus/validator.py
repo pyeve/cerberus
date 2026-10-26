@@ -731,7 +731,8 @@ class BareValidator(object):
                     error,
                 )
             elif (
-                isinstance(self.allow_unknown, Mapping)
+                field not in schema
+                and isinstance(self.allow_unknown, Mapping)
                 and 'coerce' in self.allow_unknown
             ):
                 mapping[field] = self.__normalize_coerce(
