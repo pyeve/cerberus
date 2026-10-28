@@ -913,7 +913,7 @@ class BareValidator(object):
 
     def _normalize_rename(self, mapping, schema, field):
         """{'type': 'hashable'}"""
-        if 'rename' in schema[field]:
+        if 'rename' in schema[field] and schema[field]['rename'] != field:
             mapping[schema[field]['rename']] = mapping[field]
             del mapping[field]
 

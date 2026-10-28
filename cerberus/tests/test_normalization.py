@@ -208,6 +208,16 @@ def test_rename_handler():
     assert_normalized(document, expected, schema, validator)
 
 
+@mark.parametrize('field', ('foo', 0))
+@mark.parametrize('method', ('normalized', 'validated'))
+def test_rename_to_same_field(field, method):
+    validator = Validator({field: {'rename': field, 'coerce': int, 'required': True}})
+    document = {field: '42'}
+
+    assert getattr(validator, method)(document) == {field: 42}
+    assert document == {field: '42'}
+
+
 def test_purge_unknown():
     validator = Validator(purge_unknown=True)
     schema = {'foo': {'type': 'string'}}
