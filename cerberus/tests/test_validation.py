@@ -2018,3 +2018,11 @@ def test_schema_validation_from_rules_set():
     Validator(schema={'a_dict': 'addr'}).validate(
         {'a_dict': {'address': 'my address', 'city': 'my town'}}
     )
+
+
+def test_allowed_with_unhashable_values():
+    # Values that are containers themselves are legal in allowed; building the
+    # validator used to raise TypeError before the schema was even used.
+    validator = Validator({'f': {'type': 'list', 'allowed': [[1, 2], [3, 4]]}})
+    assert validator({'f': [[1, 2]]})
+    assert not validator({'f': [[9, 9]]})

@@ -64,23 +64,22 @@ def mapping_to_frozenset(mapping):
     are semantically equal regardless the container type.
     """
 
-    aggregation = {}
+    return frozenset(
+        (key, _container_to_hashable(value)) for key, value in mapping.items()
+    )
 
-    for key, value in mapping.items():
-        if isinstance(value, Mapping):
-            aggregation[key] = mapping_to_frozenset(value)
-        elif isinstance(value, Sequence):
-            value = list(value)
-            for i, item in enumerate(value):
-                if isinstance(item, Mapping):
-                    value[i] = mapping_to_frozenset(item)
-            aggregation[key] = tuple(value)
-        elif isinstance(value, Set):
-            aggregation[key] = frozenset(value)
-        else:
-            aggregation[key] = value
 
-    return frozenset(aggregation.items())
+def _container_to_hashable(value):
+    """Return a hashable equivalent of a container, recursively."""
+
+    if isinstance(value, Mapping):
+        return mapping_to_frozenset(value)
+    elif isinstance(value, Set):
+        return frozenset(_container_to_hashable(item) for item in value)
+    elif isinstance(value, Sequence) and not isinstance(value, (_str_type, bytes, bytearray)):
+        return tuple(_container_to_hashable(item) for item in value)
+    else:
+        return value
 
 
 def quote_string(value):
