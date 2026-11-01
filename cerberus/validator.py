@@ -1242,13 +1242,15 @@ class BareValidator(object):
         if isinstance(excluded_fields, Hashable):
             excluded_fields = [excluded_fields]
 
+        field_rules = self._resolve_rules_set(self.schema[field])
+
         # Mark the currently evaluated field as not required for now if it actually is.
         # One of the so marked will be needed to pass when required fields are checked.
-        if self.schema[field].get('required', self.require_all):
+        if field_rules.get('required', self.require_all):
             self._unrequired_by_excludes.add(field)
 
         for excluded_field in excluded_fields:
-            if excluded_field in self.schema and self.schema[field].get(
+            if excluded_field in self.schema and field_rules.get(
                 'required', self.require_all
             ):
                 self._unrequired_by_excludes.add(excluded_field)

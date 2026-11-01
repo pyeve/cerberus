@@ -2018,3 +2018,28 @@ def test_schema_validation_from_rules_set():
     Validator(schema={'a_dict': 'addr'}).validate(
         {'a_dict': {'address': 'my address', 'city': 'my town'}}
     )
+
+
+@mark.parametrize('required', [False, True])
+@mark.parametrize(
+    'document, expected',
+    [
+        ({'left': 'value'}, True),
+        ({'left': 'value', 'right': 'other'}, False),
+    ],
+)
+def test_excludes_with_registered_rules_set(required, document, expected):
+    name = 'excludes_registered_rules_regression'
+    rules_set_registry.add(
+        name,
+        {
+            'type': 'string',
+            'excludes': 'right',
+            'required': required,
+        },
+    )
+    try:
+        validator = Validator({'left': name, 'right': {'type': 'string'}})
+        assert validator.validate(document) is expected
+    finally:
+        rules_set_registry.remove(name)
