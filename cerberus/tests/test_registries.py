@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from cerberus import schema_registry, rules_set_registry, Validator
 from cerberus.tests import (
     assert_fail,
@@ -82,3 +84,49 @@ def test_rules_set_with_dict_field():
 
     rules_set_registry.add('rule', {'type': 'integer'})
     assert_success(document, schema)
+
+
+@pytest.fixture
+def isolated_rules_registry():
+    rules = rules_set_registry.all().copy()
+    valid_schemas = Validator._valid_schemas.copy()
+    yield
+    rules_set_registry.clear()
+    rules_set_registry.extend(rules)
+    Validator._valid_schemas.clear()
+    Validator._valid_schemas.update(valid_schemas)
+
+
+@pytest.mark.parametrize('operator', ('allof', 'anyof', 'noneof', 'oneof'))
+@pytest.mark.parametrize('rules_name', ('record', 'type', 'allow_unknown'))
+@pytest.mark.parametrize('allow_unknown', (False, True))
+def test_logical_rules_inherit_registered_field_rules(
+    operator, rules_name, allow_unknown, isolated_rules_registry
+):
+    rules = {
+        'type': 'dict',
+        'allow_unknown': allow_unknown,
+        operator: [{'schema': {'name': {'type': 'string'}}}],
+    }
+    rules_set_registry.add(rules_name, rules)
+    registered = Validator({'record': rules_name}, allow_unknown=not allow_unknown)
+    inline = Validator({'record': rules}, allow_unknown=not allow_unknown)
+
+    for value in ({'name': 'Alice'}, {'name': 'Alice', 'extra': True}):
+        document = {'record': value}
+        assert registered.validate(document) == inline.validate(document)
+        assert registered.errors == inline.errors
+
+
+def test_logical_definition_overrides_registered_allow_unknown(isolated_rules_registry):
+    rules_set_registry.add(
+        'strict_record',
+        {
+            'type': 'dict',
+            'allow_unknown': False,
+            'anyof': [{'schema': {'name': {'type': 'string'}}, 'allow_unknown': True}],
+        },
+    )
+    assert_success(
+        {'record': {'name': 'Alice', 'extra': True}}, {'record': 'strict_record'}
+    )
