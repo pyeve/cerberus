@@ -1296,12 +1296,13 @@ class BareValidator(object):
         """
         valid_counter = 0
         _errors = errors.ErrorList()
+        field_rules = self._resolve_rules_set(self.schema[field])
 
         for i, definition in enumerate(definitions):
             schema = {field: definition.copy()}
             for rule in ('allow_unknown', 'type'):
-                if rule not in schema[field] and rule in self.schema[field]:
-                    schema[field][rule] = self.schema[field][rule]
+                if rule not in schema[field] and rule in field_rules:
+                    schema[field][rule] = field_rules[rule]
             if 'allow_unknown' not in schema[field]:
                 schema[field]['allow_unknown'] = self.allow_unknown
 
