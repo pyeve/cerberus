@@ -792,10 +792,15 @@ class BareValidator(object):
                 continue
 
             elif isinstance(mapping[field], Sequence):
+                if field not in schema and isinstance(self.allow_unknown, Mapping):
+                    field_schema = {field: self.allow_unknown}
+                    rules = set(self.allow_unknown)
+                else:
+                    field_schema = schema
                 if 'schema' in rules:
-                    self.__normalize_sequence_per_schema(field, mapping, schema)
+                    self.__normalize_sequence_per_schema(field, mapping, field_schema)
                 elif 'items' in rules:
-                    self.__normalize_sequence_per_items(field, mapping, schema)
+                    self.__normalize_sequence_per_items(field, mapping, field_schema)
 
     def __normalize_mapping_per_keysrules(self, field, mapping, property_rules):
         schema = dict(((k, property_rules) for k in mapping[field]))

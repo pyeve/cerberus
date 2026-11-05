@@ -39,6 +39,55 @@ def test_coerce_in_listschema():
     assert_normalized(document, expected, schema)
 
 
+@mark.parametrize(
+    'rules, value, expected',
+    [
+        (
+            {'type': 'list', 'schema': {'type': 'integer', 'coerce': int}},
+            ['1', '2'],
+            [1, 2],
+        ),
+        (
+            {'type': 'list', 'items': [{'coerce': int}, {'coerce': str}]},
+            ['1', 2],
+            [1, '2'],
+        ),
+    ],
+)
+def test_normalize_unknown_sequences(rules, value, expected):
+    document = {'unknown': value}
+    original = deepcopy(document)
+    validator = Validator({}, allow_unknown=rules)
+
+    assert validator.normalized(document) == {'unknown': expected}
+    assert validator.validate(document)
+    assert validator.document == {'unknown': expected}
+    assert document == original
+    assert dict(validator.schema) == {}
+
+
+def test_normalize_unknown_sequence_does_not_override_known_rules():
+    rules = {'type': 'list', 'schema': {'type': 'integer', 'coerce': int}}
+    validator = Validator(
+        {'known': {'type': 'list', 'schema': {'type': 'string'}}},
+        allow_unknown=rules,
+    )
+    assert validator.validated({'known': ['1'], 'unknown': ['2']}) == {
+        'known': ['1'],
+        'unknown': [2],
+    }
+
+
+def test_normalize_unknown_sequence_reports_coercion_errors():
+    rules = {'type': 'list', 'schema': {'coerce': int}}
+    validator = Validator({}, allow_unknown=rules)
+
+    assert validator.normalized({'unknown': ['not a number']}) is None
+    error = validator._errors[0]
+    assert error.document_path == ('unknown', 0)
+    assert error.code == errors.COERCION_FAILED.code
+
+
 def test_coerce_in_listitems():
     schema = {'things': {'type': 'list', 'items': [{'coerce': int}, {'coerce': str}]}}
     document = {'things': ['1', 2]}
