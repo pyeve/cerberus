@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 from copy import deepcopy
 from tempfile import NamedTemporaryFile
 
@@ -30,6 +31,33 @@ def test_coerce_in_dictschema():
     document = {'thing': {'amount': '2'}}
     expected = {'thing': {'amount': 2}}
     assert_normalized(document, expected, schema)
+
+
+@mark.parametrize('method', ('normalized', 'validate'))
+def test_coerce_in_defaultdict_schema(method):
+    schema = {'thing': {'type': 'dict', 'schema': {'amount': {'coerce': int}}}}
+    document = {'thing': defaultdict(int, {'amount': '2'})}
+    validator = Validator(schema)
+
+    getattr(validator, method)(document)
+
+    result = validator.document['thing']
+    assert result == {'amount': 2}
+    assert isinstance(result, defaultdict)
+    assert result.default_factory is int
+    assert result['missing'] == 0
+    assert document['thing'] == {'amount': '2'}
+
+
+def test_defaultdict_schema_with_default_factory_none():
+    schema = {'thing': {'schema': {'amount': {'coerce': int}}}}
+    document = {'thing': defaultdict(None, {'amount': '2'})}
+
+    result = Validator(schema).normalized(document)
+
+    assert result == {'thing': {'amount': 2}}
+    assert isinstance(result['thing'], defaultdict)
+    assert result['thing'].default_factory is None
 
 
 def test_coerce_in_listschema():

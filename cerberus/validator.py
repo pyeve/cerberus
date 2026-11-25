@@ -847,9 +847,9 @@ class BareValidator(object):
             purge_unknown=rules.get('purge_unknown', self.purge_unknown),
             require_all=rules.get('require_all', self.require_all),
         )  # noqa: E501
-        value_type = type(mapping[field])
-        result_value = validator.normalized(mapping[field], always_return_document=True)
-        mapping[field] = value_type(result_value)
+        mapping[field] = validator.normalized(
+            mapping[field], always_return_document=True
+        )
         if validator._errors:
             self._error(validator._errors)
 
