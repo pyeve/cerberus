@@ -1,6 +1,16 @@
 Cerberus Changelog
 ==================
 
+Unreleased
+----------
+
+Fixed
+~~~~~
+
+- Preserve nested mapping types and ``defaultdict`` factories during schema
+  normalization.
+
+
 Version 1.3.8
 -------------
 
