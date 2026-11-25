@@ -1,6 +1,15 @@
 Cerberus Changelog
 ==================
 
+Unreleased
+----------
+
+Fixed
+~~~~~
+
+- Honor ``ignore_none_values`` when checking readonly fields during normalization.
+
+
 Version 1.3.8
 -------------
 

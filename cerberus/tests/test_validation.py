@@ -114,6 +114,22 @@ def test_readonly_field_first_rule():
     assert 'read-only' in v.errors['a_readonly_number'][0]
 
 
+@mark.parametrize('normalize', (True, False))
+@mark.parametrize('ignore_none', (True, False))
+@mark.parametrize('value', (None, 0))
+def test_readonly_field_ignore_none(normalize, ignore_none, value):
+    schema = {'a_readonly_number': {'type': 'integer', 'readonly': True, 'max': 1}}
+    validator = Validator(schema, ignore_none_values=ignore_none)
+    document = {'a_readonly_number': value}
+
+    assert validator.validate(document, normalize=normalize) == (
+        ignore_none and value is None
+    )
+    if ignore_none and value is None:
+        assert validator.errors == {}
+    assert document == {'a_readonly_number': value}
+
+
 def test_readonly_field_with_default_value():
     schema = {
         'created': {'type': 'string', 'readonly': True, 'default': 'today'},

@@ -940,7 +940,9 @@ class BareValidator(object):
         for field in (
             x
             for x in schema
-            if x in mapping and self._resolve_rules_set(schema[x]).get('readonly')
+            if x in mapping
+            and not (self.ignore_none_values and mapping[x] is None)
+            and self._resolve_rules_set(schema[x]).get('readonly')
         ):
             self._validate_readonly(schema[field]['readonly'], field, mapping[field])
 
