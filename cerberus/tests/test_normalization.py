@@ -272,6 +272,47 @@ def test_coerce_in_keysrules():
     assert_normalized(document, expected, schema)
 
 
+@mark.parametrize('method', ('normalized', 'validate'))
+def test_coerce_in_keysrules_preserves_input(method):
+    schema = {'thing': {'type': 'dict', 'keysrules': {'coerce': str.lower}}}
+    document = {'thing': {'FOO': 1}}
+    original = deepcopy(document)
+    validator = Validator(schema)
+
+    getattr(validator, method)(document)
+
+    assert validator.document == {'thing': {'foo': 1}}
+    assert document == original
+
+
+def test_coerce_in_keysrules_preserves_shared_mapping():
+    shared = {'FOO': 1}
+    document = {'left': shared, 'right': shared}
+    schema = {
+        'left': {'type': 'dict', 'keysrules': {'coerce': str.lower}},
+        'right': {'type': 'dict'},
+    }
+
+    result = Validator(schema).normalized(document)
+
+    assert result == {'left': {'foo': 1}, 'right': {'FOO': 1}}
+    assert shared == {'FOO': 1}
+
+
+def test_coerce_in_keysrules_preserves_input_in_sequence():
+    document = {'things': [{'FOO': 1}]}
+    original = deepcopy(document)
+    schema = {
+        'things': {
+            'type': 'list',
+            'schema': {'type': 'dict', 'keysrules': {'coerce': str.lower}},
+        }
+    }
+
+    assert Validator(schema).normalized(document) == {'things': [{'foo': 1}]}
+    assert document == original
+
+
 def test_coercion_of_sequence_items(validator):
     # https://github.com/pyeve/cerberus/issues/161
     schema = {'a_list': {'type': 'list', 'schema': {'type': 'float', 'coerce': float}}}

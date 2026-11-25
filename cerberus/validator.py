@@ -798,6 +798,7 @@ class BareValidator(object):
                     self.__normalize_sequence_per_items(field, mapping, schema)
 
     def __normalize_mapping_per_keysrules(self, field, mapping, property_rules):
+        mapping[field] = copy(mapping[field])
         schema = dict(((k, property_rules) for k in mapping[field]))
         document = dict(((k, k) for k in mapping[field]))
         validator = self._get_child_validator(

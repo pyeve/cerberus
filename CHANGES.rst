@@ -1,6 +1,15 @@
 Cerberus Changelog
 ==================
 
+Unreleased
+----------
+
+Fixed
+~~~~~
+
+- Preserve caller-owned nested mappings when normalizing keys with ``keysrules``.
+
+
 Version 1.3.8
 -------------
 
